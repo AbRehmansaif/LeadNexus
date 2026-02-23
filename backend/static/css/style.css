@@ -11,7 +11,7 @@
     --bg-card:        rgba(17, 24, 39, 0.7);
     --bg-card-hover:  rgba(30, 41, 59, 0.8);
     --bg-glass:       rgba(255, 255, 255, 0.03);
-    --bg-input:       rgba(15, 23, 42, 0.8);
+    --bg-input:       #0d1117; /* Solid deep dark background */
 
     --border:         rgba(255, 255, 255, 0.06);
     --border-focus:   rgba(139, 92, 246, 0.5);
@@ -351,7 +351,7 @@ a:hover {
 .form-input {
     width: 100%;
     padding: 14px 18px;
-    background: var(--bg-input);
+    background: var(--bg-input) !important; /* Force dark background */
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     color: var(--text-primary);
@@ -362,19 +362,11 @@ a:hover {
     display: block;
 }
 
-textarea.form-control,
-textarea.form-input {
-    min-height: 120px;
-    resize: vertical;
-}
-
-.form-control::placeholder {
-    color: var(--text-muted);
-}
-
-.form-control:focus {
-    border-color: var(--border-focus);
-    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
+.form-control:focus,
+.form-input:focus {
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1), inset 0 0 10px rgba(0,0,0,0.5);
+    background: #020617 !important; /* Even darker on focus */
 }
 
 .form-control:hover {
@@ -1192,4 +1184,13 @@ select.form-control {
     font-size: 0.8rem;
     color: var(--text-muted);
     line-height: 1.5;
+}
+
+@keyframes bgPulse {
+    0%, 100% { opacity: 0.8; }
+    50% { opacity: 1; }
+}
+
+body::before {
+    animation: bgPulse 10s ease-in-out infinite;
 }

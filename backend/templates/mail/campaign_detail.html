@@ -35,6 +35,17 @@
     </div>
 </div>
 
+<!-- Progress Bar -->
+<div class="card" style="margin-bottom: 24px;">
+    <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+        <span class="progress-text">Campaign Progress</span>
+        <span class="progress-text" id="progressPercent">0%</span>
+    </div>
+    <div class="progress-bar-wrapper">
+        <div class="progress-bar-fill" id="progressBar" style="width: 0%;"></div>
+    </div>
+</div>
+
 <div class="card">
     <div class="card-header">
         <h2 class="card-title">Recipient Records</h2>
@@ -74,10 +85,21 @@ async function controlCampaign(action) {
     if (res.ok) window.location.reload();
 }
 
+// Update progress bar
+function updateProgressBar(sent, failed, total) {
+    if (total === 0) return;
+    const percent = Math.round(((sent + failed) / total) * 100);
+    document.getElementById('progressBar').style.width = percent + '%';
+    document.getElementById('progressPercent').innerText = percent + '%';
+}
+
+// Initial update
+updateProgressBar({{ campaign.sent_count }}, {{ campaign.failed_count }}, {{ campaign.total_recipients }});
+
 // Simple auto-refresh for progress
 if ("{{ campaign.status }}" === "running") {
     setInterval(async () => {
-        const res = await fetch(`/mail/api/campaigns/{{ campaign.id }}/`);
+        const res = await fetch(`/mail/api/mail/campaigns/{{ campaign.id }}/`);
         if (res.ok) {
             const data = await res.json();
             document.getElementById('sentCount').innerText = data.sent_count;
@@ -85,6 +107,8 @@ if ("{{ campaign.status }}" === "running") {
             document.getElementById('pendingCount').innerText = data.total_recipients - data.sent_count - data.failed_count;
             document.getElementById('campaignStatus').innerText = data.status.toUpperCase();
             
+            updateProgressBar(data.sent_count, data.failed_count, data.total_recipients);
+
             if (data.status !== 'running') window.location.reload();
         }
     }, 5000);
