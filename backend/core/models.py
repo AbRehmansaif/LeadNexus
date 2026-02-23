@@ -124,7 +124,7 @@ class LinkedInScrapeJob(models.Model):
         verbose_name = 'LinkedIn Scrape Job'
 
     def __str__(self):
-        return f"LinkedInJob #{self.pk} — "{self.niche}" [{self.status}] ({self.progress}/{self.max_profiles})"
+        return f"LinkedInJob #{self.pk} - \"{self.niche}\" [{self.status}] ({self.progress}/{self.max_profiles})"
 
     @property
     def duration_seconds(self):
