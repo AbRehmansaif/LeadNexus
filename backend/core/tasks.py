@@ -121,11 +121,18 @@ def run_linkedin_job(job_id: int):
     try:
         # ─── Step 1: Initialize Chrome ─────────────────────────────
         logger.info(f"[LinkedInJob #{job_id}] Initializing Chrome ...")
+        # Config matches the original scrapers/linkedin_scraper.py format
         config = {
-            'headless': job.headless,
-            'delay_min': 3,
-            'delay_max': 6,
-            'timeout': 30,
+            'scraping': {
+                'headless': job.headless,
+                'delay_min': 3,
+                'delay_max': 6,
+                'timeout': 30,
+            },
+            'website_scraping': {
+                'enabled': job.scrape_websites,
+                'timeout': 15,
+            },
         }
         scraper = LinkedInScraper(config)
         scraper.setup_driver()

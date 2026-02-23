@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block title %}LinkedIn Scraper — DataScraper Pro{% endblock %}
+
+{% block content %}
+<!-- Page Header -->
+<div class="page-header">
+    <h1 class="page-title">💼 LinkedIn Scraper</h1>
+    <p class="page-subtitle">Search LinkedIn by niche — scrape company profiles and their websites automatically</p>
+</div>
+
+<!-- Hero Banner -->
+<div class="hero-banner">
+    <h2>Find &amp; Scrape LinkedIn Companies</h2>
+    <p>Enter a niche keyword below. Chrome will open, navigate to LinkedIn, search for matching companies, scrape their profiles one-by-one (with human-like delays), visit their websites, and save all data.</p>
+</div>
+
+<!-- How it Works -->
+<div class="steps" style="margin-bottom: 32px;">
+    <div class="step">
+        <div class="step-number">1</div>
+        <div class="step-title">Browser Opens</div>
+        <div class="step-desc">Chrome launches &amp; navigates to LinkedIn</div>
+    </div>
+    <div class="step">
+        <div class="step-number">2</div>
+        <div class="step-title">Search</div>
+        <div class="step-desc">Searches for companies matching your niche</div>
+    </div>
+    <div class="step">
+        <div class="step-number">3</div>
+        <div class="step-title">Scraping</div>
+        <div class="step-desc">Profiles scraped one by one with delays</div>
+    </div>
+    <div class="step">
+        <div class="step-number">4</div>
+        <div class="step-title">Websites</div>
+        <div class="step-desc">Company websites visited &amp; scraped</div>
+    </div>
+    <div class="step">
+        <div class="step-number">5</div>
+        <div class="step-title">Saved</div>
+        <div class="step-desc">Data saved to data/ folder &amp; DB</div>
+    </div>
+</div>
+
+<!-- Scraper Form -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><span class="card-icon">🔍</span> Configure LinkedIn Scrape</h2>
+    </div>
+
+    <form id="linkedinScraperForm">
+        <!-- Niche -->
+        <div class="form-group">
+            <label class="form-label" for="niche">Search Niche / Keywords *</label>
+            <input type="text" id="niche" class="form-control" placeholder="e.g., digital marketing agency, python developer, SaaS company" required>
+            <p class="form-help">Be specific for better results. Example: "web development agency new york"</p>
+        </div>
+
+        <div class="form-row">
+            <!-- Max Profiles -->
+            <div class="form-group">
+                <label class="form-label" for="maxProfiles">Max Profiles to Scrape</label>
+                <select id="maxProfiles" class="form-control">
+                    <option value="10">10 profiles (quick test)</option>
+                    <option value="25">25 profiles</option>
+                    <option value="50" selected>50 profiles</option>
+                    <option value="75">75 profiles</option>
+                    <option value="100">100 profiles</option>
+                </select>
+                <p class="form-help">~8-15 seconds per profile. 50 profiles ≈ 10-15 minutes</p>
+            </div>
+
+            <!-- Options -->
+            <div class="form-group">
+                <label class="form-label">Options</label>
+                <div class="form-check">
+                    <input type="checkbox" id="scrapeWebsites" checked>
+                    <label class="form-check-label" for="scrapeWebsites">
+                        Also scrape company websites (emails, phones, social links)
+                    </label>
+                </div>
+                <div class="form-check">
+                    <input type="checkbox" id="headless">
+                    <label class="form-check-label" for="headless">
+                        Headless mode (no visible browser window)
+                    </label>
+                </div>
+            </div>
+        </div>
+
+        <!-- LinkedIn Credentials -->
+        <div class="section-divider"></div>
+        <h3 style="margin-bottom: 16px; font-size: 1rem; color: var(--text-primary);">🔐 LinkedIn Login (Optional)</h3>
+        <p class="form-help" style="margin-bottom: 16px;">Provide credentials for better scraping. Without login, data may be limited.</p>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label class="form-label" for="linkedinEmail">LinkedIn Email</label>
+                <input type="email" id="linkedinEmail" class="form-control" placeholder="your@email.com">
+            </div>
+            <div class="form-group">
+                <label class="form-label" for="linkedinPassword">LinkedIn Password</label>
+                <input type="password" id="linkedinPassword" class="form-control" placeholder="••••••••">
+            </div>
+        </div>
+
+        <div class="alert alert-warning">
+            <span>⚠️</span>
+            <div>
+                <strong>Important:</strong> LinkedIn may show a security checkpoint. If Chrome opens and asks you to verify, complete the verification manually in the browser window. The scraper will wait for you.
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button type="submit" class="btn btn-primary btn-lg">
+                🚀 Start LinkedIn Scrape
+            </button>
+        </div>
+    </form>
+</div>
+
+<!-- Example Niches -->
+<div style="margin-top: 32px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><span class="card-icon">💡</span> Example Searches</h2>
+        </div>
+        <div class="result-grid">
+            <div class="result-item">
+                <div class="result-label">Tech Companies</div>
+                <div class="result-value">"software development company"</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Marketing</div>
+                <div class="result-value">"digital marketing agency"</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Location-Based</div>
+                <div class="result-value">"web design agency new york"</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">E-commerce</div>
+                <div class="result-value">"shopify development agency"</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">SaaS</div>
+                <div class="result-value">"SaaS company B2B"</div>
+            </div>
+            <div class="result-item">
+                <div class="result-label">Consulting</div>
+                <div class="result-value">"management consulting firm"</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

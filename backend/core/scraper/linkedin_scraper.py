@@ -5,6 +5,7 @@ Ported from scrapers/linkedin_scraper.py into the core Django app.
 Opens Chrome, logs into LinkedIn, searches for companies by niche,
 scrapes profiles one by one, and extracts company data.
 """
+import os
 import re
 import time
 import random
@@ -26,6 +27,7 @@ from selenium.webdriver.common.action_chains import ActionChains
 from selenium.webdriver.common.keys import Keys
 
 from bs4 import BeautifulSoup
+from fake_useragent import UserAgent
 
 from .validators import is_valid_url, extract_email_from_text, clean_text
 
@@ -36,27 +38,21 @@ class LinkedInScraper:
     """
     Selenium-based LinkedIn company scraper.
     Designed to run in a background thread from a Django view / task.
+
+    This is a direct port of scrapers/linkedin_scraper.py — the original
+    standalone scraper. Config keys match the original format.
     """
 
-    DEFAULT_CONFIG = {
-        'email': '',
-        'password': '',
-        'use_authentication': True,
-        'headless': False,
-        'delay_min': 3,
-        'delay_max': 6,
-        'timeout': 30,
-        'user_agent': (
-            'Mozilla/5.0 (Windows NT 10.0; Win64; x64) '
-            'AppleWebKit/537.36 (KHTML, like Gecko) '
-            'Chrome/122.0.0.0 Safari/537.36'
-        ),
-    }
+    def __init__(self, config: Dict):
+        """
+        Initialize LinkedIn scraper.
 
-    def __init__(self, config: Optional[Dict] = None):
-        self.config = {**self.DEFAULT_CONFIG, **(config or {})}
-        self.driver: Optional[webdriver.Chrome] = None
-        self.wait: Optional[WebDriverWait] = None
+        Args:
+            config: Configuration dictionary (matches scrapers/linkedin_scraper.py format)
+        """
+        self.config = config
+        self.driver = None
+        self.wait = None
         self.is_logged_in = False
 
     # ------------------------------------------------------------------
@@ -65,88 +61,124 @@ class LinkedInScraper:
 
     def setup_driver(self):
         """Set up Chrome WebDriver with anti-detection options."""
-        logger.info("Setting up Chrome WebDriver ...")
+        logger.info("Setting up Chrome WebDriver...")
 
         chrome_options = Options()
 
-        if self.config.get('headless', False):
+        # Headless mode
+        if self.config.get('scraping', {}).get('headless', False):
             chrome_options.add_argument('--headless=new')
 
+        # Additional options
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--disable-blink-features=AutomationControlled')
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
-        chrome_options.add_argument(f"user-agent={self.config['user_agent']}")
 
-        # Try webdriver-manager for auto driver download
+        # Random user agent (same as original)
+        ua = UserAgent()
+        chrome_options.add_argument(f'user-agent={ua.random}')
+
+        # Initialize driver with webdriver-manager
         try:
             from webdriver_manager.chrome import ChromeDriverManager
-            service = Service(ChromeDriverManager().install())
+            driver_path = ChromeDriverManager().install()
+            logger.info(f"webdriver-manager returned: {driver_path}")
+
+            # Fix: webdriver-manager sometimes returns the path to
+            # THIRD_PARTY_NOTICES.chromedriver instead of chromedriver.exe
+            if not driver_path.endswith('.exe') or 'THIRD_PARTY' in driver_path:
+                driver_dir = os.path.dirname(driver_path)
+                for _ in range(3):
+                    for root, dirs, files in os.walk(driver_dir):
+                        for f in files:
+                            if f.lower() == 'chromedriver.exe':
+                                driver_path = os.path.join(root, f)
+                                logger.info(f"Found chromedriver.exe at: {driver_path}")
+                                break
+                        if driver_path.endswith('.exe'):
+                            break
+                    if driver_path.endswith('.exe'):
+                        break
+                    driver_dir = os.path.dirname(driver_dir)
+
+            service = Service(executable_path=driver_path)
         except ImportError:
             service = Service()  # fallback: expects chromedriver on PATH
+        except Exception as e:
+            logger.warning(f"webdriver-manager failed: {e}, falling back to PATH")
+            service = Service()
 
         self.driver = webdriver.Chrome(service=service, options=chrome_options)
-        self.wait = WebDriverWait(self.driver, self.config.get('timeout', 30))
 
-        logger.info("WebDriver ready")
+        # Set timeouts (same as original)
+        timeout = self.config.get('scraping', {}).get('timeout', 30)
+        self.wait = WebDriverWait(self.driver, timeout)
+
+        logger.info("WebDriver setup complete")
 
     # ------------------------------------------------------------------
-    # Login
+    # Login  (matches scrapers/linkedin_scraper.py exactly)
     # ------------------------------------------------------------------
 
     def login(self, email: str, password: str) -> bool:
         """
-        Log in to LinkedIn with the supplied credentials.
-        Returns True on success, False otherwise.
+        Login to LinkedIn.
+        Matches scrapers/linkedin_scraper.py behavior but with background-safe checkpoint handling.
         """
         try:
-            logger.info("Logging in to LinkedIn ...")
+            logger.info("Attempting to login to LinkedIn...")
             self.driver.get('https://www.linkedin.com/login')
-            time.sleep(3)
-
+            
+            # Wait for login form (original logic)
             email_field = self.wait.until(
                 EC.presence_of_element_located((By.ID, 'username'))
             )
             password_field = self.driver.find_element(By.ID, 'password')
-
-            self._human_type(email_field, email)
+            
+            # Original human interaction pattern
+            self._human_interaction(email_field, email)
             time.sleep(random.uniform(0.5, 1.5))
-
-            self._human_type(password_field, password)
+            
+            self._human_interaction(password_field, password)
             time.sleep(random.uniform(0.5, 1.5))
-
+            
+            # Click login (original logic)
             login_btn = self.driver.find_element(By.CSS_SELECTOR, 'button[type="submit"]')
             self._move_and_click(login_btn)
-
+            
+            # Wait for redirect
             time.sleep(5)
-
-            current = self.driver.current_url
-            if 'feed' in current or 'mynetwork' in current:
+            
+            # Check success (original success checks)
+            curr = self.driver.current_url
+            if 'feed' in curr or 'mynetwork' in curr:
                 self.is_logged_in = True
                 logger.info("Login successful!")
                 return True
-            elif 'checkpoint' in current or 'challenge' in current:
-                logger.warning("Security checkpoint detected — waiting for manual verification …")
-                # In a server context we wait up to 120 s for the user to solve it
+            elif 'checkpoint' in curr or 'challenge' in curr:
+                logger.warning("LinkedIn security checkpoint detected!")
+                # In server context, we wait up to 120 seconds for manual solve in the browser
                 for _ in range(24):
                     time.sleep(5)
                     if 'feed' in self.driver.current_url:
                         self.is_logged_in = True
                         logger.info("Login successful after manual verification!")
                         return True
-                logger.warning("Login timed out waiting for checkpoint")
+                logger.warning("Login timed out waiting for checkpoint solve")
                 return False
             else:
-                logger.warning("Login may have failed — check credentials")
+                logger.warning(f"Login outcome uncertain. URL: {curr}")
+                # Some accounts redirect elsewhere, but if we don't see errors, we might be in
                 return False
-
+                
         except Exception as e:
-            logger.error(f"Login failed: {e}")
+            logger.error(f"Login failed: {str(e)}")
             return False
 
     # ------------------------------------------------------------------
-    # Search & scrape pipeline
+    # Search & process pipeline  (same as original search_and_process)
     # ------------------------------------------------------------------
 
     def search_and_scrape(
@@ -156,12 +188,12 @@ class LinkedInScraper:
         progress_callback: Optional[Callable] = None,
     ) -> List[Dict]:
         """
-        Full pipeline: search LinkedIn for companies in `niche`,
-        visit each company page, extract data.
+        Search for profiles and process them one by one.
+        This is equivalent to the original search_and_process method.
 
         Args:
-            niche:              Search keyword / niche
-            max_results:        Max number of company profiles to scrape
+            niche:              Search keyword/niche
+            max_results:        Maximum number of profiles to process
             progress_callback:  Optional fn(scraped_count, total) for progress
 
         Returns:
@@ -171,228 +203,363 @@ class LinkedInScraper:
         processed_urls: set = set()
 
         try:
-            search_url = (
-                f"https://www.linkedin.com/search/results/companies/"
-                f"?keywords={niche.replace(' ', '%20')}"
-            )
-            logger.info(f"Searching LinkedIn companies for: {niche}")
+            logger.info(f"Searching and processing profiles for: {niche}")
+
+            # Construct search URL for Companies (same as original)
+            search_url = f"https://www.linkedin.com/search/results/companies/?keywords={niche.replace(' ', '%20')}"
             self.driver.get(search_url)
             time.sleep(random.uniform(3, 5))
 
             page = 1
             while len(results) < max_results:
-                logger.info(f"Scanning search results — page {page} …")
+                logger.info(f"Scanning page {page}...")
+
+                # Scroll to load results
                 self._scroll_page()
 
+                # Get page source
                 soup = BeautifulSoup(self.driver.page_source, 'html.parser')
-                page_urls = self._extract_company_urls(soup, processed_urls)
+
+                # Find profile links - Broadened search (same as original)
+                all_links = soup.find_all('a', href=True)
+
+                page_urls = []
+                for link in all_links:
+                    href = link.get('href', '')
+
+                    # Core check: must contain /company/
+                    if '/company/' in href:
+                        # Clean the URL (remove query params)
+                        clean_url = href.split('?')[0].split('#')[0]
+
+                        # Filter out non-profile pages
+                        if any(sub in clean_url for sub in ['/jobs/', '/life/', '/people/', '/about/', '/feed/', '/posts/', '/mycompany/']):
+                            continue
+
+                        # Ensure absolute URL
+                        if not clean_url.startswith('http'):
+                            clean_url = f"https://www.linkedin.com{clean_url}"
+
+                        # Deduplicate
+                        if clean_url not in processed_urls and clean_url not in page_urls:
+                            processed_urls.add(clean_url)
+                            page_urls.append(clean_url)
+                            logger.info(f"Found company: {clean_url}")
+
+                # Debugging: If no companies found, log what we see
+                if not page_urls:
+                    logger.warning("No companies found on this page with current criteria.")
+
                 logger.info(f"Found {len(page_urls)} new companies on page {page}")
 
-                if not page_urls:
-                    logger.warning("No new companies found on this page — stopping.")
-                    break
-
+                # Process found URLs on this page
                 for url in page_urls:
                     if len(results) >= max_results:
                         break
 
-                    logger.info(f"Scraping company {len(results)+1}/{max_results}: {url}")
-                    profile_data = self.scrape_company(url)
+                    logger.info(f"Processing company {len(results) + 1}/{max_results}: {url}")
+
+                    # Scrape profile (same as original scrape_profile)
+                    profile_data = self.scrape_profile(url)
 
                     if profile_data:
                         results.append(profile_data)
+                    else:
+                        logger.warning(f"Failed to scrape profile: {url}")
 
                     if progress_callback:
                         progress_callback(len(results), max_results)
 
-                    self._random_delay()
+                    # Random delay between profiles
+                    self.random_delay()
 
-                    # Navigate back to search results
-                    if '/search/' not in self.driver.current_url:
+                    # Return to search results if we navigated away
+                    if self.driver.current_url != search_url:
                         self.driver.back()
                         time.sleep(random.uniform(2, 4))
 
-                # Pagination
+                # Pagination logic (same as original)
                 if len(results) < max_results:
-                    if not self._go_to_next_page(search_url, page):
-                        break
-                    page += 1
+                    try:
+                        next_button = self.driver.find_element(By.CSS_SELECTOR, 'button[aria-label="Next"]')
+                        if next_button.is_enabled():
+                            next_button.click()
+                            time.sleep(random.uniform(3, 5))
+                            page += 1
+                        else:
+                            logger.info("No next page button enabled.")
+                            break
+                    except NoSuchElementException:
+                        # If simple Next button isn't found, try URL manipulation
+                        logger.info("Next button not found, trying URL pagination...")
+                        page += 1
+                        next_page_url = f"{search_url}&page={page}"
+                        self.driver.get(next_page_url)
+                        time.sleep(random.uniform(3, 5))
 
         except Exception as e:
-            logger.error(f"Error during search_and_scrape: {e}", exc_info=True)
+            logger.error(f"Error in search_and_scrape: {str(e)}", exc_info=True)
 
         logger.info(f"Scraping complete — {len(results)} companies scraped")
         return results
 
     # ------------------------------------------------------------------
-    # Single company scrape
+    # Single company scrape  (matches original scrape_profile exactly)
     # ------------------------------------------------------------------
 
-    def scrape_company(self, profile_url: str) -> Optional[Dict]:
+    def scrape_profile(self, profile_url: str) -> Optional[Dict]:
         """
-        Navigate to a LinkedIn company page and extract data.
+        Scrape data from a LinkedIn company profile.
+
+        Args:
+            profile_url: LinkedIn company profile URL
+
+        Returns:
+            Dictionary with profile data or None
         """
         try:
-            about_url = profile_url.rstrip('/') + '/about/'
+            logger.info(f"Scraping profile: {profile_url}")
+
+            # Visit 'About' section for better data (same as original)
+            about_url = f"{profile_url}/about/" if not profile_url.endswith('/about/') else profile_url
             self.driver.get(about_url)
             time.sleep(random.uniform(2, 4))
+
+            # Scroll to load content
             self._scroll_page()
 
+            # Parse page
             soup = BeautifulSoup(self.driver.page_source, 'html.parser')
 
+            # Extract data (same fields as original)
             data = {
-                'profile_url':  profile_url,
-                'name':         self._extract_name(soup),
-                'headline':     self._extract_headline(soup),
-                'location':     self._extract_location(soup),
-                'about':        self._extract_about(soup),
-                'company_size': self._extract_field(soup, 'Company size'),
-                'company_type': self._extract_field(soup, 'Type'),
-                'industry':     self._extract_field(soup, 'Industry'),
-                'founded':      self._extract_field(soup, 'Founded'),
-                'website':      self._extract_website(soup),
-                'email':        'N/A',
-                'phone':        'N/A',
+                'profile_url': profile_url,
+                'name': self._extract_name(soup),
+                'headline': self._extract_headline(soup),
+                'location': self._extract_location(soup),
+                'about': self._extract_about(soup),
+                'company_size': self._extract_company_size(soup),
+                'company_type': self._extract_company_type(soup),
+                'industry': self._extract_field(soup, 'Industry'),
+                'founded': self._extract_field(soup, 'Founded'),
+                'website': self._extract_website(soup),
+                'email': 'N/A',
+                'phone': 'N/A',
             }
-            logger.info(f"Scraped: {data['name']}")
+
+            logger.info(f"Successfully scraped profile: {data['name']}")
             return data
 
         except Exception as e:
-            logger.error(f"Error scraping {profile_url}: {e}")
+            logger.error(f"Error scraping profile {profile_url}: {str(e)}")
             return None
 
     # ------------------------------------------------------------------
-    # Extraction helpers
+    # Extraction helpers  (match original exactly)
     # ------------------------------------------------------------------
 
-    def _extract_company_urls(self, soup: BeautifulSoup, seen: set) -> List[str]:
-        """Pull unique /company/ URLs from a search-results page."""
-        urls = []
-        exclude_subs = ['/jobs/', '/life/', '/people/', '/about/',
-                        '/feed/', '/posts/', '/mycompany/']
-
-        for link in soup.find_all('a', href=True):
-            href = link['href']
-            if '/company/' not in href:
-                continue
-            clean = href.split('?')[0].split('#')[0]
-            if any(s in clean for s in exclude_subs):
-                continue
-            if not clean.startswith('http'):
-                clean = f"https://www.linkedin.com{clean}"
-            if clean not in seen:
-                seen.add(clean)
-                urls.append(clean)
-        return urls
-
     def _extract_name(self, soup: BeautifulSoup) -> str:
-        el = soup.find('h1', {'class': lambda x: x and (
-            'org-top-card-summary__title' in x or 'text-heading-xlarge' in x
-        )})
-        return clean_text(el.get_text()) if el else 'N/A'
+        """Extract company name"""
+        try:
+            name_elem = soup.find('h1', {'class': lambda x: x and (
+                'org-top-card-summary__title' in x or 'text-heading-xlarge' in x
+            )})
+            if name_elem:
+                return clean_text(name_elem.get_text())
+        except:
+            pass
+        return "N/A"
 
     def _extract_headline(self, soup: BeautifulSoup) -> str:
-        el = soup.find('div', {'class': lambda x: x and 'text-body-medium' in x})
-        return clean_text(el.get_text()) if el else 'N/A'
+        """Extract headline from profile"""
+        try:
+            headline_elem = soup.find('div', {'class': lambda x: x and 'text-body-medium' in x})
+            if headline_elem:
+                return clean_text(headline_elem.get_text())
+        except:
+            pass
+        return "N/A"
 
     def _extract_location(self, soup: BeautifulSoup) -> str:
-        el = soup.find('div', {'class': lambda x: x and
-                        'org-top-card-summary-info-list__info-item' in x})
-        if el:
-            return clean_text(el.get_text())
-        el = soup.find('span', {'class': lambda x: x and 'text-body-small' in x})
-        return clean_text(el.get_text()) if el else 'N/A'
+        """Extract company location"""
+        try:
+            location_elem = soup.find('div', {'class': lambda x: x and
+                                       'org-top-card-summary-info-list__info-item' in x})
+            if location_elem:
+                return clean_text(location_elem.get_text())
+
+            # Fallback
+            location_elem = soup.find('span', {'class': lambda x: x and 'text-body-small' in x})
+            if location_elem:
+                return clean_text(location_elem.get_text())
+        except:
+            pass
+        return "N/A"
 
     def _extract_about(self, soup: BeautifulSoup) -> str:
-        section = soup.find('section', {'class': lambda x: x and 'artdeco-card' in x})
-        if section:
-            body = section.find('div', {'class': lambda x: x and 'display-flex' in x})
-            if body:
-                return clean_text(body.get_text())
-        return 'N/A'
+        """Extract about section from profile"""
+        try:
+            about_section = soup.find('section', {'class': lambda x: x and 'artdeco-card' in x})
+            if about_section:
+                about_text = about_section.find('div', {'class': lambda x: x and 'display-flex' in x})
+                if about_text:
+                    return clean_text(about_text.get_text())
+        except:
+            pass
+        return "N/A"
+
+    def _extract_company_size(self, soup: BeautifulSoup) -> str:
+        """Extract company size (same as original)"""
+        try:
+            dt_tags = soup.find_all('dt')
+            for dt in dt_tags:
+                if 'Company size' in dt.get_text():
+                    dd = dt.find_next_sibling('dd')
+                    if dd:
+                        return clean_text(dd.get_text())
+        except:
+            pass
+        return "N/A"
+
+    def _extract_company_type(self, soup: BeautifulSoup) -> str:
+        """Extract company type (Public, Private, etc.) — same as original"""
+        try:
+            dt_tags = soup.find_all('dt')
+            for dt in dt_tags:
+                if 'Type' in dt.get_text():
+                    dd = dt.find_next_sibling('dd')
+                    if dd:
+                        return clean_text(dd.get_text())
+        except:
+            pass
+        return "N/A"
 
     def _extract_field(self, soup: BeautifulSoup, label: str) -> str:
         """Extract a labelled dt/dd pair from the About page."""
-        for dt in soup.find_all('dt'):
-            if label.lower() in dt.get_text().lower():
-                dd = dt.find_next_sibling('dd')
-                if dd:
-                    return clean_text(dd.get_text())
+        try:
+            for dt in soup.find_all('dt'):
+                if label.lower() in dt.get_text().lower():
+                    dd = dt.find_next_sibling('dd')
+                    if dd:
+                        return clean_text(dd.get_text())
+        except:
+            pass
         return 'N/A'
 
     def _extract_website(self, soup: BeautifulSoup) -> Optional[str]:
-        # Try dt/dd approach first (About page)
-        for dt in soup.find_all('dt'):
-            if 'website' in dt.get_text().lower():
-                dd = dt.find_next_sibling('dd')
-                if dd:
-                    a = dd.find('a', href=True)
-                    if a:
-                        return a['href']
+        """Extract website URL from company profile (same as original)"""
+        try:
+            # Look in description list (dl) common in About pages
+            dt_tags = soup.find_all('dt')
+            for dt in dt_tags:
+                if 'Website' in dt.get_text():
+                    dd = dt.find_next_sibling('dd')
+                    if dd:
+                        link = dd.find('a', href=True)
+                        if link:
+                            return link['href']
 
-        # Fallback: primary action button
-        a = soup.find('a', {'class': lambda x: x and
-                      'org-top-card-primary-actions__action' in x})
-        if a and is_valid_url(a.get('href', '')):
-            return a['href']
+            # Fallback: Primary button
+            website_link = soup.find('a', {'class': lambda x: x and
+                                     'org-top-card-primary-actions__action' in x})
+            if website_link:
+                href = website_link.get('href', '')
+                if is_valid_url(href):
+                    return href
+        except:
+            pass
+        return None
+
+    def _extract_contact_info(self, soup: BeautifulSoup, info_type: str) -> Optional[str]:
+        """Extract contact information from profile (same as original)"""
+        try:
+            contact_button = self.driver.find_element(By.CSS_SELECTOR, 'a[href*="overlay/contact-info"]')
+            contact_button.click()
+            time.sleep(2)
+
+            contact_soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+
+            if info_type == 'email':
+                return extract_email_from_text(contact_soup.get_text())
+            elif info_type == 'phone':
+                phone_section = contact_soup.find('section', {'class': lambda x: x and
+                                                  'pv-contact-info__contact-type' in x})
+                if phone_section:
+                    return clean_text(phone_section.get_text())
+
+            # Close modal
+            close_button = self.driver.find_element(By.CSS_SELECTOR, 'button[aria-label="Dismiss"]')
+            close_button.click()
+            time.sleep(1)
+
+        except:
+            pass
         return None
 
     # ------------------------------------------------------------------
-    # Navigation & interaction helpers
+    # Navigation & interaction helpers  (exact match to original)
     # ------------------------------------------------------------------
 
-    def _go_to_next_page(self, search_url: str, current_page: int) -> bool:
-        """Try clicking 'Next' or fall back to URL param."""
-        try:
-            btn = self.driver.find_element(By.CSS_SELECTOR, 'button[aria-label="Next"]')
-            if btn.is_enabled():
-                btn.click()
-                time.sleep(random.uniform(3, 5))
-                return True
-        except NoSuchElementException:
-            pass
-
-        # URL-based fallback
-        next_page = current_page + 1
-        self.driver.get(f"{search_url}&page={next_page}")
-        time.sleep(random.uniform(3, 5))
-        return True
-
     def _scroll_page(self):
-        """Scroll page in increments to trigger lazy-loading."""
+        """Scroll page to load dynamic content (same as original)"""
         try:
-            for frac in [0.33, 0.5, 0.66, 0.85, 1.0]:
-                self.driver.execute_script(
-                    f"window.scrollTo(0, document.body.scrollHeight * {frac});"
-                )
-                time.sleep(0.8)
+            for _ in range(3):
+                self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight/3);")
+                time.sleep(1)
+                self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight/2);")
+                time.sleep(1)
+                self.driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")
+                time.sleep(1)
         except Exception as e:
-            logger.warning(f"Scroll error: {e}")
+            logger.warning(f"Error scrolling page: {str(e)}")
 
-    def _random_delay(self):
-        lo = self.config.get('delay_min', 3)
-        hi = self.config.get('delay_max', 6)
-        time.sleep(random.uniform(lo, hi))
+    def random_delay(self):
+        """Add random delay between requests (same as original)"""
+        delay_min = self.config.get('scraping', {}).get('delay_min', 2)
+        delay_max = self.config.get('scraping', {}).get('delay_max', 5)
+        delay = random.uniform(delay_min, delay_max)
+        logger.debug(f"Waiting {delay:.2f} seconds...")
+        time.sleep(delay)
 
-    def _human_type(self, element, text: str):
-        """Type text character-by-character with random delays."""
+    def _human_interaction(self, element, text: str):
+        """
+        Simulate human typing and interaction (EXACT copy from original).
+
+        Args:
+            element: WebElement to interact with
+            text: Text to type
+        """
         try:
-            ActionChains(self.driver).move_to_element(element).perform()
+            # Move to element
+            actions = ActionChains(self.driver)
+            actions.move_to_element(element).perform()
             time.sleep(random.uniform(0.2, 0.5))
+
+            # Click element
             element.click()
             time.sleep(random.uniform(0.2, 0.5))
-            for ch in text:
-                element.send_keys(ch)
-                time.sleep(random.uniform(0.05, 0.15))
-        except Exception:
+
+            # Type character by character with random delays
+            for char in text:
+                element.send_keys(char)
+                time.sleep(random.uniform(0.05, 0.2))  # Random typing speed
+
+        except Exception as e:
+            logger.warning(f"Error in human interaction: {str(e)}")
+            # Fallback to standard send_keys
             element.send_keys(text)
 
     def _move_and_click(self, element):
+        """
+        Simulate moving mouse to element and clicking (same as original).
+        """
         try:
-            ActionChains(self.driver).move_to_element(element).perform()
+            actions = ActionChains(self.driver)
+            actions.move_to_element(element).perform()
             time.sleep(random.uniform(0.3, 0.7))
             element.click()
-        except Exception:
+        except Exception as e:
+            logger.warning(f"Error in move and click: {str(e)}")
             element.click()
 
     # ------------------------------------------------------------------
@@ -400,6 +567,7 @@ class LinkedInScraper:
     # ------------------------------------------------------------------
 
     def close(self):
+        """Close the WebDriver"""
         if self.driver:
             try:
                 self.driver.quit()

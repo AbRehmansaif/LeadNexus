@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DataScraper Pro — Powerful LinkedIn & Website data extraction tool">
+    <title>{% block title %}DataScraper Pro{% endblock %}</title>
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <div class="app-wrapper">
+
+        <!-- ── Navbar ──────────────────────────────────────── -->
+        <nav class="navbar">
+            <div class="container navbar-inner">
+                <a href="/" class="navbar-brand">
+                    <div class="brand-icon">🔍</div>
+                    DataScraper Pro
+                </a>
+                <ul class="navbar-nav">
+                    <li>
+                        <a href="/" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                            <span class="nav-icon">📊</span> Dashboard
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/website-scraper/" class="nav-link {% if active_page == 'website-scraper' %}active{% endif %}">
+                            <span class="nav-icon">🌐</span> Website Scraper
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/linkedin-scraper/" class="nav-link {% if active_page == 'linkedin-scraper' %}active{% endif %}">
+                            <span class="nav-icon">💼</span> LinkedIn Scraper
+                        </a>
+                    </li>
+                    <li>
+                        <a href="/jobs/" class="nav-link {% if active_page == 'jobs' %}active{% endif %}">
+                            <span class="nav-icon">📋</span> All Jobs
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </nav>
+
+        <!-- ── Main Content ────────────────────────────────── -->
+        <main class="container content-section">
+            {% block content %}{% endblock %}
+        </main>
+
+        <!-- ── Footer ──────────────────────────────────────── -->
+        <footer class="footer">
+            <div class="container">
+                <p>
+                    &copy; 2026 DataScraper Pro &mdash; Powered by
+                    <span class="powered-by">Abdul Rehman</span>
+                </p>
+            </div>
+        </footer>
+
+    </div>
+
+    <script src="{% static 'js/app.js' %}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

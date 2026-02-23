@@ -1,0 +1,162 @@
+{% extends "base.html" %}
+{% block title %}Website Job #{{ job.id }} — DataScraper Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">🌐 Website Scrape Result</h1>
+    <p class="page-subtitle">Job #{{ job.id }} — {{ job.url|truncatechars:80 }}</p>
+</div>
+
+<!-- Job Status Bar -->
+<div class="card" style="margin-bottom: 24px;">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <span class="badge badge-{{ job.status }}">
+                <span class="badge-dot"></span> {{ job.status|upper }}
+            </span>
+            <span style="color: var(--text-muted); font-size: 0.85rem;">
+                Created {{ job.created_at|date:"M d, Y H:i" }}
+                {% if job.duration_seconds %}
+                    &nbsp;·&nbsp; Duration: {{ job.duration_seconds|floatformat:1 }}s
+                {% endif %}
+            </span>
+        </div>
+        <div class="btn-group">
+            {% if result %}
+            <a href="/api/export/csv/?job_id={{ job.id }}" class="btn btn-secondary btn-sm">📄 Export CSV</a>
+            <a href="/api/export/json/?job_id={{ job.id }}" class="btn btn-secondary btn-sm">📋 Export JSON</a>
+            {% endif %}
+            <button onclick="deleteWebsiteJob({{ job.id }})" class="btn btn-danger btn-sm">🗑 Delete</button>
+        </div>
+    </div>
+</div>
+
+{% if job.status == 'failed' %}
+<div class="alert alert-error">
+    <span>❌</span> <strong>Error:</strong> {{ job.error_message }}
+</div>
+{% endif %}
+
+{% if result %}
+<!-- Scraped Data -->
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><span class="card-icon">📊</span> Extracted Data</h2>
+    </div>
+
+    <div class="result-grid">
+        <div class="result-item">
+            <div class="result-label">📧 Email</div>
+            <div class="result-value {% if not result.email %}na{% endif %}">
+                {% if result.email %}
+                    <a href="mailto:{{ result.email }}">{{ result.email }}</a>
+                    <button class="copy-btn" onclick="copyToClipboard('{{ result.email }}')">Copy</button>
+                {% else %}
+                    Not found
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="result-item">
+            <div class="result-label">📱 Phone</div>
+            <div class="result-value {% if not result.phone %}na{% endif %}">
+                {% if result.phone %}
+                    <a href="tel:{{ result.phone }}">{{ result.phone }}</a>
+                    <button class="copy-btn" onclick="copyToClipboard('{{ result.phone }}')">Copy</button>
+                {% else %}
+                    Not found
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="result-item">
+            <div class="result-label">📍 Address</div>
+            <div class="result-value {% if not result.address %}na{% endif %}">
+                {{ result.address|default:"Not found" }}
+            </div>
+        </div>
+
+        <div class="result-item">
+            <div class="result-label">🌐 Website</div>
+            <div class="result-value">
+                <a href="{{ result.website_url }}" target="_blank">{{ result.website_url }}</a>
+            </div>
+        </div>
+
+        <div class="result-item">
+            <div class="result-label">📘 Facebook</div>
+            <div class="result-value {% if not result.facebook %}na{% endif %}">
+                {% if result.facebook %}
+                    <a href="{{ result.facebook }}" target="_blank">{{ result.facebook|truncatechars:50 }}</a>
+                {% else %}
+                    Not found
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="result-item">
+            <div class="result-label">🐦 Twitter / X</div>
+            <div class="result-value {% if not result.twitter %}na{% endif %}">
+                {% if result.twitter %}
+                    <a href="{{ result.twitter }}" target="_blank">{{ result.twitter|truncatechars:50 }}</a>
+                {% else %}
+                    Not found
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="result-item">
+            <div class="result-label">📸 Instagram</div>
+            <div class="result-value {% if not result.instagram %}na{% endif %}">
+                {% if result.instagram %}
+                    <a href="{{ result.instagram }}" target="_blank">{{ result.instagram|truncatechars:50 }}</a>
+                {% else %}
+                    Not found
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="result-item">
+            <div class="result-label">💼 LinkedIn</div>
+            <div class="result-value {% if not result.linkedin %}na{% endif %}">
+                {% if result.linkedin %}
+                    <a href="{{ result.linkedin }}" target="_blank">{{ result.linkedin|truncatechars:50 }}</a>
+                {% else %}
+                    Not found
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    {% if result.pages_scraped %}
+    <div class="section-divider"></div>
+    <h3 style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase;">Pages Scraped</h3>
+    <ul style="list-style: none; padding: 0;">
+        {% for page_url in result.pages_scraped %}
+        <li style="padding: 6px 0; border-bottom: 1px solid var(--border);">
+            <a href="{{ page_url }}" target="_blank" class="cell-url" style="font-size: 0.85rem;">{{ page_url }}</a>
+        </li>
+        {% endfor %}
+    </ul>
+    {% endif %}
+</div>
+
+{% elif job.status == 'pending' or job.status == 'running' %}
+<div class="card">
+    <div class="empty-state">
+        <div class="spinner" style="margin: 0 auto 16px;"></div>
+        <h3>Scraping in progress...</h3>
+        <p>This page will auto-update when the job finishes.</p>
+    </div>
+</div>
+<script>
+    // Auto-refresh while running
+    setTimeout(() => window.location.reload(), 3000);
+</script>
+{% endif %}
+
+<div style="margin-top: 24px;">
+    <a href="/jobs/" class="btn btn-secondary">← Back to All Jobs</a>
+    <a href="/website-scraper/" class="btn btn-secondary">🔗 Scrape Another Website</a>
+</div>
+{% endblock %}

@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% block title %}LinkedIn Job #{{ job.id }} — DataScraper Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">💼 LinkedIn Scrape — "{{ job.niche }}"</h1>
+    <p class="page-subtitle">Job #{{ job.id }} — {{ job.max_profiles }} profiles requested</p>
+</div>
+
+<!-- Job Status & Progress -->
+<div class="card" style="margin-bottom: 24px;"
+     id="jobProgress" data-job-id="{{ job.id }}" data-job-status="{{ job.status }}">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <span class="badge badge-{{ job.status }}" id="statusBadge">
+                <span class="badge-dot"></span> {{ job.status|upper }}
+            </span>
+            <span style="color: var(--text-muted); font-size: 0.85rem;">
+                Created {{ job.created_at|date:"M d, Y H:i" }}
+                {% if job.duration_seconds %}
+                    &nbsp;·&nbsp; Duration: {{ job.duration_seconds|floatformat:1 }}s
+                {% endif %}
+            </span>
+        </div>
+        <div class="btn-group">
+            {% if profiles %}
+            <a href="/api/export/linkedin/csv/?job_id={{ job.id }}" class="btn btn-secondary btn-sm">📄 Export CSV</a>
+            <a href="/api/export/linkedin/json/?job_id={{ job.id }}" class="btn btn-secondary btn-sm">📋 Export JSON</a>
+            {% endif %}
+            <button onclick="deleteLinkedInJob({{ job.id }})" class="btn btn-danger btn-sm">🗑 Delete</button>
+        </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-text" id="progressText">
+        {{ job.progress }} / {{ job.max_profiles }} profiles
+        ({% widthratio job.progress job.max_profiles 100 %}%)
+    </div>
+    <div class="progress-bar-wrapper">
+        <div class="progress-bar-fill" id="progressBarFill"
+             style="width: {% widthratio job.progress job.max_profiles 100 %}%;"></div>
+    </div>
+</div>
+
+{% if job.status == 'failed' %}
+<div class="alert alert-error">
+    <span>❌</span> <strong>Error:</strong> {{ job.error_message }}
+</div>
+{% endif %}
+
+{% if job.status == 'running' or job.status == 'pending' %}
+<div class="alert alert-info">
+    <span>🔄</span>
+    <div>
+        <strong>Scraping in progress...</strong><br>
+        Chrome is scraping LinkedIn profiles. This page will auto-update with progress.
+        {% if not job.headless %}Do NOT close the Chrome browser window that opened.{% endif %}
+    </div>
+</div>
+{% endif %}
+
+<!-- Stats Row -->
+{% if profiles %}
+<div class="stats-grid" style="margin-bottom: 24px;">
+    <div class="stat-card purple">
+        <div class="stat-label">Profiles Scraped</div>
+        <div class="stat-value">{{ profiles|length }}</div>
+    </div>
+    <div class="stat-card cyan">
+        <div class="stat-label">With Websites</div>
+        <div class="stat-value">{{ profiles_with_website }}</div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-label">Emails Found</div>
+        <div class="stat-value">{{ emails_found }}</div>
+    </div>
+    <div class="stat-card amber">
+        <div class="stat-label">Phones Found</div>
+        <div class="stat-value">{{ phones_found }}</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Profiles Table -->
+{% if profiles %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><span class="card-icon">📊</span> Scraped Profiles ({{ profiles|length }})</h2>
+    </div>
+
+    <!-- View Toggle -->
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="tableView">📋 Table View</button>
+            <button class="tab-btn" data-tab="cardView">🃏 Card View</button>
+        </div>
+
+        <!-- Table View -->
+        <div class="tab-content active" id="tableView">
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Company</th>
+                            <th>Location</th>
+                            <th>Size</th>
+                            <th>Industry</th>
+                            <th>Website</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Profile</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in profiles %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="cell-name">{{ p.name }}</td>
+                            <td>{{ p.location }}</td>
+                            <td>{{ p.company_size }}</td>
+                            <td>{{ p.industry }}</td>
+                            <td>
+                                {% if p.website %}
+                                    <a href="{{ p.website }}" target="_blank" class="cell-url">{{ p.website|truncatechars:30 }}</a>
+                                {% else %}
+                                    <span style="color: var(--text-muted);">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if p.website_email %}
+                                    <a href="mailto:{{ p.website_email }}">{{ p.website_email }}</a>
+                                {% else %}
+                                    <span style="color: var(--text-muted);">—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ p.website_phone|default:"—" }}</td>
+                            <td><a href="{{ p.profile_url }}" target="_blank" class="btn btn-secondary btn-sm">View</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Card View -->
+        <div class="tab-content" id="cardView">
+            <div class="profile-cards">
+                {% for p in profiles %}
+                <div class="profile-card">
+                    <div class="profile-card-header">
+                        <div>
+                            <div class="profile-name">{{ p.name }}</div>
+                            <div class="profile-headline">{{ p.headline|truncatechars:80 }}</div>
+                        </div>
+                        <a href="{{ p.profile_url }}" target="_blank" class="btn btn-secondary btn-sm">LinkedIn →</a>
+                    </div>
+
+                    <div class="profile-details">
+                        <div class="profile-detail">
+                            <div class="profile-detail-label">📍 Location</div>
+                            <div class="profile-detail-value">{{ p.location }}</div>
+                        </div>
+                        <div class="profile-detail">
+                            <div class="profile-detail-label">👥 Size</div>
+                            <div class="profile-detail-value">{{ p.company_size }}</div>
+                        </div>
+                        <div class="profile-detail">
+                            <div class="profile-detail-label">🏭 Industry</div>
+                            <div class="profile-detail-value">{{ p.industry }}</div>
+                        </div>
+                        <div class="profile-detail">
+                            <div class="profile-detail-label">🏢 Type</div>
+                            <div class="profile-detail-value">{{ p.company_type }}</div>
+                        </div>
+                        {% if p.website %}
+                        <div class="profile-detail">
+                            <div class="profile-detail-label">🌐 Website</div>
+                            <div class="profile-detail-value">
+                                <a href="{{ p.website }}" target="_blank">{{ p.website|truncatechars:35 }}</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if p.website_email %}
+                        <div class="profile-detail">
+                            <div class="profile-detail-label">📧 Email</div>
+                            <div class="profile-detail-value">
+                                <a href="mailto:{{ p.website_email }}">{{ p.website_email }}</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                        {% if p.website_phone %}
+                        <div class="profile-detail">
+                            <div class="profile-detail-label">📱 Phone</div>
+                            <div class="profile-detail-value">{{ p.website_phone }}</div>
+                        </div>
+                        {% endif %}
+                        {% if p.website_facebook %}
+                        <div class="profile-detail">
+                            <div class="profile-detail-label">📘 Facebook</div>
+                            <div class="profile-detail-value">
+                                <a href="{{ p.website_facebook }}" target="_blank">Link</a>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% elif job.status == 'completed' %}
+<div class="card">
+    <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>No profiles found</h3>
+        <p>The scrape completed but no company profiles were found. Try a different niche.</p>
+    </div>
+</div>
+{% endif %}
+
+<div style="margin-top: 24px;">
+    <a href="/jobs/" class="btn btn-secondary">← Back to All Jobs</a>
+    <a href="/linkedin-scraper/" class="btn btn-secondary">🔍 New LinkedIn Scrape</a>
+</div>
+{% endblock %}

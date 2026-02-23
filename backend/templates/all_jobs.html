@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block title %}All Jobs — DataScraper Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">📋 All Scraping Jobs</h1>
+    <p class="page-subtitle">Browse all website and LinkedIn scraping jobs</p>
+</div>
+
+<!-- Quick Actions -->
+<div class="btn-group" style="margin-bottom: 28px;">
+    <a href="/website-scraper/" class="btn btn-primary">🌐 New Website Scrape</a>
+    <a href="/linkedin-scraper/" class="btn btn-primary">💼 New LinkedIn Scrape</a>
+    <a href="/api/export/csv/" class="btn btn-secondary">📄 Export All Websites CSV</a>
+    <a href="/api/export/linkedin/csv/" class="btn btn-secondary">📄 Export All LinkedIn CSV</a>
+</div>
+
+<!-- Job Tabs -->
+<div class="tabs-container">
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="linkedinJobs">
+            💼 LinkedIn Jobs ({{ linkedin_jobs|length }})
+        </button>
+        <button class="tab-btn" data-tab="websiteJobs">
+            🌐 Website Jobs ({{ website_jobs|length }})
+        </button>
+    </div>
+
+    <!-- LinkedIn Jobs Tab -->
+    <div class="tab-content active" id="linkedinJobs">
+        {% if linkedin_jobs %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Niche</th>
+                        <th>Profiles</th>
+                        <th>Websites</th>
+                        <th>Status</th>
+                        <th>Duration</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in linkedin_jobs %}
+                    <tr>
+                        <td>#{{ job.id }}</td>
+                        <td class="cell-name">{{ job.niche|truncatechars:40 }}</td>
+                        <td>{{ job.progress }} / {{ job.max_profiles }}</td>
+                        <td>
+                            {% if job.scrape_websites %}
+                                <span style="color: var(--accent-green);">Yes</span>
+                            {% else %}
+                                <span style="color: var(--text-muted);">No</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ job.status }}">
+                                <span class="badge-dot"></span> {{ job.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if job.duration_seconds %}
+                                {{ job.duration_seconds|floatformat:1 }}s
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>{{ job.created_at|date:"M d, H:i" }}</td>
+                        <td>
+                            <a href="/linkedin-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">💼</div>
+            <h3>No LinkedIn jobs yet</h3>
+            <p>Start scraping from the <a href="/linkedin-scraper/">LinkedIn Scraper</a> page.</p>
+        </div>
+        {% endif %}
+    </div>
+
+    <!-- Website Jobs Tab -->
+    <div class="tab-content" id="websiteJobs">
+        {% if website_jobs %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>URL</th>
+                        <th>Contact Pages</th>
+                        <th>Status</th>
+                        <th>Duration</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in website_jobs %}
+                    <tr>
+                        <td>#{{ job.id }}</td>
+                        <td class="cell-url">{{ job.url|truncatechars:55 }}</td>
+                        <td>
+                            {% if job.scrape_contact %}
+                                <span style="color: var(--accent-green);">Yes ({{ job.max_contact_pages }})</span>
+                            {% else %}
+                                <span style="color: var(--text-muted);">No</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge badge-{{ job.status }}">
+                                <span class="badge-dot"></span> {{ job.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if job.duration_seconds %}
+                                {{ job.duration_seconds|floatformat:1 }}s
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>{{ job.created_at|date:"M d, H:i" }}</td>
+                        <td>
+                            <a href="/website-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <div class="empty-icon">🌐</div>
+            <h3>No website jobs yet</h3>
+            <p>Start scraping from the <a href="/website-scraper/">Website Scraper</a> page.</p>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
