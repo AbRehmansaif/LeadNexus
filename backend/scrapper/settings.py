@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     'corsheaders',
     # Local
     'core',
+    'mail',
 ]
 
 MIDDLEWARE = [

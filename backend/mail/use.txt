@@ -1,0 +1,28 @@
+Features Implemented:
+SMTP Backend Management:
+Add and manage multiple SMTP accounts (Gmail, Outlook, etc.).
+The system automatically rotates through all active email accounts to distribute the load.
+Supports custom ports, TLS, and SSL settings.
+Flexible Recipient Import:
+CSV Upload: Upload a CSV file with 
+email
+ and name columns. Any additional columns (like city, company) are saved and can be used as placeholders.
+Manual Input: Paste a list of emails directly into the dashboard.
+Custom Content with Placeholders:
+Use {{ name }} and {{ email }} in your email body.
+The system dynamically renders the content for each person before sending.
+Supports full Markdown or HTML content.
+Background Sending & Monitoring:
+Emails are sent in the background so you don't have to stay on the page.
+Gap Timing: Set a custom gap (in minutes) between emails to prevent being flagged as spam.
+Real-time Progress: Track how many emails were sent, how many failed, and how many are pending.
+Full Records: Every recipient's status (Sent/Failed/Pending) and error messages are saved for your review.
+How to Use:
+Run Migrations: Since I've created new database models, you need to run these commands:
+bash
+python manage.py makemigrations mail
+python manage.py migrate
+Add SMTP Accounts: Go to the "Mail Sender" link in the navigation bar and click "Manage SMTP Accounts". Add your 15+ email credentials there.
+Start a Campaign: Click "Create New Campaign", enter your subject and body (using {{ name }}), upload your CSV, and set the gap minutes.
+Monitor Progress: Once you click "Create & Start", you'll be taken to the campaign status page where you can see the progress live and pause/resume as needed.
+The interface matches the premium look of your Scrapper dashboard, using the same color palette and responsive design.

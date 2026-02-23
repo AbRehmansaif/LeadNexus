@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Create Campaign — DataScraper Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">New Email Campaign</h1>
+    <p class="page-subtitle">Configure your automated email sequence</p>
+</div>
+
+<div class="card" style="max-width: 800px; margin: 0 auto;">
+    <form id="campaignForm" class="scraper-form">
+        <div class="form-group">
+            <label class="form-label" for="subject">Email Subject</label>
+            <input type="text" id="subject" name="subject" class="form-input" placeholder="Enter email subject" required>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="body">Email Body (Markdown/HTML)</label>
+            <textarea id="body" name="body" class="form-input" style="height: 250px;" placeholder="Hello {{ name }},\n\nYour message here..." required></textarea>
+            <p class="form-help">Use {{ name }} and {{ email }} as placeholders. Other CSV columns can also be used.</p>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" for="gap_minutes">Send Gap (Minutes)</label>
+            <input type="number" id="gap_minutes" name="gap_minutes" class="form-input" value="1" min="0">
+            <p class="form-help">Wait time between each email to avoid spam triggers.</p>
+        </div>
+
+        <div class="section-divider"></div>
+
+        <div class="form-group">
+            <label class="form-label" for="csv_file">Upload Recipients (CSV)</label>
+            <input type="file" id="csv_file" name="csv_file" class="form-input" accept=".csv" style="padding: 10px;">
+            <p class="form-help">CSV should have headers: <strong>email</strong>, <strong>name</strong> (optional).</p>
+        </div>
+
+        <div style="text-align: center; margin: 24px 0; color: var(--text-muted);">— OR —</div>
+
+        <div class="form-group">
+            <label class="form-label" for="manual_recipients">Manual Input (Paste Emails)</label>
+            <textarea id="manual_recipients" class="form-input" style="height: 120px;" placeholder="email1@example.com, Name 1&#10;email2@example.com, Name 2"></textarea>
+            <p class="form-help">One per line: email, name (optional)</p>
+        </div>
+
+        <div class="form-actions">
+            <button type="submit" id="submitBtn" class="btn btn-primary btn-lg">Create & Start Campaign</button>
+            <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary btn-lg">Cancel</a>
+        </div>
+    </form>
+</div>
+
+<script>
+document.getElementById('campaignForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = 'Creating...';
+
+    const formData = new FormData();
+    formData.append('subject', document.getElementById('subject').value);
+    formData.append('body', document.getElementById('body').value);
+    formData.append('gap_minutes', document.getElementById('gap_minutes').value);
+
+    const csvFile = document.getElementById('csv_file').files[0];
+    if (csvFile) {
+        formData.append('csv_file', csvFile);
+    }
+
+    const manualInput = document.getElementById('manual_recipients').value;
+    if (manualInput.trim()) {
+        const recipients = manualInput.split('\n').map(line => {
+            const parts = line.split(',');
+            return {
+                email: parts[0].trim(),
+                name: parts[1] ? parts[1].trim() : ''
+            };
+        }).filter(r => r.email);
+        formData.append('recipients', JSON.stringify(recipients));
+    }
+
+    try {
+        const response = await fetch('/mail/api/campaigns/create_with_recipients/', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': '{{ csrf_token }}'
+            }
+        });
+
+        if (response.ok) {
+            const data = await response.json();
+            // Start the campaign immediately
+            await fetch(`/mail/api/campaigns/${data.id}/start/`, {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            window.location.href = `/mail/campaign/${data.id}/`;
+        } else {
+            const errorData = await response.json();
+            alert('Error creating campaign: ' + JSON.stringify(errorData));
+        }
+    } catch (err) {
+        alert('Network error: ' + err.message);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Create & Start Campaign';
+    }
+});
+</script>
+{% endblock %}

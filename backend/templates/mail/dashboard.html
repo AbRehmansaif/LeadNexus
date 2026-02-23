@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Mail Dashboard — DataScraper Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Mail Sender</h1>
+    <p class="page-subtitle">Automated email campaigns with SMTP rotation</p>
+    <div style="margin-top: 16px;">
+        <a href="{% url 'mail-campaign-create' %}" class="btn btn-primary">Create New Campaign</a>
+        <a href="{% url 'mail-smtp-settings' %}" class="btn btn-secondary">Manage SMTP Accounts</a>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card purple">
+        <div class="stat-label">Total Sent</div>
+        <div class="stat-value">{{ total_emails_sent }}</div>
+        <div class="stat-sub">Across all campaigns</div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-label">Running</div>
+        <div class="stat-value">{{ active_campaigns }}</div>
+        <div class="stat-sub">Active campaigns</div>
+    </div>
+    <div class="stat-card amber">
+        <div class="stat-label">SMTP Accounts</div>
+        <div class="stat-value">{{ smtp_accounts.count }}</div>
+        <div class="stat-sub">Active backends</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Recent Campaigns</h2>
+    </div>
+    {% if campaigns %}
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Sent/Total</th>
+                    <th>Gap (min)</th>
+                    <th>Created</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for campaign in campaigns %}
+                <tr>
+                    <td class="cell-name">{{ campaign.subject }}</td>
+                    <td><span class="badge badge-{{ campaign.status }}"><span class="badge-dot"></span> {{ campaign.status }}</span></td>
+                    <td>{{ campaign.sent_count }} / {{ campaign.total_recipients }}</td>
+                    <td>{{ campaign.gap_minutes }}m</td>
+                    <td>{{ campaign.created_at|date:"M d, H:i" }}</td>
+                    <td>
+                        <a href="{% url 'mail-campaign-detail' campaign.id %}" class="btn btn-secondary btn-sm">View Status</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <p style="padding: 24px; text-align: center; color: var(--text-muted);">No campaigns found. Create your first campaign to get started.</p>
+    {% endif %}
+</div>
+{% endblock %}

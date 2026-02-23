@@ -147,23 +147,14 @@ def run_linkedin_job(job_id: int):
         else:
             logger.info(f"[LinkedInJob #{job_id}] No credentials — proceeding without login (limited data)")
 
-        # ─── Step 3 & 4: Search and scrape profiles ────────────────
+        # ─── Step 3, 4 & 5: Search and scrape profiles ────────────────
         logger.info(f"[LinkedInJob #{job_id}] Searching for: {job.niche}")
 
-        def on_progress(scraped, total):
-            LinkedInScrapeJob.objects.filter(pk=job_id).update(progress=scraped)
-
-        profiles = scraper.search_and_scrape(
-            niche=job.niche,
-            max_results=job.max_profiles,
-            progress_callback=on_progress,
-        )
-
-        # ─── Step 5: Optionally scrape websites ────────────────────
         website_scraper = WebsiteScraper(timeout=15) if job.scrape_websites else None
-
         saved_profiles = []
-        for profile_data in profiles:
+
+        def on_profile_found(profile_data):
+            """Callback for each profile found during search_and_scrape."""
             website_data = {}
             website_url = profile_data.get('website')
 
@@ -175,7 +166,7 @@ def run_linkedin_job(job_id: int):
                 except Exception as we:
                     logger.warning(f"Website scrape failed for {website_url}: {we}")
 
-            # Save to DB
+            # Save to DB immediately
             sp = ScrapedLinkedInProfile.objects.create(
                 job=job,
                 profile_url=profile_data.get('profile_url', ''),
@@ -197,6 +188,16 @@ def run_linkedin_job(job_id: int):
                 website_linkedin=website_data.get('linkedin'),
             )
             saved_profiles.append(sp)
+            
+            # Update progress
+            LinkedInScrapeJob.objects.filter(pk=job_id).update(progress=len(saved_profiles))
+
+        # Start search and scrape loop
+        scraper.search_and_scrape(
+            niche=job.niche,
+            max_results=job.max_profiles,
+            processor_callback=on_profile_found,
+        )
 
         # ─── Step 6: Save to data/ folder ──────────────────────────
         _save_linkedin_to_files(job, saved_profiles)

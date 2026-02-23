@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block title %}Campaign Status — DataScraper Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+        <div>
+            <h1 class="page-title">{{ campaign.subject }}</h1>
+            <p class="page-subtitle">Status: <span id="campaignStatus" class="badge badge-{{ campaign.status }}">{{ campaign.status|upper }}</span></p>
+        </div>
+        <div>
+            <button onclick="controlCampaign('start')" id="startBtn" class="btn btn-primary" {% if campaign.status == 'running' or campaign.status == 'completed' %}style="display:none"{% endif %}>Resume</button>
+            <button onclick="controlCampaign('pause')" id="pauseBtn" class="btn btn-amber" {% if campaign.status != 'running' %}style="display:none"{% endif %}>Pause</button>
+            <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-card purple">
+        <div class="stat-label">Total Recipients</div>
+        <div class="stat-value" id="totalCount">{{ campaign.total_recipients }}</div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-label">Sent</div>
+        <div class="stat-value" id="sentCount">{{ campaign.sent_count }}</div>
+    </div>
+    <div class="stat-card red">
+        <div class="stat-label">Failed</div>
+        <div class="stat-value" id="failedCount">{{ campaign.failed_count }}</div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-label">Pending</div>
+        <div class="stat-value" id="pendingCount">{{ campaign.total_recipients|add:campaign.sent_count|add:campaign.failed_count|default:0 }}</div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title">Recipient Records</h2>
+    </div>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Recipient</th>
+                    <th>Name</th>
+                    <th>Status</th>
+                    <th>Sent At</th>
+                    <th>Error</th>
+                </tr>
+            </thead>
+            <tbody id="recipientsTable">
+                {% for r in recipients %}
+                <tr>
+                    <td>{{ r.email }}</td>
+                    <td>{{ r.name|default:"-" }}</td>
+                    <td><span class="badge badge-{{ r.status }}">{{ r.status }}</span></td>
+                    <td>{{ r.sent_at|date:"H:i:s"|default:"-" }}</td>
+                    <td style="color: var(--accent-red); font-size: 0.8rem;">{{ r.error_message|truncatechars:50|default:"" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+async function controlCampaign(action) {
+    const res = await fetch(`/mail/api/campaigns/{{ campaign.id }}/${action}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    });
+    if (res.ok) window.location.reload();
+}
+
+// Simple auto-refresh for progress
+if ("{{ campaign.status }}" === "running") {
+    setInterval(async () => {
+        const res = await fetch(`/mail/api/campaigns/{{ campaign.id }}/`);
+        if (res.ok) {
+            const data = await res.json();
+            document.getElementById('sentCount').innerText = data.sent_count;
+            document.getElementById('failedCount').innerText = data.failed_count;
+            document.getElementById('pendingCount').innerText = data.total_recipients - data.sent_count - data.failed_count;
+            document.getElementById('campaignStatus').innerText = data.status.toUpperCase();
+            
+            if (data.status !== 'running') window.location.reload();
+        }
+    }, 5000);
+}
+</script>
+{% endblock %}

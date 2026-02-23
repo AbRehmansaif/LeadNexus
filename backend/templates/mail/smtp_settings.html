@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block title %}SMTP Settings — DataScraper Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">SMTP Accounts</h1>
+    <p class="page-subtitle">Configure 15+ email accounts for rotation</p>
+</div>
+
+<div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+    <!-- Add New SMTP Account -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Add SMTP Account</h2>
+        </div>
+        <form id="smtpForm" class="scraper-form">
+            <div class="form-group">
+                <label>Connection Name</label>
+                <input type="text" id="name" class="form-input" placeholder="e.g. Gmail 1" required>
+            </div>
+            <div class="form-row" style="display: flex; gap: 12px;">
+                <div class="form-group" style="flex: 2;">
+                    <label>Host</label>
+                    <input type="text" id="host" class="form-input" placeholder="smtp.gmail.com" required>
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label>Port</label>
+                    <input type="number" id="port" class="form-input" value="587" required>
+                </div>
+            </div>
+            <div class="form-group">
+                <label>Username (Email)</label>
+                <input type="email" id="username" class="form-input" placeholder="user@gmail.com" required>
+            </div>
+            <div class="form-group">
+                <label>Password (or App Password)</label>
+                <input type="password" id="password" class="form-input" required>
+            </div>
+            <div class="form-group">
+                <label>From Email</label>
+                <input type="email" id="from_email" class="form-input" placeholder="user@gmail.com" required>
+            </div>
+            <div class="form-row" style="display: flex; gap: 24px; margin-top: 12px;">
+                <label style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="use_tls" checked> Use TLS
+                </label>
+                <label style="display: flex; align-items: center; gap: 8px;">
+                    <input type="checkbox" id="use_ssl"> Use SSL
+                </label>
+            </div>
+            <button type="submit" id="saveBtn" class="btn btn-primary" style="width: 100%; margin-top: 24px;">Add Account</button>
+        </form>
+    </div>
+
+    <!-- List of SMTP Accounts -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">Active Accounts ({{ accounts.count }})</h2>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Name</th>
+                        <th>User</th>
+                        <th>Status</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="smtpTable">
+                    {% for account in accounts %}
+                    <tr id="account-{{ account.id }}">
+                        <td>{{ account.name }}</td>
+                        <td>{{ account.username|truncatechars:20 }}</td>
+                        <td>
+                            <span class="badge {% if account.is_active %}badge-completed{% else %}badge-failed{% endif %}">{{ account.is_active|yesno:"Active,Inactive" }}</span>
+                        </td>
+                        <td>
+                            <button onclick="deleteAccount({{ account.id }})" class="btn btn-red btn-sm">Delete</button>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+document.getElementById('smtpForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const data = {
+        name: document.getElementById('name').value,
+        host: document.getElementById('host').value,
+        port: parseInt(document.getElementById('port').value),
+        username: document.getElementById('username').value,
+        password: document.getElementById('password').value,
+        from_email: document.getElementById('from_email').value,
+        use_tls: document.getElementById('use_tls').checked,
+        use_ssl: document.getElementById('use_ssl').checked,
+        is_active: true
+    };
+
+    const res = await fetch('/mail/api/smtp/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: JSON.stringify(data)
+    });
+    if (res.ok) window.location.reload();
+    else alert('Error adding account');
+});
+
+async function deleteAccount(id) {
+    if (!confirm('Are you sure?')) return;
+    const res = await fetch(`/mail/api/smtp/${id}/`, {
+        method: 'DELETE',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    });
+    if (res.ok) document.getElementById(`account-${id}`).remove();
+}
+</script>
+{% endblock %}

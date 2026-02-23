@@ -347,7 +347,8 @@ a:hover {
     letter-spacing: 0.02em;
 }
 
-.form-control {
+.form-control,
+.form-input {
     width: 100%;
     padding: 14px 18px;
     background: var(--bg-input);
@@ -358,6 +359,13 @@ a:hover {
     font-size: 0.95rem;
     transition: var(--transition);
     outline: none;
+    display: block;
+}
+
+textarea.form-control,
+textarea.form-input {
+    min-height: 120px;
+    resize: vertical;
 }
 
 .form-control::placeholder {

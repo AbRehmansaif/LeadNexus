@@ -18,6 +18,7 @@ urlpatterns = [
 
     # ── Web Pages (Templates) ──────────────────────────────
     path('',                       template_views.dashboard,           name='dashboard'),
+    path('',                       include('mail.urls')), 
     path('website-scraper/',       template_views.website_scraper_page, name='website-scraper'),
     path('linkedin-scraper/',      template_views.linkedin_scraper_page, name='linkedin-scraper'),
     path('jobs/',                  template_views.all_jobs_page,        name='all-jobs'),

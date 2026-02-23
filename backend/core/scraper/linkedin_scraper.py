@@ -69,9 +69,11 @@ class LinkedInScraper:
         if self.config.get('scraping', {}).get('headless', False):
             chrome_options.add_argument('--headless=new')
 
-        # Additional options
+        # Additional options for stability & stealth
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--window-size=1920,1080')
         chrome_options.add_argument('--disable-blink-features=AutomationControlled')
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
@@ -83,7 +85,8 @@ class LinkedInScraper:
         # Initialize driver with webdriver-manager
         try:
             from webdriver_manager.chrome import ChromeDriverManager
-            driver_path = ChromeDriverManager().install()
+            # Force win64 architecture for consistency
+            driver_path = ChromeDriverManager(os_type="win64").install()
             logger.info(f"webdriver-manager returned: {driver_path}")
 
             # Fix: webdriver-manager sometimes returns the path to
@@ -128,6 +131,9 @@ class LinkedInScraper:
         Matches scrapers/linkedin_scraper.py behavior but with background-safe checkpoint handling.
         """
         try:
+            if not self.driver:
+                return False
+
             logger.info("Attempting to login to LinkedIn...")
             self.driver.get('https://www.linkedin.com/login')
             
@@ -151,27 +157,40 @@ class LinkedInScraper:
             # Wait for redirect
             time.sleep(5)
             
-            # Check success (original success checks)
-            curr = self.driver.current_url
-            if 'feed' in curr or 'mynetwork' in curr:
+            # Check success (defensive guards against lost session)
+            try:
+                curr = self.driver.current_url
+            except:
+                curr = None
+
+            if curr and ('feed' in curr or 'mynetwork' in curr):
                 self.is_logged_in = True
                 logger.info("Login successful!")
                 return True
-            elif 'checkpoint' in curr or 'challenge' in curr:
+            elif curr and ('checkpoint' in curr or 'challenge' in curr):
                 logger.warning("LinkedIn security checkpoint detected!")
                 # In server context, we wait up to 120 seconds for manual solve in the browser
                 for _ in range(24):
                     time.sleep(5)
-                    if 'feed' in self.driver.current_url:
-                        self.is_logged_in = True
-                        logger.info("Login successful after manual verification!")
-                        return True
+                    try:
+                        temp_curr = self.driver.current_url
+                        if temp_curr and 'feed' in temp_curr:
+                            self.is_logged_in = True
+                            logger.info("Login successful after manual verification!")
+                            return True
+                    except:
+                        break
                 logger.warning("Login timed out waiting for checkpoint solve")
                 return False
             else:
                 logger.warning(f"Login outcome uncertain. URL: {curr}")
-                # Some accounts redirect elsewhere, but if we don't see errors, we might be in
-                return False
+                # Check if we can see the feed container
+                try:
+                    self.driver.find_element(By.ID, 'global-nav')
+                    self.is_logged_in = True
+                    return True
+                except:
+                    return False
                 
         except Exception as e:
             logger.error(f"Login failed: {str(e)}")
@@ -186,18 +205,17 @@ class LinkedInScraper:
         niche: str,
         max_results: int = 50,
         progress_callback: Optional[Callable] = None,
+        processor_callback: Optional[Callable] = None,
     ) -> List[Dict]:
         """
         Search for profiles and process them one by one.
-        This is equivalent to the original search_and_process method.
+        This matches the original search_and_process pattern.
 
         Args:
             niche:              Search keyword/niche
             max_results:        Maximum number of profiles to process
             progress_callback:  Optional fn(scraped_count, total) for progress
-
-        Returns:
-            List of dicts with company data
+            processor_callback: Optional fn(profile_data) called after each scrape
         """
         results: List[Dict] = []
         processed_urls: set = set()
@@ -205,80 +223,81 @@ class LinkedInScraper:
         try:
             logger.info(f"Searching and processing profiles for: {niche}")
 
-            # Construct search URL for Companies (same as original)
             search_url = f"https://www.linkedin.com/search/results/companies/?keywords={niche.replace(' ', '%20')}"
             self.driver.get(search_url)
             time.sleep(random.uniform(3, 5))
 
             page = 1
             while len(results) < max_results:
-                logger.info(f"Scanning page {page}...")
+                # Session check
+                try:
+                    curr_url = self.driver.current_url
+                except:
+                    logger.error("LinkedIn session lost during search.")
+                    break
 
-                # Scroll to load results
+                logger.info(f"Scanning page {page}...")
                 self._scroll_page()
 
                 # Get page source
-                soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+                try:
+                    page_source = self.driver.page_source
+                except:
+                    logger.error("Could not retrieve page source — session may be dead.")
+                    break
 
-                # Find profile links - Broadened search (same as original)
+                soup = BeautifulSoup(page_source, 'html.parser')
+
+                # Check for login wall
+                if curr_url and "login" in curr_url.lower() and not self.is_logged_in:
+                    logger.warning("LinkedIn is redirecting to login. Search results are blocked.")
+                    break
+
+                # Find profile links
                 all_links = soup.find_all('a', href=True)
-
                 page_urls = []
                 for link in all_links:
                     href = link.get('href', '')
-
-                    # Core check: must contain /company/
                     if '/company/' in href:
-                        # Clean the URL (remove query params)
                         clean_url = href.split('?')[0].split('#')[0]
-
-                        # Filter out non-profile pages
                         if any(sub in clean_url for sub in ['/jobs/', '/life/', '/people/', '/about/', '/feed/', '/posts/', '/mycompany/']):
                             continue
-
-                        # Ensure absolute URL
                         if not clean_url.startswith('http'):
                             clean_url = f"https://www.linkedin.com{clean_url}"
-
-                        # Deduplicate
-                        if clean_url not in processed_urls and clean_url not in page_urls:
+                        if clean_url not in processed_urls:
                             processed_urls.add(clean_url)
                             page_urls.append(clean_url)
-                            logger.info(f"Found company: {clean_url}")
 
-                # Debugging: If no companies found, log what we see
                 if not page_urls:
-                    logger.warning("No companies found on this page with current criteria.")
+                    logger.warning("No new companies found on this page.")
 
-                logger.info(f"Found {len(page_urls)} new companies on page {page}")
-
-                # Process found URLs on this page
                 for url in page_urls:
                     if len(results) >= max_results:
                         break
 
                     logger.info(f"Processing company {len(results) + 1}/{max_results}: {url}")
-
-                    # Scrape profile (same as original scrape_profile)
                     profile_data = self.scrape_profile(url)
 
                     if profile_data:
                         results.append(profile_data)
-                    else:
-                        logger.warning(f"Failed to scrape profile: {url}")
-
+                        if processor_callback:
+                            processor_callback(profile_data)
+                    
                     if progress_callback:
                         progress_callback(len(results), max_results)
 
-                    # Random delay between profiles
                     self.random_delay()
 
-                    # Return to search results if we navigated away
-                    if self.driver.current_url != search_url:
-                        self.driver.back()
-                        time.sleep(random.uniform(2, 4))
+                    # Return to search results with session guard
+                    try:
+                        if self.driver.current_url != search_url:
+                            self.driver.back()
+                            time.sleep(random.uniform(2, 4))
+                    except:
+                        logger.error("Browser session lost while returning to search.")
+                        break
 
-                # Pagination logic (same as original)
+                # Pagination logic
                 if len(results) < max_results:
                     try:
                         next_button = self.driver.find_element(By.CSS_SELECTOR, 'button[aria-label="Next"]')
@@ -287,15 +306,16 @@ class LinkedInScraper:
                             time.sleep(random.uniform(3, 5))
                             page += 1
                         else:
-                            logger.info("No next page button enabled.")
                             break
-                    except NoSuchElementException:
-                        # If simple Next button isn't found, try URL manipulation
-                        logger.info("Next button not found, trying URL pagination...")
+                    except:
                         page += 1
-                        next_page_url = f"{search_url}&page={page}"
-                        self.driver.get(next_page_url)
-                        time.sleep(random.uniform(3, 5))
+                        logger.info(f"Next button not found, trying URL pagination for page {page} ...")
+                        try:
+                            self.driver.get(f"{search_url}&page={page}")
+                            time.sleep(random.uniform(3, 5))
+                        except:
+                            logger.error("Failed to navigate to next page.")
+                            break
 
         except Exception as e:
             logger.error(f"Error in search_and_scrape: {str(e)}", exc_info=True)
