@@ -15,37 +15,39 @@
         </div>
         <form id="smtpForm" class="scraper-form">
             <div class="form-group">
-                <label>Connection Name</label>
+                <label class="form-label">Connection Name</label>
                 <input type="text" id="name" class="form-input" placeholder="e.g. Gmail 1" required>
             </div>
-            <div class="form-row" style="display: flex; gap: 12px;">
-                <div class="form-group" style="flex: 2;">
-                    <label>Host</label>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">Host</label>
                     <input type="text" id="host" class="form-input" placeholder="smtp.gmail.com" required>
                 </div>
-                <div class="form-group" style="flex: 1;">
-                    <label>Port</label>
+                <div class="form-group">
+                    <label class="form-label">Port</label>
                     <input type="number" id="port" class="form-input" value="587" required>
                 </div>
             </div>
             <div class="form-group">
-                <label>Username (Email)</label>
+                <label class="form-label">Username (Email)</label>
                 <input type="email" id="username" class="form-input" placeholder="user@gmail.com" required>
             </div>
             <div class="form-group">
-                <label>Password (or App Password)</label>
+                <label class="form-label">Password (or App Password)</label>
                 <input type="password" id="password" class="form-input" required>
             </div>
             <div class="form-group">
-                <label>From Email</label>
+                <label class="form-label">From Email</label>
                 <input type="email" id="from_email" class="form-input" placeholder="user@gmail.com" required>
             </div>
-            <div class="form-row" style="display: flex; gap: 24px; margin-top: 12px;">
-                <label style="display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" id="use_tls" checked> Use TLS
+            <div class="form-row">
+                <label class="form-check">
+                    <input type="checkbox" id="use_tls" checked> 
+                    <span class="form-check-label">Use TLS</span>
                 </label>
-                <label style="display: flex; align-items: center; gap: 8px;">
-                    <input type="checkbox" id="use_ssl"> Use SSL
+                <label class="form-check">
+                    <input type="checkbox" id="use_ssl"> 
+                    <span class="form-check-label">Use SSL</span>
                 </label>
             </div>
             <button type="submit" id="saveBtn" class="btn btn-primary" style="width: 100%; margin-top: 24px;">Add Account</button>
