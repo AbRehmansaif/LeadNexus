@@ -471,6 +471,15 @@ select.form-control {
     background: rgba(239, 68, 68, 0.25);
 }
 
+.btn-warning {
+    background: rgba(245, 158, 11, 0.15);
+    color: var(--accent-amber);
+    border: 1px solid rgba(245, 158, 11, 0.2);
+}
+.btn-warning:hover {
+    background: rgba(245, 158, 11, 0.25);
+}
+
 .btn-sm {
     padding: 8px 16px;
     font-size: 0.82rem;

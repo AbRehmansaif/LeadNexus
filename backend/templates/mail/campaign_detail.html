@@ -10,7 +10,7 @@
         </div>
         <div>
             <button onclick="controlCampaign('start')" id="startBtn" class="btn btn-primary" {% if campaign.status == 'running' or campaign.status == 'completed' %}style="display:none"{% endif %}>Resume</button>
-            <button onclick="controlCampaign('pause')" id="pauseBtn" class="btn btn-amber" {% if campaign.status != 'running' %}style="display:none"{% endif %}>Pause</button>
+            <button onclick="controlCampaign('pause')" id="pauseBtn" class="btn btn-warning" {% if campaign.status != 'running' %}style="display:none"{% endif %}>Pause</button>
             <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
         </div>
     </div>
