@@ -10,7 +10,7 @@ def mail_dashboard(request):
     active_campaigns = campaigns.filter(status='running').count()
     
     return render(request, 'mail/dashboard.html', {
-        'active_page': 'mail-sender',
+        'active_page': 'campaigns',
         'campaigns': campaigns,
         'smtp_accounts': smtp_accounts,
         'total_emails_sent': total_emails_sent,
@@ -20,7 +20,7 @@ def mail_dashboard(request):
 def create_campaign_page(request):
     """Page to create a new email campaign."""
     return render(request, 'mail/create_campaign.html', {
-        'active_page': 'mail-sender',
+        'active_page': 'campaigns',
     })
 
 def campaign_detail_page(request, pk):
@@ -29,7 +29,7 @@ def campaign_detail_page(request, pk):
     recipients = campaign.recipients.all().order_by('-sent_at')
     
     return render(request, 'mail/campaign_detail.html', {
-        'active_page': 'mail-sender',
+        'active_page': 'campaigns',
         'campaign': campaign,
         'recipients': recipients,
     })
@@ -38,6 +38,6 @@ def smtp_settings_page(request):
     """Manage SMTP backend accounts."""
     accounts = SMTPCredential.objects.all()
     return render(request, 'mail/smtp_settings.html', {
-        'active_page': 'mail-sender',
+        'active_page': 'campaigns',
         'accounts': accounts,
     })
