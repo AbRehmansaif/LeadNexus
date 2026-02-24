@@ -1205,8 +1205,8 @@ body::before {
 }
 
 .profile-circle {
-    width: 36px;
-    height: 36px;
+    width: 38px;
+    height: 38px;
     border-radius: 50%;
     background: var(--gradient-primary);
     display: flex;
@@ -1216,9 +1216,10 @@ body::before {
     color: white;
     cursor: pointer;
     box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
-    border: 2px solid rgba(255, 255, 255, 0.1);
+    border: 2px solid rgba(255, 255, 255, 0.2);
     transition: var(--transition);
     text-transform: uppercase;
+    font-size: 1.1rem;
 }
 
 .profile-circle:hover {
@@ -1228,19 +1229,19 @@ body::before {
 
 .dropdown-menu {
     position: absolute;
-    top: calc(100% + 12px);
+    top: calc(100% + 15px);
     right: 0;
-    background: #161b22;
+    background: #0d1117;
     border: 1px solid var(--border);
     border-radius: var(--radius-md);
-    min-width: 200px;
+    min-width: 220px;
     padding: 8px;
-    box-shadow: var(--shadow-lg);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
     z-index: 1000;
     opacity: 0;
     visibility: hidden;
     transform: translateY(10px);
-    transition: var(--transition);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .user-menu:hover .dropdown-menu {
@@ -1250,20 +1251,21 @@ body::before {
 }
 
 .dropdown-header {
-    padding: 12px 16px;
+    padding: 16px;
     border-bottom: 1px solid var(--border);
     margin-bottom: 8px;
 }
 
 .dropdown-user-name {
-    font-weight: 600;
+    font-weight: 700;
     color: var(--text-primary);
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     display: block;
+    margin-bottom: 2px;
 }
 
 .dropdown-user-email {
-    font-size: 0.75rem;
+    font-size: 0.8rem;
     color: var(--text-muted);
     display: block;
 }
@@ -1271,12 +1273,13 @@ body::before {
 .dropdown-item {
     display: flex;
     align-items: center;
-    padding: 10px 16px;
+    padding: 12px 16px;
     color: var(--text-secondary);
-    font-size: 0.875rem;
+    font-size: 0.9rem;
     border-radius: var(--radius-sm);
     transition: var(--transition);
     cursor: pointer;
+    text-decoration: none;
     border: none;
     background: transparent;
     width: 100%;
@@ -1284,14 +1287,39 @@ body::before {
 }
 
 .dropdown-item:hover {
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text-primary);
+    background: rgba(139, 92, 246, 0.1);
+    color: var(--accent-purple);
+}
+
+.dropdown-item .item-icon {
+    width: 24px;
+    display: flex;
+    justify-content: center;
+    font-size: 1.1rem;
 }
 
 .dropdown-item.logout {
     color: var(--accent-red);
+    margin-top: 4px;
+    border-top: 1px solid var(--border);
+    border-radius: 0 0 var(--radius-sm) var(--radius-sm);
 }
 
 .dropdown-item.logout:hover {
     background: rgba(239, 68, 68, 0.1);
+    color: var(--accent-red);
+}
+
+/* Fix for form button styling in dropdown */
+form.logout-form {
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+form.logout-form button {
+    font-family: inherit;
+    width: 100%;
+    display: flex;
+    align-items: center;
 }

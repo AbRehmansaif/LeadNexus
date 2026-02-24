@@ -59,12 +59,12 @@
                             <span class="dropdown-user-email">{{ user.email|default:"Neural Operator" }}</span>
                         </div>
                         <a href="/admin/" class="dropdown-item">
-                            <span style="margin-right: 8px;">⚙️</span> Admin Panel
+                            <span class="item-icon">⚙️</span> Admin Panel
                         </a>
-                        <form action="{% url 'logout' %}" method="post" style="display: inline; width: 100%;">
+                        <form action="{% url 'logout' %}" method="post" class="logout-form">
                             {% csrf_token %}
                             <button type="submit" class="dropdown-item logout">
-                                <span style="margin-right: 8px;">🚪</span> Sign Out
+                                <span class="item-icon">🚪</span> Sign Out
                             </button>
                         </form>
                     </div>
