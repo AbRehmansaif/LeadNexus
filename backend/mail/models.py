@@ -25,6 +25,7 @@ class EmailCampaign(models.Model):
         ('failed', 'Failed'),
     ]
 
+    name = models.CharField(max_length=255, default="Untitled Campaign", help_text="A friendly name for your campaign")
     subject = models.CharField(max_length=255)
     body = models.TextField(help_text="Use {{ name }} for placeholders")
     gap_minutes = models.IntegerField(default=1, help_text="Wait time between each email")
@@ -36,8 +37,18 @@ class EmailCampaign(models.Model):
     sent_count = models.IntegerField(default=0)
     failed_count = models.IntegerField(default=0)
 
+    @property
+    def pending_count(self):
+        return max(0, self.total_recipients - self.sent_count - self.failed_count)
+
+    @property
+    def progress_percentage(self):
+        if self.total_recipients == 0:
+            return 0
+        return int(((self.sent_count + self.failed_count) / self.total_recipients) * 100)
+
     def __str__(self):
-        return self.subject
+        return self.name
 
 class Recipient(models.Model):
     STATUS_CHOICES = [
@@ -55,4 +66,4 @@ class Recipient(models.Model):
     sent_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.email} for {self.campaign.subject}"
+        return f"{self.email} for {self.campaign.name}"

@@ -48,16 +48,15 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
 
     @decorators.action(detail=False, methods=['post'])
     def create_with_recipients(self, request):
-        """
-        Custom endpoint to create campaign and add recipients (from CSV or list).
-        """
         data = request.data
-        subject = data.get('subject')
-        body = data.get('body')
+        name = data.get('name', '')
+        subject = data.get('subject', '')
+        body = data.get('body', '')
         gap_minutes = data.get('gap_minutes', 1)
         
         # 1. Create Campaign
         campaign = EmailCampaign.objects.create(
+            name=name or subject,
             subject=subject,
             body=body,
             gap_minutes=gap_minutes
@@ -81,8 +80,15 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
                         custom_data={k: v for k, v in row.items() if k.lower() not in ['email', 'name']}
                     ))
 
-        # 3. Process Recipients from manual input (list of dictionaries)
+        # 3. Process Recipients from manual input (can be list or JSON string)
         manual_recipients = data.get('recipients', [])
+        if isinstance(manual_recipients, str):
+            try:
+                import json
+                manual_recipients = json.loads(manual_recipients)
+            except json.JSONDecodeError:
+                manual_recipients = []
+
         if isinstance(manual_recipients, list):
             for r in manual_recipients:
                 email = r.get('email')

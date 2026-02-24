@@ -38,10 +38,10 @@
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Subject</th>
+                    <th>Campaign Name</th>
                     <th>Status</th>
-                    <th>Sent/Total</th>
-                    <th>Gap (min)</th>
+                    <th>Progress</th>
+                    <th>Gap</th>
                     <th>Created</th>
                     <th>Action</th>
                 </tr>
@@ -49,13 +49,23 @@
             <tbody>
                 {% for campaign in campaigns %}
                 <tr>
-                    <td class="cell-name">{{ campaign.subject }}</td>
-                    <td><span class="badge badge-{{ campaign.status }}"><span class="badge-dot"></span> {{ campaign.status }}</span></td>
-                    <td>{{ campaign.sent_count }} / {{ campaign.total_recipients }}</td>
-                    <td>{{ campaign.gap_minutes }}m</td>
-                    <td>{{ campaign.created_at|date:"M d, H:i" }}</td>
                     <td>
-                        <a href="{% url 'mail-campaign-detail' campaign.id %}" class="btn btn-secondary btn-sm">View Status</a>
+                        <a href="{% url 'mail-campaign-detail' campaign.id %}" style="text-decoration: none; color: inherit;">
+                            <div class="cell-name" style="font-weight: 700; color: var(--text-primary);">{{ campaign.name }}</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Sub: {{ campaign.subject|truncatechars:30 }}</div>
+                        </a>
+                    </td>
+                    <td><span class="badge badge-{{ campaign.status }}"><span class="badge-dot"></span> {{ campaign.status|upper }}</span></td>
+                    <td>
+                        <div style="font-size: 0.85rem;">{{ campaign.sent_count }} / {{ campaign.total_recipients }}</div>
+                        <div style="width: 100px; height: 4px; background: var(--border); border-radius: 2px; margin-top: 4px;">
+                            <div style="width: {{ campaign.progress_percentage }}%; height: 100%; background: var(--accent-purple); border-radius: 2px;"></div>
+                        </div>
+                    </td>
+                    <td>{{ campaign.gap_minutes }}m</td>
+                    <td>{{ campaign.created_at|date:"M d" }}</td>
+                    <td>
+                        <a href="{% url 'mail-campaign-detail' campaign.id %}" class="btn btn-secondary btn-sm">Manage</a>
                     </td>
                 </tr>
                 {% endfor %}

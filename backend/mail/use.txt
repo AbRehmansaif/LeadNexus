@@ -26,3 +26,47 @@ Add SMTP Accounts: Go to the "Mail Sender" link in the navigation bar and click 
 Start a Campaign: Click "Create New Campaign", enter your subject and body (using {{ name }}), upload your CSV, and set the gap minutes.
 Monitor Progress: Once you click "Create & Start", you'll be taken to the campaign status page where you can see the progress live and pause/resume as needed.
 The interface matches the premium look of your Scrapper dashboard, using the same color palette and responsive design.
+
+
+
+The email system works as a "Background Automation Engine". It is designed to handle large volumes of emails without slowing down your computer or your website.
+
+Here is the step-by-step breakdown of how it functions:
+
+1. Data Intake (Input Stage)
+When you upload a CSV or paste emails:
+
+The Parser: The system looks for the 
+email
+ and name columns first.
+The Storage: Every person is saved as a "Recipient" in your database, linked to your "Campaign".
+Placeholder Mapping: If your CSV has extra columns (like city or specialty), the system saves that data as "Custom Data" so you can use it in your email body using {{ city }}.
+2. Background Processing (The "Worker")
+This is the most important part. When you click "Start":
+
+Threading: The system starts a separate "Thread" (a background worker) on your server. This means the emails keep sending even if you close your browser or turn off your screen.
+Queuing: The worker looks at the "Pending" list of recipients and starts processing them one by one.
+3. SMTP Rotation (Avoiding Spams/Limits)
+To help you scale to 15+ email accounts:
+
+Round-Robin Logic: For every email sent, the system picks the next SMTP account from your "Active" list.
+Example:
+Email 1 → Goes through Account_A
+Email 2 → Goes through Account_B
+...and so on.
+This ensures that no single email account hits its daily limit too quickly, which protects your sender reputation.
+4. Template Rendering (Personalization)
+Right before an email is sent:
+
+The system takes your "Email Body" and runs it through a Template Engine.
+It replaces tags like {{ name }} with the actual name of that specific recipient.
+It then connects to the chosen SMTP server and delivers the customized message.
+5. The "Gap" Logic (Timing)
+The system checks your "Gap Minutes" setting.
+After sending one email, the background worker "Sleeps" for that amount of time before moving to the next person.
+This makes your sending pattern look human and natural, which is the best way to avoid being marked as spam.
+6. Real-Time Monitoring
+The Campaign Detail page you see uses a "heartbeat" (JavaScript interval).
+Every 5 seconds, it asks the server: "How many are sent now? How many failed?"
+It then updates your Progress Bar and Stats Cards live so you can watch your outreach happening in real-time.
+In short: You give it the data and the accounts, and the background worker takes care of the slow, repetitive work of sending and waiting, while you focus on other tasks.

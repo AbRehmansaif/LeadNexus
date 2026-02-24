@@ -15,6 +15,6 @@ urlpatterns = [
     path('mail/campaign/<int:pk>/', template_views.campaign_detail_page, name='mail-campaign-detail'),
     path('mail/settings/smtp/', template_views.smtp_settings_page, name='mail-smtp-settings'),
     
-    # API views (can be included separately or here)
-    path('api/', include(router.urls)),
+    # API views
+    path('mail/api/', include(router.urls)),
 ]

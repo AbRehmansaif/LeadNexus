@@ -3,15 +3,18 @@
 
 {% block content %}
 <div class="page-header">
-    <div style="display: flex; justify-content: space-between; align-items: center;">
+    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
         <div>
-            <h1 class="page-title">{{ campaign.subject }}</h1>
-            <p class="page-subtitle">Status: <span id="campaignStatus" class="badge badge-{{ campaign.status }}">{{ campaign.status|upper }}</span></p>
+            <h1 class="page-title">{{ campaign.name }}</h1>
+            <p class="page-subtitle" style="margin-top: 4px;">Subject: <span style="color: var(--text-primary);">{{ campaign.subject }}</span></p>
+            <div style="margin-top: 12px;">
+                <span id="campaignStatus" class="badge badge-{{ campaign.status }}"><span class="badge-dot"></span> {{ campaign.status|upper }}</span>
+            </div>
         </div>
-        <div>
-            <button onclick="controlCampaign('start')" id="startBtn" class="btn btn-primary" {% if campaign.status == 'running' or campaign.status == 'completed' %}style="display:none"{% endif %}>Resume</button>
-            <button onclick="controlCampaign('pause')" id="pauseBtn" class="btn btn-warning" {% if campaign.status != 'running' %}style="display:none"{% endif %}>Pause</button>
-            <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary">Back to Dashboard</a>
+        <div class="btn-group">
+            <button onclick="controlCampaign('start')" id="startBtn" class="btn btn-primary" {% if campaign.status == 'running' or campaign.status == 'completed' %}style="display:none"{% endif %}>Resume Campaign</button>
+            <button onclick="controlCampaign('pause')" id="pauseBtn" class="btn btn-warning" {% if campaign.status != 'running' %}style="display:none"{% endif %}>Pause Campaign</button>
+            <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary">Dashboard</a>
         </div>
     </div>
 </div>
@@ -31,7 +34,7 @@
     </div>
     <div class="stat-card blue">
         <div class="stat-label">Pending</div>
-        <div class="stat-value" id="pendingCount">{{ campaign.total_recipients|add:campaign.sent_count|add:campaign.failed_count|default:0 }}</div>
+        <div class="stat-value" id="pendingCount">{{ campaign.pending_count }}</div>
     </div>
 </div>
 
@@ -99,7 +102,7 @@ updateProgressBar({{ campaign.sent_count }}, {{ campaign.failed_count }}, {{ cam
 // Simple auto-refresh for progress
 if ("{{ campaign.status }}" === "running") {
     setInterval(async () => {
-        const res = await fetch(`/mail/api/mail/campaigns/{{ campaign.id }}/`);
+        const res = await fetch(`/mail/api/campaigns/{{ campaign.id }}/`);
         if (res.ok) {
             const data = await res.json();
             document.getElementById('sentCount').innerText = data.sent_count;
