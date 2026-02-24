@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Neural Profile — DataScraper Pro{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
+        <div>
+            <h1 class="page-title">Operator Profile</h1>
+            <p class="page-subtitle">Manage your neural identity and authentication bio</p>
+        </div>
+        <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-sm">← Back to Terminal</a>
+    </div>
+</div>
+
+<div class="card" style="max-width: 600px; margin: 0 auto; padding: 40px;">
+    <form method="POST" enctype="multipart/form-data">
+        {% csrf_token %}
+        
+        <!-- Avatar Preview/Upload -->
+        <div style="text-align: center; margin-bottom: 32px;">
+            <div style="position: relative; display: inline-block;">
+                {% if profile.avatar %}
+                    <img src="{{ profile.avatar.url }}" id="avatar-preview" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--accent-purple); box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);">
+                {% else %}
+                    <div id="avatar-placeholder" style="width: 120px; height: 120px; border-radius: 50%; background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: 800; color: white;">
+                        {{ user.username|slice:":1"|upper }}
+                    </div>
+                {% endif %}
+                
+                <label for="avatar-input" style="position: absolute; bottom: 0; right: 0; background: var(--accent-blue); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 2px solid var(--bg-card);">
+                    📷
+                </label>
+                <input type="file" name="avatar" id="avatar-input" style="display: none;" accept="image/*">
+            </div>
+            <p style="margin-top: 12px; color: var(--text-muted); font-size: 0.85rem;">Click icon to upload new avatar</p>
+        </div>
+
+        <div class="form-group">
+            <label class="form-label" style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block;">Operator Name</label>
+            <input type="text" value="{{ user.username }}" class="form-control" disabled style="opacity: 0.6; cursor: not-allowed; background: rgba(0,0,0,0.2);">
+        </div>
+
+        <div class="form-group" style="margin-top: 24px;">
+            <label class="form-label" style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block;">Operation Bio</label>
+            <textarea name="bio" class="form-control" rows="4" placeholder="Describe your mission goals..." style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: white; width: 100%; padding: 12px; font-family: inherit;">{{ profile.bio }}</textarea>
+        </div>
+
+        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 32px; height: 48px; font-weight: 700;">
+            Update Protocol Identity
+        </button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('avatar-input').onchange = function (evt) {
+        const [file] = this.files;
+        if (file) {
+            const preview = document.getElementById('avatar-preview');
+            const placeholder = document.getElementById('avatar-placeholder');
+            
+            const url = URL.createObjectURL(file);
+            
+            if (preview) {
+                preview.src = url;
+            } else if (placeholder) {
+                const img = document.createElement('img');
+                img.id = 'avatar-preview';
+                img.src = url;
+                img.style.width = '120px';
+                img.style.height = '120px';
+                img.style.borderRadius = '50%';
+                img.style.objectFit = 'cover';
+                img.style.border = '4px solid var(--accent-purple)';
+                img.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.3)';
+                placeholder.replaceWith(img);
+            }
+        }
+    }
+</script>
+{% endblock %}

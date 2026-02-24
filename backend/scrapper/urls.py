@@ -22,6 +22,7 @@ urlpatterns = [
 
     # ── Web Pages (Templates) ──────────────────────────────
     path('',                       template_views.dashboard,           name='dashboard'),
+    path('profile/',               template_views.profile_settings,    name='profile-settings'),
     path('',                       include('mail.urls')), 
     path('website-scraper/',       template_views.website_scraper_page, name='website-scraper'),
     path('linkedin-scraper/',      template_views.linkedin_scraper_page, name='linkedin-scraper'),
@@ -29,3 +30,9 @@ urlpatterns = [
     path('website-job/<int:pk>/',  template_views.website_job_detail,   name='website-job-detail'),
     path('linkedin-job/<int:pk>/', template_views.linkedin_job_detail,  name='linkedin-job-detail'),
 ]
+
+from django.conf import settings
+from django.conf.urls.static import static
+
+if settings.DEBUG:
+    urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

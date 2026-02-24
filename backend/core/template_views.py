@@ -2,13 +2,33 @@
 Template-based views for the DataScraper Pro web interface.
 These render HTML pages using Django templates (separate from the API views).
 """
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
-
 from .models import (
     ScrapeJob, ScrapedWebsite,
     LinkedInScrapeJob, ScrapedLinkedInProfile,
+    UserProfile
 )
+
+@login_required
+def profile_settings(request):
+    """View to update user profile (bio, avatar)."""
+    profile, created = UserProfile.objects.get_or_create(user=request.user)
+    
+    if request.method == 'POST':
+        bio = request.POST.get('bio')
+        avatar = request.FILES.get('avatar')
+        
+        profile.bio = bio
+        if avatar:
+            profile.avatar = avatar
+        profile.save()
+        return redirect('profile-settings')
+
+    return render(request, 'profile_settings.html', {
+        'active_page': 'profile',
+        'profile': profile
+    })
 
 
 @login_required
