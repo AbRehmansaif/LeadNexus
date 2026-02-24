@@ -85,6 +85,23 @@
             {% block content %}{% endblock %}
         </main>
 
+        <!-- ── Toasts (Popups) ──────────────────────────────── -->
+        <div id="toast-container" class="toast-container">
+            {% if messages %}
+                {% for message in messages %}
+                <div class="toast toast-{{ message.tags }}" role="alert">
+                    <div class="toast-icon">
+                        {% if message.tags == 'success' %}✨{% elif message.tags == 'error' %}⚠️{% else %}ℹ️{% endif %}
+                    </div>
+                    <div class="toast-content">
+                        {{ message }}
+                    </div>
+                    <button class="toast-close" onclick="this.parentElement.remove()">×</button>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
         <!-- ── Footer ──────────────────────────────────────── -->
         <footer class="footer">
             <div class="container">

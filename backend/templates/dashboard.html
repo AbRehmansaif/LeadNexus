@@ -111,6 +111,32 @@
             <div class="step-desc">Browse the extracted data and export to CSV/JSON</div>
         </div>
     </div>
+
+    <div class="section-divider"></div>
+
+    <h3 style="margin-bottom: 16px; color: var(--accent-blue);">🚀 Autonomous Outreach</h3>
+    <div class="steps">
+        <div class="step">
+            <div class="step-number">1</div>
+            <div class="step-title">Neural SMTP Sync</div>
+            <div class="step-desc">Connect 15+ email accounts for high-deliverability rotation</div>
+        </div>
+        <div class="step">
+            <div class="step-number">2</div>
+            <div class="step-title">Sequence Logic</div>
+            <div class="step-desc">Design your payload with dynamic AI placeholders ({{ name }})</div>
+        </div>
+        <div class="step">
+            <div class="step-number">3</div>
+            <div class="step-title">Lead Injection</div>
+            <div class="step-desc">Import verified leads discovered by Neural Extractions</div>
+        </div>
+        <div class="step">
+            <div class="step-number">4</div>
+            <div class="step-title">Global Execution</div>
+            <div class="step-desc">The AI protocol manages sending gaps and SMTP handovers</div>
+        </div>
+    </div>
 </div>
 
 <!-- Recent Jobs -->
@@ -118,9 +144,42 @@
 <div style="margin-top: 36px;">
     <div class="card">
         <div class="card-header">
-            <h2 class="card-title"><span class="card-icon">🕐</span> Recent Jobs</h2>
+            <h2 class="card-title"><span class="card-icon">🕐</span> Recent Activity</h2>
             <a href="/jobs/" class="btn btn-secondary btn-sm">View All →</a>
         </div>
+
+        {% if recent_campaigns %}
+        <h3 style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Email Campaigns</h3>
+        <div class="table-wrapper" style="margin-bottom: 24px;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Campaign Name</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campaign in recent_campaigns %}
+                    <tr>
+                        <td>#{{ campaign.id }}</td>
+                        <td class="cell-name">{{ campaign.name }}</td>
+                        <td><span class="badge badge-{{ campaign.status }}"><span class="badge-dot"></span> {{ campaign.status|upper }}</span></td>
+                        <td>
+                            <div style="font-size: 0.8rem; margin-bottom: 2px;">{{ campaign.progress_percentage }}%</div>
+                            <div style="width: 80px; height: 3px; background: var(--border); border-radius: 2px;">
+                                <div style="width: {{ campaign.progress_percentage }}%; height: 100%; background: var(--accent-purple); border-radius: 2px;"></div>
+                            </div>
+                        </td>
+                        <td><a href="/mail/campaign/{{ campaign.id }}/" class="btn btn-secondary btn-sm">Track →</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
 
         {% if recent_linkedin_jobs %}
         <h3 style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">LinkedIn Jobs</h3>

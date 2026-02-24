@@ -9,6 +9,7 @@ from .models import (
     LinkedInScrapeJob, ScrapedLinkedInProfile,
     UserProfile
 )
+from mail.models import EmailCampaign
 
 @login_required
 def profile_settings(request):
@@ -66,6 +67,7 @@ def dashboard(request):
         'emails_found':    emails_found,
         'recent_website_jobs':  website_jobs.order_by('-created_at')[:5],
         'recent_linkedin_jobs': linkedin_jobs.order_by('-created_at')[:5],
+        'recent_campaigns': EmailCampaign.objects.all().order_by('-created_at')[:5],
     })
 
 

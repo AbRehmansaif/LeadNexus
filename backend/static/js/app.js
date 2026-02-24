@@ -307,4 +307,13 @@ document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.stat-card, .card, .action-card').forEach(el => {
         observer.observe(el);
     });
+
+    // Auto-hide Django Toasts
+    document.querySelectorAll('.toast').forEach(toast => {
+        setTimeout(() => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(50px)';
+            setTimeout(() => toast.remove(), 500);
+        }, 5000);
+    });
 });
