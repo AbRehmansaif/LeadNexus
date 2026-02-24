@@ -1,6 +1,8 @@
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
 from .models import EmailCampaign, SMTPCredential, Recipient
 
+@login_required
 def mail_dashboard(request):
     """Mail sender dashboard - overview of campaigns and SMTP status."""
     campaigns = EmailCampaign.objects.all().order_by('-created_at')
@@ -17,12 +19,14 @@ def mail_dashboard(request):
         'active_campaigns': active_campaigns,
     })
 
+@login_required
 def create_campaign_page(request):
     """Page to create a new email campaign."""
     return render(request, 'mail/create_campaign.html', {
         'active_page': 'campaigns',
     })
 
+@login_required
 def campaign_detail_page(request, pk):
     """Detail page for a specific campaign with progress tracking."""
     campaign = get_object_or_404(EmailCampaign, pk=pk)
@@ -34,6 +38,7 @@ def campaign_detail_page(request, pk):
         'recipients': recipients,
     })
 
+@login_required
 def smtp_settings_page(request):
     """Manage SMTP backend accounts."""
     accounts = SMTPCredential.objects.all()

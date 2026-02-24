@@ -47,6 +47,29 @@
                         </a>
                     </li>
                 </ul>
+                
+                {% if user.is_authenticated %}
+                <div class="user-menu">
+                    <div class="profile-circle">
+                        {{ user.username|slice:":1" }}
+                    </div>
+                    <div class="dropdown-menu">
+                        <div class="dropdown-header">
+                            <span class="dropdown-user-name">{{ user.username }}</span>
+                            <span class="dropdown-user-email">{{ user.email|default:"Neural Operator" }}</span>
+                        </div>
+                        <a href="/admin/" class="dropdown-item">
+                            <span style="margin-right: 8px;">⚙️</span> Admin Panel
+                        </a>
+                        <form action="{% url 'logout' %}" method="post" style="display: inline; width: 100%;">
+                            {% csrf_token %}
+                            <button type="submit" class="dropdown-item logout">
+                                <span style="margin-right: 8px;">🚪</span> Sign Out
+                            </button>
+                        </form>
+                    </div>
+                </div>
+                {% endif %}
             </div>
         </nav>
 

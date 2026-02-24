@@ -1194,3 +1194,104 @@ select.form-control {
 body::before {
     animation: bgPulse 10s ease-in-out infinite;
 }
+
+/* ── User Profile & Dropdown ────────────────────────────── */
+.user-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-left: 20px;
+}
+
+.profile-circle {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: var(--gradient-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    color: white;
+    cursor: pointer;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.3);
+    border: 2px solid rgba(255, 255, 255, 0.1);
+    transition: var(--transition);
+    text-transform: uppercase;
+}
+
+.profile-circle:hover {
+    transform: scale(1.05);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.5);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: calc(100% + 12px);
+    right: 0;
+    background: #161b22;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    min-width: 200px;
+    padding: 8px;
+    box-shadow: var(--shadow-lg);
+    z-index: 1000;
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(10px);
+    transition: var(--transition);
+}
+
+.user-menu:hover .dropdown-menu {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+}
+
+.dropdown-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 8px;
+}
+
+.dropdown-user-name {
+    font-weight: 600;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    display: block;
+}
+
+.dropdown-user-email {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: block;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+    border-radius: var(--radius-sm);
+    transition: var(--transition);
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+.dropdown-item.logout {
+    color: var(--accent-red);
+}
+
+.dropdown-item.logout:hover {
+    background: rgba(239, 68, 68, 0.1);
+}

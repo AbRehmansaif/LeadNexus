@@ -3,6 +3,7 @@ Template-based views for the DataScraper Pro web interface.
 These render HTML pages using Django templates (separate from the API views).
 """
 from django.shortcuts import render, get_object_or_404
+from django.contrib.auth.decorators import login_required
 
 from .models import (
     ScrapeJob, ScrapedWebsite,
@@ -10,6 +11,7 @@ from .models import (
 )
 
 
+@login_required
 def dashboard(request):
     """Landing page — overview stats & recent jobs."""
     website_jobs  = ScrapeJob.objects.all()
@@ -47,6 +49,7 @@ def dashboard(request):
     })
 
 
+@login_required
 def website_scraper_page(request):
     """Website scraper form page."""
     return render(request, 'website_scraper.html', {
@@ -54,6 +57,7 @@ def website_scraper_page(request):
     })
 
 
+@login_required
 def linkedin_scraper_page(request):
     """LinkedIn scraper form page."""
     return render(request, 'linkedin_scraper.html', {
@@ -61,6 +65,7 @@ def linkedin_scraper_page(request):
     })
 
 
+@login_required
 def website_job_detail(request, pk):
     """Detail page for a website scrape job."""
     job = get_object_or_404(ScrapeJob, pk=pk)
@@ -77,6 +82,7 @@ def website_job_detail(request, pk):
     })
 
 
+@login_required
 def linkedin_job_detail(request, pk):
     """Detail page for a LinkedIn scrape job — with all profiles."""
     job = get_object_or_404(LinkedInScrapeJob, pk=pk)
@@ -96,6 +102,7 @@ def linkedin_job_detail(request, pk):
     })
 
 
+@login_required
 def all_jobs_page(request):
     """List all website and LinkedIn jobs."""
     website_jobs  = ScrapeJob.objects.all().order_by('-created_at')
