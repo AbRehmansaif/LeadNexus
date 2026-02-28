@@ -3,26 +3,26 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">📋 All Scraping Jobs</h1>
-    <p class="page-subtitle">Browse all website and LinkedIn scraping jobs</p>
+    <h1 class="page-title">📋 Outreach Control Center</h1>
+    <p class="page-subtitle">Centralized management for all lead acquisition pipelines.</p>
 </div>
 
 <!-- Quick Actions -->
 <div class="btn-group" style="margin-bottom: 28px;">
-    <a href="/website-scraper/" class="btn btn-primary">🌐 New Website Scrape</a>
-    <a href="/linkedin-scraper/" class="btn btn-primary">💼 New LinkedIn Scrape</a>
-    <a href="/api/export/csv/" class="btn btn-secondary">📄 Export All Websites CSV</a>
-    <a href="/api/export/linkedin/csv/" class="btn btn-secondary">📄 Export All LinkedIn CSV</a>
+    <a href="/website-scraper/" class="btn btn-primary">🌐 Launch Web Intelligence</a>
+    <a href="/linkedin-scraper/" class="btn btn-primary">💼 Launch ProFinder Intelligence</a>
+    <a href="/api/export/csv/" class="btn btn-secondary">📄 Export All Web Intelligence Data</a>
+    <a href="/api/export/linkedin/csv/" class="btn btn-secondary">📄 Export All LinkedIn Prospect Data</a>
 </div>
 
 <!-- Job Tabs -->
 <div class="tabs-container">
     <div class="tabs">
         <button class="tab-btn active" data-tab="linkedinJobs">
-            💼 LinkedIn Jobs ({{ linkedin_jobs|length }})
+            💼 ProFinder Intelligence outreach ({{ linkedin_jobs|length }})
         </button>
         <button class="tab-btn" data-tab="websiteJobs">
-            🌐 Website Jobs ({{ website_jobs|length }})
+            🌐 Web Intelligence outreach ({{ website_jobs|length }})
         </button>
     </div>
 
@@ -33,14 +33,14 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>Niche</th>
-                        <th>Profiles</th>
-                        <th>Websites</th>
+                        <th>Outreach ID</th>
+                        <th>Target Query</th>
+                        <th>Prospects Processed</th>
+                        <th>Domain Expansion</th>
                         <th>Status</th>
-                        <th>Duration</th>
+                        <th>Processing Time</th>
                         <th>Created</th>
-                        <th>Action</th>
+                        <th>Manage</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -93,13 +93,13 @@
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>ID</th>
-                        <th>URL</th>
+                        <th>OutreachID</th>
+                        <th>Domain</th>
                         <th>Contact Pages</th>
                         <th>Status</th>
-                        <th>Duration</th>
+                        <th>Processing Time</th>
                         <th>Created</th>
-                        <th>Action</th>
+                        <th>Manage</th>
                     </tr>
                 </thead>
                 <tbody>
