@@ -5,15 +5,15 @@
 <!-- Page Header -->
 <div class="page-header">
     <h1 class="page-title">Dashboard</h1>
-    <p class="page-subtitle">Overview of your scraping activity</p>
+    <p class="page-subtitle">Real time overview of your lead acquisition and outreach performance.</p>
 </div>
 
 <!-- Stats Grid -->
 <div class="stats-grid">
     <div class="stat-card purple">
-        <div class="stat-label">Total Jobs</div>
+        <div class="stat-label">Active outreaches</div>
         <div class="stat-value">{{ total_jobs }}</div>
-        <div class="stat-sub">Website + LinkedIn</div>
+        <div class="stat-sub">Webs + ProFinder</div>
     </div>
     <div class="stat-card green">
         <div class="stat-label">Completed</div>
@@ -24,15 +24,15 @@
         <div class="stat-value">{{ running_jobs }}</div>
     </div>
     <div class="stat-card cyan">
-        <div class="stat-label">LinkedIn Profiles</div>
+        <div class="stat-label">Prospects Discovered</div>
         <div class="stat-value">{{ total_profiles }}</div>
     </div>
     <div class="stat-card amber">
-        <div class="stat-label">Emails Found</div>
+        <div class="stat-label">Verified Contacts Captured</div>
         <div class="stat-value">{{ emails_found }}</div>
     </div>
     <div class="stat-card red">
-        <div class="stat-label">Failed</div>
+        <div class="stat-label">System Exceptions</div>
         <div class="stat-value">{{ failed_jobs }}</div>
     </div>
 </div>
@@ -41,18 +41,18 @@
 <div class="action-cards">
     <a href="/website-scraper/" class="action-card">
         <div class="action-icon purple">🌐</div>
-        <h3>Scrape a Website</h3>
-        <p>Give any URL and extract emails, phones, social media links, and addresses from the website.</p>
+        <h3>Web Lead Discovery</h3>
+        <p>Enter any company domain and instantly capture emails, phone numbers, locations, and digital footprint data.</p>
     </a>
     <a href="/linkedin-scraper/" class="action-card">
         <div class="action-icon blue">💼</div>
-        <h3>LinkedIn Scraper</h3>
-        <p>Search by niche — Chrome opens LinkedIn, finds companies, scrapes profiles & visits their websites.</p>
+        <h3>LinkedIn Prospecting Engine</h3>
+        <p>Identify targeted companies by niche and automatically extract key decision-makers, company data, and associated websites.</p>
     </a>
     <a href="/jobs/" class="action-card">
         <div class="action-icon cyan">📋</div>
-        <h3>View All Jobs</h3>
-        <p>Browse all scraping jobs, check status, view results, and export data in CSV or JSON.</p>
+        <h3>Campaign Control Panel</h3>
+        <p>Monitor campaign progress, manage extracted leads, and export structured data for outreach automation.</p>
     </a>
 </div>
 
@@ -62,59 +62,59 @@
         <h2 class="card-title"><span class="card-icon">⚡</span> How It Works</h2>
     </div>
 
-    <h3 style="margin-bottom: 16px; color: var(--accent-purple);">💼 LinkedIn Scraper</h3>
+    <h3 style="margin-bottom: 16px; color: var(--accent-purple);">💼 LinkedIn Prospecting Engine</h3>
     <div class="steps">
         <div class="step">
             <div class="step-number">1</div>
-            <div class="step-title">Browser Opens</div>
-            <div class="step-desc">Chrome launches and navigates to LinkedIn</div>
+            <div class="step-title">Intelligent Search Activation</div>
+            <div class="step-desc">Target industries, niches, or keywords.</div>
         </div>
         <div class="step">
             <div class="step-number">2</div>
-            <div class="step-title">Search</div>
-            <div class="step-desc">Searches for companies matching your niche</div>
+            <div class="step-title">Company Mapping</div>
+            <div class="step-desc">AI identifies relevant businesses.</div>
         </div>
         <div class="step">
             <div class="step-number">3</div>
-            <div class="step-title">Scraping</div>
-            <div class="step-desc">Profiles are scraped one by one (with delays)</div>
+            <div class="step-title">Profile Intelligence Extraction</div>
+            <div class="step-desc">Decision makers and company metadata collected.</div>
         </div>
         <div class="step">
             <div class="step-number">4</div>
-            <div class="step-title">Website Visits</div>
-            <div class="step-desc">Associated websites are visited and scraped</div>
+            <div class="step-title">Web Expansion</div>
+            <div class="step-desc">Associated domains scanned for contact intelligence.</div>
         </div>
         <div class="step">
             <div class="step-number">5</div>
-            <div class="step-title">Data Saved</div>
-            <div class="step-desc">Results saved in the data/ folder &amp; database</div>
+            <div class="step-title">Structured Data Deployment</div>
+            <div class="step-desc">ReClean, organized lead data stored &amp; ready for outreach.</div>
         </div>
     </div>
 
     <div class="section-divider"></div>
 
-    <h3 style="margin-bottom: 16px; color: var(--accent-cyan);">🌐 Website Scraper</h3>
+    <h3 style="margin-bottom: 16px; color: var(--accent-cyan);">🌐 Web Intelligence Engine</h3>
     <div class="steps">
         <div class="step">
             <div class="step-number">1</div>
-            <div class="step-title">Enter URL</div>
-            <div class="step-desc">Paste any website URL you want to scrape</div>
+            <div class="step-title">Domain Input</div>
+            <div class="step-desc">Provide any business website.</div>
         </div>
         <div class="step">
             <div class="step-number">2</div>
-            <div class="step-title">Extract Data</div>
-            <div class="step-desc">Emails, phones, social links, and addresses are extracted</div>
+            <div class="step-title">Multi-Layer Data Extraction</div>
+            <div class="step-desc">Emails, phones, addresses, social channels, and metadata captured.</div>
         </div>
         <div class="step">
             <div class="step-number">3</div>
-            <div class="step-title">View Results</div>
-            <div class="step-desc">Browse the extracted data and export to CSV/JSON</div>
+            <div class="step-title">Lead Structuring</div>
+            <div class="step-desc">Data cleaned and prepared for CRM or campaign injection.</div>
         </div>
     </div>
 
     <div class="section-divider"></div>
 
-    <h3 style="margin-bottom: 16px; color: var(--accent-blue);">🚀 Autonomous Outreach</h3>
+    <h3 style="margin-bottom: 16px; color: var(--accent-blue);">🚀 Autonomous Outreach Protocol</h3>
     <div class="steps">
         <div class="step">
             <div class="step-number">1</div>
