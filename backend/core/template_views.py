@@ -4,6 +4,7 @@ These render HTML pages using Django templates (separate from the API views).
 """
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
+from django.contrib import messages
 from .models import (
     ScrapeJob, ScrapedWebsite,
     LinkedInScrapeJob, ScrapedLinkedInProfile,
@@ -24,6 +25,7 @@ def profile_settings(request):
         if avatar:
             profile.avatar = avatar
         profile.save()
+        messages.success(request, "Neural profile updated successfully.")
         return redirect('profile-settings')
 
     return render(request, 'profile_settings.html', {
@@ -90,9 +92,11 @@ def linkedin_scraper_page(request):
             password = request.POST.get('password')
             name = request.POST.get('name', '')
             LinkedInAccount.objects.create(user=request.user, email=email, password=password, name=name)
+            messages.success(request, f"LinkedIn account {email} added successfully.")
         elif action == 'delete':
             acc_id = request.POST.get('account_id')
             LinkedInAccount.objects.filter(user=request.user, id=acc_id).delete()
+            messages.warning(request, "LinkedIn account removed.")
         elif action == 'update':
             acc_id = request.POST.get('account_id')
             email = request.POST.get('email')
@@ -104,6 +108,7 @@ def linkedin_scraper_page(request):
                 acc.password = password
             acc.name = name
             acc.save()
+            messages.success(request, f"Credentials for {email} updated.")
         return redirect('linkedin-scraper')
 
     accounts = LinkedInAccount.objects.filter(user=request.user, is_active=True)

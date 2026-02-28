@@ -32,11 +32,12 @@
                 <h2 class="card-title"><span class="card-icon">🔍</span> Configure LinkedIn Scrape</h2>
             </div>
 
-            <form id="linkedinScraperForm">
+            <form id="linkedinScraperForm" novalidate>
                 <!-- Niche -->
                 <div class="form-group">
                     <label class="form-label" for="niche">Search Niche / Keywords *</label>
                     <input type="text" id="niche" class="form-control" placeholder="e.g., digital marketing agency, python developer, SaaS company" required>
+                    <div class="error-feedback">Please enter a keyword to search.</div>
                     <p class="form-help">Be specific for better results. Example: "web development agency new york"</p>
                 </div>
 
@@ -75,43 +76,17 @@
                 <!-- LinkedIn Credentials -->
                 <div class="section-divider"></div>
                 <h3 style="margin-bottom: 16px; font-size: 1rem; color: var(--text-primary);">🔐 LinkedIn Login (Recommended)</h3>
-                <p class="form-help" style="margin-bottom: 16px;">Provide credentials for better scraping. Without login, data may be limited.</p>
+                <p class="form-help" style="margin-bottom: 16px;">Select one of your stored accounts or proceed without login (guest mode).</p>
 
                 <div class="form-group" style="margin-bottom: 16px;">
                     <label class="form-label" for="storedAccount">Choose Stored Account</label>
                     <select id="storedAccount" class="form-control">
-                        <option value="">-- Use Manual Credentials or No Login --</option>
+                        <option value="">-- No Login / First Login LinkedIn --</option>
                         {% for acc in accounts %}
                         <option value="{{ acc.id }}">{{ acc.name|default:acc.email }} ({{ acc.email }})</option>
                         {% endfor %}
                     </select>
                 </div>
-
-                <div id="manualCredentials">
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label class="form-label" for="linkedinEmail">LinkedIn Email</label>
-                            <input type="email" id="linkedinEmail" class="form-control" placeholder="your@email.com">
-                        </div>
-                        <div class="form-group">
-                            <label class="form-label" for="linkedinPassword">LinkedIn Password</label>
-                            <input type="password" id="linkedinPassword" class="form-control" placeholder="••••••••">
-                        </div>
-                    </div>
-                </div>
-
-                <script>
-                    document.getElementById('storedAccount').addEventListener('change', function() {
-                        const manual = document.getElementById('manualCredentials');
-                        if (this.value) {
-                            manual.style.opacity = '0.5';
-                            manual.style.pointerEvents = 'none';
-                        } else {
-                            manual.style.opacity = '1';
-                            manual.style.pointerEvents = 'auto';
-                        }
-                    });
-                </script>
 
                 <div class="alert alert-warning" style="margin-top: 24px;">
                     <span>⚠️</span>
@@ -136,17 +111,24 @@
             <div class="card-header">
                 <h2 class="card-title"><span class="card-icon">➕</span> Add New Account</h2>
             </div>
-            <form method="POST">
+            <form method="POST" novalidate>
                 {% csrf_token %}
                 <input type="hidden" name="action" value="add">
                 <div class="form-row">
                     <div class="form-group">
                         <label class="form-label">Email / Username *</label>
                         <input type="email" name="email" class="form-control" placeholder="your@email.com" required>
+                        <div class="error-feedback">Please enter a valid LinkedIn email.</div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Password *</label>
-                        <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                        <div class="password-toggle-group">
+                            <input type="password" name="password" class="form-control" placeholder="••••••••" required>
+                            <button type="button" class="toggle-password" tabindex="-1">
+                                <span class="eye-icon">👁️</span>
+                            </button>
+                        </div>
+                        <div class="error-feedback">Security key is required for login.</div>
                     </div>
                     <div class="form-group">
                         <label class="form-label">Nickname (Optional)</label>
@@ -168,14 +150,14 @@
                         <tr>
                             <th>Nickname / Label</th>
                             <th>Email</th>
-                            <th>Created</th>
+                            <th>Password</th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         {% for acc in accounts %}
                         <tr>
-                            <form method="POST">
+                            <form method="POST" class="account-row-form">
                                 {% csrf_token %}
                                 <input type="hidden" name="account_id" value="{{ acc.id }}">
                                 <td>
@@ -184,7 +166,14 @@
                                 <td>
                                     <input type="email" name="email" value="{{ acc.email }}" class="form-control" style="padding: 6px 10px; font-size: 0.85rem;">
                                 </td>
-                                <td>{{ acc.created_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <div class="password-toggle-group">
+                                        <input type="password" name="password" placeholder="Change password..." class="form-control" style="padding: 6px 36px 6px 10px; font-size: 0.85rem;">
+                                        <button type="button" class="toggle-password" tabindex="-1" style="right: 8px;">
+                                            <span class="eye-icon">👁️</span>
+                                        </button>
+                                    </div>
+                                </td>
                                 <td>
                                     <div class="btn-group">
                                         <button type="submit" name="action" value="update" class="btn btn-sm btn-secondary">Update</button>
@@ -206,6 +195,86 @@
         </div>
     </div>
 </div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // --- 1. Tab Switching Logic ---
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetId = btn.getAttribute('data-tab');
+                if (!targetId) return;
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                const targetContent = document.getElementById(targetId);
+                if (targetContent) targetContent.classList.add('active');
+            });
+        });
+
+        // --- 2. SaaS Validation Logic ---
+        const forms = document.querySelectorAll('form[novalidate]');
+        forms.forEach(form => {
+            form.addEventListener('submit', function(event) {
+                // Reset existing states
+                form.querySelectorAll('.form-control, .password-toggle-group').forEach(el => {
+                    el.classList.remove('is-invalid');
+                });
+
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    
+                    const invalidFields = form.querySelectorAll(':invalid');
+                    invalidFields.forEach(field => {
+                        // Small delay to re-trigger animation if already invalid
+                        requestAnimationFrame(() => {
+                            field.classList.add('is-invalid');
+                            const group = field.closest('.password-toggle-group');
+                            if (group) group.classList.add('is-invalid');
+                        });
+                    });
+
+                    const firstInvalid = form.querySelector(':invalid');
+                    if (firstInvalid) firstInvalid.focus();
+                } else {
+                    // Success! Show loading state on button
+                    const submitBtn = form.querySelector('button[type="submit"]');
+                    if (submitBtn) {
+                        const originalText = submitBtn.innerHTML;
+                        submitBtn.innerHTML = `<span class="loading-spinner"></span> Processing...`;
+                        submitBtn.style.width = submitBtn.offsetWidth + 'px';
+                        submitBtn.disabled = true;
+                    }
+                }
+            }, false);
+
+            form.querySelectorAll('.form-control').forEach(input => {
+                input.addEventListener('input', () => {
+                    if (input.checkValidity()) {
+                        input.classList.remove('is-invalid');
+                        const group = input.closest('.password-toggle-group');
+                        if (group) group.classList.remove('is-invalid');
+                    }
+                });
+            });
+        });
+
+        // --- 3. Password Visibility Toggle Logic ---
+        document.querySelectorAll('.toggle-password').forEach(button => {
+            button.addEventListener('click', function() {
+                const input = this.parentElement.querySelector('input');
+                const icon = this.querySelector('.eye-icon');
+                if (input.type === 'password') {
+                    input.type = 'text';
+                    icon.textContent = '🕶️'; 
+                } else {
+                    input.type = 'password';
+                    icon.textContent = '👁️';
+                }
+            });
+        });
+    });
+</script>
 
 <!-- Example Niches -->
 <div style="margin-top: 32px;">

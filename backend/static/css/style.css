@@ -1397,3 +1397,112 @@ form.logout-form button {
 .toast-info {
     border-left: 4px solid var(--accent-blue);
 }
+
+.password-toggle-group {
+    position: relative;
+    width: 100%;
+}
+
+.password-toggle-group .form-control {
+    padding-right: 48px !important;
+    width: 100% !important;
+}
+
+.toggle-password {
+    position: absolute !important;
+    right: 2px !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    width: 44px !important;
+    height: 90% !important;
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: var(--transition);
+    user-select: none;
+    z-index: 20 !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    outline: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    appearance: none !important;
+}
+
+.toggle-password:hover {
+    color: var(--accent-purple);
+}
+
+/* ── SaaS Form Validation ─────────────────────────────────── */
+.form-control.is-invalid {
+    border-color: #fca5a5 !important; /* Lighter red for dark theme contrast */
+    background: rgba(239, 68, 68, 0.05) !important;
+    box-shadow: 0 0 0 1px #ef4444, 0 0 0 4px rgba(239, 68, 68, 0.15) !important;
+    animation: shake-input 0.4s cubic-bezier(.36,.07,.19,.97) both;
+}
+
+.error-feedback {
+    display: none;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
+    padding: 8px 12px;
+    font-size: 0.82rem;
+    font-weight: 500;
+    color: #fff;
+    background: rgba(239, 68, 68, 0.1);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    border-radius: var(--radius-sm);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(4px);
+    animation: slideDownFade 0.3s ease forwards;
+}
+
+.error-feedback::before {
+    content: "⚠️";
+    font-size: 0.9rem;
+}
+
+.is-invalid + .error-feedback,
+.password-toggle-group.is-invalid + .error-feedback {
+    display: flex;
+}
+
+@keyframes shake-input {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+    40%, 60% { transform: translate3d(4px, 0, 0); }
+}
+
+@keyframes slideDownFade {
+    from { opacity: 0; transform: translateY(-8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Success State */
+.form-control.is-valid {
+    border-color: var(--accent-green) !important;
+    background: rgba(16, 185, 129, 0.05) !important;
+    box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.15) !important;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s linear infinite;
+    margin-right: 8px;
+    vertical-align: middle;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}

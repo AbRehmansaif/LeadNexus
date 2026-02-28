@@ -143,8 +143,6 @@ function initLinkedInScraper() {
         const scrapeWebsites = document.getElementById('scrapeWebsites').checked;
         const headless = document.getElementById('headless').checked;
         const storedAccount = document.getElementById('storedAccount').value;
-        const email = document.getElementById('linkedinEmail').value.trim();
-        const password = document.getElementById('linkedinPassword').value.trim();
 
         if (!niche) return;
 
@@ -157,8 +155,6 @@ function initLinkedInScraper() {
                 scrape_websites: scrapeWebsites,
                 headless: headless,
                 account: storedAccount || null,
-                linkedin_email: email,
-                linkedin_password: password,
             });
 
             // Redirect to detail page which will poll
