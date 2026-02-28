@@ -4,41 +4,43 @@
 {% block content %}
 <!-- Page Header -->
 <div class="page-header">
-    <h1 class="page-title">🌐 Website Scraper</h1>
-    <p class="page-subtitle">Enter any website URL to extract contact data, social links, and more</p>
+    <h1 class="page-title">🌐 Web Intelligence Engine</h1>
+    <p class="page-subtitle">Transform any website into actionable lead data.</p>
 </div>
 
 <!-- Hero Banner -->
 <div class="hero-banner">
     <h2>Extract data from any website</h2>
-    <p>Just paste a URL below — we'll scan the homepage and contact pages to find emails, phone numbers, social media links, and physical addresses.</p>
+    <p>Enter a company domain to initiate a multi-layer data extraction process. Our engine scans key pages and structures verified contact information for outreach readiness.</p>
 </div>
 
 <!-- Scraper Form -->
 <div class="card">
     <div class="card-header">
-        <h2 class="card-title"><span class="card-icon">🔗</span> Enter Website URL</h2>
+        <h2 class="card-title"><span class="card-icon">🔗</span> Domain Intelligence Activation</h2>
     </div>
 
     <form id="websiteScraperForm">
         <div class="form-group">
-            <label class="form-label" for="websiteUrl">Website URL *</label>
-            <input type="url" id="websiteUrl" class="form-control" placeholder="https://example.com" required>
+            <label class="form-label" for="websiteUrl">Company Domain *</label>
+            <input type="url" id="websiteUrl" class="form-control" placeholder="https://companydomain.com" required>
             <p class="form-help">Enter the full URL including https://</p>
         </div>
+
+        <label class="form-label" for="websiteUrl">⚙️ Deep Scan Settings</label>
 
         <div class="form-row">
             <div class="form-group">
                 <div class="form-check">
                     <input type="checkbox" id="scrapeContact" checked>
                     <label class="form-check-label" for="scrapeContact">
-                        Also scrape Contact & About pages
+                        Enable Contact Page Expansion
                     </label>
                 </div>
             </div>
 
             <div class="form-group">
-                <label class="form-label" for="maxContactPages">Max Contact Pages</label>
+                <label class="form-label" for="maxContactPages">Maximum Pages to Scan</label>
                 <select id="maxContactPages" class="form-control">
                     <option value="1">1 page</option>
                     <option value="2">2 pages</option>
@@ -50,7 +52,7 @@
 
         <div class="btn-group">
             <button type="submit" class="btn btn-primary btn-lg">
-                🚀 Start Scraping
+                🚀 Start Domain Analysis
             </button>
         </div>
     </form>
@@ -60,27 +62,27 @@
 <div style="margin-top: 32px;">
     <div class="card">
         <div class="card-header">
-            <h2 class="card-title"><span class="card-icon">📋</span> What We Extract</h2>
+            <h2 class="card-title"><span class="card-icon">📋</span> Captured Intelligence Fields</h2>
         </div>
         <div class="result-grid">
             <div class="result-item">
-                <div class="result-label">📧 Email</div>
-                <div class="result-value">Contact emails from the page text and mailto: links</div>
+                <div class="result-label">📧 Verified Emails</div>
+                <div class="result-value">Business contact emails detected via text parsing and mail protocols.</div>
             </div>
             <div class="result-item">
-                <div class="result-label">📱 Phone</div>
-                <div class="result-value">Phone numbers from text, tel: links, and contact forms</div>
+                <div class="result-label">📱 Direct Phone Numbers</div>
+                <div class="result-value">Company contact numbers extracted from structured and unstructured sources.</div>
             </div>
             <div class="result-item">
-                <div class="result-label">📍 Address</div>
-                <div class="result-value">Physical addresses using pattern matching and schema.org</div>
+                <div class="result-label">📍 Registered Business Address</div>
+                <div class="result-value">Physical location detected using structured metadata and schema markup.</div>
             </div>
             <div class="result-item">
                 <div class="result-label">📘 Facebook</div>
                 <div class="result-value">Facebook page links found on the website</div>
             </div>
             <div class="result-item">
-                <div class="result-label">🐦 Twitter / X</div>
+                <div class="result-label">🐦 X (Twitter)</div>
                 <div class="result-value">Twitter/X profile links</div>
             </div>
             <div class="result-item">
@@ -91,11 +93,11 @@
                 <div class="result-label">💼 LinkedIn</div>
                 <div class="result-value">LinkedIn company/profile links</div>
             </div>
-            <div class="result-item">
+            <!-- <div class="result-item">
                 <div class="result-label">📄 Pages Scraped</div>
                 <div class="result-value">List of all pages visited during scraping</div>
             </div>
-        </div>
+        </div> -->
     </div>
 </div>
 {% endblock %}
