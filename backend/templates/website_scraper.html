@@ -20,10 +20,11 @@
         <h2 class="card-title"><span class="card-icon">🔗</span> Domain Intelligence Activation</h2>
     </div>
 
-    <form id="websiteScraperForm">
+    <form id="websiteScraperForm" novalidate>
         <div class="form-group">
             <label class="form-label" for="websiteUrl">Company Domain *</label>
             <input type="url" id="websiteUrl" class="form-control" placeholder="https://companydomain.com" required>
+            <div class="error-feedback">Please enter a valid company URL (including https://).</div>
             <p class="form-help">Enter the full URL including https://</p>
         </div>
 
@@ -98,6 +99,14 @@
                 <div class="result-value">List of all pages visited during scraping</div>
             </div>
         </div> -->
+    </div>
+
+    <!-- Data Accuracy Protocol -->
+    <div class="alert alert-info" style="margin-top: 32px; flex-direction: column; align-items: flex-start;">
+        <div style="font-weight: 700; font-size: 1.1rem; margin-bottom: 8px; display: flex; align-items: center; gap: 8px;">
+            <span>🛡️</span> Data Accuracy Protocol
+        </div>
+        <p style="margin: 0; color: var(--text-secondary); line-height: 1.6;">Our extraction engine prioritizes structured metadata and contact page verification to reduce noise and improve data reliability.</p>
     </div>
 </div>
 {% endblock %}

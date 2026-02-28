@@ -80,13 +80,18 @@ function initWebsiteScraper() {
     if (!form) return;
 
     form.addEventListener('submit', async (e) => {
+        // Validation is now handled globally for all form[novalidate]
+        // But since this is AJAX, we need to check if it's valid before proceeding
+        if (!form.checkValidity()) return;
+
         e.preventDefault();
 
         const url = document.getElementById('websiteUrl').value.trim();
         const scrapeContact = document.getElementById('scrapeContact').checked;
         const maxPages = parseInt(document.getElementById('maxContactPages').value) || 3;
 
-        if (!url) return;
+        // The global script handles button loading state, BUT app.js manages the AJAX lifecycle
+        // So we keep this simple.
 
         showLoading('Starting website scrape...');
 
@@ -102,6 +107,13 @@ function initWebsiteScraper() {
         } catch (err) {
             hideLoading();
             showNotification('Error: ' + err.message, 'error');
+
+            // Re-enable button if it was disabled by global script
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `🚀 Start Domain Analysis`; // Restore original text
+            }
         }
     });
 }
@@ -286,14 +298,98 @@ function formatDate(dateStr) {
     return new Date(dateStr).toLocaleString();
 }
 
+// ── Global SaaS Enhancements ─────────────────────────────
+function initSaaSFeatures() {
+    // 1. Better Tab Switching (Handles multiple groups)
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const targetId = btn.getAttribute('data-tab');
+            if (!targetId) return;
+
+            // Search for siblings or related containers
+            const container = btn.closest('.tabs-container') || document.body;
+            container.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            container.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            const targetContent = document.getElementById(targetId);
+            if (targetContent) targetContent.classList.add('active');
+        });
+    });
+
+    // 2. Global Validation Logic (The Pulse)
+    const forms = document.querySelectorAll('form[novalidate]');
+    forms.forEach(form => {
+        form.addEventListener('submit', function (event) {
+            // Reset existing states
+            form.querySelectorAll('.form-control, .password-toggle-group').forEach(el => {
+                el.classList.remove('is-invalid');
+            });
+
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const invalidFields = form.querySelectorAll(':invalid');
+                invalidFields.forEach(field => {
+                    requestAnimationFrame(() => {
+                        field.classList.add('is-invalid');
+                        const group = field.closest('.password-toggle-group');
+                        if (group) group.classList.add('is-invalid');
+                    });
+                });
+
+                const firstInvalid = form.querySelector(':invalid');
+                if (firstInvalid) firstInvalid.focus();
+            } else {
+                // SUCCESS: Show premium button interaction
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn && !submitBtn.disabled) {
+                    const originalText = submitBtn.innerHTML;
+                    submitBtn.innerHTML = `<span class="loading-spinner"></span> Processing...`;
+                    submitBtn.style.width = submitBtn.offsetWidth + 'px';
+                    submitBtn.disabled = true;
+                    submitBtn.dataset.originalText = originalText;
+                }
+            }
+        }, false);
+
+        // Real-time cleanup
+        form.querySelectorAll('.form-control').forEach(input => {
+            input.addEventListener('input', () => {
+                if (input.checkValidity()) {
+                    input.classList.remove('is-invalid');
+                    const group = input.closest('.password-toggle-group');
+                    if (group) group.classList.remove('is-invalid');
+                }
+            });
+        });
+    });
+
+    // 3. Global Password Toggle
+    document.querySelectorAll('.toggle-password').forEach(button => {
+        button.addEventListener('click', function () {
+            const input = this.parentElement.querySelector('input');
+            const icon = this.querySelector('.eye-icon');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.textContent = '🕶️';
+            } else {
+                input.type = 'password';
+                icon.textContent = '👁️';
+            }
+        });
+    });
+}
+
 // ── Init ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-    initTabs();
+    initSaaSFeatures();
     initWebsiteScraper();
     initLinkedInScraper();
     initLinkedInJobPolling();
 
-    // Animate stat cards on scroll
+    // Animate cards on scroll
     const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
@@ -306,12 +402,15 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(el);
     });
 
-    // Auto-hide Django Toasts
+    // Auto-hide Django Toasts (already handled in base.html script, but this is a backup)
     document.querySelectorAll('.toast').forEach(toast => {
-        setTimeout(() => {
-            toast.style.opacity = '0';
-            toast.style.transform = 'translateX(50px)';
-            setTimeout(() => toast.remove(), 500);
-        }, 5000);
+        if (!toast.dataset.processed) {
+            toast.dataset.processed = "true";
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                toast.style.transform = 'translateX(50px)';
+                setTimeout(() => toast.remove(), 500);
+            }, 5000);
+        }
     });
 });
