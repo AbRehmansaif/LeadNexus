@@ -138,8 +138,16 @@ def run_linkedin_job(job_id: int):
         scraper.setup_driver()
 
         # ─── Step 2: Login ─────────────────────────────────────────
-        email = job.linkedin_email
-        password = job.linkedin_password
+        # Use stored account credentials if selected, otherwise fallback to manual entry
+        if job.account:
+            email = job.account.email
+            password = job.account.password
+            logger.info(f"[LinkedInJob #{job_id}] Using stored account: {email}")
+        else:
+            email = job.linkedin_email
+            password = job.linkedin_password
+            logger.info(f"[LinkedInJob #{job_id}] Using manual credentials")
+
         if email and password:
             logger.info(f"[LinkedInJob #{job_id}] Logging in ...")
             if not scraper.login(email, password):

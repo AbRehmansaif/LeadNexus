@@ -18,6 +18,25 @@ class UserProfile(models.Model):
         return f"Profile for {self.user.username}"
 
 
+class LinkedInAccount(models.Model):
+    """Stores LinkedIn credentials for a user."""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='linkedin_accounts')
+    email = models.CharField(max_length=255)
+    password = models.CharField(max_length=255)
+    name = models.CharField(max_length=255, blank=True, help_text="Optional nickname for this account")
+    is_active = models.BooleanField(default=True, help_text="Whether this account is currently usable")
+    
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'LinkedIn Account'
+
+    def __str__(self):
+        return f"{self.email} ({self.user.username})"
+
+
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  1.  Website Scrape Job  (give a URL → extract data)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -91,6 +110,7 @@ class ScrapedWebsite(models.Model):
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 class LinkedInScrapeJob(models.Model):
+
     """
     A LinkedIn scraping job.
     - Opens Chrome, navigates to LinkedIn
@@ -114,9 +134,17 @@ class LinkedInScrapeJob(models.Model):
     scrape_websites = models.BooleanField(default=True, help_text="Also visit & scrape company websites")
     headless        = models.BooleanField(default=False, help_text="Run Chrome in headless mode")
 
-    # LinkedIn credentials (optional — stored only if provided)
-    linkedin_email    = models.CharField(max_length=255, blank=True, default='')
-    linkedin_password = models.CharField(max_length=255, blank=True, default='')
+    # LinkedIn credentials (optional — can use a stored account or manual entry)
+    account = models.ForeignKey(
+        LinkedInAccount, 
+        on_delete=models.SET_NULL, 
+        null=True, 
+        blank=True, 
+        related_name='jobs',
+        help_text="Stored LinkedIn account to use for this job"
+    )
+    linkedin_email    = models.CharField(max_length=255, blank=True, default='', help_text="Manual email (overridden if account selected)")
+    linkedin_password = models.CharField(max_length=255, blank=True, default='', help_text="Manual password (overridden if account selected)")
 
     # Status
     status        = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', db_index=True)
@@ -140,6 +168,7 @@ class LinkedInScrapeJob(models.Model):
         if self.started_at and self.completed_at:
             return (self.completed_at - self.started_at).total_seconds()
         return None
+
 
 
 class ScrapedLinkedInProfile(models.Model):

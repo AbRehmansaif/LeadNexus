@@ -142,6 +142,7 @@ function initLinkedInScraper() {
         const maxProfiles = parseInt(document.getElementById('maxProfiles').value) || 50;
         const scrapeWebsites = document.getElementById('scrapeWebsites').checked;
         const headless = document.getElementById('headless').checked;
+        const storedAccount = document.getElementById('storedAccount').value;
         const email = document.getElementById('linkedinEmail').value.trim();
         const password = document.getElementById('linkedinPassword').value.trim();
 
@@ -155,6 +156,7 @@ function initLinkedInScraper() {
                 max_profiles: maxProfiles,
                 scrape_websites: scrapeWebsites,
                 headless: headless,
+                account: storedAccount || null,
                 linkedin_email: email,
                 linkedin_password: password,
             });

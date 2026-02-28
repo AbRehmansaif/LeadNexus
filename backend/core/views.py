@@ -21,16 +21,21 @@ from rest_framework.generics import (
     ListCreateAPIView,
     RetrieveAPIView,
     DestroyAPIView,
+    UpdateAPIView,
 )
+from rest_framework import viewsets
+from rest_framework.permissions import IsAuthenticated
 
 from .models import (
     ScrapeJob, ScrapedWebsite,
     LinkedInScrapeJob, ScrapedLinkedInProfile,
+    LinkedInAccount,
 )
 from .serializers import (
     ScrapeJobSerializer, ScrapeJobCreateSerializer, ScrapedWebsiteSerializer,
     LinkedInScrapeJobSerializer, LinkedInScrapeJobCreateSerializer,
     LinkedInScrapeJobListSerializer, ScrapedLinkedInProfileSerializer,
+    LinkedInAccountSerializer,
 )
 from .tasks import run_scrape_job_async, run_linkedin_job_async
 
@@ -202,6 +207,29 @@ def linkedin_job_profiles(request, pk):
 
     profiles = job.profiles.all()
     return Response(ScrapedLinkedInProfileSerializer(profiles, many=True).data)
+
+
+# ═══════════════════════════════════════════════════════════════════
+#  LINKEDIN CREDENTIALS — CRUD for accounts
+# ═══════════════════════════════════════════════════════════════════
+
+class LinkedInAccountViewSet(viewsets.ModelViewSet):
+    """
+    CRUD for LinkedIn accounts.
+    - list
+    - create
+    - retrieve
+    - update
+    - destroy
+    """
+    serializer_class = LinkedInAccountSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return LinkedInAccount.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 # ═══════════════════════════════════════════════════════════════════

@@ -7,7 +7,7 @@ from django.contrib.auth.decorators import login_required
 from .models import (
     ScrapeJob, ScrapedWebsite,
     LinkedInScrapeJob, ScrapedLinkedInProfile,
-    UserProfile
+    UserProfile, LinkedInAccount
 )
 from mail.models import EmailCampaign
 
@@ -28,7 +28,8 @@ def profile_settings(request):
 
     return render(request, 'profile_settings.html', {
         'active_page': 'profile',
-        'profile': profile
+        'profile': profile,
+        'linkedin_accounts': LinkedInAccount.objects.filter(user=request.user)
     })
 
 
@@ -81,9 +82,34 @@ def website_scraper_page(request):
 
 @login_required
 def linkedin_scraper_page(request):
-    """LinkedIn scraper form page."""
+    """LinkedIn scraper form page — now with account management."""
+    if request.method == 'POST' and 'action' in request.POST:
+        action = request.POST.get('action')
+        if action == 'add':
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            name = request.POST.get('name', '')
+            LinkedInAccount.objects.create(user=request.user, email=email, password=password, name=name)
+        elif action == 'delete':
+            acc_id = request.POST.get('account_id')
+            LinkedInAccount.objects.filter(user=request.user, id=acc_id).delete()
+        elif action == 'update':
+            acc_id = request.POST.get('account_id')
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            name = request.POST.get('name', '')
+            acc = get_object_or_404(LinkedInAccount, user=request.user, id=acc_id)
+            acc.email = email
+            if password:
+                acc.password = password
+            acc.name = name
+            acc.save()
+        return redirect('linkedin-scraper')
+
+    accounts = LinkedInAccount.objects.filter(user=request.user, is_active=True)
     return render(request, 'linkedin_scraper.html', {
         'active_page': 'linkedin-scraper',
+        'accounts': accounts
     })
 
 

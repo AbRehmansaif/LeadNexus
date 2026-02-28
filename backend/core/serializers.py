@@ -6,6 +6,7 @@ from rest_framework import serializers
 from .models import (
     ScrapeJob, ScrapedWebsite,
     LinkedInScrapeJob, ScrapedLinkedInProfile,
+    LinkedInAccount,
 )
 
 
@@ -91,6 +92,15 @@ class LinkedInScrapeJobSerializer(serializers.ModelSerializer):
         return obj.profiles.count()
 
 
+class LinkedInAccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LinkedInAccount
+        fields = ['id', 'email', 'password', 'name', 'is_active', 'created_at', 'updated_at']
+        read_only_fields = ['created_at', 'updated_at']
+        extra_kwargs = {
+            'password': {'write_only': True}
+        }
+
 class LinkedInScrapeJobCreateSerializer(serializers.ModelSerializer):
     """POST /api/linkedin/jobs/ — create a LinkedIn scrape job."""
 
@@ -98,7 +108,7 @@ class LinkedInScrapeJobCreateSerializer(serializers.ModelSerializer):
         model  = LinkedInScrapeJob
         fields = [
             'niche', 'max_profiles', 'scrape_websites', 'headless',
-            'linkedin_email', 'linkedin_password',
+            'account', 'linkedin_email', 'linkedin_password',
         ]
 
 

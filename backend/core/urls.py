@@ -5,12 +5,17 @@ Two main sections:
   /api/jobs/...           — Website scraping (give a URL)
   /api/linkedin/jobs/...  — LinkedIn scraping (give a niche)
 """
-from django.urls import path
+from django.urls import path, include
+from rest_framework.routers import DefaultRouter
 from . import views
 
 app_name = 'core'
 
+router = DefaultRouter()
+router.register(r'linkedin/accounts', views.LinkedInAccountViewSet, basename='linkedin-account')
+
 urlpatterns = [
+    path('', include(router.urls)),
     # ── Website Scrape Jobs ─────────────────────────────────────
     path('jobs/',                    views.ScrapeJobListCreateView.as_view(), name='job-list-create'),
     path('jobs/<int:pk>/',           views.ScrapeJobDetailView.as_view(),     name='job-detail'),
