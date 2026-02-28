@@ -3,47 +3,47 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">Campaign Center</h1>
-    <p class="page-subtitle">Automated email campaigns with SMTP rotation</p>
+    <h1 class="page-title">🚀 Growth Campaigns</h1>
+    <p class="page-subtitle">Multi account outreach automation powered by intelligent delivery infrastructure.</p>
     <div style="margin-top: 16px;">
-        <a href="{% url 'mail-campaign-create' %}" class="btn btn-primary">Create New Campaign</a>
-        <a href="{% url 'mail-smtp-settings' %}" class="btn btn-secondary">Manage SMTP Accounts</a>
+        <a href="{% url 'mail-campaign-create' %}" class="btn btn-primary">Launch Growth Campaign</a>
+        <a href="{% url 'mail-smtp-settings' %}" class="btn btn-secondary">Manage Delivery Infrastructure</a>
     </div>
 </div>
 
 <div class="stats-grid">
     <div class="stat-card purple">
-        <div class="stat-label">Total Sent</div>
+        <div class="stat-label">Total Outreach Delivered</div>
         <div class="stat-value">{{ total_emails_sent }}</div>
         <div class="stat-sub">Across all campaigns</div>
     </div>
     <div class="stat-card blue">
-        <div class="stat-label">Running</div>
+        <div class="stat-label">Active Campaigns</div>
         <div class="stat-value">{{ active_campaigns }}</div>
-        <div class="stat-sub">Active campaigns</div>
+        <div class="stat-sub">Currently executing</div>
     </div>
     <div class="stat-card amber">
-        <div class="stat-label">SMTP Accounts</div>
+        <div class="stat-label">Delivery Accounts</div>
         <div class="stat-value">{{ smtp_accounts.count }}</div>
-        <div class="stat-sub">Active backends</div>
+        <div class="stat-sub">Connected sending infrastructure</div>
     </div>
 </div>
 
 <div class="card">
     <div class="card-header">
-        <h2 class="card-title">Recent Campaigns</h2>
+        <h2 class="card-title">📈 Campaign Performance Overview</h2>
     </div>
     {% if campaigns %}
     <div class="table-wrapper">
         <table class="data-table">
             <thead>
                 <tr>
-                    <th>Campaign Name</th>
+                    <th>Campaign</th>
                     <th>Status</th>
                     <th>Progress</th>
-                    <th>Gap</th>
+                    <th>Sending Interval</th>
                     <th>Created</th>
-                    <th>Action</th>
+                    <th>Manage</th>
                 </tr>
             </thead>
             <tbody>
