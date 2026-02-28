@@ -5,8 +5,8 @@
 <div class="page-header">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
         <div>
-            <h1 class="page-title">SMTP Accounts</h1>
-            <p class="page-subtitle">Configure 15+ email accounts for rotation</p>
+            <h1 class="page-title">Delivery Infrastructure</h1>
+            <p class="page-subtitle">Connect and manage your outbound sending infrastructure for scalable, reputation-safe delivery.</p>
         </div>
         <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary btn-sm">← Back to Dashboard</a>
     </div>
@@ -16,25 +16,26 @@
     <!-- Add New SMTP Account -->
     <div class="card">
         <div class="card-header">
-            <h2 class="card-title">Add SMTP Account</h2>
+            <h2 class="card-title">Add Delivery Account</h2>
+            <small>Connect Gmail, Outlook, Google Workspace, or custom SMTP securely.</small>
         </div>
         <form id="smtpForm" class="scraper-form">
             <div class="form-group">
-                <label class="form-label">Connection Name</label>
-                <input type="text" id="name" class="form-input" placeholder="e.g. Gmail 1" required>
+                <label class="form-label">Account Label</label>
+                <input type="text" id="name" class="form-input" placeholder="Internal name to identify this email.e.g. Gmail 1" required>
             </div>
             <div class="form-row">
                 <div class="form-group">
-                    <label class="form-label">Host</label>
+                    <label class="form-label">SMTP Host</label>
                     <input type="text" id="host" class="form-input" placeholder="smtp.gmail.com" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">Port</label>
+                    <label class="form-label">SMTP Port</label>
                     <input type="number" id="port" class="form-input" value="587" required>
                 </div>
             </div>
             <div class="form-group">
-                <label class="form-label">Username (Email)</label>
+                <label class="form-label">Sender Email Address</label>
                 <input type="email" id="username" class="form-input" placeholder="user@gmail.com" required>
             </div>
             <div class="form-group">
@@ -62,16 +63,16 @@
     <!-- List of SMTP Accounts -->
     <div class="card">
         <div class="card-header">
-            <h2 class="card-title">Active Accounts ({{ accounts.count }})</h2>
+            <h2 class="card-title">Connected Delivery Accounts ({{ accounts.count }})</h2>
         </div>
         <div class="table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Name</th>
+                        <th>Account Label</th>
                         <th>User</th>
                         <th>Status</th>
-                        <th>Action</th>
+                        <th>Manage</th>
                     </tr>
                 </thead>
                 <tbody id="smtpTable">
@@ -90,6 +91,12 @@
                 </tbody>
             </table>
         </div>
+    </div>
+</div>
+<div class="alert alert-info" style="margin-top: 24px;">
+    <span>💡</span>
+    <div>
+        <strong>Security Note:</strong> All credentials are encrypted and securely stored. Sessions are used solely for authenticated prospecting analysis.
     </div>
 </div>
 
