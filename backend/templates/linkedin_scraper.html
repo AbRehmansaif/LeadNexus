@@ -4,21 +4,23 @@
 {% block content %}
 <!-- Page Header -->
 <div class="page-header">
-    <h1 class="page-title">💼 LinkedIn Scraper</h1>
-    <p class="page-subtitle">Search LinkedIn by niche — scrape company profiles and their websites automatically</p>
+    <h1 class="page-title">💼 LinkedIn Intelligence Engine</h1>
+    <p class="page-subtitle">Activate targeted LinkedIn discovery using niche based search queries. <br>
+The Intelligence Engine identifies relevant companies, maps their digital footprint, and extracts structured business data for pipeline growth.</p>
 </div>
 
 <!-- Hero Banner -->
 <div class="hero-banner">
-    <h2>Find &amp; Scrape LinkedIn Companies</h2>
-    <p>Enter a niche keyword below. Chrome will open, navigate to LinkedIn, search for matching companies, scrape their profiles one-by-one (with human-like delays), visit their websites, and save all data.</p>
+    <h2>Discover Targeted Companies</h2>
+    <p>Activate precision-based company discovery using industry or niche keywords.
+The LinkedIn Intelligence Engine identifies relevant businesses, analyzes their profiles, expands into associated domains, and structures all extracted data for outreach readiness.</p>
 </div>
 
 <!-- Tabs Section -->
 <div class="tabs-container">
     <div class="tabs">
         <button class="tab-btn active" data-tab="scraperTab">
-            <span class="tab-icon">🚀</span> Start Scraper
+            <span class="tab-icon">🚀</span> Launch LinkedIn Intelligence
         </button>
         <button class="tab-btn" data-tab="accountsTab">
             <span class="tab-icon">🔐</span> Accounts Manager
@@ -35,16 +37,16 @@
             <form id="linkedinScraperForm" novalidate>
                 <!-- Niche -->
                 <div class="form-group">
-                    <label class="form-label" for="niche">Search Niche / Keywords *</label>
+                    <label class="form-label" for="niche">Target Industry / Search Query *</label>
                     <input type="text" id="niche" class="form-control" placeholder="e.g., digital marketing agency, python developer, SaaS company" required>
                     <div class="error-feedback">Please enter a keyword to search.</div>
-                    <p class="form-help">Be specific for better results. Example: "web development agency new york"</p>
+                    <p class="form-help">Use precise industry keywords for optimal targeting. Example: "web development agency new york"</p>
                 </div>
 
                 <div class="form-row">
                     <!-- Max Profiles -->
                     <div class="form-group">
-                        <label class="form-label" for="maxProfiles">Max Profiles to Scrape</label>
+                        <label class="form-label" for="maxProfiles">Prospect Volume Limit</label>
                         <select id="maxProfiles" class="form-control">
                             <option value="10">10 profiles (quick test)</option>
                             <option value="25">25 profiles</option>
@@ -52,22 +54,24 @@
                             <option value="75">75 profiles</option>
                             <option value="100">100 profiles</option>
                         </select>
-                        <p class="form-help">~8-15 seconds per profile. 50 profiles ≈ 10-15 minutes</p>
+                        <p class="form-help">Estimated processing time: ~30-45 seconds per company. 50 companies ≈ 15–25 minutes</p>
                     </div>
 
                     <!-- Options -->
                     <div class="form-group">
-                        <label class="form-label">Options</label>
+                        <label class="form-label">Intelligence Options</label>
                         <div class="form-check">
                             <input type="checkbox" id="scrapeWebsites" checked>
                             <label class="form-check-label" for="scrapeWebsites">
-                                Also scrape company websites (emails, phones, social links)
+                                Enable Website Expansion <br>
+                                <small>Automatically analyze associated company domains for contact intelligence.</small>
                             </label>
                         </div>
                         <div class="form-check">
                             <input type="checkbox" id="headless">
                             <label class="form-check-label" for="headless">
-                                Headless mode (no visible browser window)
+                                Stealth Execution Mode<br>
+                                <small>Run analysis in background without visible browser interface.</small>
                             </label>
                         </div>
                     </div>
@@ -75,11 +79,11 @@
 
                 <!-- LinkedIn Credentials -->
                 <div class="section-divider"></div>
-                <h3 style="margin-bottom: 16px; font-size: 1rem; color: var(--text-primary);">🔐 LinkedIn Login (Recommended)</h3>
+                <h3 style="margin-bottom: 16px; font-size: 1rem; color: var(--text-primary);">🔐 LinkedIn Access Configuration</h3>
                 <p class="form-help" style="margin-bottom: 16px;">Select one of your stored accounts or proceed without login (guest mode).</p>
 
                 <div class="form-group" style="margin-bottom: 16px;">
-                    <label class="form-label" for="storedAccount">Choose Stored Account</label>
+                    <label class="form-label" for="storedAccount">Choose LinkedIn Session</label>
                     <select id="storedAccount" class="form-control">
                         <option value="">-- No Login / First Login LinkedIn --</option>
                         {% for acc in accounts %}
@@ -91,13 +95,13 @@
                 <div class="alert alert-warning" style="margin-top: 24px;">
                     <span>⚠️</span>
                     <div>
-                        <strong>Important:</strong> LinkedIn may show a security checkpoint. If Chrome opens and asks you to verify, complete the verification manually in the browser window. The scraper will wait for you.
+                        <strong>Important:</strong> LinkedIn may show a security checkpoint. If Chrome opens and asks you to verify, complete the verification manually in the browser window. The system will wait for you.
                     </div>
                 </div>
 
                 <div class="btn-group">
                     <button type="submit" class="btn btn-primary btn-lg">
-                        🚀 Start LinkedIn Scrape
+                        🚀 Start Prospecting Analysis
                     </button>
                 </div>
             </form>
@@ -108,6 +112,7 @@
     <div id="accountsTab" class="tab-content">
         <!-- Add Account Card -->
         <div class="card" style="margin-bottom: 24px;">
+            <label for="">Securely store and manage authenticated LinkedIn sessions.</label>
             <div class="card-header">
                 <h2 class="card-title"><span class="card-icon">➕</span> Add New Account</h2>
             </div>
@@ -116,7 +121,7 @@
                 <input type="hidden" name="action" value="add">
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">Email / Username *</label>
+                        <label class="form-label">LinkedIn Email / Username *</label>
                         <input type="email" name="email" class="form-control" placeholder="your@email.com" required>
                         <div class="error-feedback">Please enter a valid LinkedIn email.</div>
                     </div>
@@ -139,17 +144,24 @@
             </form>
         </div>
 
+        <div class="alert alert-info" style="margin-top: 24px;">
+        <span>💡</span>
+        <div>
+            <strong>Security Note:</strong> All credentials are encrypted and securely stored. Sessions are used solely for authenticated prospecting analysis.
+        </div>
+    </div>
+
         <!-- Accounts List Card -->
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title"><span class="card-icon">📝</span> Your Stored Accounts</h2>
+                <h2 class="card-title"><span class="card-icon"></span> Your Accounts</h2>
             </div>
             <div class="table-wrapper">
                 <table class="data-table">
                     <thead>
                         <tr>
                             <th>Nickname / Label</th>
-                            <th>Email</th>
+                            <th>Account Email</th>
                             <th>Password</th>
                             <th>Actions</th>
                         </tr>
