@@ -127,7 +127,7 @@ def send_campaign_emails(campaign_id):
 
             # Gap between emails
             if campaign.gap_minutes > 0:
-                time.sleep(campaign.gap_minutes * 60)
+                time.sleep(campaign.gap_minutes)
 
         # Mark campaign as completed if all done
         if not campaign.recipients.filter(status='pending').exists():

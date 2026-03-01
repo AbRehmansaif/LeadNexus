@@ -62,7 +62,7 @@
                             <div style="width: {{ campaign.progress_percentage }}%; height: 100%; background: var(--accent-purple); border-radius: 2px;"></div>
                         </div>
                     </td>
-                    <td>{{ campaign.gap_minutes }}m</td>
+                    <td>{{ campaign.gap_minutes }}s</td>
                     <td>{{ campaign.created_at|date:"M d" }}</td>
                     <td>
                         <a href="{% url 'mail-campaign-detail' campaign.id %}" class="btn btn-secondary btn-sm">Manage</a>
