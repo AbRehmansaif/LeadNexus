@@ -1,41 +1,123 @@
-# Python
+############################################
+# PYTHON
+############################################
 __pycache__/
 *.py[cod]
 *$py.class
 *.so
-.Python
+*.pyd
+*.sqlite3
+*.sqlite3-journal
+
+############################################
+# DJANGO
+############################################
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Media files (User uploads)
+media/
+
+# Collected static files
+staticfiles/
+static_root/
+
+############################################
+# ENVIRONMENT VARIABLES
+############################################
+.env
+.env.*
+*.env
+
+############################################
+# VIRTUAL ENVIRONMENTS
+############################################
 venv/
 env/
 ENV/
-*.egg-info/
-dist/
-build/
+.venv/
 
-# Configuration
-config.json
-.env
-
-# Data
-data/
-*.csv
-*.json
-*.xlsx
-
-# Logs
-*.log
-logs/
-
-# IDE
+############################################
+# IDEs & EDITORS
+############################################
 .vscode/
 .idea/
 *.swp
 *.swo
 
-# OS
+############################################
+# OS FILES
+############################################
 .DS_Store
 Thumbs.db
 
-# Selenium
-chromedriver
-geckodriver
-*.exe
+############################################
+# TESTING & COVERAGE
+############################################
+.coverage
+htmlcov/
+.tox/
+.pytest_cache/
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+
+############################################
+# TYPE CHECKERS
+############################################
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pyre/
+
+############################################
+# DJANGO MIGRATIONS (Optional)
+# Uncomment if you don't want to track migrations
+# */migrations/
+# !*/migrations/__init__.py
+############################################
+
+############################################
+# DOCKER
+############################################
+docker-compose.override.yml
+*.tar
+*.gz
+
+############################################
+# CELERY
+############################################
+celerybeat-schedule
+celerybeat.pid
+
+############################################
+# LOGS
+############################################
+logs/
+*.log
+
+############################################
+# NODE (If using frontend build tools)
+############################################
+node_modules/
+dist/
+build/
+
+############################################
+# DATABASE
+############################################
+*.db
+*.sql
+
+############################################
+# CACHE
+############################################
+.cache/
+
+############################################
+# SECRET KEYS
+############################################
+secret_key.txt
