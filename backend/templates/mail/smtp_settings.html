@@ -136,12 +136,28 @@
                             No accounts connected yet. Add your first one to start campaigns.
                         </td>
                     </tr>
-                    {% endfor %}
+{% endfor %}
                 </tbody>
             </table>
         </div>
     </div>
 </div>
+
+<!-- Custom Modal System -->
+<div id="customModal" class="modal-overlay">
+    <div class="modal-card">
+        <div class="modal-body">
+            <h3 id="modalTitle">Confirm Action</h3>
+            <p id="modalMessage">Are you sure you want to proceed?</p>
+        </div>
+        <div class="modal-footer">
+            <button id="modalCancel" class="btn btn-secondary btn-sm">Cancel</button>
+            <button id="modalConfirm" class="btn btn-danger btn-sm">Confirm</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast" class="toast-notification"></div>
 
 <div class="alert alert-info" style="margin-top: 24px;">
     <span>💡</span>
@@ -161,6 +177,20 @@
     .error-text { color: #ef4444; font-size: 0.75rem; margin-top: 4px; display: none; }
     .form-input.is-invalid { border-color: #ef4444 !important; background-color: #fef2f211 !important; }
     select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; }
+
+    /* Modal Styles */
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.6); backdrop-filter: blur(4px); display: none; align-items: center; justify-content: center; z-index: 9999; animation: fadeIn 0.2s ease; }
+    .modal-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 24px; width: 100%; max-width: 400px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); }
+    #modalTitle { margin: 0 0 8px 0; color: #fff; font-size: 1.25rem; font-weight: 600; }
+    #modalMessage { margin: 0 0 24px 0; color: #94a3b8; line-height: 1.5; font-size: 0.95rem; }
+    .modal-footer { display: flex; gap: 12px; justify-content: flex-end; }
+    
+    /* Toast Styles */
+    .toast-notification { position: fixed; bottom: 24px; right: 24px; background: #10b981; color: white; padding: 12px 24px; border-radius: 12px; font-weight: 500; transform: translateY(100px); transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); z-index: 10000; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3); }
+    .toast-notification.error { background: #ef4444; box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3); }
+    .toast-notification.show { transform: translateY(0); }
+
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>
 
 <script>
@@ -284,26 +314,36 @@ document.getElementById('smtpForm').addEventListener('submit', async (e) => {
         });
         
         if (res.ok) {
-            window.location.reload();
+            showToast('Account connected successfully!');
+            setTimeout(() => window.location.reload(), 1000);
         } else {
             const err = await res.json();
-            alert('Error: ' + (err.detail || 'Failed to add account'));
+            showToast(err.detail || 'Failed to add account', true);
         }
     } catch (e) {
-        alert('Network error. Please try again.');
+        showToast('Network error. Please try again.', true);
     } finally {
         btn.disabled = false;
         btnText.innerText = 'Connect Account';
     }
 });
 
+let accountToDelete = null;
+
 async function deleteAccount(id) {
-    if (!confirm('Are you sure you want to remove this delivery account?')) return;
-    const res = await fetch(`/mail/api/smtp/${id}/`, {
-        method: 'DELETE',
-        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    accountToDelete = id;
+    showModal('Remove Account', 'Are you sure you want to remove this delivery account? This action cannot be undone.', 'Confirm Removal', async () => {
+        const res = await fetch(`/mail/api/smtp/${id}/`, {
+            method: 'DELETE',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+        });
+        if (res.ok) {
+            document.getElementById(`account-${id}`).remove();
+            showToast('Account removed');
+        } else {
+            showToast('Error deleting account', true);
+        }
     });
-    if (res.ok) document.getElementById(`account-${id}`).remove();
 }
 
 function showError(field, message) {
@@ -313,6 +353,46 @@ function showError(field, message) {
     err.style.display = 'block';
     err.innerText = message;
     field.parentElement.appendChild(err);
+}
+
+// Modal & Toast Helper Logic
+const modal = document.getElementById('customModal');
+const modalConfirm = document.getElementById('modalConfirm');
+const modalCancel = document.getElementById('modalCancel');
+
+function showModal(title, message, confirmText, onConfirm) {
+    document.getElementById('modalTitle').innerText = title;
+    document.getElementById('modalMessage').innerText = message;
+    modalConfirm.innerText = confirmText;
+    modal.style.display = 'flex';
+    
+    const confirmHandler = async () => {
+        await onConfirm();
+        closeModal();
+        modalConfirm.removeEventListener('click', confirmHandler);
+    };
+    
+    modalConfirm.addEventListener('click', confirmHandler);
+}
+
+function closeModal() {
+    modal.style.display = 'none';
+    // Clean up event listeners to prevent memory leaks/multiple triggers
+    const newBtn = modalConfirm.cloneNode(true);
+    modalConfirm.parentNode.replaceChild(newBtn, modalConfirm);
+    // Refresh the reference
+    window.modalConfirm = document.getElementById('modalConfirm'); 
+}
+
+modalCancel.addEventListener('click', closeModal);
+window.onclick = (e) => { if (e.target == modal) closeModal(); };
+
+function showToast(message, isError = false) {
+    const toast = document.getElementById('toast');
+    toast.innerText = message;
+    toast.className = 'toast-notification' + (isError ? ' error' : '');
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3000);
 }
 </script>
 {% endblock %}
