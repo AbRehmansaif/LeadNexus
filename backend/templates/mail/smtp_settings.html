@@ -125,9 +125,26 @@
                             {{ account.is_active|yesno:"Active,Inactive" }}
                         </td>
                         <td>
-                            <button onclick="deleteAccount({{ account.id }})" class="btn-icon-delete" title="Delete Account">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-                            </button>
+                            <div style="display: flex; gap: 8px;">
+                                <button onclick="manageAccount({{ account.id }})" 
+                                        class="btn-icon-edit" 
+                                        title="Account Details"
+                                        data-id="{{ account.id }}"
+                                        data-name="{{ account.name }}"
+                                        data-provider="{{ account.provider }}"
+                                        data-host="{{ account.host }}"
+                                        data-port="{{ account.port }}"
+                                        data-username="{{ account.username }}"
+                                        data-from-name="{{ account.from_name|default:'' }}"
+                                        data-from-email="{{ account.from_email }}"
+                                        data-use-tls="{{ account.use_tls|yesno:'true,false' }}"
+                                        data-use-ssl="{{ account.use_ssl|yesno:'true,false' }}"
+                                        data-active="{{ account.is_active|yesno:'true,false' }}">
+                                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                        <circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                                    </svg>
+                                </button>
+                            </div>
                         </td>
                     </tr>
                     {% empty %}
@@ -156,6 +173,80 @@
         </div>
     </div>
 </div>
+
+<!-- Details/Edit Modal -->
+<div id="editModal" class="modal-overlay">
+    <div class="modal-card" style="max-width: 500px;">
+        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
+            <div>
+                <h3 id="editModalTitle" style="margin: 0; color: #fff;">Account Details</h3>
+                <p class="text-muted" style="margin: 4px 0 0 0;">Manage your connection settings and status.</p>
+            </div>
+            <button onclick="closeEditModal()" class="btn-icon-delete" style="padding: 4px; color: #94a3b8;">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
+            </button>
+        </div>
+        <form id="editForm" novalidate>
+            <input type="hidden" id="edit-id">
+            <div class="form-group">
+                <label class="form-label">Account Label</label>
+                <input type="text" id="edit-name" class="form-input" required>
+            </div>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">From Name</label>
+                    <input type="text" id="edit-from-name" class="form-input">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">From Email</label>
+                    <input type="email" id="edit-from-email" class="form-input" required>
+                </div>
+            </div>
+            
+            <div id="edit-advanced-fields" style="border-top: 1px solid #1e293b; margin-top: 16px; padding-top: 16px;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">SMTP Host</label>
+                        <input type="text" id="edit-host" class="form-input">
+                    </div>
+                    <div class="form-group" style="max-width: 100px;">
+                        <label class="form-label">Port</label>
+                        <input type="number" id="edit-port" class="form-input">
+                    </div>
+                </div>
+            </div>
+
+            <div style="display: flex; align-items: center; justify-content: space-between; background: #1e293b44; padding: 12px; border-radius: 12px; margin: 16px 0;">
+                <div>
+                    <div style="color: #fff; font-size: 0.9rem; font-weight: 500;">Connection Status</div>
+                    <div id="status-label" class="text-muted" style="font-size: 0.8rem;">Account is currently active</div>
+                </div>
+                <label class="switch" style="position: relative; display: inline-block; width: 44px; height: 24px;">
+                    <input type="checkbox" id="edit-is-active" style="opacity: 0; width: 0; height: 0;">
+                    <span class="slider" style="position: absolute; cursor: pointer; inset: 0; background-color: #334155; transition: .4s; border-radius: 24px;"></span>
+                </label>
+            </div>
+
+            <div class="modal-footer" style="padding-top: 10px;">
+                <button type="button" onclick="deleteAccountFromEdit()" class="btn btn-danger btn-sm" style="margin-right: auto;">Delete</button>
+                <button type="button" onclick="closeEditModal()" class="btn btn-secondary btn-sm">Cancel</button>
+                <button type="submit" class="btn btn-primary btn-sm" style="min-width: 100px;">Save Changes</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<style>
+    .btn-icon-edit { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 8px; border-radius: 6px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+    .btn-icon-edit:hover { background: #1e293b; color: #fff; }
+    
+    /* Toggle Switch Styles */
+    .switch input:checked + .slider { background-color: #10b981; }
+    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
+    .switch input:checked + .slider:before { transform: translateX(20px); }
+
+    .modal-card { animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 <div id="toast" class="toast-notification"></div>
 
@@ -345,6 +436,81 @@ async function deleteAccount(id) {
         }
     });
 }
+
+// Management Modal Logic
+const editModal = document.getElementById('editModal');
+const editForm = document.getElementById('editForm');
+
+function manageAccount(id) {
+    const btn = document.querySelector(`.btn-icon-edit[data-id="${id}"]`);
+    if (!btn) return;
+
+    // Populate Modal
+    document.getElementById('edit-id').value = id;
+    document.getElementById('edit-name').value = btn.dataset.name;
+    document.getElementById('edit-from-name').value = btn.dataset.fromName;
+    document.getElementById('edit-from-email').value = btn.dataset.fromEmail;
+    document.getElementById('edit-host').value = btn.dataset.host;
+    document.getElementById('edit-port').value = btn.dataset.port;
+    
+    const isActive = btn.dataset.active === 'true';
+    document.getElementById('edit-is-active').checked = isActive;
+    document.getElementById('status-label').innerText = isActive ? 'Account is currently active' : 'Account is currently inactive';
+    
+    // Only show SMTP settings if provider is 'custom'
+    const advancedFields = document.getElementById('edit-advanced-fields');
+    advancedFields.style.display = btn.dataset.provider === 'custom' ? 'block' : 'none';
+
+    editModal.style.display = 'flex';
+}
+
+function closeEditModal() {
+    editModal.style.display = 'none';
+}
+
+function deleteAccountFromEdit() {
+    const id = document.getElementById('edit-id').value;
+    closeEditModal();
+    deleteAccount(id);
+}
+
+document.getElementById('edit-is-active').addEventListener('change', (e) => {
+    document.getElementById('status-label').innerText = e.target.checked ? 'Account is currently active' : 'Account is currently inactive';
+});
+
+editForm.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const id = document.getElementById('edit-id').value;
+    
+    const data = {
+        name: document.getElementById('edit-name').value,
+        from_name: document.getElementById('edit-from-name').value,
+        from_email: document.getElementById('edit-from-email').value,
+        host: document.getElementById('edit-host').value,
+        port: parseInt(document.getElementById('edit-port').value),
+        is_active: document.getElementById('edit-is-active').checked
+    };
+
+    try {
+        const res = await fetch(`/mail/api/smtp/${id}/`, {
+            method: 'PATCH',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        });
+
+        if (res.ok) {
+            showToast('Account updated successfully!');
+            setTimeout(() => window.location.reload(), 800);
+        } else {
+            showToast('Failed to update account', true);
+        }
+    } catch (err) {
+        showToast('Network error', true);
+    }
+});
 
 function showError(field, message) {
     field.classList.add('is-invalid');
