@@ -12,9 +12,19 @@
     </div>
 </div>
 
-<div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+<div class="tabs-container">
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="accountsTab">
+            <span class="tab-icon">🔐</span> Connected Accounts
+        </button>
+        <button class="tab-btn" data-tab="addAccountTab">
+            <span class="tab-icon">➕</span> Add Delivery Account
+        </button>
+    </div>
+
+    <div id="addAccountTab" class="tab-content">
     <!-- Add New SMTP Account -->
-    <div class="card">
+    <div class="card" style="max-width: 600px; margin: 0 auto;">
         <div class="card-header" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
             <h2 class="card-title" style="margin: 0;">Add Delivery Account</h2>
             <p class="text-muted" style="margin: 0; font-size: 0.8rem; line-height: 1.4;">Connect your email service provider securely. We recommend using App Passwords for enhanced security.</p>
@@ -100,7 +110,9 @@
             </button>
         </form>
     </div>
+    </div> <!-- End addAccountTab -->
 
+    <div id="accountsTab" class="tab-content active">
     <!-- List of SMTP Accounts -->
     <div class="card">
         <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
@@ -174,6 +186,7 @@
             </table>
         </div>
     </div>
+    </div> <!-- End accountsTab -->
 </div>
 
 <!-- Custom Modal System -->
