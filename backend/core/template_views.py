@@ -161,11 +161,22 @@ def linkedin_job_detail(request, pk):
 @login_required
 def all_jobs_page(request):
     """List all website and LinkedIn jobs."""
-    website_jobs  = ScrapeJob.objects.all().order_by('-created_at')
-    linkedin_jobs = LinkedInScrapeJob.objects.all().order_by('-created_at')
+    from django.core.paginator import Paginator
+    website_jobs_list  = ScrapeJob.objects.all().order_by('-created_at')
+    linkedin_jobs_list = LinkedInScrapeJob.objects.all().order_by('-created_at')
+
+    paginator_linkedin = Paginator(linkedin_jobs_list, 10)
+    page_li = request.GET.get('page_li')
+    linkedin_jobs = paginator_linkedin.get_page(page_li)
+
+    paginator_web = Paginator(website_jobs_list, 10)
+    page_web = request.GET.get('page_web')
+    website_jobs = paginator_web.get_page(page_web)
 
     return render(request, 'all_jobs.html', {
         'active_page':    'jobs',
         'website_jobs':   website_jobs,
         'linkedin_jobs':  linkedin_jobs,
+        'total_web_jobs': website_jobs_list.count(),
+        'total_li_jobs': linkedin_jobs_list.count(),
     })
