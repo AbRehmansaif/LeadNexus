@@ -6,11 +6,16 @@ from .models import EmailCampaign, SMTPCredential, Recipient
 @login_required
 def mail_dashboard(request):
     """Mail sender dashboard - overview of campaigns and SMTP status."""
-    campaigns = EmailCampaign.objects.all().order_by('-created_at')
+    campaigns_list = EmailCampaign.objects.all().order_by('-created_at')
+    
+    paginator = Paginator(campaigns_list, 10)
+    page_number = request.GET.get('page')
+    campaigns = paginator.get_page(page_number)
+    
     smtp_accounts = SMTPCredential.objects.all()
     
-    total_emails_sent = sum(c.sent_count for c in campaigns)
-    active_campaigns = campaigns.filter(status='running').count()
+    total_emails_sent = sum(c.sent_count for c in campaigns_list)
+    active_campaigns = campaigns_list.filter(status='running').count()
     
     return render(request, 'mail/dashboard.html', {
         'active_page': 'campaigns',
@@ -18,6 +23,7 @@ def mail_dashboard(request):
         'smtp_accounts': smtp_accounts,
         'total_emails_sent': total_emails_sent,
         'active_campaigns': active_campaigns,
+        'total_campaigns': campaigns_list.count(),
     })
 
 @login_required
