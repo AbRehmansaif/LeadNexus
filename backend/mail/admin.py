@@ -3,8 +3,8 @@ from .models import SMTPCredential, EmailCampaign, Recipient
 
 @admin.register(SMTPCredential)
 class SMTPCredentialAdmin(admin.ModelAdmin):
-    list_display = ('name', 'from_email', 'host', 'port', 'is_active', 'created_at')
-    list_filter = ('is_active',)
+    list_display = ('name', 'provider', 'from_email', 'host', 'port', 'is_active', 'created_at')
+    list_filter = ('provider', 'is_active')
     search_fields = ('name', 'from_email', 'username')
     ordering = ('-created_at',)
 

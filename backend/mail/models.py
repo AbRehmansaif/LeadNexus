@@ -2,7 +2,16 @@ from django.db import models
 from django.utils import timezone
 
 class SMTPCredential(models.Model):
+    PROVIDER_CHOICES = [
+        ('gmail', 'Gmail'),
+        ('outlook', 'Outlook/Hotmail'),
+        ('google_workspace', 'Google Workspace'),
+        ('microsoft_365', 'Microsoft 365'),
+        ('custom', 'Custom SMTP'),
+    ]
+
     name = models.CharField(max_length=100)
+    provider = models.CharField(max_length=50, choices=PROVIDER_CHOICES, default='custom')
     host = models.CharField(max_length=255)
     port = models.IntegerField(default=587)
     username = models.CharField(max_length=255)

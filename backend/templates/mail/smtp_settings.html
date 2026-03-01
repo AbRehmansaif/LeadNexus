@@ -15,38 +15,57 @@
 <div class="grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
     <!-- Add New SMTP Account -->
     <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">Add Delivery Account</h2>
-            <small>Connect Gmail, Outlook, Google Workspace, or custom SMTP securely.</small>
+        <div class="card-header" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
+            <h2 class="card-title" style="margin: 0;">Add Delivery Account</h2>
+            <p class="text-muted" style="margin: 0; font-size: 0.8rem; line-height: 1.4;">Connect your email service provider securely. We recommend using App Passwords for enhanced security.</p>
         </div>
         <form id="smtpForm" class="scraper-form">
             <div class="form-group">
+                <label class="form-label">Account Provider</label>
+                <select id="provider" class="form-input" required>
+                    <option value="gmail">Gmail</option>
+                    <option value="google_workspace">Google Workspace</option>
+                    <option value="outlook">Outlook / Hotmail</option>
+                    <option value="microsoft_365">Microsoft 365</option>
+                    <option value="custom">Custom SMTP</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label class="form-label">Account Label</label>
-                <input type="text" id="name" class="form-input" placeholder="Internal name to identify this email.e.g. Gmail 1" required>
+                <input type="text" id="name" class="form-input" placeholder="e.g. Sales Outreach - Gmail" required>
             </div>
-            <div class="form-row">
-                <div class="form-group">
-                    <label class="form-label">SMTP Host</label>
-                    <input type="text" id="host" class="form-input" placeholder="smtp.gmail.com" required>
-                </div>
-                <div class="form-group">
-                    <label class="form-label">SMTP Port</label>
-                    <input type="number" id="port" class="form-input" value="587" required>
+
+            <div id="smtp-details" style="display: none;">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label">SMTP Host</label>
+                        <input type="text" id="host" class="form-input" placeholder="smtp.gmail.com">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">SMTP Port</label>
+                        <input type="number" id="port" class="form-input" value="587">
+                    </div>
                 </div>
             </div>
+
             <div class="form-group">
                 <label class="form-label">Sender Email Address</label>
-                <input type="email" id="username" class="form-input" placeholder="user@gmail.com" required>
+                <input type="email" id="username" class="form-input" placeholder="user@domain.com" required>
             </div>
+
             <div class="form-group">
-                <label class="form-label">Password (or App Password)</label>
-                <input type="password" id="password" class="form-input" required>
+                <label class="form-label">Password / App Password</label>
+                <input type="password" id="password" class="form-input" placeholder="••••••••••••" required>
+                <small class="text-muted" id="password-hint">For Gmail/Outlook, please use an <strong>App Password</strong>.</small>
             </div>
+
             <div class="form-group">
-                <label class="form-label">From Email</label>
-                <input type="email" id="from_email" class="form-input" placeholder="user@gmail.com" required>
+                <label class="form-label">From Email (Display)</label>
+                <input type="email" id="from_email" class="form-input" placeholder="user@domain.com" required>
             </div>
-            <div class="form-row">
+
+            <div class="form-row" id="security-settings" style="display: none;">
                 <label class="form-check">
                     <input type="checkbox" id="use_tls" checked> 
                     <span class="form-check-label">Use TLS</span>
@@ -56,35 +75,52 @@
                     <span class="form-check-label">Use SSL</span>
                 </label>
             </div>
-            <button type="submit" id="saveBtn" class="btn btn-primary" style="width: 100%; margin-top: 24px;">Add Account</button>
+
+            <button type="submit" id="saveBtn" class="btn btn-primary" style="width: 100%; margin-top: 12px; height: 45px; font-weight: 600;">
+                <span id="btnText">Connect Account</span>
+            </button>
         </form>
     </div>
 
     <!-- List of SMTP Accounts -->
     <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">Connected Delivery Accounts ({{ accounts.count }})</h2>
+        <div class="card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <h2 class="card-title">Connected Accounts</h2>
+            <span class="badge badge-info">{{ accounts.count }} Active</span>
         </div>
         <div class="table-wrapper">
             <table class="data-table">
                 <thead>
                     <tr>
-                        <th>Account Label</th>
-                        <th>User</th>
+                        <th>Provider</th>
+                        <th>Label</th>
+                        <th>Email</th>
                         <th>Status</th>
-                        <th>Manage</th>
+                        <th>Action</th>
                     </tr>
                 </thead>
                 <tbody id="smtpTable">
                     {% for account in accounts %}
                     <tr id="account-{{ account.id }}">
-                        <td>{{ account.name }}</td>
-                        <td>{{ account.username|truncatechars:20 }}</td>
                         <td>
-                            <span class="badge {% if account.is_active %}badge-completed{% else %}badge-failed{% endif %}">{{ account.is_active|yesno:"Active,Inactive" }}</span>
+                            <span class="provider-icon">{{ account.get_provider_display }}</span>
+                        </td>
+                        <td><strong>{{ account.name }}</strong></td>
+                        <td>{{ account.username|truncatechars:25 }}</td>
+                        <td>
+                            <span class="status-dot {% if account.is_active %}online{% else %}offline{% endif %}"></span>
+                            {{ account.is_active|yesno:"Active,Inactive" }}
                         </td>
                         <td>
-                            <button onclick="deleteAccount({{ account.id }})" class="btn btn-danger btn-sm">Delete</button>
+                            <button onclick="deleteAccount({{ account.id }})" class="btn-icon-delete" title="Delete Account">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="5" style="text-align: center; padding: 40px; color: var(--text-muted);">
+                            No accounts connected yet. Add your first one to start campaigns.
                         </td>
                     </tr>
                     {% endfor %}
@@ -93,6 +129,7 @@
         </div>
     </div>
 </div>
+
 <div class="alert alert-info" style="margin-top: 24px;">
     <span>💡</span>
     <div>
@@ -100,11 +137,60 @@
     </div>
 </div>
 
+<style>
+    .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+    .status-dot.online { background-color: #10b981; box-shadow: 0 0 8px #10b98188; }
+    .status-dot.offline { background-color: #ef4444; }
+    .btn-icon-delete { background: none; border: none; color: #ef4444; cursor: pointer; padding: 8px; border-radius: 6px; transition: all 0.2s; }
+    .btn-icon-delete:hover { background: #fee2e2; color: #dc2626; }
+    .text-muted { color: #94a3b8; font-size: 0.875rem; }
+    select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; }
+</style>
+
 <script>
+const providers = {
+    gmail: { host: 'smtp.gmail.com', port: 587, tls: true, ssl: false },
+    google_workspace: { host: 'smtp.gmail.com', port: 587, tls: true, ssl: false },
+    outlook: { host: 'smtp-mail.outlook.com', port: 587, tls: true, ssl: false },
+    microsoft_365: { host: 'smtp.office365.com', port: 587, tls: true, ssl: false },
+    custom: { host: '', port: 587, tls: true, ssl: false }
+};
+
+const providerSelect = document.getElementById('provider');
+const smtpDetails = document.getElementById('smtp-details');
+const securitySettings = document.getElementById('security-settings');
+
+function updateFormFields() {
+    const selected = providerSelect.value;
+    const config = providers[selected];
+    
+    if (selected === 'custom') {
+        smtpDetails.style.display = 'block';
+        securitySettings.style.display = 'flex';
+    } else {
+        smtpDetails.style.display = 'none';
+        securitySettings.style.display = 'none';
+        document.getElementById('host').value = config.host;
+        document.getElementById('port').value = config.port;
+        document.getElementById('use_tls').checked = config.tls;
+        document.getElementById('use_ssl').checked = config.ssl;
+    }
+}
+
+providerSelect.addEventListener('change', updateFormFields);
+updateFormFields(); // Initial call
+
 document.getElementById('smtpForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    const btn = document.getElementById('saveBtn');
+    const btnText = document.getElementById('btnText');
+    
+    btn.disabled = true;
+    btnText.innerText = 'Connecting...';
+
     const data = {
         name: document.getElementById('name').value,
+        provider: document.getElementById('provider').value,
         host: document.getElementById('host').value,
         port: parseInt(document.getElementById('port').value),
         username: document.getElementById('username').value,
@@ -115,20 +201,32 @@ document.getElementById('smtpForm').addEventListener('submit', async (e) => {
         is_active: true
     };
 
-    const res = await fetch('/mail/api/smtp/', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': '{{ csrf_token }}'
-        },
-        body: JSON.stringify(data)
-    });
-    if (res.ok) window.location.reload();
-    else alert('Error adding account');
+    try {
+        const res = await fetch('/mail/api/smtp/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': '{{ csrf_token }}'
+            },
+            body: JSON.stringify(data)
+        });
+        
+        if (res.ok) {
+            window.location.reload();
+        } else {
+            const err = await res.json();
+            alert('Error: ' + (err.detail || 'Failed to add account'));
+        }
+    } catch (e) {
+        alert('Network error. Please try again.');
+    } finally {
+        btn.disabled = false;
+        btnText.innerText = 'Connect Account';
+    }
 });
 
 async function deleteAccount(id) {
-    if (!confirm('Are you sure?')) return;
+    if (!confirm('Are you sure you want to remove this delivery account?')) return;
     const res = await fetch(`/mail/api/smtp/${id}/`, {
         method: 'DELETE',
         headers: { 'X-CSRFToken': '{{ csrf_token }}' }
