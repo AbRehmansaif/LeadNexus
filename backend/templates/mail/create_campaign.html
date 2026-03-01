@@ -47,9 +47,9 @@
         <div style="text-align: center; margin: 24px 0; color: var(--text-muted);">— OR —</div>
 
         <div class="form-group">
-            <label class="form-label" for="manual_recipients">Manual Input (Paste Emails)</label>
-            <textarea id="manual_recipients" class="form-input" style="height: 120px;" placeholder="email1@example.com, Name 1&#10;email2@example.com, Name 2"></textarea>
-            <p class="form-help">One per line: email, name (optional)</p>
+            <label class="form-label" for="manual_recipients">Manual Input (Paste Leads)</label>
+            <textarea id="manual_recipients" class="form-input" style="height: 120px;" placeholder="email1@example.com, Name 1, Industry 1&#10;email2@example.com, Name 2, Industry 2"></textarea>
+            <p class="form-help">Format: <strong>email, name, industry</strong> (one per line). Use commas to separate.</p>
         </div>
 
         <div class="form-actions">
@@ -80,10 +80,13 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
     const manualInput = document.getElementById('manual_recipients').value;
     if (manualInput.trim()) {
         const recipients = manualInput.split('\n').map(line => {
-            const parts = line.split(',');
+            const parts = line.split(',').map(s => s.trim());
             return {
-                email: parts[0].trim(),
-                name: parts[1] ? parts[1].trim() : ''
+                email: parts[0],
+                name: parts[1] || '',
+                custom_data: {
+                    industry: parts[2] || ''
+                }
             };
         }).filter(r => r.email);
         formData.append('recipients', JSON.stringify(recipients));

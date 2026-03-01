@@ -27,15 +27,18 @@ def send_campaign_emails(campaign_id):
         # Get all pending recipients
         recipients = campaign.recipients.filter(status='pending')
         
-        # Get all active SMTP credentials
-        smtp_credentials = list(SMTPCredential.objects.filter(is_active=True))
-        if not smtp_credentials:
+        # Get all SMTP credentials, we will filter active ones after checking limits
+        all_smtp_credentials = list(SMTPCredential.objects.all())
+        if not all_smtp_credentials:
             campaign.status = 'failed'
             campaign.save(update_fields=['status'])
-            logger.error(f"No active SMTP credentials found for campaign {campaign_id}")
+            logger.error(f"No SMTP credentials found for campaign {campaign_id}")
             return
 
-        smtp_count = len(smtp_credentials)
+        # Pre-check and reset limits for all credentials once per loop start
+        for cred in all_smtp_credentials:
+            cred.check_and_reset_limit()
+
         smtp_index = 0
 
         for recipient in recipients:
@@ -45,14 +48,26 @@ def send_campaign_emails(campaign_id):
                 logger.info(f"Campaign {campaign_id} stopped or paused.")
                 break
 
+            # Filter active credentials (some might have deactivated mid-loop if hit limit)
+            active_smtp_credentials = [c for c in all_smtp_credentials if c.is_active]
+            
+            if not active_smtp_credentials:
+                campaign.status = 'failed'
+                campaign.save(update_fields=['status'])
+                logger.error(f"All SMTP credentials hit daily limits or became inactive for campaign {campaign_id}")
+                break
+
+            smtp_count = len(active_smtp_credentials)
+            
             # Select SMTP credential (rotate)
-            creds = smtp_credentials[smtp_index % smtp_count]
+            creds = active_smtp_credentials[smtp_index % smtp_count]
             smtp_index += 1
 
             try:
                 # Prepare email content with placeholders
                 template = Template(campaign.body)
                 context_data = {
+
                     'name': recipient.name or recipient.email.split('@')[0],
                     'email': recipient.email,
                 }
@@ -72,17 +87,25 @@ def send_campaign_emails(campaign_id):
                     use_ssl=creds.use_ssl,
                 )
 
+                # Setup from_email with display name if available
+                from_email = creds.from_email
+                if creds.from_name:
+                    from_email = f"{creds.from_name} <{creds.from_email}>"
+
                 # Create email
                 email = EmailMessage(
                     subject=campaign.subject,
                     body=rendered_body,
-                    from_email=creds.from_email,
+                    from_email=from_email,
                     to=[recipient.email],
                     connection=connection,
                 )
                 
                 # Send
                 email.send()
+
+                # Update usage
+                creds.increment_usage()
 
                 # Update recipient
                 recipient.status = 'sent'

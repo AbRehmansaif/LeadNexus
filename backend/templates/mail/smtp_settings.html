@@ -73,9 +73,15 @@
                 <input type="text" id="from_name" class="form-input" placeholder="e.g. Cristina from LeadNexus">
             </div>
 
-            <div class="form-group">
-                <label class="form-label">From Email (Display)</label>
-                <input type="email" id="from_email" class="form-input" placeholder="user@domain.com" required>
+            <div class="form-row">
+                <div class="form-group">
+                    <label class="form-label">From Email (Display)</label>
+                    <input type="email" id="from_email" class="form-input" placeholder="user@domain.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Daily Limit</label>
+                    <input type="number" id="daily_limit" class="form-input" value="50" min="1" required>
+                </div>
             </div>
 
             <div class="form-row" id="security-settings" style="display: none;">
@@ -108,6 +114,7 @@
                         <th>Provider</th>
                         <th>Label</th>
                         <th>Email</th>
+                        <th>Usage (24h)</th>
                         <th>Status</th>
                         <th>Action</th>
                     </tr>
@@ -120,6 +127,14 @@
                         </td>
                         <td><strong>{{ account.name }}</strong></td>
                         <td>{{ account.username|truncatechars:25 }}</td>
+                        <td>
+                            <div style="display: flex; align-items: center; gap: 6px;">
+                                <div style="flex-grow: 1; background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden;">
+                                    <div style="background: {% if account.emails_sent_today >= account.daily_limit %}#ef4444{% else %}#3b82f6{% endif %}; height: 100%; width: {% widthratio account.emails_sent_today account.daily_limit 100 %}%;"></div>
+                                </div>
+                                <span style="font-size: 0.8rem; color: #94a3b8; min-width: 45px;">{{ account.emails_sent_today }} / {{ account.daily_limit }}</span>
+                            </div>
+                        </td>
                         <td>
                             <span class="status-dot {% if account.is_active %}online{% else %}offline{% endif %}"></span>
                             {{ account.is_active|yesno:"Active,Inactive" }}
@@ -137,6 +152,7 @@
                                         data-username="{{ account.username }}"
                                         data-from-name="{{ account.from_name|default:'' }}"
                                         data-from-email="{{ account.from_email }}"
+                                        data-daily-limit="{{ account.daily_limit }}"
                                         data-use-tls="{{ account.use_tls|yesno:'true,false' }}"
                                         data-use-ssl="{{ account.use_ssl|yesno:'true,false' }}"
                                         data-active="{{ account.is_active|yesno:'true,false' }}">
@@ -200,6 +216,10 @@
                 <div class="form-group">
                     <label class="form-label">From Email</label>
                     <input type="email" id="edit-from-email" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">Daily Limit</label>
+                    <input type="number" id="edit-daily-limit" class="form-input" min="1" required>
                 </div>
             </div>
             
@@ -389,6 +409,7 @@ document.getElementById('smtpForm').addEventListener('submit', async (e) => {
         password: document.getElementById('password').value,
         from_email: document.getElementById('from_email').value,
         from_name: document.getElementById('from_name').value,
+        daily_limit: parseInt(document.getElementById('daily_limit').value),
         use_tls: document.getElementById('use_tls').checked,
         use_ssl: document.getElementById('use_ssl').checked,
         is_active: true
@@ -450,6 +471,7 @@ function manageAccount(id) {
     document.getElementById('edit-name').value = btn.dataset.name;
     document.getElementById('edit-from-name').value = btn.dataset.fromName;
     document.getElementById('edit-from-email').value = btn.dataset.fromEmail;
+    document.getElementById('edit-daily-limit').value = btn.dataset.dailyLimit;
     document.getElementById('edit-host').value = btn.dataset.host;
     document.getElementById('edit-port').value = btn.dataset.port;
     
@@ -486,6 +508,7 @@ editForm.addEventListener('submit', async (e) => {
         name: document.getElementById('edit-name').value,
         from_name: document.getElementById('edit-from-name').value,
         from_email: document.getElementById('edit-from-email').value,
+        daily_limit: parseInt(document.getElementById('edit-daily-limit').value),
         host: document.getElementById('edit-host').value,
         port: parseInt(document.getElementById('edit-port').value),
         is_active: document.getElementById('edit-is-active').checked

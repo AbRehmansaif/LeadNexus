@@ -77,7 +77,7 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
                         campaign=campaign,
                         email=email,
                         name=row.get('name') or row.get('Name') or '',
-                        custom_data={k: v for k, v in row.items() if k.lower() not in ['email', 'name']}
+                        custom_data={k.lower(): v for k, v in row.items() if k.lower() not in ['email', 'name']}
                     ))
 
         # 3. Process Recipients from manual input (can be list or JSON string)

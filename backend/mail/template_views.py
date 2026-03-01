@@ -42,6 +42,9 @@ def campaign_detail_page(request, pk):
 def smtp_settings_page(request):
     """Manage SMTP backend accounts."""
     accounts = SMTPCredential.objects.all()
+    for account in accounts:
+        account.check_and_reset_limit()
+    
     return render(request, 'mail/smtp_settings.html', {
         'active_page': 'campaigns',
         'accounts': accounts,

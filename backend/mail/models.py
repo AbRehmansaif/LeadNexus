@@ -21,7 +21,34 @@ class SMTPCredential(models.Model):
     from_email = models.EmailField()
     from_name = models.CharField(max_length=255, blank=True, null=True, help_text="e.g. Cristina from LeadNexus")
     is_active = models.BooleanField(default=True)
+    daily_limit = models.IntegerField(default=50, help_text="Max emails per 24h")
+    emails_sent_today = models.IntegerField(default=0)
+    last_reset_at = models.DateTimeField(default=timezone.now)
     created_at = models.DateTimeField(auto_now_add=True)
+
+    def check_and_reset_limit(self):
+        """
+        Resets the daily count if 24 hours have passed since last_reset_at.
+        Also re-activates the account if it was deactivated due to limit.
+        """
+        now = timezone.now()
+        if (now - self.last_reset_at).total_seconds() >= 86400:
+            self.emails_sent_today = 0
+            self.last_reset_at = now
+            if not self.is_active:
+                self.is_active = True
+            self.save()
+            return True
+        return False
+
+    def increment_usage(self):
+        """
+        Increments the usage count and deactivates if limit reached.
+        """
+        self.emails_sent_today += 1
+        if self.emails_sent_today >= self.daily_limit:
+            self.is_active = False
+        self.save()
 
     def __str__(self):
         return f"{self.name} ({self.from_email})"
