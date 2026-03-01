@@ -382,9 +382,71 @@ function initSaaSFeatures() {
     });
 }
 
+// ── Custom Neural Cursor ─────────────────────────────────
+function initCustomCursor() {
+    const dot = document.querySelector('.cursor-dot');
+    const outline = document.querySelector('.cursor-outline');
+
+    if (!dot || !outline) return;
+
+    let mouseX = 0, mouseY = 0;
+    let outlineX = 0, outlineY = 0;
+
+    window.addEventListener('mousemove', (e) => {
+        mouseX = e.clientX;
+        mouseY = e.clientY;
+
+        dot.style.left = mouseX + 'px';
+        dot.style.top = mouseY + 'px';
+
+        dot.style.opacity = '1';
+        outline.style.opacity = '1';
+    });
+
+    function animate() {
+        const distX = mouseX - outlineX;
+        const distY = mouseY - outlineY;
+
+        outlineX = outlineX + (distX * 0.15);
+        outlineY = outlineY + (distY * 0.15);
+
+        outline.style.left = outlineX + 'px';
+        outline.style.top = outlineY + 'px';
+
+        requestAnimationFrame(animate);
+    }
+    animate();
+
+    // Hover states
+    document.addEventListener('mouseover', (e) => {
+        if (e.target.closest('a, button, input, select, textarea, .tab-btn, [role="button"], .nav-link')) {
+            document.body.classList.add('cursor-hover');
+        }
+    });
+
+    document.addEventListener('mouseout', (e) => {
+        if (e.target.closest('a, button, input, select, textarea, .tab-btn, [role="button"], .nav-link')) {
+            document.body.classList.remove('cursor-hover');
+        }
+    });
+
+    // Click animation
+    document.addEventListener('mousedown', () => document.body.classList.add('cursor-click'));
+    document.addEventListener('mouseup', () => document.body.classList.remove('cursor-click'));
+
+    // Handle window exit
+    document.addEventListener('mouseleave', () => {
+        dot.style.opacity = '0';
+        outline.style.opacity = '0';
+    });
+}
+
 // ── Init ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     initSaaSFeatures();
+    if (window.matchMedia("(pointer: fine)").matches) {
+        initCustomCursor();
+    }
     initWebsiteScraper();
     initLinkedInScraper();
     initLinkedInJobPolling();
@@ -402,7 +464,7 @@ document.addEventListener('DOMContentLoaded', () => {
         observer.observe(el);
     });
 
-    // Auto-hide Django Toasts (already handled in base.html script, but this is a backup)
+    // Auto-hide Django Toasts
     document.querySelectorAll('.toast').forEach(toast => {
         if (!toast.dataset.processed) {
             toast.dataset.processed = "true";

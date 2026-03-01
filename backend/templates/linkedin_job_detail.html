@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">💼 LinkedIn Scrape — "{{ job.niche }}"</h1>
+    <h1 class="page-title">💼 ProFinder — "{{ job.niche }}"</h1>
     <p class="page-subtitle">Job #{{ job.id }} — {{ job.max_profiles }} profiles requested</p>
 </div>
 
@@ -63,19 +63,19 @@
 {% if profiles %}
 <div class="stats-grid" style="margin-bottom: 24px;">
     <div class="stat-card purple">
-        <div class="stat-label">Profiles Scraped</div>
+        <div class="stat-label">Prospects Discovered</div>
         <div class="stat-value">{{ profiles|length }}</div>
     </div>
     <div class="stat-card cyan">
-        <div class="stat-label">With Websites</div>
+        <div class="stat-label">Websites</div>
         <div class="stat-value">{{ profiles_with_website }}</div>
     </div>
     <div class="stat-card green">
-        <div class="stat-label">Emails Found</div>
+        <div class="stat-label">Emails</div>
         <div class="stat-value">{{ emails_found }}</div>
     </div>
     <div class="stat-card amber">
-        <div class="stat-label">Phones Found</div>
+        <div class="stat-label">Contacts</div>
         <div class="stat-value">{{ phones_found }}</div>
     </div>
 </div>
@@ -85,7 +85,7 @@
 {% if profiles %}
 <div class="card">
     <div class="card-header">
-        <h2 class="card-title"><span class="card-icon">📊</span> Scraped Profiles ({{ profiles|length }})</h2>
+        <h2 class="card-title"><span class="card-icon">📊</span> Outreach Profiles ({{ profiles|length }})</h2>
     </div>
 
     <!-- View Toggle -->
