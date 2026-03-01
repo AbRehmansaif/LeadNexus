@@ -1,5 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from .models import EmailCampaign, SMTPCredential, Recipient
 
 @login_required
@@ -41,11 +42,18 @@ def campaign_detail_page(request, pk):
 @login_required
 def smtp_settings_page(request):
     """Manage SMTP backend accounts."""
-    accounts = SMTPCredential.objects.all()
-    for account in accounts:
+    accounts_list = SMTPCredential.objects.all().order_by('-created_at')
+    
+    for account in accounts_list:
         account.check_and_reset_limit()
+        
+    paginator = Paginator(accounts_list, 10) # 10 accounts per page
+    page_number = request.GET.get('page')
+    accounts = paginator.get_page(page_number)
     
     return render(request, 'mail/smtp_settings.html', {
         'active_page': 'campaigns',
         'accounts': accounts,
+        'total_accounts': accounts_list.count(),
+        'active_accounts': accounts_list.filter(is_active=True).count(),
     })

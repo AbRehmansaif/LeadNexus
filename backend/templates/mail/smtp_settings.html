@@ -186,6 +186,32 @@
                 </tbody>
             </table>
         </div>
+        
+        <!-- Pagination Controls -->
+        {% if accounts.has_other_pages %}
+        <div style="padding: 16px 20px; border-top: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; background: #0f172a;">
+            <span class="text-muted" style="font-size: 0.85rem;">
+                Showing <strong>{{ accounts.start_index }}</strong> to <strong>{{ accounts.end_index }}</strong> of <strong>{{ total_accounts }}</strong> accounts
+            </span>
+            <div style="display: flex; gap: 8px;">
+                {% if accounts.has_previous %}
+                <a href="?page={{ accounts.previous_page_number }}" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem;">← Prev</a>
+                {% else %}
+                <button class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem; opacity: 0.5; cursor: not-allowed;" disabled>← Prev</button>
+                {% endif %}
+                
+                <span style="display: inline-flex; align-items: center; padding: 0 12px; font-size: 0.85rem; color: #fff; background: #1e293b; border-radius: 6px;">
+                    Page {{ accounts.number }} of {{ accounts.paginator.num_pages }}
+                </span>
+
+                {% if accounts.has_next %}
+                <a href="?page={{ accounts.next_page_number }}" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem;">Next →</a>
+                {% else %}
+                <button class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem; opacity: 0.5; cursor: not-allowed;" disabled>Next →</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
     </div>
     </div> <!-- End accountsTab -->
 </div>
