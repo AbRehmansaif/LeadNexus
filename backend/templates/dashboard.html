@@ -11,16 +11,16 @@
 <!-- Stats Grid -->
 <div class="stats-grid">
     <div class="stat-card purple">
-        <div class="stat-label">Active outreaches</div>
+        <div class="stat-label">Total Outreach</div>
         <div class="stat-value">{{ total_jobs }}</div>
         <div class="stat-sub">Webs + ProFinder</div>
     </div>
     <div class="stat-card green">
-        <div class="stat-label">Completed</div>
+        <div class="stat-label">Completed Outreach</div>
         <div class="stat-value">{{ completed_jobs }}</div>
     </div>
     <div class="stat-card blue">
-        <div class="stat-label">Running</div>
+        <div class="stat-label">Active Outreach</div>
         <div class="stat-value">{{ running_jobs }}</div>
     </div>
     <div class="stat-card cyan">
@@ -34,6 +34,21 @@
     <div class="stat-card red">
         <div class="stat-label">System Exceptions</div>
         <div class="stat-value">{{ failed_jobs }}</div>
+    </div>
+    <div class="stat-card purple">
+        <div class="stat-label">Total Outreach Delivered</div>
+        <div class="stat-value">{{ total_emails_sent }}</div>
+        <div class="stat-sub">Across all campaigns</div>
+    </div>
+    <div class="stat-card blue">
+        <div class="stat-label">Active Campaigns</div>
+        <div class="stat-value">{{ active_campaigns }}</div>
+        <div class="stat-sub">Currently executing</div>
+    </div>
+    <div class="stat-card amber">
+        <div class="stat-label">Delivery Accounts</div>
+        <div class="stat-value">{{ smtp_accounts.count }}</div>
+        <div class="stat-sub">Connected sending infrastructure</div>
     </div>
 </div>
 

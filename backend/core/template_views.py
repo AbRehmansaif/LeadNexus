@@ -10,7 +10,7 @@ from .models import (
     LinkedInScrapeJob, ScrapedLinkedInProfile,
     UserProfile, LinkedInAccount
 )
-from mail.models import EmailCampaign
+from mail.models import EmailCampaign, SMTPCredential
 
 @login_required
 def profile_settings(request):
@@ -68,6 +68,9 @@ def dashboard(request):
         'failed_jobs':     failed_jobs,
         'total_profiles':  total_profiles,
         'emails_found':    emails_found,
+        'total_emails_sent': sum(c.sent_count for c in EmailCampaign.objects.all()),
+        'active_campaigns': EmailCampaign.objects.filter(status='running').count(),
+        'smtp_accounts': SMTPCredential.objects.all(),
         'recent_website_jobs':  website_jobs.order_by('-created_at')[:5],
         'recent_linkedin_jobs': linkedin_jobs.order_by('-created_at')[:5],
         'recent_campaigns': EmailCampaign.objects.all().order_by('-created_at')[:5],
