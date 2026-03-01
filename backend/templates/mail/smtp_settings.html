@@ -140,11 +140,12 @@
                         <td><strong>{{ account.name }}</strong></td>
                         <td>{{ account.username|truncatechars:25 }}</td>
                         <td>
-                            <div style="display: flex; align-items: center; gap: 6px;">
+                            <div style="display: flex; align-items: center; gap: 8px;">
                                 <div style="flex-grow: 1; background: #1e293b; height: 6px; border-radius: 3px; overflow: hidden;">
-                                    <div style="background: {% if account.emails_sent_today >= account.daily_limit %}#ef4444{% else %}#3b82f6{% endif %}; height: 100%; width: {% widthratio account.emails_sent_today account.daily_limit 100 %}%;"></div>
+                                    {% widthratio account.emails_sent_today account.daily_limit 100 as usage_percent %}
+                                    <div style="background: hsl(calc(120 - ({{ usage_percent }} * 1.2)), 85%, 45%); height: 100%; width: {{ usage_percent }}%; transition: all 0.3s ease;"></div>
                                 </div>
-                                <span style="font-size: 0.8rem; color: #94a3b8; min-width: 45px;">{{ account.emails_sent_today }} / {{ account.daily_limit }}</span>
+                                <span style="font-size: 0.85rem; color: #94a3b8; font-weight: 500; min-width: 45px; text-align: right;">{{ account.emails_sent_today }} / {{ account.daily_limit }}</span>
                             </div>
                         </td>
                         <td>
