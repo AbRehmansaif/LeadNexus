@@ -52,8 +52,119 @@
     </div>
 </div>
 
+
+<!-- Recent Jobs -->
+{% if recent_website_jobs or recent_linkedin_jobs %}
+<div style="margin-top: 36px;">
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title"><span class="card-icon">🕐</span> Recent Activity</h2>
+        </div>
+
+        {% if recent_campaigns %}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="margin: 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Growth Campaigns</h3>
+            <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;">View All</a>
+        </div>
+        <div class="table-wrapper" style="margin-bottom: 24px;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Campaign Name</th>
+                        <th>Status</th>
+                        <th>Progress</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for campaign in recent_campaigns %}
+                    <tr>
+                        <td>#{{ campaign.id }}</td>
+                        <td class="cell-name">{{ campaign.name }}</td>
+                        <td><span class="badge badge-{{ campaign.status }}"><span class="badge-dot"></span> {{ campaign.status|upper }}</span></td>
+                        <td>
+                            <div style="font-size: 0.8rem; margin-bottom: 2px;">{{ campaign.progress_percentage }}%</div>
+                            <div style="width: 80px; height: 3px; background: var(--border); border-radius: 2px;">
+                                <div style="width: {{ campaign.progress_percentage }}%; height: 100%; background: var(--accent-purple); border-radius: 2px;"></div>
+                            </div>
+                        </td>
+                        <td><a href="/mail/campaign/{{ campaign.id }}/" class="btn btn-secondary btn-sm">Track →</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if recent_linkedin_jobs %}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="margin: 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">ProFinder Intelligence</h3>
+            <a href="/jobs/" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;">View All</a>
+        </div>
+        <div class="table-wrapper" style="margin-bottom: 24px;">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Niche</th>
+                        <th>Progress</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in recent_linkedin_jobs %}
+                    <tr>
+                        <td>#{{ job.id }}</td>
+                        <td class="cell-name">{{ job.niche }}</td>
+                        <td>{{ job.progress }} / {{ job.max_profiles }}</td>
+                        <td><span class="badge badge-{{ job.status }}"><span class="badge-dot"></span> {{ job.status }}</span></td>
+                        <td>{{ job.created_at|date:"M d, Y H:i" }}</td>
+                        <td><a href="/linkedin-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+
+        {% if recent_website_jobs %}
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+            <h3 style="margin: 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Web Intelligence</h3>
+            <a href="/jobs/" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;">View All</a>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>URL</th>
+                        <th>Status</th>
+                        <th>Created</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in recent_website_jobs %}
+                    <tr>
+                        <td>#{{ job.id }}</td>
+                        <td class="cell-url">{{ job.url|truncatechars:60 }}</td>
+                        <td><span class="badge badge-{{ job.status }}"><span class="badge-dot"></span> {{ job.status }}</span></td>
+                        <td>{{ job.created_at|date:"M d, Y H:i" }}</td>
+                        <td><a href="/website-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a></td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% endif %}
+    </div>
+</div>
+
 <!-- Quick Actions -->
-<div class="action-cards">
+<div class="action-cards" style="margin-top: 36px;">
     <a href="/website-scraper/" class="action-card">
         <div class="action-icon purple">🌐</div>
         <h3>Web Lead Discovery</h3>
@@ -154,106 +265,5 @@
     </div>
 </div>
 
-<!-- Recent Jobs -->
-{% if recent_website_jobs or recent_linkedin_jobs %}
-<div style="margin-top: 36px;">
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title"><span class="card-icon">🕐</span> Recent Activity</h2>
-            <a href="/jobs/" class="btn btn-secondary btn-sm">View All →</a>
-        </div>
-
-        {% if recent_campaigns %}
-        <h3 style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Email Campaigns</h3>
-        <div class="table-wrapper" style="margin-bottom: 24px;">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Campaign Name</th>
-                        <th>Status</th>
-                        <th>Progress</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for campaign in recent_campaigns %}
-                    <tr>
-                        <td>#{{ campaign.id }}</td>
-                        <td class="cell-name">{{ campaign.name }}</td>
-                        <td><span class="badge badge-{{ campaign.status }}"><span class="badge-dot"></span> {{ campaign.status|upper }}</span></td>
-                        <td>
-                            <div style="font-size: 0.8rem; margin-bottom: 2px;">{{ campaign.progress_percentage }}%</div>
-                            <div style="width: 80px; height: 3px; background: var(--border); border-radius: 2px;">
-                                <div style="width: {{ campaign.progress_percentage }}%; height: 100%; background: var(--accent-purple); border-radius: 2px;"></div>
-                            </div>
-                        </td>
-                        <td><a href="/mail/campaign/{{ campaign.id }}/" class="btn btn-secondary btn-sm">Track →</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
-
-        {% if recent_linkedin_jobs %}
-        <h3 style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">LinkedIn Jobs</h3>
-        <div class="table-wrapper" style="margin-bottom: 24px;">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Niche</th>
-                        <th>Progress</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for job in recent_linkedin_jobs %}
-                    <tr>
-                        <td>#{{ job.id }}</td>
-                        <td class="cell-name">{{ job.niche }}</td>
-                        <td>{{ job.progress }} / {{ job.max_profiles }}</td>
-                        <td><span class="badge badge-{{ job.status }}"><span class="badge-dot"></span> {{ job.status }}</span></td>
-                        <td>{{ job.created_at|date:"M d, Y H:i" }}</td>
-                        <td><a href="/linkedin-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
-
-        {% if recent_website_jobs %}
-        <h3 style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Website Jobs</h3>
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>URL</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for job in recent_website_jobs %}
-                    <tr>
-                        <td>#{{ job.id }}</td>
-                        <td class="cell-url">{{ job.url|truncatechars:60 }}</td>
-                        <td><span class="badge badge-{{ job.status }}"><span class="badge-dot"></span> {{ job.status }}</span></td>
-                        <td>{{ job.created_at|date:"M d, Y H:i" }}</td>
-                        <td><a href="/website-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-        {% endif %}
-    </div>
-</div>
 {% endif %}
 {% endblock %}
