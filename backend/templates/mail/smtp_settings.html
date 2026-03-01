@@ -19,7 +19,7 @@
             <h2 class="card-title" style="margin: 0;">Add Delivery Account</h2>
             <p class="text-muted" style="margin: 0; font-size: 0.8rem; line-height: 1.4;">Connect your email service provider securely. We recommend using App Passwords for enhanced security.</p>
         </div>
-        <form id="smtpForm" class="scraper-form">
+        <form id="smtpForm" class="scraper-form" novalidate>
             <div class="form-group">
                 <label class="form-label">Account Provider</label>
                 <select id="provider" class="form-input" required>
@@ -66,6 +66,11 @@
                     </button>
                 </div>
                 <small class="text-muted" id="password-hint">For Gmail/Outlook, please use an <strong>App Password</strong>.</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">From Name (Display)</label>
+                <input type="text" id="from_name" class="form-input" placeholder="e.g. Cristina from LeadNexus">
             </div>
 
             <div class="form-group">
@@ -152,6 +157,9 @@
     .btn-icon-delete { background: none; border: none; color: #ef4444; cursor: pointer; padding: 8px; border-radius: 6px; transition: all 0.2s; }
     .btn-icon-delete:hover { background: #fee2e2; color: #dc2626; }
     .text-muted { color: #94a3b8; font-size: 0.875rem; }
+    .form-label { color: #94a3b8 !important; font-weight: 500; font-size: 0.85rem; margin-bottom: 6px; display: block; }
+    .error-text { color: #ef4444; font-size: 0.75rem; margin-top: 4px; display: none; }
+    .form-input.is-invalid { border-color: #ef4444 !important; background-color: #fef2f211 !important; }
     select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; }
 </style>
 
@@ -193,6 +201,14 @@ const togglePassword = document.getElementById('togglePassword');
 const passwordInput = document.getElementById('password');
 const eyeIcon = document.getElementById('eyeIcon');
 
+// Sanitize App Password (Remove spaces in real-time)
+passwordInput.addEventListener('input', (e) => {
+    const val = e.target.value;
+    if (val.includes(' ')) {
+        e.target.value = val.replace(/\s/g, '');
+    }
+});
+
 togglePassword.addEventListener('click', () => {
     const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
     passwordInput.setAttribute('type', type);
@@ -215,6 +231,28 @@ togglePassword.addEventListener('click', () => {
 
 document.getElementById('smtpForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    // Manual Validation
+    const form = e.target;
+    let isValid = true;
+    
+    // Clear previous errors
+    form.querySelectorAll('.error-text').forEach(el => el.remove());
+    form.querySelectorAll('.form-input').forEach(el => el.classList.remove('is-invalid'));
+
+    const requiredFields = form.querySelectorAll('[required]');
+    requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+            isValid = false;
+            showError(field, 'This field is required');
+        } else if (field.type === 'email' && !field.value.includes('@')) {
+            isValid = false;
+            showError(field, 'Please enter a valid email address');
+        }
+    });
+
+    if (!isValid) return;
+
     const btn = document.getElementById('saveBtn');
     const btnText = document.getElementById('btnText');
     
@@ -229,6 +267,7 @@ document.getElementById('smtpForm').addEventListener('submit', async (e) => {
         username: document.getElementById('username').value,
         password: document.getElementById('password').value,
         from_email: document.getElementById('from_email').value,
+        from_name: document.getElementById('from_name').value,
         use_tls: document.getElementById('use_tls').checked,
         use_ssl: document.getElementById('use_ssl').checked,
         is_active: true
@@ -265,6 +304,15 @@ async function deleteAccount(id) {
         headers: { 'X-CSRFToken': '{{ csrf_token }}' }
     });
     if (res.ok) document.getElementById(`account-${id}`).remove();
+}
+
+function showError(field, message) {
+    field.classList.add('is-invalid');
+    const err = document.createElement('div');
+    err.className = 'error-text';
+    err.style.display = 'block';
+    err.innerText = message;
+    field.parentElement.appendChild(err);
 }
 </script>
 {% endblock %}
