@@ -65,6 +65,59 @@ class ScrapeJobListCreateView(ListCreateAPIView):
         run_scrape_job_async(job.id)
         return Response(ScrapeJobSerializer(job).data, status=status.HTTP_201_CREATED)
 
+@api_view(['POST'])
+def bulk_scrape_jobs_csv(request):
+    """POST /api/jobs/bulk/ -> upload a CSV, create ScrapeJob for each valid URL."""
+    import io
+    file = request.FILES.get('file')
+    if not file:
+        return Response({'error': 'No file provided.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    scrape_contact = request.data.get('scrape_contact', 'true').lower() == 'true'
+    try:
+        max_contact_pages = int(request.data.get('max_contact_pages', 3))
+    except ValueError:
+        max_contact_pages = 3
+
+    try:
+        decoded_file = file.read().decode('utf-8-sig') # Handle potential BOM
+        reader = csv.reader(io.StringIO(decoded_file))
+        created_jobs = []
+
+        for i, row in enumerate(reader):
+            if not row:
+                continue
+            
+            # Assuming first column is URL
+            url = row[0].strip()
+            
+            # Skip header row if it contains 'url'
+            if i == 0 and 'url' in url.lower() and not url.startswith('http'):
+                continue
+                
+            if not url:
+                continue
+
+            if not url.startswith('http://') and not url.startswith('https://'):
+                url = 'https://' + url
+
+            job = ScrapeJob.objects.create(
+                url=url,
+                scrape_contact=scrape_contact,
+                max_contact_pages=max_contact_pages,
+                status='pending'
+            )
+            run_scrape_job_async(job.id)
+            created_jobs.append(job.id)
+
+        return Response({
+            'message': f'Successfully queued {len(created_jobs)} domain analysis jobs.',
+            'job_ids': created_jobs
+        }, status=status.HTTP_201_CREATED)
+    except Exception as e:
+        logger.exception("Failed processing bulk CSV upload")
+        return Response({'error': str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
 
 class ScrapeJobDetailView(RetrieveAPIView):
     """GET /api/jobs/<id>/"""

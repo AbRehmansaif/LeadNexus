@@ -18,6 +18,7 @@ urlpatterns = [
     path('', include(router.urls)),
     # ── Website Scrape Jobs ─────────────────────────────────────
     path('jobs/',                    views.ScrapeJobListCreateView.as_view(), name='job-list-create'),
+    path('jobs/bulk/',               views.bulk_scrape_jobs_csv,              name='job-bulk-create'),
     path('jobs/<int:pk>/',           views.ScrapeJobDetailView.as_view(),     name='job-detail'),
     path('jobs/<int:pk>/delete/',    views.ScrapeJobDeleteView.as_view(),     name='job-delete'),
     path('jobs/<int:pk>/status/',    views.job_status,                        name='job-status'),

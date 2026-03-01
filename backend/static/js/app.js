@@ -142,6 +142,66 @@ async function pollWebsiteJob(jobId) {
     showNotification('Scrape timed out. Check the jobs list for status.', 'warning');
 }
 
+function initBulkWebsiteScraper() {
+    const form = document.getElementById('bulkWebsiteScraperForm');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        if (!form.checkValidity()) return;
+        e.preventDefault();
+
+        const fileInput = document.getElementById('csvFile');
+        const scrapeContact = document.getElementById('bulkScrapeContact').checked;
+        const maxPages = parseInt(document.getElementById('bulkMaxContactPages').value) || 3;
+
+        if (!fileInput.files || fileInput.files.length === 0) {
+            showNotification('Please select a CSV file.', 'error');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', fileInput.files[0]);
+        formData.append('scrape_contact', scrapeContact);
+        formData.append('max_contact_pages', maxPages);
+
+        showLoading('Uploading and starting bulk scrape jobs...');
+
+        try {
+            const res = await fetch('/api/jobs/bulk/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrfToken
+                },
+                body: formData
+            });
+
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({ error: res.statusText }));
+                throw new Error(err.error || err.detail || JSON.stringify(err));
+            }
+
+            const data = await res.json();
+            hideLoading();
+            showNotification(data.message || 'Bulk jobs started successfully.', 'success');
+
+            setTimeout(() => {
+                window.location.href = '/jobs/';
+            }, 1000);
+
+        } catch (err) {
+            hideLoading();
+            showNotification('Error: ' + err.message, 'error');
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `🚀 Start Bulk Analysis`;
+            }
+        }
+    });
+}
+
+
 // ── LinkedIn Scraper Form ─────────────────────────────────
 function initLinkedInScraper() {
     const form = document.getElementById('linkedinScraperForm');
@@ -448,6 +508,7 @@ document.addEventListener('DOMContentLoaded', () => {
         initCustomCursor();
     }
     initWebsiteScraper();
+    initBulkWebsiteScraper();
     initLinkedInScraper();
     initLinkedInJobPolling();
 
