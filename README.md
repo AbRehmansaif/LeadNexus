@@ -49,10 +49,11 @@ This laptop **runs the full project**, including database, scraper, Gunicorn, an
 ### 2️⃣ Clone the project
 
 ```bash
-git clone https://github.com/AbRehmansaif/Scrapper.git
-cd yourproject
+git clone https://github.com/AbRehmansaif/LeadNexus.git
 ```
-
+```bash
+cd LeadNexus
+```
 ---
 
 ### 3️⃣ Configure `.env` (Production-ready)
