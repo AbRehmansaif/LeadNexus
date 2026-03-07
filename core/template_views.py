@@ -68,6 +68,7 @@ def dashboard(request):
         'failed_jobs':     failed_jobs,
         'total_profiles':  total_profiles,
         'emails_found':    emails_found,
+        'total_campaigns': EmailCampaign.objects.count(),
         'total_emails_sent': sum(c.sent_count for c in EmailCampaign.objects.all()),
         'active_campaigns': EmailCampaign.objects.filter(status='running').count(),
         'smtp_accounts': SMTPCredential.objects.all(),
