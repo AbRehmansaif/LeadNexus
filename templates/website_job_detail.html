@@ -60,12 +60,40 @@
         </div>
         <div class="btn-group">
             {% if results %}
+            <button onclick="startCampaignFromWebsite()" class="btn btn-primary btn-sm">🚀 Start Campaign</button>
             <a href="/api/export/csv/?job_id={{ job.id }}" class="btn btn-secondary btn-sm">📄 Export CSV</a>
             <a href="/api/export/json/?job_id={{ job.id }}" class="btn btn-secondary btn-sm">📋 Export JSON</a>
             {% endif %}
             <button onclick="deleteWebsiteJob({{ job.id }})" class="btn btn-danger btn-sm">🗑 Delete</button>
         </div>
     </div>
+
+    <script>
+    function startCampaignFromWebsite() {
+        const leads = [];
+        {% for r in results %}
+            {% if r.email %}
+            leads.push({
+                email: "{{ r.email|escapejs }}",
+                name: "{{ r.website_url|escapejs }}",
+                industry: "Web Lead"
+            });
+            {% endif %}
+        {% endfor %}
+
+        if (leads.length === 0) {
+            alert("No leads with emails found in this job.");
+            return;
+        }
+
+        // Store in sessionStorage to pass to the campaign page
+        const leadString = leads.map(l => `${l.email}, ${l.name}, ${l.industry}`).join('\n');
+        sessionStorage.setItem('pending_campaign_leads', leadString);
+        
+        // Redirect to campaign creation
+        window.location.href = "{% url 'mail-campaign-create' %}";
+    }
+    </script>
 
     <!-- Progress Bar -->
     <div class="progress-text" id="progressText">
