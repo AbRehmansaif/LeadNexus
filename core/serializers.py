@@ -24,16 +24,16 @@ class ScrapedWebsiteSerializer(serializers.ModelSerializer):
 
 
 class ScrapeJobSerializer(serializers.ModelSerializer):
-    result           = ScrapedWebsiteSerializer(read_only=True)
+    results          = ScrapedWebsiteSerializer(many=True, read_only=True)
     duration_seconds = serializers.FloatField(read_only=True)
 
     class Meta:
         model  = ScrapeJob
         fields = [
-            'id', 'url', 'scrape_contact', 'max_contact_pages',
+            'id', 'name', 'url', 'urls_to_scrape', 'scrape_contact', 'max_contact_pages',
             'status', 'error_message',
             'created_at', 'started_at', 'completed_at', 'duration_seconds',
-            'result',
+            'results',
         ]
         read_only_fields = [
             'status', 'error_message',

@@ -125,16 +125,23 @@ def linkedin_scraper_page(request):
 def website_job_detail(request, pk):
     """Detail page for a website scrape job."""
     job = get_object_or_404(ScrapeJob, pk=pk)
-    result = None
-    try:
-        result = job.result
-    except ScrapedWebsite.DoesNotExist:
-        pass
+    results = job.results.all().order_by('-scraped_at')
+
+    emails_found = sum(1 for r in results if r.email)
+    phones_found = sum(1 for r in results if r.phone)
+    socials_found = sum(1 for r in results if r.facebook or r.linkedin or r.twitter or r.instagram)
+    total_domains = len(job.urls_to_scrape) if job.urls_to_scrape else 1
+    progress = min(results.count(), total_domains)
 
     return render(request, 'website_job_detail.html', {
         'active_page': 'jobs',
         'job':         job,
-        'result':      result,
+        'results':     results,
+        'emails_found': emails_found,
+        'phones_found': phones_found,
+        'socials_found': socials_found,
+        'total_domains': total_domains,
+        'progress': progress,
     })
 
 

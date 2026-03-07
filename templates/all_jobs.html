@@ -133,7 +133,7 @@
                     {% for job in website_jobs %}
                     <tr>
                         <td>#{{ job.id }}</td>
-                        <td class="cell-url">{{ job.url|truncatechars:55 }}</td>
+                        <td class="cell-url">{% if job.name %}{{ job.name|truncatechars:55 }}{% else %}{{ job.url|truncatechars:55 }}{% endif %}</td>
                         <td>
                             {% if job.scrape_contact %}
                                 <span style="color: var(--accent-green);">Yes ({{ job.max_contact_pages }})</span>

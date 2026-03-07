@@ -1,17 +1,54 @@
 {% extends "base.html" %}
 {% block title %}Website Job #{{ job.id }} — DataScraper Pro{% endblock %}
 
+{% block extra_css %}
+<style>
+    .copy-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: all 0.2s;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .copy-btn:hover {
+        color: var(--accent-purple);
+        background: rgba(139, 92, 246, 0.1);
+    }
+    .copy-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+    .data-with-copy {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .cell-url-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">🌐 Website Scrape Result</h1>
-    <p class="page-subtitle">Job #{{ job.id }} — {{ job.url|truncatechars:80 }}</p>
+    <h1 class="page-title">🌐 Web Intelligence — "{% if job.name %}{{ job.name }}{% else %}{{ job.url|truncatechars:80 }}{% endif %}"</h1>
+    <p class="page-subtitle">Job #{{ job.id }} — {{ total_domains }} domains requested</p>
 </div>
 
-<!-- Job Status Bar -->
-<div class="card" style="margin-bottom: 24px;">
-    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px;">
+<!-- Job Status & Progress -->
+<div class="card" style="margin-bottom: 24px;"
+     id="jobProgress" data-job-id="{{ job.id }}" data-job-status="{{ job.status }}">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
         <div style="display: flex; align-items: center; gap: 16px;">
-            <span class="badge badge-{{ job.status }}">
+            <span class="badge badge-{{ job.status }}" id="statusBadge">
                 <span class="badge-dot"></span> {{ job.status|upper }}
             </span>
             <span style="color: var(--text-muted); font-size: 0.85rem;">
@@ -22,12 +59,21 @@
             </span>
         </div>
         <div class="btn-group">
-            {% if result %}
+            {% if results %}
             <a href="/api/export/csv/?job_id={{ job.id }}" class="btn btn-secondary btn-sm">📄 Export CSV</a>
             <a href="/api/export/json/?job_id={{ job.id }}" class="btn btn-secondary btn-sm">📋 Export JSON</a>
             {% endif %}
             <button onclick="deleteWebsiteJob({{ job.id }})" class="btn btn-danger btn-sm">🗑 Delete</button>
         </div>
+    </div>
+
+    <!-- Progress Bar -->
+    <div class="progress-text" id="progressText">
+        {{ progress }} / {{ total_domains }} domains ({{ progress|stringformat:"f"|add:"0"|slugify }}%)
+    </div>
+    <div class="progress-bar-wrapper">
+        <div class="progress-bar-fill" id="progressBarFill"
+             style="width: {% widthratio progress total_domains 100 %}%;"></div>
     </div>
 </div>
 
@@ -37,122 +83,299 @@
 </div>
 {% endif %}
 
-{% if result %}
-<!-- Scraped Data -->
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title"><span class="card-icon">📊</span> Extracted Data</h2>
-    </div>
-
-    <div class="result-grid">
-        <div class="result-item">
-            <div class="result-label">📧 Email</div>
-            <div class="result-value {% if not result.email %}na{% endif %}">
-                {% if result.email %}
-                    <a href="mailto:{{ result.email }}">{{ result.email }}</a>
-                    <button class="copy-btn" onclick="copyToClipboard('{{ result.email }}')">Copy</button>
-                {% else %}
-                    Not found
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="result-item">
-            <div class="result-label">📱 Phone</div>
-            <div class="result-value {% if not result.phone %}na{% endif %}">
-                {% if result.phone %}
-                    <a href="tel:{{ result.phone }}">{{ result.phone }}</a>
-                    <button class="copy-btn" onclick="copyToClipboard('{{ result.phone }}')">Copy</button>
-                {% else %}
-                    Not found
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="result-item">
-            <div class="result-label">📍 Address</div>
-            <div class="result-value {% if not result.address %}na{% endif %}">
-                {{ result.address|default:"Not found" }}
-            </div>
-        </div>
-
-        <div class="result-item">
-            <div class="result-label">🌐 Website</div>
-            <div class="result-value">
-                <a href="{{ result.website_url }}" target="_blank">{{ result.website_url }}</a>
-            </div>
-        </div>
-
-        <div class="result-item">
-            <div class="result-label">📘 Facebook</div>
-            <div class="result-value {% if not result.facebook %}na{% endif %}">
-                {% if result.facebook %}
-                    <a href="{{ result.facebook }}" target="_blank">{{ result.facebook|truncatechars:50 }}</a>
-                {% else %}
-                    Not found
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="result-item">
-            <div class="result-label">🐦 Twitter / X</div>
-            <div class="result-value {% if not result.twitter %}na{% endif %}">
-                {% if result.twitter %}
-                    <a href="{{ result.twitter }}" target="_blank">{{ result.twitter|truncatechars:50 }}</a>
-                {% else %}
-                    Not found
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="result-item">
-            <div class="result-label">📸 Instagram</div>
-            <div class="result-value {% if not result.instagram %}na{% endif %}">
-                {% if result.instagram %}
-                    <a href="{{ result.instagram }}" target="_blank">{{ result.instagram|truncatechars:50 }}</a>
-                {% else %}
-                    Not found
-                {% endif %}
-            </div>
-        </div>
-
-        <div class="result-item">
-            <div class="result-label">💼 LinkedIn</div>
-            <div class="result-value {% if not result.linkedin %}na{% endif %}">
-                {% if result.linkedin %}
-                    <a href="{{ result.linkedin }}" target="_blank">{{ result.linkedin|truncatechars:50 }}</a>
-                {% else %}
-                    Not found
-                {% endif %}
-            </div>
-        </div>
-    </div>
-
-    {% if result.pages_scraped %}
-    <div class="section-divider"></div>
-    <h3 style="margin-bottom: 12px; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase;">Pages Scraped</h3>
-    <ul style="list-style: none; padding: 0;">
-        {% for page_url in result.pages_scraped %}
-        <li style="padding: 6px 0; border-bottom: 1px solid var(--border);">
-            <a href="{{ page_url }}" target="_blank" class="cell-url" style="font-size: 0.85rem;">{{ page_url }}</a>
-        </li>
-        {% endfor %}
-    </ul>
-    {% endif %}
-</div>
-
-{% elif job.status == 'pending' or job.status == 'running' %}
-<div class="card">
-    <div class="empty-state">
-        <div class="spinner" style="margin: 0 auto 16px;"></div>
-        <h3>Scraping in progress...</h3>
-        <p>This page will auto-update when the job finishes.</p>
+{% if job.status == 'running' or job.status == 'pending' %}
+<div class="alert alert-info" style="margin-bottom: 24px;">
+    <span>🔄</span>
+    <div>
+        <strong>Scraping in progress...</strong><br>
+        Web intelligence is being gathered. This page will auto-update when the job finishes.
     </div>
 </div>
 <script>
     // Auto-refresh while running
     setTimeout(() => window.location.reload(), 3000);
 </script>
+{% endif %}
+
+<!-- Stats Row -->
+{% if results %}
+<div class="stats-grid" style="margin-bottom: 24px;">
+    <div class="stat-card purple">
+        <div class="stat-label">Domains Analyzed</div>
+        <div class="stat-value">{{ results|length }}</div>
+    </div>
+    <div class="stat-card cyan">
+        <div class="stat-label">Socials Detected</div>
+        <div class="stat-value">{{ socials_found }}</div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-label">Emails Extracted</div>
+        <div class="stat-value">{{ emails_found }}</div>
+    </div>
+    <div class="stat-card amber">
+        <div class="stat-label">Contacts Discovered</div>
+        <div class="stat-value">{{ phones_found }}</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Profiles Table -->
+{% if results %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><span class="card-icon">📊</span> Outreach Domains ({{ results|length }})</h2>
+    </div>
+
+    <!-- View Toggle -->
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="tableView">📋 Table View</button>
+            <button class="tab-btn" data-tab="cardView">🃏 Card View</button>
+        </div>
+
+        <!-- Table View -->
+        <div class="tab-content active" id="tableView">
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Website URL</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Address</th>
+                            <th>Socials</th>
+                            <th>Pages Scraped</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in results %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td class="cell-url">
+                                <div class="cell-url-container">
+                                    <a href="{{ r.website_url }}" target="_blank" class="cell-url">{{ r.website_url|truncatechars:35 }}</a>
+                                    <button class="copy-btn" onclick="copyToClipboard('{{ r.website_url }}')" title="Copy URL">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                    </button>
+                                </div>
+                            </td>
+                            <td>
+                                {% if r.email %}
+                                    <div class="data-with-copy">
+                                        <a href="mailto:{{ r.email }}">{{ r.email }}</a>
+                                        <button class="copy-btn" onclick="copyToClipboard('{{ r.email }}')" title="Copy Email">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <span style="color: var(--text-muted);">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if r.phone %}
+                                    <div class="data-with-copy">
+                                        <span>{{ r.phone }}</span>
+                                        <button class="copy-btn" onclick="copyToClipboard('{{ r.phone }}')" title="Copy Phone">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <span style="color: var(--text-muted);">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if r.address %}
+                                    <div class="data-with-copy">
+                                        <span title="{{ r.address }}">{{ r.address|truncatechars:30 }}</span>
+                                        <button class="copy-btn" onclick="copyToClipboard('{{ r.address }}')" title="Copy Address">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        </button>
+                                    </div>
+                                {% else %}
+                                    <span style="color: var(--text-muted);">—</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    {% if r.linkedin %}
+                                        <div class="data-with-copy">
+                                            <a href="{{ r.linkedin }}" target="_blank" class="cell-url" title="{{ r.linkedin }}">{{ r.linkedin|truncatechars:20 }}</a>
+                                            <button class="copy-btn" onclick="copyToClipboard('{{ r.linkedin }}')" title="Copy LinkedIn URL">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                    {% if r.facebook %}
+                                        <div class="data-with-copy">
+                                            <a href="{{ r.facebook }}" target="_blank" class="cell-url" title="{{ r.facebook }}">{{ r.facebook|truncatechars:20 }}</a>
+                                            <button class="copy-btn" onclick="copyToClipboard('{{ r.facebook }}')" title="Copy Facebook URL">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                    {% if r.twitter %}
+                                        <div class="data-with-copy">
+                                            <a href="{{ r.twitter }}" target="_blank" class="cell-url" title="{{ r.twitter }}">{{ r.twitter|truncatechars:20 }}</a>
+                                            <button class="copy-btn" onclick="copyToClipboard('{{ r.twitter }}')" title="Copy Twitter URL">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                    {% if r.instagram %}
+                                        <div class="data-with-copy">
+                                            <a href="{{ r.instagram }}" target="_blank" class="cell-url" title="{{ r.instagram }}">{{ r.instagram|truncatechars:20 }}</a>
+                                            <button class="copy-btn" onclick="copyToClipboard('{{ r.instagram }}')" title="Copy Instagram URL">
+                                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                            </button>
+                                        </div>
+                                    {% endif %}
+                                    {% if not r.linkedin and not r.facebook and not r.twitter and not r.instagram %}
+                                        <span style="color: var(--text-muted);">—</span>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                {% if r.pages_scraped %}
+                                    <span title="{{ r.pages_scraped|join:', ' }}">{{ r.pages_scraped|length }} pages</span>
+                                {% else %}
+                                    <span style="color: var(--text-muted);">—</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Card View -->
+        <div class="tab-content" id="cardView">
+            <div class="profile-cards">
+                {% for r in results %}
+                <div class="profile-card">
+                    <div class="profile-card-header" style="display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; margin-bottom: 20px;">
+                        <div>
+                            <div class="profile-name" style="font-size: 1.4rem; font-weight: 800; color: var(--text-primary); margin-bottom: 4px;">
+                                {{ r.website_url|truncatechars:45|cut:"https://"|cut:"http://"|cut:"www."|capfirst }}
+                            </div>
+                            <div class="profile-headline" style="color: var(--text-secondary); font-size: 0.95rem; line-height: 1.4;">
+                                {% if r.pages_scraped %}Scanned {{ r.pages_scraped|length }} secondary pages for deep intelligence.{% else %}Main page analyzed for intelligence.{% endif %}
+                            </div>
+                        </div>
+                        <a href="{{ r.website_url }}" target="_blank" class="btn btn-secondary btn-sm" style="flex-shrink: 0; padding: 10px 20px;">Website →</a>
+                    </div>
+
+                    <div class="profile-details" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="profile-detail">
+                            <div class="profile-detail-label" style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">
+                                📧 EMAIL
+                            </div>
+                            <div class="profile-detail-value" style="display: flex; align-items: center; gap: 6px;">
+                                {% if r.email %}
+                                    <a href="mailto:{{ r.email }}" style="color: var(--accent-purple); font-weight: 500;">{{ r.email|truncatechars:30 }}</a>
+                                    <button class="copy-btn" onclick="copyToClipboard('{{ r.email }}')" title="Copy Email">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                    </button>
+                                {% else %}
+                                    <span style="color: var(--text-muted);">N/A</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="profile-detail">
+                            <div class="profile-detail-label" style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">
+                                📱 PHONE
+                            </div>
+                            <div class="profile-detail-value" style="display: flex; align-items: center; gap: 6px;">
+                                {% if r.phone %}
+                                    <span style="color: var(--text-primary);">{{ r.phone }}</span>
+                                    <button class="copy-btn" onclick="copyToClipboard('{{ r.phone }}')" title="Copy Phone">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                    </button>
+                                {% else %}
+                                    <span style="color: var(--text-muted);">N/A</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="profile-detail" style="grid-column: span 2;">
+                            <div class="profile-detail-label" style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px;">
+                                📍 ADDRESS
+                            </div>
+                            <div class="profile-detail-value" style="display: flex; align-items: center; gap: 6px;">
+                                {% if r.address %}
+                                    <span style="color: var(--text-primary);">{{ r.address }}</span>
+                                    <button class="copy-btn" onclick="copyToClipboard('{{ r.address }}')" title="Copy Address">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                    </button>
+                                {% else %}
+                                    <span style="color: var(--text-muted);">No location data found</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="profile-detail" style="grid-column: span 2;">
+                            <div class="profile-detail-label" style="display: flex; align-items: center; gap: 8px; font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 12px; padding-top: 8px; border-top: 1px solid var(--border);">
+                                🌐 SOCIAL ACTIVITY
+                            </div>
+                            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                                {% if r.linkedin %}
+                                    <div class="data-with-copy">
+                                        <span style="color: var(--text-muted); width: 24px;">🔗</span>
+                                        <a href="{{ r.linkedin }}" target="_blank" style="color: var(--accent-purple); font-size: 0.85rem;">LinkedIn</a>
+                                        <button class="copy-btn" onclick="copyToClipboard('{{ r.linkedin }}')" title="Copy">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        </button>
+                                    </div>
+                                {% endif %}
+                                {% if r.facebook %}
+                                    <div class="data-with-copy">
+                                        <span style="color: var(--text-muted); width: 24px;">📘</span>
+                                        <a href="{{ r.facebook }}" target="_blank" style="color: var(--accent-purple); font-size: 0.85rem;">Facebook</a>
+                                        <button class="copy-btn" onclick="copyToClipboard('{{ r.facebook }}')" title="Copy">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        </button>
+                                    </div>
+                                {% endif %}
+                                {% if r.twitter %}
+                                    <div class="data-with-copy">
+                                        <span style="color: var(--text-muted); width: 24px;">🐦</span>
+                                        <a href="{{ r.twitter }}" target="_blank" style="color: var(--accent-purple); font-size: 0.85rem;">Twitter</a>
+                                        <button class="copy-btn" onclick="copyToClipboard('{{ r.twitter }}')" title="Copy">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        </button>
+                                    </div>
+                                {% endif %}
+                                {% if r.instagram %}
+                                    <div class="data-with-copy">
+                                        <span style="color: var(--text-muted); width: 24px;">📸</span>
+                                        <a href="{{ r.instagram }}" target="_blank" style="color: var(--accent-purple); font-size: 0.85rem;">Instagram</a>
+                                        <button class="copy-btn" onclick="copyToClipboard('{{ r.instagram }}')" title="Copy">
+                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" /></svg>
+                                        </button>
+                                    </div>
+                                {% endif %}
+                                {% if not r.linkedin and not r.facebook and not r.twitter and not r.instagram %}
+                                    <div style="color: var(--text-muted); font-size: 0.85rem; grid-column: span 2;">No social profiles detected</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% elif job.status == 'completed' %}
+<div class="card">
+    <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>No usable data found</h3>
+        <p>The scrape completed but no target data was successfully extracted.</p>
+    </div>
+</div>
 {% endif %}
 
 <div style="margin-top: 24px;">

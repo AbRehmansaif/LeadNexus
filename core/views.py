@@ -51,7 +51,7 @@ class ScrapeJobListCreateView(ListCreateAPIView):
     GET  /api/jobs/   → list all website-scrape jobs
     POST /api/jobs/   → create & start a new website-scrape job
     """
-    queryset = ScrapeJob.objects.select_related('result').all()
+    queryset = ScrapeJob.objects.prefetch_related('results').all()
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -67,7 +67,7 @@ class ScrapeJobListCreateView(ListCreateAPIView):
 
 @api_view(['POST'])
 def bulk_scrape_jobs_csv(request):
-    """POST /api/jobs/bulk/ -> upload a CSV, create ScrapeJob for each valid URL."""
+    """POST /api/jobs/bulk/ -> upload a CSV, create one ScrapeJob with all valid URLs."""
     import io
     file = request.FILES.get('file')
     if not file:
@@ -82,37 +82,57 @@ def bulk_scrape_jobs_csv(request):
     try:
         decoded_file = file.read().decode('utf-8-sig') # Handle potential BOM
         reader = csv.reader(io.StringIO(decoded_file))
-        created_jobs = []
+        valid_urls = []
 
         for i, row in enumerate(reader):
             if not row:
                 continue
             
-            # Assuming first column is URL
-            url = row[0].strip()
-            
-            # Skip header row if it contains 'url'
-            if i == 0 and 'url' in url.lower() and not url.startswith('http'):
+            # Skip header row if it seems to contain headers
+            row_text = ','.join(row).lower()
+            if i == 0 and ('url' in row_text or 'domain' in row_text or 'website' in row_text):
                 continue
                 
-            if not url:
-                continue
+            from core.scraper.validators import is_valid_url
+            found_url = None
+            
+            for col in row:
+                pot_url = col.strip()
+                if not pot_url:
+                    continue
+                
+                # Check for an identifiable domain-like segment
+                # If there's a dot and it's not mostly numbers, try to extract something that looks like a domain.
+                if '.' in pot_url and len(pot_url) > 3:
+                     # Try simple format first
+                    test_url = pot_url
+                    if not test_url.startswith('http://') and not test_url.startswith('https://'):
+                        test_url = 'https://' + test_url
+                    
+                    if is_valid_url(test_url):
+                        found_url = test_url
+                        break
+            
+            if found_url:
+                valid_urls.append(found_url)
+            else:
+                logger.warning(f"Skipping invalid row from CSV (no URL found): {row}")
 
-            if not url.startswith('http://') and not url.startswith('https://'):
-                url = 'https://' + url
+        if not valid_urls:
+            return Response({'error': 'No valid URLs found in CSV.'}, status=status.HTTP_400_BAD_REQUEST)
 
-            job = ScrapeJob.objects.create(
-                url=url,
-                scrape_contact=scrape_contact,
-                max_contact_pages=max_contact_pages,
-                status='pending'
-            )
-            run_scrape_job_async(job.id)
-            created_jobs.append(job.id)
+        job = ScrapeJob.objects.create(
+            name=f"Bulk Upload: {file.name}",
+            urls_to_scrape=valid_urls,
+            scrape_contact=scrape_contact,
+            max_contact_pages=max_contact_pages,
+            status='pending'
+        )
+        run_scrape_job_async(job.id)
 
         return Response({
-            'message': f'Successfully queued {len(created_jobs)} domain analysis jobs.',
-            'job_ids': created_jobs
+            'message': f'Successfully queued bulk domain analysis job for {len(valid_urls)} domains.',
+            'job_ids': [job.id]  # Returning as list for backward compatibility in frontend if it expects it
         }, status=status.HTTP_201_CREATED)
     except Exception as e:
         logger.exception("Failed processing bulk CSV upload")
@@ -121,7 +141,7 @@ def bulk_scrape_jobs_csv(request):
 
 class ScrapeJobDetailView(RetrieveAPIView):
     """GET /api/jobs/<id>/"""
-    queryset = ScrapeJob.objects.select_related('result').all()
+    queryset = ScrapeJob.objects.prefetch_related('results').all()
     serializer_class = ScrapeJobSerializer
 
 
@@ -155,7 +175,7 @@ def job_status(request, pk):
 def job_result(request, pk):
     """GET /api/jobs/<id>/result/"""
     try:
-        job = ScrapeJob.objects.select_related('result').get(pk=pk)
+        job = ScrapeJob.objects.prefetch_related('results').get(pk=pk)
     except ScrapeJob.DoesNotExist:
         return Response({'error': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -164,12 +184,12 @@ def job_result(request, pk):
             {'error': f'Job is not completed yet. Current status: {job.status}'},
             status=status.HTTP_400_BAD_REQUEST,
         )
-    try:
-        result = job.result
-    except ScrapedWebsite.DoesNotExist:
-        return Response({'error': 'No result found'}, status=status.HTTP_404_NOT_FOUND)
+    
+    results = job.results.all()
+    if not results.exists():
+        return Response({'error': 'No results found'}, status=status.HTTP_404_NOT_FOUND)
 
-    return Response(ScrapedWebsiteSerializer(result).data)
+    return Response(ScrapedWebsiteSerializer(results, many=True).data)
 
 
 # ═══════════════════════════════════════════════════════════════════

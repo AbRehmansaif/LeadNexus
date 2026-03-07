@@ -53,7 +53,9 @@ class ScrapeJob(models.Model):
     ]
 
     # Config
-    url               = models.URLField(max_length=2000, help_text="Target website URL")
+    name              = models.CharField(max_length=255, blank=True, help_text="Name of the job (e.g., Bulk Upload CSV)")
+    url               = models.URLField(max_length=2000, blank=True, null=True, help_text="Target website URL")
+    urls_to_scrape    = models.JSONField(default=list, blank=True, help_text="List of URLs for bulk scraping")
     scrape_contact    = models.BooleanField(default=True, help_text="Also scrape contact/about pages")
     max_contact_pages = models.PositiveSmallIntegerField(default=3)
 
@@ -71,6 +73,8 @@ class ScrapeJob(models.Model):
         verbose_name = 'Website Scrape Job'
 
     def __str__(self):
+        if self.name:
+            return f"WebJob #{self.pk} — {self.name} [{self.status}]"
         return f"WebJob #{self.pk} — {self.url} [{self.status}]"
 
     @property
@@ -79,11 +83,10 @@ class ScrapeJob(models.Model):
             return (self.completed_at - self.started_at).total_seconds()
         return None
 
-
 class ScrapedWebsite(models.Model):
     """Data extracted from a single website (result of a ScrapeJob)."""
 
-    job = models.OneToOneField(ScrapeJob, on_delete=models.CASCADE, related_name='result')
+    job = models.ForeignKey(ScrapeJob, on_delete=models.CASCADE, related_name='results')
 
     website_url = models.URLField(max_length=2000)
     email       = models.EmailField(blank=True, null=True)

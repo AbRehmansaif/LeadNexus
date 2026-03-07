@@ -45,30 +45,39 @@ def run_scrape_job(job_id: int):
 
     try:
         scraper = WebsiteScraper(timeout=15)
-        data = scraper.scrape(
-            url=job.url,
-            scrape_contact=job.scrape_contact,
-            max_contact_pages=job.max_contact_pages,
-        )
+        
+        urls_to_process = job.urls_to_scrape if job.urls_to_scrape else []
+        if job.url and job.url not in urls_to_process:
+            urls_to_process.append(job.url)
+            
+        for current_url in urls_to_process:
+            try:
+                data = scraper.scrape(
+                    url=current_url,
+                    scrape_contact=job.scrape_contact,
+                    max_contact_pages=job.max_contact_pages,
+                )
 
-        ScrapedWebsite.objects.update_or_create(
-            job=job,
-            defaults={
-                'website_url':   data.get('website_url', job.url),
-                'email':         data.get('email'),
-                'phone':         data.get('phone'),
-                'address':       data.get('address'),
-                'facebook':      data.get('facebook'),
-                'twitter':       data.get('twitter'),
-                'instagram':     data.get('instagram'),
-                'linkedin':      data.get('linkedin'),
-                'pages_scraped': data.get('pages_scraped', []),
-                'scraped_at':    timezone.now(),
-            }
-        )
+                ScrapedWebsite.objects.update_or_create(
+                    job=job,
+                    website_url=data.get('website_url', current_url),
+                    defaults={
+                        'email':         data.get('email'),
+                        'phone':         data.get('phone'),
+                        'address':       data.get('address'),
+                        'facebook':      data.get('facebook'),
+                        'twitter':       data.get('twitter'),
+                        'instagram':     data.get('instagram'),
+                        'linkedin':      data.get('linkedin'),
+                        'pages_scraped': data.get('pages_scraped', []),
+                        'scraped_at':    timezone.now(),
+                    }
+                )
 
-        # Also save to data/ folder
-        _save_website_to_file(job, data)
+                # Also save to data/ folder
+                _save_website_to_file(job, data)
+            except Exception as e:
+                logger.error(f"Failed to scrape {current_url} in job #{job_id}: {e}")
 
         job.status = 'completed'
         job.error_message = ''

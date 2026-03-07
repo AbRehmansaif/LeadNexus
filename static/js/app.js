@@ -185,7 +185,7 @@ function initBulkWebsiteScraper() {
             showNotification(data.message || 'Bulk jobs started successfully.', 'success');
 
             setTimeout(() => {
-                window.location.href = '/jobs/';
+                window.location.href = `/website-job/${data.job_ids[0]}/`;
             }, 1000);
 
         } catch (err) {
