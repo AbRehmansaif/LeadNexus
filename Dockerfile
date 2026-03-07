@@ -1,5 +1,5 @@
 # Dockerfile
-FROM python:3.13-slim
+FROM python:3.11-slim
 
 # Install system dependencies (C++ compiler for scraper)
 RUN apt-get update && apt-get install -y \
@@ -19,11 +19,11 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY . .
 
 # Copy entrypoint and make executable
-COPY entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+# COPY entrypoint.sh /app/entrypoint.sh
+# RUN chmod +x /app/entrypoint.sh
 
 # Expose port for Gunicorn
 EXPOSE 8000
 
 # Run entrypoint
-ENTRYPOINT ["/app/entrypoint.sh"]
+# ENTRYPOINT ["/app/entrypoint.sh"]
