@@ -400,15 +400,31 @@ class LinkedInScraper:
     def _extract_location(self, soup: BeautifulSoup) -> str:
         """Extract company location"""
         try:
-            location_elem = soup.find('div', {'class': lambda x: x and
+            # Get the industry to help identify what NOT to pick as location
+            industry = self._extract_field(soup, 'Industry')
+            
+            # Find all summary info items
+            items = soup.find_all('div', {'class': lambda x: x and 
                                        'org-top-card-summary-info-list__info-item' in x})
-            if location_elem:
-                return clean_text(location_elem.get_text())
+            
+            for item in items:
+                text = clean_text(item.get_text())
+                # Skip the item if it matches the industry or is a follower count
+                if text == industry or 'follower' in text.lower() or not text:
+                    continue
+                return text
 
-            # Fallback
+            # Fallback: Check for Headquarters in About section
+            hq = self._extract_field(soup, 'Headquarters')
+            if hq and hq != 'N/A':
+                return hq
+
+            # Final fallback
             location_elem = soup.find('span', {'class': lambda x: x and 'text-body-small' in x})
             if location_elem:
-                return clean_text(location_elem.get_text())
+                text = clean_text(location_elem.get_text())
+                if text != industry and 'follower' not in text.lower():
+                    return text
         except:
             pass
         return "N/A"
