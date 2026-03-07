@@ -291,30 +291,46 @@ async function pollLinkedInJob(jobId) {
 }
 
 // ── Delete Job ────────────────────────────────────────────
-async function deleteWebsiteJob(jobId) {
-    if (!confirm('Delete this job and its results?')) return;
-    try {
-        await fetch(`/api/jobs/${jobId}/delete/`, {
-            method: 'DELETE',
-            headers: { 'X-CSRFToken': csrfToken },
-        });
-        window.location.href = '/jobs/';
-    } catch (err) {
-        showNotification('Delete failed: ' + err.message, 'error');
-    }
+function deleteWebsiteJob(jobId) {
+    openModal({
+        title: 'Delete Website Job',
+        desc: 'This will permanently remove the analysis results and lead data from this job. Highly irreversible.',
+        icon: '🗑️',
+        confirmText: 'Destroy Data',
+        confirmClass: 'btn-danger',
+        onConfirm: async () => {
+            try {
+                await fetch(`/api/jobs/${jobId}/delete/`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': csrfToken },
+                });
+                window.location.href = '/jobs/';
+            } catch (err) {
+                showNotification('Delete failed: ' + err.message, 'error');
+            }
+        }
+    });
 }
 
-async function deleteLinkedInJob(jobId) {
-    if (!confirm('Delete this job and all its scraped profiles?')) return;
-    try {
-        await fetch(`/api/linkedin/jobs/${jobId}/delete/`, {
-            method: 'DELETE',
-            headers: { 'X-CSRFToken': csrfToken },
-        });
-        window.location.href = '/jobs/';
-    } catch (err) {
-        showNotification('Delete failed: ' + err.message, 'error');
-    }
+function deleteLinkedInJob(jobId) {
+    openModal({
+        title: 'Delete ProFinder Job',
+        desc: 'Confirm removal of this search job and all extracted professional profiles. This cannot be undone.',
+        icon: '💼',
+        confirmText: 'Purge Records',
+        confirmClass: 'btn-danger',
+        onConfirm: async () => {
+            try {
+                await fetch(`/api/linkedin/jobs/${jobId}/delete/`, {
+                    method: 'DELETE',
+                    headers: { 'X-CSRFToken': csrfToken },
+                });
+                window.location.href = '/jobs/';
+            } catch (err) {
+                showNotification('Delete failed: ' + err.message, 'error');
+            }
+        }
+    });
 }
 
 // ── Notification Toast ────────────────────────────────────

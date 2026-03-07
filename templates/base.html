@@ -115,12 +115,26 @@
     </div>
 
     <script src="{% static 'js/app.js' %}"></script>
+    <!-- Neural Modal System -->
+    <div id="modalOverlay" class="modal-overlay">
+        <div class="modal-card">
+            <button class="modal-close-icon" onclick="closeModal()">×</button>
+            <div id="modalIcon" class="modal-icon">⚠️</div>
+            <h2 id="modalTitle" class="modal-title">Confirm Action</h2>
+            <p id="modalDesc" class="modal-desc">Are you sure you want to proceed with this operation?</p>
+            <div class="modal-actions">
+                <button id="modalSecondaryBtn" onclick="closeModal()" class="btn btn-secondary">Cancel</button>
+                <button id="modalPrimaryBtn" class="btn btn-primary">Confirm</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{% static 'js/app.js' %}"></script>
     <script>
         // --- 1. Toast Management ---
         document.addEventListener('DOMContentLoaded', () => {
             const toasts = document.querySelectorAll('.toast');
             toasts.forEach(toast => {
-                // Auto-remove after 4s
                 setTimeout(() => {
                     toast.style.opacity = '0';
                     toast.style.transform = 'translateX(50px) scale(0.9)';
@@ -129,6 +143,46 @@
                 }, 4000);
             });
         });
+
+        // --- 2. Neural Modal Controller ---
+        let currentModalCallback = null;
+
+        function openModal({ title, desc, icon, confirmText, confirmClass, onConfirm }) {
+            document.getElementById('modalTitle').innerText = title || 'Confirm Action';
+            document.getElementById('modalDesc').innerText = desc || 'Are you sure?';
+            document.getElementById('modalIcon').innerText = icon || '⚠️';
+            
+            const primaryBtn = document.getElementById('modalPrimaryBtn');
+            primaryBtn.innerText = confirmText || 'Confirm';
+            primaryBtn.className = `btn ${confirmClass || 'btn-primary'}`;
+            
+            currentModalCallback = onConfirm;
+            
+            document.getElementById('modalOverlay').classList.add('active');
+            
+            // Handle primary button click
+            primaryBtn.onclick = async () => {
+                if (currentModalCallback) {
+                    await currentModalCallback();
+                }
+                closeModal();
+            };
+        }
+
+        function closeModal() {
+            document.getElementById('modalOverlay').classList.remove('active');
+            currentModalCallback = null;
+        }
+
+        // Close on esc
+        window.onkeydown = (e) => {
+            if (e.key === 'Escape') closeModal();
+        };
+
+        // Close on overlay click
+        document.getElementById('modalOverlay').onclick = (e) => {
+            if (e.target.id === 'modalOverlay') closeModal();
+        };
     </script>
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
