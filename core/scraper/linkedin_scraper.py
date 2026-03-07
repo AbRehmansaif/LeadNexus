@@ -223,22 +223,25 @@ class LinkedInScraper:
 
         try:
             # Build search URL with optional filters
-            search_keywords = niche
+            search_keywords = niche.strip()
             if location:
-                search_keywords += f" in {location}"
+                # Add location directly to keywords as LinkedIn handles this well
+                search_keywords += f" {location.strip()}"
             
             size_facet = ""
-            if company_size and len(company_size) == 1 and company_size.upper() in "ABCDEFGH":
+            if company_size and len(company_size) == 1 and company_size.upper() in "ABCDEFGHI":
+                # LinkedIn facets for company size
                 size_facet = f"&companySize=%5B%22{company_size.upper()}%22%5D"
             elif company_size:
+                # Fallback for search query
                 search_keywords += f" {company_size}"
 
-            logger.info(f"Searching for: {search_keywords}")
+            logger.info(f"Searching for: {search_keywords} (Facets: {company_size if company_size else 'None'})")
 
-            # Added origin=FACETED_SEARCH to make the search look legitimate
+            # Combine keywords and origin with facets
             search_url = f"https://www.linkedin.com/search/results/companies/?keywords={search_keywords.replace(' ', '%20')}&origin=FACETED_SEARCH{size_facet}"
             self.driver.get(search_url)
-            time.sleep(random.uniform(5, 7))
+            time.sleep(random.uniform(7, 10)) # Increased wait for search results to settle
 
             page = 1
             search_window = self.driver.current_window_handle
