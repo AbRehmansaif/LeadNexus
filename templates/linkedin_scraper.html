@@ -35,12 +35,38 @@ The LinkedIn Intelligence Engine identifies relevant businesses, analyzes their 
             </div>
 
             <form id="linkedinScraperForm" novalidate>
-                <!-- Niche -->
                 <div class="form-group">
                     <label class="form-label" for="niche">Target Industry / Search Query *</label>
                     <input type="text" id="niche" class="form-control" placeholder="e.g., digital marketing agency, python developer, SaaS company" required>
                     <div class="error-feedback">Please enter a keyword to search.</div>
-                    <p class="form-help">Use precise industry keywords for optimal targeting. Example: "web development agency new york"</p>
+                    <p class="form-help">Use precise industry keywords for optimal targeting. Example: "web development agency"</p>
+                </div>
+
+                <div class="form-row">
+                    <!-- Location Filter -->
+                    <div class="form-group">
+                        <label class="form-label" for="location">Target Location (Optional)</label>
+                        <input type="text" id="location" class="form-control" placeholder="e.g., London, United States, New York">
+                        <p class="form-help">Narrow down results to a specific geographic region.</p>
+                    </div>
+
+                    <!-- Company Size Filter -->
+                    <div class="form-group">
+                        <label class="form-label" for="companySize">Company Size (Optional)</label>
+                        <select id="companySize" class="form-control">
+                            <option value="">-- All Sizes --</option>
+                            <option value="A">Self-employed (1 employee)</option>
+                            <option value="B">1-10 employees</option>
+                            <option value="C">11-50 employees</option>
+                            <option value="D">51-200 employees</option>
+                            <option value="E">201-500 employees</option>
+                            <option value="F">501-1,000 employees</option>
+                            <option value="G">1,001-5,000 employees</option>
+                            <option value="H">5,001-10,000 employees</option>
+                            <option value="I">10,001+ employees</option>
+                        </select>
+                        <p class="form-help">Filter by the number of employees on LinkedIn.</p>
+                    </div>
                 </div>
 
                 <div class="form-row">

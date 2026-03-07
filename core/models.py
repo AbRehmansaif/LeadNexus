@@ -137,6 +137,10 @@ class LinkedInScrapeJob(models.Model):
     scrape_websites = models.BooleanField(default=True, help_text="Also visit & scrape company websites")
     headless        = models.BooleanField(default=False, help_text="Run Chrome in headless mode")
 
+    # Filter Options (Optional)
+    location      = models.CharField(max_length=255, blank=True, default='', help_text="Filter by location (e.g., London, USA)")
+    company_size  = models.CharField(max_length=100, blank=True, default='', help_text="Filter by company size (e.g., 51-200 employees)")
+
     # LinkedIn credentials (optional — can use a stored account or manual entry)
     account = models.ForeignKey(
         LinkedInAccount, 

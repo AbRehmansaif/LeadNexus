@@ -211,6 +211,8 @@ function initLinkedInScraper() {
         e.preventDefault();
 
         const niche = document.getElementById('niche').value.trim();
+        const location = document.getElementById('location').value.trim();
+        const companySize = document.getElementById('companySize').value;
         const maxProfiles = parseInt(document.getElementById('maxProfiles').value) || 50;
         const scrapeWebsites = document.getElementById('scrapeWebsites').checked;
         const headless = document.getElementById('headless').checked;
@@ -223,6 +225,8 @@ function initLinkedInScraper() {
         try {
             const job = await apiCall('/api/linkedin/jobs/', 'POST', {
                 niche: niche,
+                location: location,
+                company_size: companySize,
                 max_profiles: maxProfiles,
                 scrape_websites: scrapeWebsites,
                 headless: headless,

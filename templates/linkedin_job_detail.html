@@ -4,7 +4,11 @@
 {% block content %}
 <div class="page-header">
     <h1 class="page-title">💼 ProFinder — "{{ job.niche }}"</h1>
-    <p class="page-subtitle">Job #{{ job.id }} — {{ job.max_profiles }} profiles requested</p>
+    <p class="page-subtitle">
+        Job #{{ job.id }} — {{ job.max_profiles }} profiles requested
+        {% if job.location %} · 📍 {{ job.location }}{% endif %}
+        {% if job.company_size %} · 👥 Size: {{ job.company_size }}{% endif %}
+    </p>
 </div>
 
 <!-- Job Status & Progress -->

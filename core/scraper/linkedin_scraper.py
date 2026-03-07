@@ -209,6 +209,8 @@ class LinkedInScraper:
         self,
         niche: str,
         max_results: int = 50,
+        location: str = "",
+        company_size: str = "",
         progress_callback: Optional[Callable] = None,
         processor_callback: Optional[Callable] = None,
     ) -> List[Dict]:
@@ -220,17 +222,34 @@ class LinkedInScraper:
         processed_urls: set = set()
 
         try:
-            logger.info(f"Searching and processing profiles for: {niche}")
+            # Build search URL with optional filters
+            search_keywords = niche
+            if location:
+                search_keywords += f" in {location}"
+            
+            size_facet = ""
+            if company_size and len(company_size) == 1 and company_size.upper() in "ABCDEFGH":
+                size_facet = f"&companySize=%5B%22{company_size.upper()}%22%5D"
+            elif company_size:
+                search_keywords += f" {company_size}"
 
-            search_url = f"https://www.linkedin.com/search/results/companies/?keywords={niche.replace(' ', '%20')}"
+            logger.info(f"Searching for: {search_keywords}")
+
+            # Added origin=FACETED_SEARCH to make the search look legitimate
+            search_url = f"https://www.linkedin.com/search/results/companies/?keywords={search_keywords.replace(' ', '%20')}&origin=FACETED_SEARCH{size_facet}"
             self.driver.get(search_url)
-            time.sleep(random.uniform(3, 5))
+            time.sleep(random.uniform(5, 7))
 
             page = 1
             search_window = self.driver.current_window_handle
 
             while len(results) < max_results:
-                logger.info(f"Scanning page {page}...")
+                # Check for "Page doesn't exist" or Bot detection
+                if "page doesn't exist" in self.driver.page_source.lower() or "content unavailable" in self.driver.page_source.lower():
+                    logger.warning("LinkedIn blocked access to this page (404 or detection). Ending scrape.")
+                    break
+
+                logger.info(f"Scanning page {page} (collected {len(results)}/max_results)...")
                 
                 # Check for login redirection
                 if "login" in self.driver.current_url.lower() and not self.is_logged_in:

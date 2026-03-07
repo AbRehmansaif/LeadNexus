@@ -108,6 +108,7 @@ class LinkedInScrapeJobCreateSerializer(serializers.ModelSerializer):
         model  = LinkedInScrapeJob
         fields = [
             'niche', 'max_profiles', 'scrape_websites', 'headless',
+            'location', 'company_size',
             'account', 'linkedin_email', 'linkedin_password',
         ]
 

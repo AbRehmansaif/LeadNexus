@@ -213,6 +213,8 @@ def run_linkedin_job(job_id: int):
         scraper.search_and_scrape(
             niche=job.niche,
             max_results=job.max_profiles,
+            location=job.location,
+            company_size=job.company_size,
             processor_callback=on_profile_found,
         )
 
