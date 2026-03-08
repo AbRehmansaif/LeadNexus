@@ -74,6 +74,12 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
 
     const csvFile = document.getElementById('csv_file').files[0];
     if (csvFile) {
+        if (!csvFile.name.toLowerCase().endsWith('.csv')) {
+            showNotification('Invalid file format. Please upload a .csv file (Excel/XLSX is not supported).', 'error');
+            btn.disabled = false;
+            btn.innerHTML = 'Create & Start Campaign';
+            return;
+        }
         formData.append('csv_file', csvFile);
     }
 
@@ -111,10 +117,10 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
             window.location.href = `/mail/campaign/${data.id}/`;
         } else {
             const errorData = await response.json();
-            alert('Error creating campaign: ' + JSON.stringify(errorData));
+            showNotification(errorData.error || 'Failed to create campaign. Please check your data.', 'error');
         }
     } catch (err) {
-        alert('Network error: ' + err.message);
+        showNotification('Network error: ' + err.message, 'error');
     } finally {
         btn.disabled = false;
         btn.innerHTML = 'Create & Start Campaign';

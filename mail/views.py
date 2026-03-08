@@ -67,18 +67,35 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
         # 2. Process Recipients from CSV file
         if 'csv_file' in request.FILES:
             csv_file = request.FILES['csv_file']
-            decoded_file = csv_file.read().decode('utf-8')
-            io_string = io.StringIO(decoded_file)
-            reader = csv.DictReader(io_string)
-            for row in reader:
-                email = row.get('email') or row.get('Email')
-                if email:
-                    recipient_list.append(Recipient(
-                        campaign=campaign,
-                        email=email,
-                        name=row.get('name') or row.get('Name') or '',
-                        custom_data={k.lower(): v for k, v in row.items() if k.lower() not in ['email', 'name']}
-                    ))
+            
+            # Simple extension check
+            if not csv_file.name.endswith('.csv'):
+                campaign.delete() # Cleanup
+                return Response({'error': 'Invalid file format. Please upload a .csv file.'}, status=status.HTTP_400_BAD_REQUEST)
+
+            try:
+                # Try UTF-8 first (standard)
+                decoded_file = csv_file.read().decode('utf-8')
+            except UnicodeDecodeError:
+                # Fallback to latin-1 if UTF-8 fails (common for Excel CSVs)
+                csv_file.seek(0)
+                decoded_file = csv_file.read().decode('latin-1')
+            
+            try:
+                io_string = io.StringIO(decoded_file)
+                reader = csv.DictReader(io_string)
+                for row in reader:
+                    email = row.get('email') or row.get('Email')
+                    if email:
+                        recipient_list.append(Recipient(
+                            campaign=campaign,
+                            email=email,
+                            name=row.get('name') or row.get('Name') or '',
+                            custom_data={k.lower(): v for k, v in row.items() if k.lower() not in ['email', 'name']}
+                        ))
+            except Exception:
+                campaign.delete()
+                return Response({'error': 'Failed to parse CSV. The file may be corrupt or not a valid CSV.'}, status=status.HTTP_400_BAD_REQUEST)
 
         # 3. Process Recipients from manual input (can be list or JSON string)
         manual_recipients = data.get('recipients', [])
