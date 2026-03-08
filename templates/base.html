@@ -8,13 +8,15 @@
     <title>{% block title %}LeadNexus{% endblock %}</title>
     <link rel="icon" href="{% static 'logo_svg.png' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     {% block extra_css %}{% endblock %}
 </head>
 <body>
     <div class="app-wrapper">
 
         <!-- ── Navbar ──────────────────────────────────────── -->
-        <nav class="navbar">
+        <nav class="navbar glass">
             <div class="container navbar-inner">
                 <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'landing' %}{% endif %}" class="navbar-brand">
                     <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" class="brand-logo-img">
@@ -23,43 +25,43 @@
                     {% if user.is_authenticated %}
                     <li>
                         <a href="{% url 'dashboard' %}" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
-                            <span class="nav-icon">📊</span> Dashboard
+                            <i data-lucide="layout-dashboard" style="width:16px; height:16px;"></i> Dashboard
                         </a>
                     </li>
                     <li>
                         <a href="/website-scraper/" class="nav-link {% if active_page == 'website-scraper' %}active{% endif %}">
-                            <span class="nav-icon">🌐</span> Web Intelligence
+                            <i data-lucide="globe" style="width:16px; height:16px;"></i> Web Intelligence
                         </a>
                     </li>
                     <li>
                         <a href="/linkedin-scraper/" class="nav-link {% if active_page == 'linkedin-scraper' %}active{% endif %}">
-                            <span class="nav-icon">💼</span> ProFinder Intelligence
+                            <i data-lucide="users" style="width:16px; height:16px;"></i> ProFinder
                         </a>
                     </li>
                     <li>
                         <a href="/jobs/" class="nav-link {% if active_page == 'jobs' %}active{% endif %}">
-                            <span class="nav-icon">📋</span> Outreach Engine
+                            <i data-lucide="zap" style="width:16px; height:16px;"></i> Outreach Engine
                         </a>
                     </li>
                     <li>
                         <a href="{% url 'mail-dashboard' %}" class="nav-link {% if active_page == 'campaigns' %}active{% endif %}">
-                            <span class="nav-icon">🚀</span> Growth Campaigns
+                            <i data-lucide="rocket" style="width:16px; height:16px;"></i> Growth Campaigns
                         </a>
                     </li>
                     {% else %}
                     <li>
                         <a href="{% url 'landing' %}" class="nav-link {% if active_page == 'landing' %}active{% endif %}">
-                            <span class="nav-icon">🏠</span> Home
+                            Home
                         </a>
                     </li>
                     <li>
                         <a href="#features" class="nav-link">
-                            <span class="nav-icon">✨</span> Features
+                            Capabilities
                         </a>
                     </li>
                     <li>
-                        <a href="#how-it-works" class="nav-link">
-                            <span class="nav-icon">⚙️</span> How it Works
+                        <a href="#pricing" class="nav-link">
+                            Infrastructure
                         </a>
                     </li>
                     {% endif %}
@@ -80,15 +82,15 @@
                             <span class="dropdown-user-email">{{ user.email|default:"Neural Operator" }}</span>
                         </div>
                         <a href="{% url 'profile-settings' %}" class="dropdown-item">
-                            <span class="item-icon">👤</span> Profile Settings
+                            <i data-lucide="user-cog" style="width:16px; height:16px; margin-right:8px;"></i> Profile Settings
                         </a>
                         <a href="/admin/" class="dropdown-item">
-                            <span class="item-icon">⚙️</span> Admin Panel
+                            <i data-lucide="shield-check" style="width:16px; height:16px; margin-right:8px;"></i> Admin Panel
                         </a>
                         <form action="{% url 'logout' %}" method="post" class="logout-form">
                             {% csrf_token %}
                             <button type="submit" class="dropdown-item logout">
-                                <span class="item-icon"></span> Sign Out
+                                <i data-lucide="log-out" style="width:16px; height:16px; margin-right:8px;"></i> Sign Out
                             </button>
                         </form>
                     </div>
@@ -203,6 +205,13 @@
         document.getElementById('modalOverlay').onclick = (e) => {
             if (e.target.id === 'modalOverlay') closeModal();
         };
+
+        // Initialize Lucide Icons
+        window.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
     </script>
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
