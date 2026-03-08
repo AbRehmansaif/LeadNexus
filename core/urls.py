@@ -22,6 +22,7 @@ urlpatterns = [
     path('jobs/<int:pk>/',           views.ScrapeJobDetailView.as_view(),     name='job-detail'),
     path('jobs/<int:pk>/delete/',    views.ScrapeJobDeleteView.as_view(),     name='job-delete'),
     path('jobs/<int:pk>/status/',    views.job_status,                        name='job-status'),
+    path('jobs/<int:pk>/toggle-pause/', views.toggle_job_pause,              name='job-toggle-pause'),
     path('jobs/<int:pk>/result/',    views.job_result,                        name='job-result'),
 
     # ── LinkedIn Scrape Jobs ────────────────────────────────────

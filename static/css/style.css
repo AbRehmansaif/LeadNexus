@@ -519,6 +519,7 @@ select.form-control {
 .badge-running    { background: rgba(59, 130, 246, 0.15);  color: var(--accent-blue);  animation: pulse-badge 2s infinite; }
 .badge-completed  { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
 .badge-failed     { background: rgba(239, 68, 68, 0.15);  color: var(--accent-red);   }
+.badge-paused     { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border: 1px dashed var(--accent-amber); }
 .badge-cancelled  { background: rgba(100, 116, 139, 0.15); color: var(--text-muted);  }
 
 @keyframes pulse-badge {

@@ -131,7 +131,11 @@ def website_job_detail(request, pk):
     emails_found = sum(1 for r in results if r.email)
     phones_found = sum(1 for r in results if r.phone)
     socials_found = sum(1 for r in results if r.facebook or r.linkedin or r.twitter or r.instagram)
-    total_domains = len(job.urls_to_scrape) if job.urls_to_scrape else 1
+    urls_to_process = list(job.urls_to_scrape) if job.urls_to_scrape else []
+    if job.url and job.url not in urls_to_process:
+        urls_to_process.append(job.url)
+    
+    total_domains = len(urls_to_process)
     progress = min(results.count(), total_domains)
 
     return render(request, 'website_job_detail.html', {

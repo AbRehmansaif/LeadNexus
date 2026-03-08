@@ -64,6 +64,13 @@
             <a href="/api/export/csv/?job_id={{ job.id }}" class="btn btn-secondary btn-sm">📄 Export CSV</a>
             <a href="/api/export/json/?job_id={{ job.id }}" class="btn btn-secondary btn-sm">📋 Export JSON</a>
             {% endif %}
+            
+            {% if job.status == 'running' or job.status == 'paused' %}
+            <button onclick="togglePauseJob({{ job.id }})" class="btn btn-warning btn-sm" id="pauseBtn">
+                {% if job.status == 'paused' %}▶ Resume{% else %}⏸ Pause{% endif %}
+            </button>
+            {% endif %}
+            
             <button onclick="deleteWebsiteJob({{ job.id }})" class="btn btn-danger btn-sm">🗑 Delete</button>
         </div>
     </div>
@@ -93,11 +100,41 @@
         // Redirect to campaign creation
         window.location.href = "{% url 'mail-campaign-create' %}";
     }
+
+    async function togglePauseJob(jobId) {
+        const btn = document.getElementById('pauseBtn');
+        const originalText = btn.innerText;
+        btn.disabled = true;
+        btn.innerText = '...';
+        
+        try {
+            const res = await fetch(`/api/jobs/${jobId}/toggle-pause/`, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}',
+                    'Content-Type': 'application/json'
+                }
+            });
+            const data = await res.json();
+            if (res.ok) {
+                window.location.reload();
+            } else {
+                alert(data.error || 'Failed to toggle pause');
+                btn.disabled = false;
+                btn.innerText = originalText;
+            }
+        } catch (err) {
+            console.error(err);
+            alert('Error communicating with server');
+            btn.disabled = false;
+            btn.innerText = originalText;
+        }
+    }
     </script>
 
     <!-- Progress Bar -->
     <div class="progress-text" id="progressText">
-        {{ progress }} / {{ total_domains }} domains ({{ progress|stringformat:"f"|add:"0"|slugify }}%)
+        {{ progress }} / {{ total_domains }} domains ({% widthratio progress total_domains 100 %}%)
     </div>
     <div class="progress-bar-wrapper">
         <div class="progress-bar-fill" id="progressBarFill"
@@ -120,8 +157,8 @@
     </div>
 </div>
 <script>
-    // Auto-refresh while running
-    setTimeout(() => window.location.reload(), 3000);
+    // Auto-refresh while running (slowed down for stability)
+    setTimeout(() => window.location.reload(), 6000);
 </script>
 {% endif %}
 

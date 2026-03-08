@@ -171,6 +171,25 @@ def job_status(request, pk):
     })
 
 
+@api_view(['POST'])
+def toggle_job_pause(request, pk):
+    """POST /api/jobs/<id>/toggle-pause/"""
+    try:
+        job = ScrapeJob.objects.get(pk=pk)
+    except ScrapeJob.DoesNotExist:
+        return Response({'error': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if job.status == 'running':
+        job.status = 'paused'
+    elif job.status == 'paused':
+        job.status = 'running'
+    else:
+        return Response({'error': f'Cannot pause/resume job with status {job.status}'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    job.save(update_fields=['status'])
+    return Response({'status': job.status})
+
+
 @api_view(['GET'])
 def job_result(request, pk):
     """GET /api/jobs/<id>/result/"""

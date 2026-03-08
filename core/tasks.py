@@ -51,12 +51,26 @@ def run_scrape_job(job_id: int):
             urls_to_process.append(job.url)
             
         for current_url in urls_to_process:
+            # --- Check for Pause/Cancel ---
+            job.refresh_from_db()
+            while job.status == 'paused':
+                import time
+                time.sleep(5)
+                job.refresh_from_db()
+
+            if job.status == 'cancelled':
+                break
+                
             try:
                 data = scraper.scrape(
                     url=current_url,
                     scrape_contact=job.scrape_contact,
                     max_contact_pages=job.max_contact_pages,
                 )
+                
+                # Add delay between domains but AFTER check
+                import time, random
+                time.sleep(random.uniform(2, 4))
 
                 ScrapedWebsite.objects.update_or_create(
                     job=job,

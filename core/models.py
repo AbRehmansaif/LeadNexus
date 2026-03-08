@@ -43,10 +43,10 @@ class LinkedInAccount(models.Model):
 
 class ScrapeJob(models.Model):
     """A single website-scraping job."""
-
     STATUS_CHOICES = [
         ('pending',   'Pending'),
         ('running',   'Running'),
+        ('paused',    'Paused'),
         ('completed', 'Completed'),
         ('failed',    'Failed'),
         ('cancelled', 'Cancelled'),
@@ -126,6 +126,7 @@ class LinkedInScrapeJob(models.Model):
     STATUS_CHOICES = [
         ('pending',   'Pending'),
         ('running',   'Running'),
+        ('paused',    'Paused'),
         ('completed', 'Completed'),
         ('failed',    'Failed'),
         ('cancelled', 'Cancelled'),
