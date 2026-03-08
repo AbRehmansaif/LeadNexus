@@ -3,26 +3,26 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">📋 Outreach Control Center</h1>
+    <h1 class="page-title"><i data-lucide="file-text" style="width:25px; height:25px; color: var(--accent-purple);"></i> Outreach Control Center</h1>
     <p class="page-subtitle">Centralized management for all lead acquisition pipelines.</p>
 </div>
 
 <!-- Quick Actions -->
 <div class="btn-group" style="margin-bottom: 28px;">
-    <a href="/website-scraper/" class="btn btn-primary">🌐 Launch Web Intelligence</a>
-    <a href="/linkedin-scraper/" class="btn btn-primary">💼 Launch ProFinder Intelligence</a>
-    <a href="/api/export/csv/" class="btn btn-secondary">📄 Export All Web Intelligence Data</a>
-    <a href="/api/export/linkedin/csv/" class="btn btn-secondary">📄 Export All LinkedIn Prospect Data</a>
+    <a href="/website-scraper/" class="btn btn-primary"><i data-lucide="globe" style="width:18px; height:18px; "></i> Launch Web Intelligence</a>
+    <a href="/linkedin-scraper/" class="btn btn-primary"><i data-lucide="linkedin" style="width:18px; height:18px; "></i> Launch ProFinder Intelligence</a>
+    <a href="/api/export/csv/" class="btn btn-secondary"><i data-lucide="file-text" style="width:18px; height:18px; "></i> Export All Web Intelligence Data</a>
+    <a href="/api/export/linkedin/csv/" class="btn btn-secondary"><i data-lucide="file-text" style="width:18px; height:18px; "></i> Export All LinkedIn Prospect Data</a>
 </div>
 
 <!-- Job Tabs -->
 <div class="tabs-container">
     <div class="tabs">
         <button class="tab-btn active" data-tab="linkedinJobs">
-            💼 ProFinder Intelligence outreach ({{ total_li_jobs }})
+            <i data-lucide="linkedin" style="width:18px; height:18px; "></i> ProFinder Intelligence outreach ({{ total_li_jobs }})
         </button>
         <button class="tab-btn" data-tab="websiteJobs">
-            🌐 Web Intelligence outreach ({{ total_web_jobs }})
+            <i data-lucide="globe" style="width:18px; height:18px; "></i> Web Intelligence outreach ({{ total_web_jobs }})
         </button>
     </div>
 
