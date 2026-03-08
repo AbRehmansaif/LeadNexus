@@ -22,7 +22,8 @@ urlpatterns = [
     path('api/', include('core.urls', namespace='core')),
 
     # ── Web Pages (Templates) ──────────────────────────────
-    path('',                       template_views.dashboard,           name='dashboard'),
+    path('',                       template_views.landing_page,        name='landing'),
+    path('dashboard/',             template_views.dashboard,           name='dashboard'),
     path('profile/',               template_views.profile_settings,    name='profile-settings'),
     path('',                       include('mail.urls')), 
     path('website-scraper/',       template_views.website_scraper_page, name='website-scraper'),

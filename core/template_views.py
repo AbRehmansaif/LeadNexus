@@ -12,6 +12,17 @@ from .models import (
 )
 from mail.models import EmailCampaign, SMTPCredential
 
+def landing_page(request):
+    """Product introduction and attraction page - accessible without login."""
+    if request.user.is_authenticated:
+        # If already logged in, show stats or redirect to dashboard (optional)
+        # For now, let's just let them see the landing page too.
+        pass
+    
+    return render(request, 'landing.html', {
+        'active_page': 'landing',
+    })
+
 @login_required
 def profile_settings(request):
     """View to update user profile (bio, avatar)."""

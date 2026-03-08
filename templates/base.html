@@ -16,12 +16,13 @@
         <!-- ── Navbar ──────────────────────────────────────── -->
         <nav class="navbar">
             <div class="container navbar-inner">
-                <a href="/" class="navbar-brand">
+                <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'landing' %}{% endif %}" class="navbar-brand">
                     <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" class="brand-logo-img">
                 </a>
                 <ul class="navbar-nav">
+                    {% if user.is_authenticated %}
                     <li>
-                        <a href="/" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                        <a href="{% url 'dashboard' %}" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
                             <span class="nav-icon">📊</span> Dashboard
                         </a>
                     </li>
@@ -45,6 +46,23 @@
                             <span class="nav-icon">🚀</span> Growth Campaigns
                         </a>
                     </li>
+                    {% else %}
+                    <li>
+                        <a href="{% url 'landing' %}" class="nav-link {% if active_page == 'landing' %}active{% endif %}">
+                            <span class="nav-icon">🏠</span> Home
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#features" class="nav-link">
+                            <span class="nav-icon">✨</span> Features
+                        </a>
+                    </li>
+                    <li>
+                        <a href="#how-it-works" class="nav-link">
+                            <span class="nav-icon">⚙️</span> How it Works
+                        </a>
+                    </li>
+                    {% endif %}
                 </ul>
                 
                 {% if user.is_authenticated %}
@@ -74,6 +92,10 @@
                             </button>
                         </form>
                     </div>
+                </div>
+                {% else %}
+                <div class="navbar-actions">
+                    <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Operator Login</a>
                 </div>
                 {% endif %}
             </div>

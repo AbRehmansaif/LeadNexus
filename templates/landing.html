@@ -1,0 +1,612 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}LeadNexus — Enterprise Growth Intelligence & Neural Outreach{% endblock %}
+
+{% block extra_css %}
+<!-- Add Lucide Icons -->
+<script src="https://unpkg.com/lucide@latest"></script>
+<style>
+    /* ── Advanced Neural Aesthetic Styling ────────────────── */
+    :root {
+        --glow-purple: rgba(139, 92, 246, 0.45);
+        --glow-blue: rgba(59, 130, 246, 0.35);
+        --glow-cyan: rgba(6, 182, 212, 0.2);
+    }
+
+    /* Scroll Reveal Baseline */
+    .reveal {
+        opacity: 0;
+        transform: translateY(40px);
+        transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+    .reveal.active {
+        opacity: 1;
+        transform: translateY(0);
+    }
+
+    /* ── Hero Refinement ─────────────────────────────────── */
+    .hero-section {
+        position: relative;
+        padding: 180px 0 120px;
+        text-align: center;
+        background: radial-gradient(circle at 50% -20%, var(--glow-purple), transparent 70%);
+        overflow: hidden;
+    }
+
+    .hero-bg-shapes {
+        position: absolute;
+        inset: 0;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    .glow-sphere {
+        position: absolute;
+        border-radius: 50%;
+        filter: blur(120px);
+        opacity: 0.3;
+        animation: float-glow 25s infinite alternate;
+    }
+
+    @keyframes float-glow {
+        from { transform: translate(0, 0) scale(1); }
+        to { transform: translate(150px, 100px) scale(1.2); }
+    }
+
+    .hero-title {
+        font-size: 6rem;
+        font-weight: 950;
+        letter-spacing: -0.06em;
+        line-height: 0.95;
+        margin-bottom: 32px;
+        background: linear-gradient(180deg, #FFFFFF 0%, #94A3B8 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .hero-title span {
+        display: block;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        animation: text-shine 6s linear infinite;
+        background-size: 200% auto;
+    }
+
+    @keyframes text-shine { to { background-position: 200% center; } }
+
+    /* ── NEW: Capabilities Showcase ──────────────────────── */
+    .capability-section {
+        padding: 140px 0;
+        background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.05) 50%, transparent);
+    }
+
+    .cap-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 80px;
+        align-items: center;
+    }
+
+    .cap-visual {
+        position: relative;
+        border-radius: 32px;
+        background: rgba(15, 23, 42, 0.6);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        padding: 40px;
+        overflow: hidden;
+    }
+
+    .cap-visual::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: linear-gradient(45deg, var(--glow-purple), transparent 60%);
+        opacity: 0.1;
+    }
+
+    .cap-content h2 {
+        font-size: 3.5rem;
+        font-weight: 900;
+        color: #fff;
+        margin-bottom: 24px;
+        line-height: 1.1;
+    }
+
+    .cap-content p {
+        font-size: 1.2rem;
+        color: var(--text-secondary);
+        margin-bottom: 32px;
+        line-height: 1.7;
+    }
+
+    /* ── NEW: Feature Cards ──────────────────────────────── */
+    .insight-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 32px;
+        margin-top: 100px;
+    }
+
+    .insight-card {
+        padding: 48px;
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 40px;
+        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .insight-card:hover {
+        background: rgba(139, 92, 246, 0.05);
+        border-color: var(--accent-purple);
+        transform: translateY(-12px) scale(1.02);
+    }
+
+    .insight-card i {
+        margin-bottom: 32px;
+        padding: 16px;
+        background: rgba(139, 92, 246, 0.1);
+        border-radius: 20px;
+        color: var(--accent-purple);
+    }
+
+    /* ── NEW: Objection FAQ ──────────────────────────────── */
+    .faq-section {
+        padding: 140px 0;
+    }
+
+    .faq-grid {
+        max-width: 900px;
+        margin: 0 auto;
+        display: grid;
+        gap: 20px;
+    }
+
+    .faq-item {
+        background: rgba(15, 23, 42, 0.4);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 20px;
+        padding: 32px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .faq-item:hover {
+        border-color: rgba(255, 255, 255, 0.2);
+        background: rgba(255, 255, 255, 0.03);
+    }
+
+    .faq-question {
+        font-size: 1.2rem;
+        font-weight: 700;
+        color: #fff;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .faq-answer {
+        margin-top: 16px;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        display: none;
+    }
+
+    .faq-item.active .faq-answer { display: block; }
+    .faq-item.active i { transform: rotate(180deg); }
+
+    /* ── Pricing Refinement ──────────────────────────────── */
+    .pricing-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 32px;
+        margin-top: 80px;
+    }
+
+    .pricing-card {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 40px;
+        padding: 60px 48px;
+        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .pricing-card:hover {
+        border-color: var(--accent-purple);
+        transform: translateY(-20px) scale(1.05);
+        box-shadow: 0 40px 100px -20px rgba(139, 92, 246, 0.2);
+    }
+
+    .pricing-card.featured {
+        background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.15), rgba(15, 23, 42, 0.8));
+        border-color: var(--accent-purple);
+    }
+
+    /* ── Floating Signal Feed (Persistent) ───────────────── */
+    .signal-feed {
+        position: absolute;
+        right: 40px;
+        top: 250px;
+        width: 320px;
+        max-height: 500px;
+        mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
+        z-index: 5;
+    }
+
+    /* ── Hero Visualizer ─────────────────────────────────── */
+    .dashboard-preview {
+        box-shadow: 0 0 100px rgba(139, 92, 246, 0.3);
+    }
+
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="hero-bg-shapes">
+    <div class="glow-sphere" style="width: 600px; height: 600px; top: -200px; left: -100px; background: var(--glow-purple);"></div>
+    <div class="glow-sphere" style="width: 500px; height: 500px; bottom: 0; right: -100px; background: var(--glow-blue); animation-delay: -5s;"></div>
+</div>
+
+<!-- SECTION 1: HERO (USER LIKES - POLISHED) -->
+<section class="hero-section">
+    <div class="container relative">
+        <div class="signal-feed hidden-md reveal">
+            <div class="signal-item" style="animation: slide-up-signal 10s infinite;">
+                <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-green);"></div>
+                <div style="font-size: 0.75rem; color: #fff;">Identity Resolved: VP Sales at CloudX</div>
+            </div>
+            <div class="signal-item" style="animation: slide-up-signal 12s infinite 1s; margin-top: 12px;">
+                <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-purple);"></div>
+                <div style="font-size: 0.75rem; color: #fff;">Neural Signal: High-Intent Pattern Found</div>
+            </div>
+            <div class="signal-item" style="animation: slide-up-signal 8s infinite 2s; margin-top: 12px;">
+                <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-blue);"></div>
+                <div style="font-size: 0.75rem; color: #fff;">Delivery Status: Verified Handshake</div>
+            </div>
+        </div>
+
+        <div class="hero-badge reveal">
+            <i data-lucide="zap" style="width: 14px; color: var(--accent-purple);"></i>
+            <span>LeadNexus Intelligence V4.2 is Live</span>
+        </div>
+        
+        <h1 class="hero-title reveal">
+            Turn Intent into <span>Market Dominance</span>
+        </h1>
+        
+        <p class="hero-subtitle reveal">
+            Stop chasing leads. Start detecting signals. LeadNexus is the autonomous growth platform 
+            that maps your entire market and executes outreach with mathematical precision.
+        </p>
+        
+        <div class="hero-actions reveal">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg" style="height: 64px; padding: 0 48px; font-weight: 700;">Enter Operator Console</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary btn-lg" style="height: 64px; padding: 0 48px; font-weight: 700; box-shadow: 0 10px 40px rgba(139, 92, 246, 0.4);">Scale My Revenue</a>
+                <a href="#how-it-works" class="btn btn-secondary btn-lg" style="height: 64px; padding: 0 48px;">Explore Architecture</a>
+            {% endif %}
+        </div>
+
+        <div class="dashboard-preview reveal" id="parallax-dashboard" style="margin-top: 120px; transition: transform 0.1s ease-out;">
+            <div class="preview-header">
+                <div class="dot-btn dot-red"></div>
+                <div class="dot-btn dot-yellow"></div>
+                <div class="dot-btn dot-green"></div>
+            </div>
+            <div class="preview-body" style="background: #020617; position: relative;">
+                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0.2;">
+                    <div style="font-size: 15rem; color: var(--accent-purple);">⚡</div>
+                </div>
+                <div style="text-align: center; z-index: 1;">
+                    <h2 style="color: #fff; font-size: 3rem; font-weight: 950; letter-spacing: 0.2em; text-shadow: 0 0 30px var(--accent-purple);">NEURAL CORE</h2>
+                    <p style="color: var(--text-secondary); letter-spacing: 0.5em; font-size: 0.8rem; margin-top: 12px;">SYSTEMS ENGAGED • ANALYSIS RUNNING</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- NEW SECTION: THE COST OF INACTION (URGENCY) -->
+<section class="container reveal" style="padding: 120px 0; text-align: center;">
+    <div style="background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.1); border-radius: 48px; padding: 100px 40px; position: relative; overflow: hidden;">
+        <div style="position: absolute; top: -50px; right: -50px; font-size: 15rem; opacity: 0.03; color: var(--accent-red);">⚠️</div>
+        <span style="color: var(--accent-red); font-weight: 800; letter-spacing: 0.1em; font-size: 0.9rem;">REVENUE LEAK IDENTIFIED</span>
+        <h2 style="font-size: 4rem; font-weight: 950; color: #fff; line-height: 1.1; margin: 20px 0;">Manual Prospecting is <br><span>Killing Your Growth</span></h2>
+        <p class="hero-subtitle" style="margin-bottom: 60px;">Every hour spent copying and pasting is an hour lost to your competitors. Stop wasting elite talent on robotic tasks.</p>
+        
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 40px; text-align: left;">
+            <div style="padding: 30px; background: rgba(0,0,0,0.2); border-radius: 24px; border-left: 4px solid var(--accent-red);">
+                <h4 style="color: #fff; margin-bottom: 10px;">90% Fatigue Rate</h4>
+                <p style="font-size: 0.9rem; color: var(--text-secondary);">Manual data entry leads to massive human error and team burnout.</p>
+            </div>
+            <div style="padding: 30px; background: rgba(0,0,0,0.2); border-radius: 24px; border-left: 4px solid var(--accent-red);">
+                 <h4 style="color: #fff; margin-bottom: 10px;">Zero Scalability</h4>
+                <p style="font-size: 0.9rem; color: var(--text-secondary);">Your current process cannot scale with your ambition. LeadNexus can.</p>
+            </div>
+            <div style="padding: 30px; background: rgba(0,0,0,0.2); border-radius: 24px; border-left: 4px solid var(--accent-red);">
+                 <h4 style="color: #fff; margin-bottom: 10px;">Reputation Risk</h4>
+                <p style="font-size: 0.9rem; color: var(--text-secondary);">Unprotected outreach gets you blacklisted. We provide the shield.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 2: THE "WHY" (NEW & STUNNING) -->
+<section id="how-it-works" class="capability-section">
+    <div class="container">
+        <div class="cap-grid">
+            <div class="reveal">
+                <span style="color: var(--accent-purple); font-weight: 800; letter-spacing: 0.1em; font-size: 0.9rem;">PHASE 01: MAP</span>
+                <h2 style="font-size: 4rem; font-weight: 950; line-height: 1;">Deep Network <br><span>Identity Mapping</span></h2>
+                <p>LeadNexus doesn't just find emails. It maps entire professional hierarchies, identifies decision-makers by intent, and creates a high-fidelity map of your entire market.</p>
+                <div style="display: flex; gap: 20px; color: #fff; font-weight: 700;">
+                    <div><span style="color: var(--accent-green);">✓</span> Intent-First Logic</div>
+                    <div><span style="color: var(--accent-green);">✓</span> 99.9% Accuracy</div>
+                </div>
+            </div>
+            <div class="cap-visual reveal" style="height: 400px; display: flex; align-items: center; justify-content: center;">
+                 <i data-lucide="network" style="width: 150px; height: 150px; color: var(--accent-purple); opacity: 0.4;"></i>
+                 <div style="position: absolute; inset: 0; background: radial-gradient(circle, transparent, #020617);"></div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 3: REVENUE ENGINE (NEW GRID) -->
+<section class="container" style="padding: 140px 0;">
+    <div class="text-center reveal" style="margin-bottom: 80px;">
+        <h2 style="font-size: 4.5rem; font-weight: 950; color: #fff; letter-spacing: -0.04em;">Performance Intelligence</h2>
+        <p class="hero-subtitle">Every module is designed to maximize your revenue velocity.</p>
+    </div>
+
+    <!-- Features with hover glow -->
+    <div class="insight-grid">
+        <div class="insight-card reveal">
+            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: var(--accent-purple); filter: blur(60px); opacity: 0.1;"></div>
+            <i data-lucide="shield-check" style="width: 64px; height: 64px;"></i>
+            <h3 style="font-size: 1.8rem; font-weight: 850; color: #fff; margin-bottom: 20px;">Domain Fortress</h3>
+            <p style="color: var(--text-secondary); line-height: 1.7;">Advanced reputation shielding that automatically rotates delivery paths to maintain 100% sender health.</p>
+        </div>
+        <div class="insight-card reveal" style="transition-delay: 0.1s;">
+            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: var(--accent-blue); filter: blur(60px); opacity: 0.1;"></div>
+            <i data-lucide="cpu" style="width: 64px; height: 64px;"></i>
+            <h3 style="font-size: 1.8rem; font-weight: 850; color: #fff; margin-bottom: 20px;">Neural Context</h3>
+            <p style="color: var(--text-secondary); line-height: 1.7;">Custom identity mappings that ensure every outreach message feels like it was written by a human specialist.</p>
+        </div>
+        <div class="insight-card reveal" style="transition-delay: 0.2s;">
+            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: var(--accent-green); filter: blur(60px); opacity: 0.1;"></div>
+            <i data-lucide="bar-chart-3" style="width: 64px; height: 64px;"></i>
+            <h3 style="font-size: 1.8rem; font-weight: 850; color: #fff; margin-bottom: 20px;">Signal Analytics</h3>
+            <p style="color: var(--text-secondary); line-height: 1.7;">Real-time intelligence dashboard showing exactly where your market is moving and which signals convert.</p>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION: SOCIAL PROOF (TRUST BUILDER) -->
+<section class="container reveal" style="padding-bottom: 140px;">
+    <div style="text-align: center; margin-bottom: 80px;">
+        <h2 style="font-size: 3rem; font-weight: 900; color: #fff;">Trusted by Growth Commanders</h2>
+    </div>
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
+        <div style="background: rgba(15,23,42,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 40px; border-radius: 32px; border-top: 4px solid var(--accent-purple);">
+            <p style="color: var(--text-secondary); font-style: italic; margin-bottom: 24px;">"LeadNexus has completely replaced our team of 5 researchers. The signal accuracy is unlike anything we've used before."</p>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: #222; border: 1px solid #333;"></div>
+                <div>
+                    <div style="color: #fff; font-weight: 700;">Marcus Thorne</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Head of Growth, VelocityX</div>
+                </div>
+            </div>
+        </div>
+        <div style="background: rgba(15,23,42,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 40px; border-radius: 32px; border-top: 4px solid var(--accent-blue);">
+            <p style="color: var(--text-secondary); font-style: italic; margin-bottom: 24px;">"We scaled our outreach from 50 to 2,000 personalized emails daily without losing a single account. A total game changer."</p>
+            <div style="display: flex; align-items: center; gap: 16px;">
+                <div style="width: 48px; height: 48px; border-radius: 50%; background: #222; border: 1px solid #333;"></div>
+                <div>
+                    <div style="color: #fff; font-weight: 700;">Sarah Jenkins</div>
+                    <div style="font-size: 0.8rem; color: var(--text-muted);">Founder, StealthOutreach</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 4: COMPARISON (USER REQUESTED "MUST BUY" PROOF) -->
+<section class="container" style="padding-bottom: 140px;">
+    <div class="reveal" style="background: rgba(139, 92, 246, 0.03); border: 1px solid rgba(139, 92, 246, 0.1); border-radius: 48px; padding: 100px 60px;">
+        <div style="text-align: center; margin-bottom: 60px;">
+            <h2 style="font-size: 3.5rem; font-weight: 950; color: #fff;">Unfair Competitive Advantage</h2>
+            <p style="color: var(--text-secondary);">Manual vs. Neural. There is no competition.</p>
+        </div>
+        
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 24px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.1em;">
+            <div>CAPABILITY</div>
+            <div>TYPICAL TOOLS</div>
+            <div style="color: var(--accent-purple);">LEADNEXUS NEURAL</div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; padding: 40px 0; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center;">
+            <div style="font-weight: 700; color: #fff;">Market Vision</div>
+            <div>Static Database</div>
+            <div style="color: var(--accent-green); font-weight: 800; font-size: 1.2rem;">Live Signal Engine</div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; padding: 40px 0; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center;">
+            <div style="font-weight: 700; color: #fff;">Sender Health</div>
+            <div>Single SMTP (High Risk)</div>
+            <div style="color: var(--accent-green); font-weight: 800; font-size: 1.2rem;">Neural Path Rotation</div>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; padding: 40px 0; align-items: center;">
+            <div style="font-weight: 700; color: #fff;">Operational Cost</div>
+            <div>Thousands/Mo (Virtual Assistants)</div>
+            <div style="color: var(--accent-green); font-weight: 800; font-size: 1.2rem;">95% Cost Reduction</div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 5: PRICING (USER LIKES - POLISHED) -->
+<section id="pricing" class="container text-center" style="padding-bottom: 120px;">
+    <h2 class="reveal" style="font-size: 4rem; font-weight: 950; color: #fff; margin-bottom: 60px;">Professional Infrastructure</h2>
+    <div class="pricing-grid">
+        <div class="pricing-card reveal" style="transition-delay: 0.1s;">
+            <h3 style="color: var(--text-secondary); font-weight: 800; letter-spacing: 0.3em; font-size: 0.8rem;">INITIATE</h3>
+            <div class="pricing-price">$99<span style="font-size: 1rem; color: var(--text-secondary);">$ / mo</span></div>
+            <ul style="list-style: none; text-align: left; padding: 0; color: var(--text-secondary); line-height: 3;">
+                <li><i data-lucide="check" style="width:16px; margin-right:12px; color:var(--accent-green);"></i> 5,000 Neural Credits</li>
+                <li><i data-lucide="check" style="width:16px; margin-right:12px; color:var(--accent-green);"></i> Automated Outreach</li>
+                <li><i data-lucide="check" style="width:16px; margin-right:12px; color:var(--accent-green);"></i> Basic Signal Analysis</li>
+            </ul>
+            <a href="{% url 'login' %}" class="btn btn-secondary btn-lg" style="width: 100%; margin-top: 50px;">Begin Deployment</a>
+        </div>
+        <div class="pricing-card featured reveal" style="background: rgba(139, 92, 246, 0.08); transition-delay: 0.2s;">
+            <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gradient-primary); padding: 6px 20px; border-radius: 100px; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.1em; color: #fff;">MOST POWERFUL</div>
+            <h3 style="color: #fff; font-weight: 900; letter-spacing: 0.3em; font-size: 0.8rem;">COMMANDER</h3>
+            <div class="pricing-price">$299<span style="font-size: 1.2rem; color: #94a3b8;">$ / mo</span></div>
+             <ul style="list-style: none; text-align: left; padding: 0; color: #cbd5e1; line-height: 3;">
+                <li><i data-lucide="check" style="width:16px; margin-right:12px; color:var(--accent-green);"></i> 25,000 Neural Credits</li>
+                <li><i data-lucide="check" style="width:16px; margin-right:12px; color:var(--accent-green);"></i> High-Volume Delivery</li>
+                <li><i data-lucide="check" style="width:16px; margin-right:12px; color:var(--accent-green);"></i> Priority Identity Tunnel</li>
+                <li><i data-lucide="check" style="width:16px; margin-right:12px; color:var(--accent-green);"></i> Team Access Terminal</li>
+            </ul>
+            <a href="{% url 'login' %}" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 50px; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4);">Initiate Growth</a>
+        </div>
+        <div class="pricing-card reveal" style="transition-delay: 0.3s;">
+            <h3 style="color: var(--text-secondary); font-weight: 800; letter-spacing: 0.3em; font-size: 0.8rem;">ENTERPRISE</h3>
+            <div class="pricing-price">CUSTOM</div>
+             <ul style="list-style: none; text-align: left; padding: 0; color: var(--text-secondary); line-height: 3;">
+                <li><i data-lucide="check" style="width:16px; margin-right:12px; color:var(--accent-green);"></i> Uncapped Signal Scale</li>
+                <li><i data-lucide="check" style="width:16px; margin-right:12px; color:var(--accent-green);"></i> Enterprise SSO Integration</li>
+                <li><i data-lucide="check" style="width:16px; margin-right:12px; color:var(--accent-green);"></i> Dedicated Neural Architect</li>
+            </ul>
+            <a href="{% url 'login' %}" class="btn btn-secondary btn-lg" style="width: 100%; margin-top: 50px;">Contact Sales</a>
+        </div>
+    </div>
+</section>
+
+<!-- LIVE PERFORMANCE STATS -->
+<section class="container reveal" style="padding-bottom: 120px; text-align: center;">
+    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;">
+        <div>
+            <div id="stat-mappings" style="font-size: 3.5rem; font-weight: 950; color: #fff;">1,240,000</div>
+            <div style="color: var(--text-muted); font-weight: 600; letter-spacing: 0.1em;">IDENTITY MAPPINGS</div>
+        </div>
+        <div>
+            <div id="stat-signals" style="font-size: 3.5rem; font-weight: 950; color: #fff;">482,102</div>
+            <div style="color: var(--text-muted); font-weight: 600; letter-spacing: 0.1em;">ACTIVE SIGNALS</div>
+        </div>
+        <div>
+            <div id="stat-delivery" style="font-size: 3.5rem; font-weight: 950; color: var(--accent-green);">99.8%</div>
+            <div style="color: var(--text-muted); font-weight: 600; letter-spacing: 0.1em;">DELIVERY HEALTH</div>
+        </div>
+    </div>
+</section>
+
+<!-- SECTION 6: FAQ (NEW - ANTI-OBJECTION) -->
+<section class="container" style="padding-bottom: 140px;">
+    <div class="text-center reveal" style="margin-bottom: 60px;">
+        <h2 style="font-size: 3rem; font-weight: 950; color: #fff;">Frequently Asked Questions</h2>
+    </div>
+    <div class="faq-grid">
+        <div class="faq-item reveal">
+            <div class="faq-question">How does LeadNexus ensure deliverability? <i data-lucide="chevron-down"></i></div>
+            <div class="faq-answer">We use a proprietary Neural Path Rotation system. Instead of sending all emails from one IP, we intelligently distribute traffic across verified authentication tunnels, ensuring your domain reputation remains pristine.</div>
+        </div>
+        <div class="faq-item reveal">
+            <div class="faq-question">Is the market data real-time? <i data-lucide="chevron-down"></i></div>
+            <div class="faq-answer">Yes. Unlike legacy static databases, LeadNexus scans live signals in the background, verifying identities and intent at the exact moment you launch your campaign.</div>
+        </div>
+        <div class="faq-item reveal">
+            <div class="faq-question">Can I integrate my existing team? <i data-lucide="chevron-down"></i></div>
+            <div class="faq-answer">Absolutely. The Commander and Enterprise plans include Team Terminals, allowing multiple operators to manage growth signals from one centralized dashboard.</div>
+        </div>
+    </div>
+</section>
+
+<!-- FINAL CALL (IMPROVED) -->
+<section class="container reveal" style="padding-bottom: 150px;">
+    <div style="background: var(--gradient-hero); border-radius: 64px; padding: 120px 40px; text-align: center; border: 1px solid rgba(139, 92, 246, 0.2); position: relative; overflow: hidden;">
+        <div style="position: absolute; top:0; left:50%; width: 800px; height: 300px; background: var(--glow-purple); filter: blur(100px); opacity: 0.1; transform: translateX(-50%);"></div>
+        <h2 style="font-size: 4.5rem; font-weight: 950; color: #fff; margin-bottom: 32px; letter-spacing: -0.05em;">Scale or Die.</h2>
+        <p style="font-size: 1.4rem; color: #94a3b8; max-width: 600px; margin: 0 auto 48px;">
+            In a market of signals, the fastest architect wins. Reclaim your time and dominate your industry today.
+        </p>
+        <div style="display: flex; gap: 20px; justify-content: center;">
+            <a href="{% url 'login' %}" class="btn btn-primary btn-lg" style="height: 64px; border:none; background: #fff; color: #020617; padding: 0 64px; font-weight: 800;">START DEPLOYMENT</a>
+        </div>
+    </div>
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Initialize Lucide Icons
+    lucide.createIcons();
+
+    // Scroll Reveal Interaction (Improved)
+    const revealElements = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('active');
+                observer.unobserve(entry.target); // Reveal only once
+            }
+        });
+    }, { threshold: 0.15 });
+
+    revealElements.forEach(el => observer.observe(el));
+
+    // Refined Parallax Dashboard
+    const dashboard = document.getElementById('parallax-dashboard');
+    document.addEventListener('mousemove', (e) => {
+        const x = (window.innerWidth / 2 - e.pageX) / 100;
+        const y = (window.innerHeight / 2 - e.pageY) / 100;
+        dashboard.style.transform = `perspective(2000px) rotateY(${x}deg) rotateX(${y}deg)`;
+    });
+
+    // FAQ Accordion
+    document.querySelectorAll('.faq-item').forEach(item => {
+        item.addEventListener('click', () => {
+            item.classList.toggle('active');
+        });
+    });
+
+    // Simulated Stats Counter
+    function animateValue(id, start, end, duration) {
+        let obj = document.getElementById(id);
+        if(!obj) return;
+        let range = end - start;
+        let current = start;
+        let increment = end > start ? 1 : -1;
+        let stepTime = Math.abs(Math.floor(duration / range));
+        let timer = setInterval(function() {
+            current += increment * 1000; // Increment by thousands for scale
+            if (current >= end) {
+                obj.innerHTML = end.toLocaleString();
+                clearInterval(timer);
+            } else {
+                obj.innerHTML = current.toLocaleString();
+            }
+        }, 10);
+    }
+    
+    // Trigger animations on reveal
+    const statObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                animateValue("stat-mappings", 1000000, 1429203, 2000);
+                animateValue("stat-signals", 400000, 482102, 2000);
+                statObserver.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.5 });
+    
+    const statsSection = document.getElementById('stat-mappings')?.parentElement?.parentElement;
+    if(statsSection) statObserver.observe(statsSection);
+</script>
+{% endblock %}
