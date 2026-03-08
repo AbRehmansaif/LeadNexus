@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">🚀 Growth Campaigns</h1>
+    <h1 class="page-title"><i data-lucide="rocket" style="width:25px; height:25px; color: var(--accent-purple);"></i> Growth Campaigns</h1>
     <p class="page-subtitle">Multi account outreach automation powered by intelligent delivery infrastructure.</p>
     <div style="margin-top: 16px;">
         <a href="{% url 'mail-campaign-create' %}" class="btn btn-primary">Launch Growth Campaign</a>
@@ -31,7 +31,7 @@
 
 <div class="card">
     <div class="card-header">
-        <h2 class="card-title">📈 Campaign Performance Overview</h2>
+        <h2 class="card-title"><i data-lucide="chart-line" style="width:25px; height:25px;"></i> Campaign Performance Overview</h2>
     </div>
     {% if campaigns %}
     <div class="table-wrapper">
