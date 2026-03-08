@@ -97,7 +97,10 @@
                 </div>
                 {% else %}
                 <div class="navbar-actions">
-                    <a href="{% url 'login' %}" class="btn btn-primary btn-sm">Operator Login</a>
+                    <a href="{% url 'login' %}" class="btn btn-primary" 
+                       style="border-radius: 50px; padding: 10px 32px; font-weight: 800; font-size: 0.85rem; box-shadow: 0 0 25px rgba(139, 92, 246, 0.4); border: 1px solid rgba(255, 255, 255, 0.15); transition: all 0.3s ease;">
+                        <i data-lucide="zap" style="width:14px; height:14px; margin-right: 8px;"></i> Operator Login
+                    </a>
                 </div>
                 {% endif %}
             </div>

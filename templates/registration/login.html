@@ -249,6 +249,17 @@
         .footer-credit b {
             color: #94a3b8;
         }
+
+        /* Allow default cursor on inputs for usability */
+        .login-input {
+            cursor: auto !important;
+        }
+        
+        @media (pointer: fine) {
+            body, a, button {
+                cursor: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -292,6 +303,13 @@
                 <span style="font-size: 1.2rem;">→</span>
             </button>
         </form>
+
+        <div style="margin-top: 32px; display: flex; flex-direction: column; gap: 16px; text-align: center; font-size: 0.875rem;">
+            <a href="{% url 'password_reset' %}" style="color: #64748b; text-decoration: none; transition: color 0.2s;">Forgot Security Key?</a>
+            <div style="color: #94a3b8;">
+                New operative? <a href="{% url 'register' %}" style="color: var(--accent-purple); text-decoration: none; font-weight: 600; transition: color 0.2s;">Initiate Identity</a>
+            </div>
+        </div>
 
         <div id="customError" style="position: absolute; bottom: -30px; left: 50%; transform: translateX(-50%); color: #ff4d4d; font-size: 0.8rem; font-weight: 600; white-space: nowrap; opacity: 0; transition: all 0.3s ease; pointer-events: none; text-shadow: 0 0 10px rgba(255, 77, 77, 0.4);">
             ⚠️ PROTOCOL BREACH: ALL FIELDS REQUIRED
@@ -353,6 +371,36 @@
             this.textContent = type === 'password' ? '👁️' : '🕶️';
             this.style.color = type === 'password' ? '#475569' : 'var(--accent-purple)';
         });
+    </script>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
+    <script>
+        // Custom Neural Cursor Logic
+        const dot = document.querySelector('.cursor-dot');
+        const outline = document.querySelector('.cursor-outline');
+
+        window.addEventListener('mousemove', (e) => {
+            const posX = e.clientX;
+            const posY = e.clientY;
+
+            dot.style.left = `${posX}px`;
+            dot.style.top = `${posY}px`;
+
+            outline.animate({
+                left: `${posX}px`,
+                top: `${posY}px`
+            }, { duration: 500, fill: "forwards" });
+        });
+
+        // Hover effect for links and buttons
+        const hoverables = document.querySelectorAll('a, button, .login-input');
+        hoverables.forEach(el => {
+            el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+            el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+        });
+
+        document.addEventListener('mousedown', () => document.body.classList.add('cursor-click'));
+        document.addEventListener('mouseup', () => document.body.classList.remove('cursor-click'));
     </script>
 </body>
 </html>
