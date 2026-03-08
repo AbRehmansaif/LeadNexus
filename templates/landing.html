@@ -212,8 +212,8 @@
         display: none;
     }
 
-    .faq-item.active .faq-answer { display: block; }
-    .faq-item.active i { transform: rotate(180deg); }
+    .faq-item.expanded .faq-answer { display: block; }
+    .faq-item.expanded i { transform: rotate(180deg); }
 
     /* ── Pricing Refinement ──────────────────────────────── */
     .pricing-grid {
@@ -319,7 +319,7 @@
 
         <div class="hero-badge reveal">
             <i data-lucide="zap" style="width: 14px; color: var(--accent-purple);"></i>
-            <span>LeadNexus Intelligence V4.2 is Live</span>
+            <span>LeadNexus Intelligence V1.1 is Live</span>
         </div>
         
         <h1 class="hero-title reveal">
@@ -618,7 +618,7 @@
     // FAQ Accordion
     document.querySelectorAll('.faq-item').forEach(item => {
         item.addEventListener('click', () => {
-            item.classList.toggle('active');
+            item.classList.toggle('expanded');
         });
     });
 
