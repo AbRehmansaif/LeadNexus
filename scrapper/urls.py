@@ -14,7 +14,7 @@ from core import template_views
 urlpatterns = [
     # ── Authentication ─────────────────────────────────────
     path('login/', LoginView.as_view(), name='login'),
-    path('logout/', auth_views.LogoutView.as_view(), name='logout'),
+    path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
     path('register/', RegisterView.as_view(), name='register'),
     
     # Password Reset
