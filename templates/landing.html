@@ -290,6 +290,54 @@
         box-shadow: 0 0 100px rgba(139, 92, 246, 0.3);
     }
 
+    /* ── NEW: Neural Bridge (Contact) ───────────────────── */
+    .contact-input-group {
+        position: relative;
+        margin-bottom: 24px;
+    }
+
+    .contact-input {
+        width: 100%;
+        background: rgba(255, 255, 255, 0.03);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+        border-radius: 16px;
+        padding: 16px 16px 16px 48px;
+        color: #fff;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .contact-input:focus {
+        outline: none;
+        border-color: var(--accent-purple);
+        background: rgba(139, 92, 246, 0.05);
+        box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+    }
+
+    .contact-icon {
+        position: absolute;
+        left: 16px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--text-muted);
+        transition: color 0.3s ease;
+    }
+
+    .contact-input:focus + .contact-icon {
+        color: var(--accent-purple);
+    }
+
+    textarea.contact-input {
+        min-height: 150px;
+        resize: none;
+        padding-top: 16px;
+    }
+
+    .contact-icon-top {
+        top: 24px;
+        transform: none;
+    }
+
 </style>
 {% endblock %}
 
@@ -573,7 +621,94 @@
     </div>
 </section>
 
+</section>
+
+<!-- SECTION: NEURAL BRIDGE (CONTACT US) -->
+<section id="contact" class="container reveal" style="padding-bottom: 140px;">
+    <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 48px; padding: 80px; display: grid; grid-template-columns: 1fr 1.2fr; gap: 80px; align-items: start;">
+        
+        <!-- Left: Context -->
+        <div>
+            <span style="color: var(--accent-purple); font-weight: 800; letter-spacing: 0.1em; font-size: 0.9rem; display: block; margin-bottom: 24px;">CONTACT US</span>
+            <h2 style="font-size: 3.5rem; font-weight: 950; color: #fff; line-height: 1.1; margin-bottom: 32px;">Connect with us</h2>
+            <p style="color: var(--text-secondary); font-size: 1.1rem; line-height: 1.7; margin-bottom: 40px;">
+                Ready to deploy LeadNexus at scale? Or do you have special requirements for your neural network? Our commanders are standing by to assist your expansion.
+            </p>
+            
+            <div style="display: grid; gap: 32px;">
+                <div style="display: flex; gap: 20px; align-items: center;">
+                    <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent-purple);">
+                        <i data-lucide="mail"></i>
+                    </div>
+                    <div>
+                        <div style="color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Direct Uplink</div>
+                        <div style="color: #fff; font-weight: 600;">sale@leadnexus.ai</div>
+                    </div>
+                </div>
+                <div style="display: flex; gap: 20px; align-items: center;">
+                    <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent-blue);">
+                        <i data-lucide="phone"></i>
+                    </div>
+                    <div>
+                        <div style="color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Voice Secure</div>
+                        <div style="color: #fff; font-weight: 600;">+1 (800) LEAD-NEXUS</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Form -->
+        <div style="background: rgba(0,0,0,0.2); padding: 48px; border-radius: 32px; border: 1px solid rgba(255, 255, 255, 0.03); position: relative;">
+            <form id="neuralContactForm" novalidate>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
+                    <div class="contact-input-group">
+                        <input type="text" id="contactName" placeholder="Full Name *" class="contact-input" required>
+                        <i data-lucide="user" class="contact-icon" style="width:18px;"></i>
+                    </div>
+                    <div class="contact-input-group">
+                        <input type="text" id="contactIndustry" placeholder="Industry *" class="contact-input" required>
+                        <i data-lucide="briefcase" class="contact-icon" style="width:18px;"></i>
+                    </div>
+                </div>
+
+                <div class="contact-input-group">
+                    <input type="email" id="contactEmail" placeholder="Email Address *" class="contact-input" required>
+                    <i data-lucide="at-sign" class="contact-icon" style="width:18px;"></i>
+                </div>
+
+                <div class="contact-input-group">
+                    <input type="tel" id="contactPhone" placeholder="Phone Number" class="contact-input">
+                    <i data-lucide="phone" class="contact-icon" style="width:18px;"></i>
+                </div>
+
+                <div class="contact-input-group">
+                    <textarea id="contactMessage" placeholder="Tell us about your mission goals... *" class="contact-input" required></textarea>
+                    <i data-lucide="message-square" class="contact-icon contact-icon-top" style="width:18px;"></i>
+                </div>
+
+                <div id="formErrorMessage" style="color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-bottom: 20px; display: none; align-items: center; gap: 8px;">
+                    <i data-lucide="alert-circle" style="width:16px;"></i> PROTOCOL ERROR: ALL STARRED FIELDS REQUIRED
+                </div>
+
+                <button type="submit" class="btn btn-primary" style="width: 100%; height: 60px; font-weight: 800; border-radius: 16px; font-size: 1rem; letter-spacing: 0.05em;">
+                    Submit
+                </button>
+            </form>
+
+            <!-- Success Overlay (Hidden) -->
+            <div id="contactSuccess" style="display: none; height: 100%; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 0;">
+                <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--accent-green); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 2rem; margin-bottom: 24px; box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);">
+                    ✓
+                </div>
+                <h3 style="color: #fff; font-size: 1.5rem; font-weight: 900; margin-bottom: 12px;">SIGNAL RECEIVED</h3>
+                <p style="color: var(--text-secondary); line-height: 1.6;">Your coordinates have been logged. An architect will contact you shortly.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
 <!-- FINAL CALL (IMPROVED) -->
+
 <section class="container reveal" style="padding-bottom: 150px;">
     <div style="background: var(--gradient-hero); border-radius: 64px; padding: 120px 40px; text-align: center; border: 1px solid rgba(139, 92, 246, 0.2); position: relative; overflow: hidden;">
         <div style="position: absolute; top:0; left:50%; width: 800px; height: 300px; background: var(--glow-purple); filter: blur(100px); opacity: 0.1; transform: translateX(-50%);"></div>
@@ -582,7 +717,7 @@
             In a market of signals, the fastest architect wins. Reclaim your time and dominate your industry today.
         </p>
         <div style="display: flex; gap: 20px; justify-content: center;">
-            <a href="{% url 'login' %}" class="btn btn-primary btn-lg" style="height: 64px; border:none; background: #fff; color: #020617; padding: 0 64px; font-weight: 800;">START DEPLOYMENT</a>
+            <a href="{% url 'register' %}" class="btn btn-primary btn-lg" style="height: 64px; border:none; background: #fff; color: #020617; padding: 0 64px; font-weight: 800;">Let's Start</a>
         </div>
     </div>
 </section>
@@ -621,6 +756,59 @@
             item.classList.toggle('expanded');
         });
     });
+
+    // Contact Form Simulation with Validation
+    const contactForm = document.getElementById('neuralContactForm');
+    const contactSuccess = document.getElementById('contactSuccess');
+    const formError = document.getElementById('formErrorMessage');
+
+    if (contactForm) {
+        contactForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const requiredFields = [
+                document.getElementById('contactName'),
+                document.getElementById('contactIndustry'),
+                document.getElementById('contactEmail'),
+                document.getElementById('contactMessage')
+            ];
+            
+            let hasError = false;
+            requiredFields.forEach(field => {
+                if (!field.value.trim()) {
+                    hasError = true;
+                    field.style.borderColor = 'rgba(239, 68, 68, 0.5)';
+                    field.parentElement.animate([
+                        { transform: 'translateX(0)' },
+                        { transform: 'translateX(-5px)' },
+                        { transform: 'translateX(5px)' },
+                        { transform: 'translateX(0)' }
+                    ], { duration: 300 });
+                } else {
+                    field.style.borderColor = '';
+                }
+            });
+
+            if (hasError) {
+                formError.style.display = 'flex';
+                lucide.createIcons();
+                return;
+            }
+
+            formError.style.display = 'none';
+            const btn = contactForm.querySelector('button');
+            
+            btn.disabled = true;
+            btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:20px; height:20px;"></i> ENCRYPTING...';
+            lucide.createIcons();
+
+            setTimeout(() => {
+                contactForm.style.display = 'none';
+                contactSuccess.style.display = 'flex';
+                contactSuccess.classList.add('reveal', 'active');
+            }, 2000);
+        });
+    }
 
     // Simulated Stats Counter
     function animateValue(id, start, end, duration) {
