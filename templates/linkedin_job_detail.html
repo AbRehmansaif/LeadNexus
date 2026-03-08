@@ -3,7 +3,7 @@
 
 {% block content %}
 <div class="page-header">
-    <h1 class="page-title">💼 ProFinder — "{{ job.niche }}"</h1>
+    <h1 class="page-title"> ProFinder — "{{ job.niche }}"</h1>
     <p class="page-subtitle">
         Job #{{ job.id }} — {{ job.max_profiles }} profiles requested
         {% if job.location %} · 📍 {{ job.location }}{% endif %}
@@ -28,11 +28,11 @@
         </div>
         <div class="btn-group">
             {% if profiles %}
-            <button onclick="startCampaignFromLinkedIn()" class="btn btn-primary btn-sm">🚀 Start Campaign</button>
-            <a href="/api/export/linkedin/csv/?job_id={{ job.id }}" class="btn btn-secondary btn-sm">📄 Export CSV</a>
-            <a href="/api/export/linkedin/json/?job_id={{ job.id }}" class="btn btn-secondary btn-sm">📋 Export JSON</a>
+            <button onclick="startCampaignFromLinkedIn()" class="btn btn-primary btn-sm"><i data-lucide="rocket" style="width:15px; height:15px; "></i> Start Campaign</button>
+            <a href="/api/export/linkedin/csv/?job_id={{ job.id }}" class="btn btn-secondary btn-sm"><i data-lucide="file-text" style="width:15px; height:15px; "></i> Export CSV</a>
+            <a href="/api/export/linkedin/json/?job_id={{ job.id }}" class="btn btn-secondary btn-sm"><i data-lucide="file-text" style="width:15px; height:15px; "></i> Export JSON</a>
             {% endif %}
-            <button onclick="deleteLinkedInJob({{ job.id }})" class="btn btn-danger btn-sm">🗑 Delete</button>
+            <button onclick="deleteLinkedInJob({{ job.id }})" class="btn btn-danger btn-sm"><i data-lucide="trash" style="width:15px; height:15px; "></i> Delete</button>
         </div>
     </div>
 
@@ -117,14 +117,14 @@
 {% if profiles %}
 <div class="card">
     <div class="card-header">
-        <h2 class="card-title"><span class="card-icon">📊</span> Outreach Profiles ({{ profiles|length }})</h2>
+        <h2 class="card-title"><span class="card-icon"><i data-lucide="chart-bar" style="width:25px; height:25px; "></i></span> Outreach Profiles ({{ profiles|length }})</h2>
     </div>
 
     <!-- View Toggle -->
     <div class="tabs-container">
         <div class="tabs">
-            <button class="tab-btn active" data-tab="tableView">📋 Table View</button>
-            <button class="tab-btn" data-tab="cardView">🃏 Card View</button>
+            <button class="tab-btn active" data-tab="tableView"><i data-lucide="list" style="width:15px; height:15px; "></i> Table View</button>
+            <button class="tab-btn" data-tab="cardView"><i data-lucide="grid" style="width:15px; height:15px; "></i> Card View</button>
         </div>
 
         <!-- Table View -->
@@ -190,24 +190,24 @@
 
                     <div class="profile-details">
                         <div class="profile-detail">
-                            <div class="profile-detail-label">📍 Location</div>
+                            <div class="profile-detail-label"><i data-lucide="pin" style="width:10px; height:10px; "></i> Location</div>
                             <div class="profile-detail-value">{{ p.location }}</div>
                         </div>
                         <div class="profile-detail">
-                            <div class="profile-detail-label">👥 Size</div>
+                            <div class="profile-detail-label"><i data-lucide="users" style="width:10px; height:10px; "></i> Size</div>
                             <div class="profile-detail-value">{{ p.company_size }}</div>
                         </div>
                         <div class="profile-detail">
-                            <div class="profile-detail-label">🏭 Industry</div>
+                            <div class="profile-detail-label"><i data-lucide="factory" style="width:10px; height:10px; "></i> Industry</div>
                             <div class="profile-detail-value">{{ p.industry }}</div>
                         </div>
                         <div class="profile-detail">
-                            <div class="profile-detail-label">🏢 Type</div>
+                            <div class="profile-detail-label"><i data-lucide="building" style="width:10px; height:10px; "></i> Type</div>
                             <div class="profile-detail-value">{{ p.company_type }}</div>
                         </div>
                         {% if p.website %}
                         <div class="profile-detail">
-                            <div class="profile-detail-label">🌐 Website</div>
+                            <div class="profile-detail-label"><i data-lucide="globe" style="width:10px; height:10px; "></i> Website</div>
                             <div class="profile-detail-value">
                                 <a href="{{ p.website }}" target="_blank">{{ p.website|truncatechars:35 }}</a>
                             </div>
@@ -215,7 +215,7 @@
                         {% endif %}
                         {% if p.website_email %}
                         <div class="profile-detail">
-                            <div class="profile-detail-label">📧 Email</div>
+                            <div class="profile-detail-label"><i data-lucide="mail" style="width:10px; height:10px; "></i> Email</div>
                             <div class="profile-detail-value">
                                 <a href="mailto:{{ p.website_email }}">{{ p.website_email }}</a>
                             </div>
@@ -223,13 +223,13 @@
                         {% endif %}
                         {% if p.website_phone %}
                         <div class="profile-detail">
-                            <div class="profile-detail-label">📱 Phone</div>
+                            <div class="profile-detail-label"><i data-lucide="phone" style="width:10px; height:10px; "></i> Phone</div>
                             <div class="profile-detail-value">{{ p.website_phone }}</div>
                         </div>
                         {% endif %}
                         {% if p.website_facebook %}
                         <div class="profile-detail">
-                            <div class="profile-detail-label">📘 Facebook</div>
+                            <div class="profile-detail-label"><i data-lucide="facebook" style="width:10px; height:10px; "></i> Facebook</div>
                             <div class="profile-detail-value">
                                 <a href="{{ p.website_facebook }}" target="_blank">Link</a>
                             </div>
