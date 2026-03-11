@@ -85,26 +85,23 @@ class LinkedInScraper:
         # Initialize driver with webdriver-manager
         try:
             from webdriver_manager.chrome import ChromeDriverManager
-            # Force win64 architecture for consistency
-            driver_path = ChromeDriverManager(os_type="win64").install()
+            # Use the default OS detection, or linux64 for Docker
+            driver_path = ChromeDriverManager().install()
             logger.info(f"webdriver-manager returned: {driver_path}")
 
-            # Fix: webdriver-manager sometimes returns the path to
-            # THIRD_PARTY_NOTICES.chromedriver instead of chromedriver.exe
-            if not driver_path.endswith('.exe') or 'THIRD_PARTY' in driver_path:
-                driver_dir = os.path.dirname(driver_path)
-                for _ in range(3):
-                    for root, dirs, files in os.walk(driver_dir):
-                        for f in files:
-                            if f.lower() == 'chromedriver.exe':
-                                driver_path = os.path.join(root, f)
-                                logger.info(f"Found chromedriver.exe at: {driver_path}")
-                                break
-                        if driver_path.endswith('.exe'):
-                            break
-                    if driver_path.endswith('.exe'):
-                        break
-                    driver_dir = os.path.dirname(driver_dir)
+            # Correct the path if it's not pointing to the binary directly
+            if not os.path.isfile(driver_path) or 'THIRD_PARTY' in driver_path:
+                # Find the actual chromedriver binary in the installation directory
+                import glob
+                base_dir = os.path.dirname(driver_path)
+                found_paths = glob.glob(os.path.join(base_dir, '**/chromedriver'), recursive=True)
+                if not found_paths:
+                    # Try with .exe extension (for robustness during development)
+                    found_paths = glob.glob(os.path.join(base_dir, '**/chromedriver.exe'), recursive=True)
+                
+                if found_paths:
+                    driver_path = found_paths[0]
+                    logger.info(f"Found chromedriver at: {driver_path}")
 
             service = Service(executable_path=driver_path)
         except ImportError:
