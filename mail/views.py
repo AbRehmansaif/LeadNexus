@@ -1,8 +1,9 @@
 import csv
 import io
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import viewsets, status, decorators
+from rest_framework import viewsets, status, decorators, permissions
 from rest_framework.response import Response
 from .models import SMTPCredential, EmailCampaign, Recipient
 from .tasks import start_campaign_async
@@ -164,3 +165,51 @@ def track_open(request, recipient_id):
     # Always return the GIF, even if recipient not found
     pixel_data = b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b'
     return HttpResponse(pixel_data, content_type='image/gif')
+
+@decorators.api_view(['GET'])
+@decorators.permission_classes([permissions.IsAuthenticated])
+def download_campaign_csv(request, pk):
+    """
+    Export campaign recipients and tracking data as CSV.
+    """
+    campaign = get_object_or_404(EmailCampaign, pk=pk)
+    recipients = campaign.recipients.all().order_by('id')
+    
+    response = HttpResponse(content_type='text/csv')
+    filename = f"campaign_{campaign.id}_{campaign.name.replace(' ', '_')}_report.csv"
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+    
+    writer = csv.writer(response)
+    # Header
+    header = ['Email', 'Name', 'Status', 'Sent At', 'Is Opened', 'First Opened At', 'Total Opens', 'Error Message']
+    
+    # Add custom data keys to header if they exist
+    custom_keys = set()
+    for r in recipients:
+        if r.custom_data:
+            custom_keys.update(r.custom_data.keys())
+    
+    sorted_custom_keys = sorted(list(custom_keys))
+    header.extend(sorted_custom_keys)
+    writer.writerow(header)
+    
+    # Rows
+    for r in recipients:
+        row = [
+            r.email,
+            r.name or '',
+            r.status.upper(),
+            r.sent_at.strftime('%Y-%m-%d %H:%M:%S') if r.sent_at else 'N/A',
+            'YES' if r.is_opened else 'NO',
+            r.opened_at.strftime('%Y-%m-%d %H:%M:%S') if r.opened_at else 'N/A',
+            r.open_count,
+            r.error_message or ''
+        ]
+        
+        # Add values for custom keys
+        for key in sorted_custom_keys:
+            row.append(r.custom_data.get(key, ''))
+            
+        writer.writerow(row)
+        
+    return response

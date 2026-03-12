@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import SMTPCredentialViewSet, EmailCampaignViewSet, RecipientViewSet, track_open
+from .views import SMTPCredentialViewSet, EmailCampaignViewSet, RecipientViewSet, track_open, download_campaign_csv
 from . import template_views
 
 router = DefaultRouter()
@@ -18,6 +18,6 @@ urlpatterns = [
     # API views
     path('mail/api/', include(router.urls)),
     
-    # Tracking
     path('mail/track/<int:recipient_id>/pixel.gif', track_open, name='track-open'),
+    path('mail/campaign/<int:pk>/export-csv/', download_campaign_csv, name='mail-campaign-export-csv'),
 ]
