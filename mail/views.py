@@ -8,6 +8,7 @@ from rest_framework.response import Response
 from .models import SMTPCredential, EmailCampaign, Recipient
 from .tasks import start_campaign_async
 from rest_framework.serializers import ModelSerializer
+from django.core.mail import get_connection
 
 class SMTPCredentialSerializer(ModelSerializer):
     class Meta:
@@ -27,6 +28,91 @@ class EmailCampaignSerializer(ModelSerializer):
 class SMTPCredentialViewSet(viewsets.ModelViewSet):
     queryset = SMTPCredential.objects.all()
     serializer_class = SMTPCredentialSerializer
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        # Test connection before saving
+        data = serializer.validated_data
+        success, error_msg = self.test_smtp_connection(data)
+        
+        if not success:
+            return Response(
+                {'detail': error_msg},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        self.perform_create(serializer)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
+
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        
+        # Test connection before saving
+        data = serializer.validated_data
+        # For partial updates, we need to merge with existing data for the test
+        test_data = {
+            'host': data.get('host', instance.host),
+            'port': data.get('port', instance.port),
+            'username': data.get('username', instance.username),
+            'password': data.get('password', instance.password),
+            'use_tls': data.get('use_tls', instance.use_tls),
+            'use_ssl': data.get('use_ssl', instance.use_ssl),
+        }
+        
+        success, error_msg = self.test_smtp_connection(test_data)
+        
+        if not success:
+            return Response(
+                {'detail': error_msg},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        self.perform_update(serializer)
+        return Response(serializer.data)
+
+    def test_smtp_connection(self, data):
+        """Helper to test SMTP connection and return human-friendly errors."""
+        try:
+            connection = get_connection(
+                host=data.get('host'),
+                port=data.get('port'),
+                username=data.get('username'),
+                password=data.get('password'),
+                use_tls=data.get('use_tls'),
+                use_ssl=data.get('use_ssl'),
+                timeout=10
+            )
+            connection.open()
+            connection.close()
+            return True, None
+        except Exception as e:
+            error_str = str(e)
+            
+            # Professional cleanup for common SMTP errors
+            if "Username and Password not accepted" in error_str:
+                error_str = "Authentication failed. Please verify your email and password. (Note: Gmail/Outlook require an App Password)"
+            elif "Connection refused" in error_str:
+                error_str = "Could not connect to the SMTP server. Please check the Host and Port."
+            elif "timeout" in error_str.lower():
+                error_str = "Connection timed out. The server might be blocking the port."
+            else:
+                # Fallback: remove the raw tuple/byte formatting if present
+                if "(" in error_str and "b'" in error_str:
+                    try:
+                        # Attempt to extract the text between single quotes
+                        parts = error_str.split("'")
+                        if len(parts) > 1:
+                            error_str = parts[1]
+                    except:
+                        pass
+            
+            return False, error_str
 
 class EmailCampaignViewSet(viewsets.ModelViewSet):
     queryset = EmailCampaign.objects.all().order_by('-created_at')

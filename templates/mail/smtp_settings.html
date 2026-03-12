@@ -104,6 +104,13 @@
                     <span class="form-check-label">Use SSL</span>
                 </label>
             </div>
+            
+            <div id="form-error" style="display: none; margin-top: 16px; padding: 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-left: 4px solid #ef4444; border-radius: 8px; color: #fca5a5; font-size: 0.85rem; line-height: 1.5; margin-bottom: 12px;">
+                <div style="display: flex; gap: 8px; align-items: flex-start;">
+                    <span style="flex-shrink: 0; margin-top: 2px;">⚠️</span>
+                    <span id="form-error-text"></span>
+                </div>
+            </div>
 
             <button type="submit" id="saveBtn" class="btn btn-primary" style="width: 100%; margin-top: 12px; height: 45px; font-weight: 600;">
                 <span id="btnText">Connect Account</span>
@@ -277,6 +284,13 @@
                 </div>
             </div>
 
+            <div id="edit-error" style="display: none; margin-top: 16px; padding: 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-left: 4px solid #ef4444; border-radius: 8px; color: #fca5a5; font-size: 0.85rem; line-height: 1.5; margin-bottom: 12px;">
+                <div style="display: flex; gap: 8px; align-items: flex-start;">
+                    <span style="flex-shrink: 0; margin-top: 2px;">⚠️</span>
+                    <span id="edit-error-text"></span>
+                </div>
+            </div>
+
             <div style="display: flex; align-items: center; justify-content: space-between; background: #1e293b44; padding: 12px; border-radius: 12px; margin: 16px 0;">
                 <div>
                     <div style="color: #fff; font-size: 0.9rem; font-weight: 500;">Connection Status</div>
@@ -421,6 +435,8 @@ document.getElementById('smtpForm').addEventListener('submit', async (e) => {
     let isValid = true;
     
     // Clear previous errors
+    const formError = document.getElementById('form-error');
+    formError.style.display = 'none';
     form.querySelectorAll('.error-text').forEach(el => el.remove());
     form.querySelectorAll('.form-input').forEach(el => el.classList.remove('is-invalid'));
 
@@ -473,7 +489,13 @@ document.getElementById('smtpForm').addEventListener('submit', async (e) => {
             setTimeout(() => window.location.reload(), 1000);
         } else {
             const err = await res.json();
-            showToast(err.detail || 'Failed to add account', true);
+            const message = err.detail || 'Failed to add account';
+            // Show in card
+            const formError = document.getElementById('form-error');
+            const formErrorText = document.getElementById('form-error-text');
+            formErrorText.innerText = message;
+            formError.style.display = 'block';
+            formError.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }
     } catch (e) {
         showToast('Network error. Please try again.', true);
@@ -533,6 +555,7 @@ window.manageAccount = function(id) {
 
 function closeManageAccountModal() {
     if (editAccountModal) editAccountModal.classList.remove('active');
+    document.getElementById('edit-error').style.display = 'none';
 }
 
 function deleteAccountFromEdit() {
@@ -573,7 +596,14 @@ editAccountForm.addEventListener('submit', async (e) => {
             showToast('Account updated successfully!');
             setTimeout(() => window.location.reload(), 800);
         } else {
-            showToast('Failed to update account', true);
+            const err = await res.json();
+            const message = err.detail || 'Failed to update account';
+            
+            // Show in Modal Card
+            const editError = document.getElementById('edit-error');
+            const editErrorText = document.getElementById('edit-error-text');
+            editErrorText.innerText = message;
+            editError.style.display = 'block';
         }
     } catch (err) {
         showToast('Network error', true);
