@@ -18,6 +18,8 @@ services:
       - "8000"
     depends_on:
       - db
+    volumes:
+      - ./media:/app/media
 
   nginx:
     image: nginx:alpine

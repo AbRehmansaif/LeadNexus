@@ -28,11 +28,12 @@ class SMTPCredential(models.Model):
 
     def check_and_reset_limit(self):
         """
-        Resets the daily count if 24 hours have passed since last_reset_at.
+        Resets the daily count when a new calendar day starts (12:00 AM).
         Also re-activates the account if it was deactivated due to limit.
         """
         now = timezone.now()
-        if (now - self.last_reset_at).total_seconds() >= 86400:
+        # Checks if today's date is greater than the date of the last reset
+        if now.date() > self.last_reset_at.date():
             self.emails_sent_today = 0
             self.last_reset_at = now
             if not self.is_active:

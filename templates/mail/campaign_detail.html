@@ -17,6 +17,9 @@
             <a href="{% url 'mail-campaign-export-csv' campaign.id %}" class="btn btn-secondary">
                 <i data-lucide="download" style="width:16px;height:16px;margin-right:8px;"></i> Export Data (CSV)
             </a>
+            <button onclick="toggleTemplate()" class="btn btn-secondary">
+                <i data-lucide="mail" style="width:16px;height:16px;margin-right:8px;"></i> View Message Body
+            </button>
             <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary">Dashboard</a>
         </div>
     </div>
@@ -54,6 +57,19 @@
     </div>
     <div class="progress-bar-wrapper">
         <div class="progress-bar-fill" id="progressBar" style="width: 0%;"></div>
+    </div>
+</div>
+
+<!-- Email Template Body (Hidden by default) -->
+<div id="templateCard" class="card" style="display: none; margin-bottom: 24px;">
+    <div class="card-header" style="border-bottom: 1px solid var(--border); margin-bottom: 16px;">
+        <h2 class="card-title"><i data-lucide="file-text" style="width:20px; height:20px; vertical-align: middle; margin-right: 8px;"></i> Sent Message Template</h2>
+    </div>
+    <div class="template-preview" style="padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px dashed var(--border); white-space: pre-wrap; color: var(--text-primary); font-family: 'Inter', sans-serif; line-height: 1.6;">
+{{ campaign.body }}
+    </div>
+    <div style="margin-top: 16px; font-size: 0.8rem; color: var(--text-muted);">
+        <i data-lucide="info" style="width:14px; height:14px; vertical-align: middle;"></i> Variables like <code>{% templatetag openvariable %} name {% templatetag closevariable %}</code> are replaced with recipient data during delivery.
     </div>
 </div>
 
@@ -136,6 +152,16 @@ if ("{{ campaign.status }}" === "running") {
             if (data.status !== 'running') window.location.reload();
         }
     }, 5000);
+}
+
+function toggleTemplate() {
+    const card = document.getElementById('templateCard');
+    if (card.style.display === 'none') {
+        card.style.display = 'block';
+        card.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } else {
+        card.style.display = 'none';
+    }
 }
 </script>
 {% endblock %}
