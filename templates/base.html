@@ -89,9 +89,6 @@
                         <a href="{% url 'profile-settings' %}" class="dropdown-item">
                             <i data-lucide="user-cog" style="width:16px; height:16px; margin-right:8px;"></i> Profile Settings
                         </a>
-                        <a href="/admin/" class="dropdown-item">
-                            <i data-lucide="shield-check" style="width:16px; height:16px; margin-right:8px;"></i> Admin Panel
-                        </a>
                         <form action="{% url 'logout' %}" method="post" class="logout-form">
                             {% csrf_token %}
                             <button type="submit" class="dropdown-item logout">
