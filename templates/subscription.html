@@ -1,0 +1,192 @@
+{% extends "base.html" %}
+{% block title %}Membership & Protocols — LeadNexus{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Membership & Protocols</h1>
+    <p class="page-subtitle">Manage your operational identity and resource allocations.</p>
+</div>
+
+<div style="display: grid; grid-template-columns: 2fr 1fr; gap: 32px;">
+    <!-- Plan Details -->
+    <div class="card" style="padding: 32px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+            <div>
+                <h2 style="margin: 0; font-size: 1.5rem;">Current Protocol: {{ profile.get_membership_status_display }}</h2>
+                <p style="color: var(--text-muted); margin-top: 4px;">Identity ID: #NX-{{ profile.user.id|add:1000 }}</p>
+            </div>
+            {% if profile.is_paid %}
+                <span class="badge badge-{{ profile.membership_status }}" style="font-size: 1rem; padding: 10px 20px; border-radius: 30px; background: rgba(16, 185, 129, 0.15); color: var(--accent-green); border: 1px solid var(--accent-green);">
+                    ● PAID & ACTIVE
+                </span>
+            {% else %}
+                <span class="badge" style="font-size: 1rem; padding: 10px 20px; border-radius: 30px; background: rgba(255,255,255,0.05); color: var(--text-muted); border: 1px solid var(--border);">
+                    FREE PLAN
+                </span>
+            {% endif %}
+        </div>
+
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; margin-bottom: 40px;">
+            <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid var(--border);">
+                <div style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 8px;">Web Scrape Allocation</div>
+                <div style="font-size: 1.25rem; font-weight: 700;">{{ profile.job_limit_monthly }} Jobs / Month</div>
+                <div style="font-size: 0.8rem; color: var(--accent-purple); margin-top: 4px;">Standard Extraction</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid var(--border);">
+                <div style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 8px;">LinkedIn Discovery</div>
+                <div style="font-size: 1.25rem; font-weight: 700;">{{ profile.linkedin_limit_monthly }} Searches / Month</div>
+                <div style="font-size: 0.8rem; color: var(--accent-blue); margin-top: 4px;">Unlimited Extraction</div>
+            </div>
+            <div style="background: rgba(255,255,255,0.03); padding: 20px; border-radius: 16px; border: 1px solid var(--border);">
+                <div style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; margin-bottom: 8px;">Campaign Infrastructure</div>
+                <div style="font-size: 1.25rem; font-weight: 700;">{{ profile.smtp_limit }} SMTP Slots</div>
+                <div style="font-size: 0.8rem; color: var(--accent-amber); margin-top: 4px;">Multi-account Rotation</div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 20px; font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 12px;">Lifetime Protocol Intelligence</h3>
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 40px;">
+            <div style="text-align: center; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px;">
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent-purple);">{{ profile.total_websites_scraped }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Web Discovery</div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px;">
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent-blue);">{{ profile.total_linkedin_scraped }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">LI Profiles</div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px;">
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent-green);">{{ profile.total_records_scraped }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Total Leads</div>
+            </div>
+            <div style="text-align: center; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 12px;">
+                <div style="font-size: 1.5rem; font-weight: 800; color: var(--accent-amber);">{{ profile.total_emails_sent }}</div>
+                <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase;">Emails Executed</div>
+            </div>
+        </div>
+
+        <h3 style="margin-bottom: 20px; font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 12px;">Protocol Features</h3>
+        <ul style="list-style: none; padding: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <li style="display: flex; align-items: center; gap: 12px; color: var(--text-muted);">
+                <span style="color: var(--accent-green);">✔</span> Multi-thread Extraction
+            </li>
+            <li style="display: flex; align-items: center; gap: 12px; color: var(--text-muted);">
+                <span style="color: var(--accent-green);">✔</span> Advanced LinkedIn Mapping
+            </li>
+            <li style="display: flex; align-items: center; gap: 12px; color: var(--text-muted);">
+                <span style="color: var(--accent-green);">✔</span> Email Verification Protocol
+            </li>
+            <li style="display: flex; align-items: center; gap: 12px; color: var(--text-muted);">
+                <span style="color: var(--accent-green);">✔</span> Exportable Intelligence (CSV)
+            </li>
+            <li style="display: flex; align-items: center; gap: 12px; color: var(--text-muted);">
+                <span style="opacity: 0.3;">✘</span> Priority Execution Core
+            </li>
+            <li style="display: flex; align-items: center; gap: 12px; color: var(--text-muted);">
+                <span style="opacity: 0.3;">✘</span> Dedicated IP Rotation
+            </li>
+        </ul>
+        
+        <div style="margin-top: 40px; text-align: center;">
+            <button class="btn btn-primary" style="padding: 12px 32px; font-size: 1rem;">Upgrade To Pro Protocol</button>
+        </div>
+    </div>
+
+    <!-- Usage Sidebar -->
+    <div>
+        <div class="card" style="padding: 24px;">
+            <h3 style="margin: 0 0 20px 0; font-size: 1rem;">Protocol Usage</h3>
+            
+            <div style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px;">
+                    <span>Monthly Bandwidth</span>
+                    <span style="color: var(--accent-purple);">{{ profile.jobs_this_month_count }} / {{ profile.job_limit_monthly }}</span>
+                </div>
+                <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 6px;">
+                    <div style="width: {{ web_usage_pct }}%; height: 100%; background: var(--accent-purple); border-radius: 4px;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
+                    <span>Used: {{ profile.jobs_this_month_count }}</span>
+                    <span>Remaining: {{ web_remaining }}</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px;">
+                    <span>LinkedIn Discovery</span>
+                    <span style="color: var(--accent-blue);">{{ profile.linkedin_this_month_count }} / {{ profile.linkedin_limit_monthly }}</span>
+                </div>
+                <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 6px;">
+                    <div style="width: {{ li_usage_pct }}%; height: 100%; background: var(--accent-blue); border-radius: 4px;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
+                    <span>Used: {{ profile.linkedin_this_month_count }}</span>
+                    <span>Remaining: {{ li_remaining }}</span>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <div style="display: flex; justify-content: space-between; font-size: 0.85rem; margin-bottom: 8px;">
+                    <span>Email Outreach</span>
+                    <span style="color: var(--accent-cyan);">{{ profile.emails_this_month_count }} / {{ profile.email_outreach_limit_monthly }}</span>
+                </div>
+                <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 6px;">
+                    <div style="width: {{ email_usage_pct }}%; height: 100%; background: var(--accent-cyan); border-radius: 4px;"></div>
+                </div>
+                <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
+                    <span>Used: {{ profile.emails_this_month_count }}</span>
+                    <span>Remaining: {{ email_remaining }}</span>
+                </div>
+            </div>
+
+            <div style="background: rgba(139, 92, 246, 0.05); padding: 16px; border-radius: 12px; border: 1px dashed var(--accent-purple);">
+                <p style="font-size: 0.8rem; color: var(--text-muted); margin: 0; line-height: 1.5;">
+                    <strong style="color: #fff;">Need more?</strong><br>
+                    Level up your identity to remove monthly locks and enable parallel discovery streams.
+                </p>
+            </div>
+        </div>
+
+        <!-- Payment & Billing Card -->
+        <div class="card" style="padding: 24px; margin-top: 24px;">
+            <h3 style="margin: 0 0 20px 0; font-size: 1rem; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="credit-card" style="width:16px; height:16px; color: var(--accent-amber);"></i>
+                Billing Status
+            </h3>
+
+            {% if profile.is_paid %}
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 12px; background: rgba(16, 185, 129, 0.08); border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.2);">
+                    <span style="width: 10px; height: 10px; background: var(--accent-green); border-radius: 50%; flex-shrink: 0;"></span>
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: 600; color: var(--accent-green);">Paid Subscription Active</div>
+                        {% if profile.last_payment_date %}
+                            <div style="font-size: 0.72rem; color: var(--text-muted);">Last paid: {{ profile.last_payment_date|date:"N j, Y" }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% if profile.subscription_end_date %}
+                    <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 16px;">
+                        <span style="color: var(--accent-amber);">⏱</span>
+                        Renews / Expires: <strong style="color: #fff;">{{ profile.subscription_end_date|date:"N j, Y" }}</strong>
+                    </div>
+                {% endif %}
+            {% else %}
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 16px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid var(--border);">
+                    <span style="width: 10px; height: 10px; background: var(--text-muted); border-radius: 50%; flex-shrink: 0;"></span>
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Free Plan</div>
+                        <div style="font-size: 0.72rem; color: var(--text-muted);">No active paid subscription</div>
+                    </div>
+                </div>
+                <p style="font-size: 0.78rem; color: var(--text-muted); line-height: 1.6; margin-bottom: 16px;">
+                    Upgrade to unlock higher monthly quotas, priority execution, and dedicated support.
+                </p>
+                <button class="btn btn-primary" style="width: 100%; font-size: 0.85rem;">
+                    <i data-lucide="zap" style="width:14px; height:14px; margin-right:6px;"></i>
+                    Upgrade Plan
+                </button>
+            {% endif %}
+        </div>
+
+    </div>
+</div>
+{% endblock %}

@@ -26,10 +26,17 @@ class EmailCampaignSerializer(ModelSerializer):
         fields = '__all__'
 
 class SMTPCredentialViewSet(viewsets.ModelViewSet):
-    queryset = SMTPCredential.objects.all()
-    serializer_class = SMTPCredentialSerializer
+    def get_queryset(self):
+        return SMTPCredential.objects.filter(user=self.request.user)
 
     def create(self, request, *args, **kwargs):
+        # Check Quota
+        if not request.user.profile.can_add_smtp():
+            return Response(
+                {'detail': f'SMTP slot limit reached ({request.user.profile.smtp_limit}). Upgrade your plan for more slots.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
@@ -43,7 +50,7 @@ class SMTPCredentialViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
             
-        self.perform_create(serializer)
+        serializer.save(user=request.user)
         headers = self.get_success_headers(serializer.data)
         return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
@@ -115,8 +122,10 @@ class SMTPCredentialViewSet(viewsets.ModelViewSet):
             return False, error_str
 
 class EmailCampaignViewSet(viewsets.ModelViewSet):
-    queryset = EmailCampaign.objects.all().order_by('-created_at')
     serializer_class = EmailCampaignSerializer
+    
+    def get_queryset(self):
+        return EmailCampaign.objects.filter(user=self.request.user).order_by('-created_at')
 
     @decorators.action(detail=True, methods=['post'])
     def start(self, request, pk=None):
@@ -145,6 +154,7 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
         
         # 1. Create Campaign
         campaign = EmailCampaign.objects.create(
+            user=request.user,
             name=name or subject,
             subject=subject,
             body=body,

@@ -73,7 +73,10 @@
                 </ul>
                 
                 {% if user.is_authenticated %}
-                <div class="user-menu">
+                <div class="user-menu" style="display: flex; align-items: center; gap: 12px;">
+                    <span class="badge badge-{{ user.profile.membership_status }}" style="font-size: 0.7rem; padding: 4px 10px; border-radius: 20px;">
+                        {{ user.profile.get_membership_status_display|upper }}
+                    </span>
                     <div class="profile-circle" style="padding:0; overflow:hidden;">
                         {% if user.profile.avatar %}
                             <img src="{{ user.profile.avatar.url }}" style="width:100%; height:100%; object-fit:cover;">
@@ -83,11 +86,45 @@
                     </div>
                     <div class="dropdown-menu">
                         <div class="dropdown-header">
-                            <span class="dropdown-user-name">{{ user.username }}</span>
+                            <div style="display:flex; align-items:center; justify-content: space-between; gap:12px; margin-bottom:4px;">
+                                <span class="dropdown-user-name">{{ user.username }}</span>
+                                <span class="badge badge-{{ user.profile.membership_status }}" style="font-size: 0.6rem; padding: 2px 8px;">{{ user.profile.get_membership_status_display }}</span>
+                            </div>
                             <span class="dropdown-user-email">{{ user.email|default:"Neural Operator" }}</span>
                         </div>
+                        
+                        <!-- Mini Usage Indicator -->
+                        <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02);">
+                            <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px;">
+                                <span>Monthly Usage</span>
+                                <span>{{ user.profile.jobs_this_month_count }}/{{ user.profile.job_limit_monthly }}</span>
+                            </div>
+                            <div style="width: 100%; height: 4px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden; margin-bottom: 8px;">
+                                {% if user.profile.job_limit_monthly > 0 %}
+                                    <div style="width: {% widthratio user.profile.jobs_this_month_count user.profile.job_limit_monthly 100 %}%; height: 100%; background: var(--accent-purple);"></div>
+                                {% endif %}
+                            </div>
+                            {% if user.profile.is_paid %}
+                                <div style="font-size: 0.65rem; color: var(--accent-green); display: flex; align-items: center; gap: 4px;">
+                                    <span style="width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; display: inline-block;"></span>
+                                    Paid — Active Subscription
+                                    {% if user.profile.subscription_end_date %}
+                                        <span style="color: var(--text-muted); margin-left: 4px;">· Renews {{ user.profile.subscription_end_date|date:"M d, Y" }}</span>
+                                    {% endif %}
+                                </div>
+                            {% else %}
+                                <div style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 4px;">
+                                    <span style="width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; display: inline-block;"></span>
+                                    Free Plan
+                                </div>
+                            {% endif %}
+                        </div>
+
                         <a href="{% url 'profile-settings' %}" class="dropdown-item">
                             <i data-lucide="user-cog" style="width:16px; height:16px; margin-right:8px;"></i> Profile Settings
+                        </a>
+                        <a href="{% url 'subscription' %}" class="dropdown-item">
+                            <i data-lucide="crown" style="width:16px; height:16px; margin-right:8px;"></i> Manage Plan
                         </a>
                         <form action="{% url 'logout' %}" method="post" class="logout-form">
                             {% csrf_token %}

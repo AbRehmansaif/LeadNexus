@@ -8,7 +8,10 @@ Two sections:
 from django.contrib import admin
 from django.urls import path, include, reverse_lazy
 from django.contrib.auth import views as auth_views
-from core.auth_views import LoginView, RegisterView
+from core.auth_views import (
+    LoginView, RegisterView, RequestPasswordResetView, 
+    VerifyResetCodeView, CustomPasswordResetConfirmView
+)
 from core import template_views
 
 urlpatterns = [
@@ -17,23 +20,17 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(next_page='landing'), name='logout'),
     path('register/', RegisterView.as_view(), name='register'),
     
-    # Password Reset
-    path('password_reset/', auth_views.PasswordResetView.as_view(
-        template_name='registration/password_reset_form.html',
-        email_template_name='registration/password_reset_email.html',
-        subject_template_name='registration/password_reset_subject.txt',
-        success_url=reverse_lazy('password_reset_done')
-    ), name='password_reset'),
+    # Password Reset (Custom Code-based Flow)
+    path('password_reset/', RequestPasswordResetView.as_view(), name='password_reset'),
     
     path('password_reset/done/', auth_views.PasswordResetDoneView.as_view(
         template_name='registration/password_reset_done.html'
     ), name='password_reset_done'),
     
-    path('reset/<uidb64>/<token>/', auth_views.PasswordResetConfirmView.as_view(
-        template_name='registration/password_reset_confirm.html',
-        success_url=reverse_lazy('password_reset_complete')
-    ), name='password_reset_confirm'),
+    path('password_reset/verify/', VerifyResetCodeView.as_view(), name='password-verify-code'),
+    path('password_reset/confirm/', CustomPasswordResetConfirmView.as_view(), name='password-reset-confirm'),
     
+    # Keeping old names for potential compatibility
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
         template_name='registration/password_reset_complete.html'
     ), name='password_reset_complete'),
@@ -47,6 +44,7 @@ urlpatterns = [
     path('',                       template_views.landing_page,        name='landing'),
     path('dashboard/',             template_views.dashboard,           name='dashboard'),
     path('profile/',               template_views.profile_settings,    name='profile-settings'),
+    path('subscription/',          template_views.subscription_page,    name='subscription'),
     path('',                       include('mail.urls')), 
     path('website-scraper/',       template_views.website_scraper_page, name='website-scraper'),
     path('linkedin-scraper/',      template_views.linkedin_scraper_page, name='linkedin-scraper'),

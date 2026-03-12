@@ -522,6 +522,11 @@ select.form-control {
 .badge-paused     { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border: 1px dashed var(--accent-amber); }
 .badge-cancelled  { background: rgba(100, 116, 139, 0.15); color: var(--text-muted);  }
 
+/* Membership Badges */
+.badge-free       { background: rgba(100, 116, 139, 0.15); color: var(--text-muted); border: 1px solid rgba(100, 116, 139, 0.2); }
+.badge-pro        { background: rgba(139, 92, 246, 0.15); color: var(--accent-purple); border: 1px solid rgba(139, 92, 246, 0.3); box-shadow: 0 0 10px rgba(139, 92, 246, 0.1); }
+.badge-enterprise { background: rgba(245, 158, 11, 0.15); color: var(--accent-amber); border: 1px solid rgba(245, 158, 11, 0.3); box-shadow: 0 0 10px rgba(245, 158, 11, 0.1); }
+
 @keyframes pulse-badge {
     0%, 100% { opacity: 1; }
     50%      { opacity: 0.6; }

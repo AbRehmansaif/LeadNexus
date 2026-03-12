@@ -26,31 +26,59 @@ def landing_page(request):
 @login_required
 def profile_settings(request):
     """View to update user profile (bio, avatar)."""
+    from django.db.models import Sum
+    from mail.models import EmailCampaign, SMTPCredential
+    from .models import ScrapeJob, LinkedInScrapeJob
+
     profile, created = UserProfile.objects.get_or_create(user=request.user)
-    
+
     if request.method == 'POST':
-        bio = request.POST.get('bio')
-        avatar = request.FILES.get('avatar')
-        
+        bio = request.POST.get('bio', '')
+        first_name = request.POST.get('first_name', '').strip()
+        last_name  = request.POST.get('last_name', '').strip()
+        email      = request.POST.get('email', '').strip()
+        avatar     = request.FILES.get('avatar')
+
         profile.bio = bio
         if avatar:
             profile.avatar = avatar
         profile.save()
+
+        # Update User fields
+        request.user.first_name = first_name
+        request.user.last_name  = last_name
+        if email and email != request.user.email:
+            request.user.email = email
+        request.user.save()
+
         messages.success(request, "Neural profile updated successfully.")
         return redirect('profile-settings')
 
+    # Stats for the sidebar
+    website_jobs   = ScrapeJob.objects.filter(user=request.user)
+    linkedin_jobs  = LinkedInScrapeJob.objects.filter(user=request.user)
+    campaigns      = EmailCampaign.objects.filter(user=request.user)
+    smtp_count     = SMTPCredential.objects.filter(user=request.user).count()
+
     return render(request, 'profile_settings.html', {
-        'active_page': 'profile',
-        'profile': profile,
-        'linkedin_accounts': LinkedInAccount.objects.filter(user=request.user)
+        'active_page':        'profile',
+        'profile':            profile,
+        'linkedin_accounts':  LinkedInAccount.objects.filter(user=request.user),
+        'website_job_count':  website_jobs.count(),
+        'linkedin_job_count': linkedin_jobs.count(),
+        'campaign_count':     campaigns.count(),
+        'smtp_count':         smtp_count,
+        'member_since':       request.user.date_joined,
     })
 
 
 @login_required
 def dashboard(request):
     """Landing page — overview stats & recent jobs."""
-    website_jobs  = ScrapeJob.objects.all()
-    linkedin_jobs = LinkedInScrapeJob.objects.all()
+    website_jobs  = ScrapeJob.objects.filter(user=request.user)
+    linkedin_jobs = LinkedInScrapeJob.objects.filter(user=request.user)
+    user_campaigns = EmailCampaign.objects.filter(user=request.user)
+    user_smtp = SMTPCredential.objects.filter(user=request.user)
 
     total_jobs = website_jobs.count() + linkedin_jobs.count()
     completed_jobs = (
@@ -65,27 +93,50 @@ def dashboard(request):
         website_jobs.filter(status='failed').count()
         + linkedin_jobs.filter(status='failed').count()
     )
-    total_profiles = ScrapedLinkedInProfile.objects.count()
+    
+    # Filter results by the user's jobs
+    total_profiles = ScrapedLinkedInProfile.objects.filter(job__user=request.user).count()
     emails_found = (
-        ScrapedWebsite.objects.exclude(email__isnull=True).exclude(email='').count()
-        + ScrapedLinkedInProfile.objects.exclude(website_email__isnull=True).exclude(website_email='').count()
+        ScrapedWebsite.objects.filter(job__user=request.user).exclude(email__isnull=True).exclude(email='').count()
+        + ScrapedLinkedInProfile.objects.filter(job__user=request.user).exclude(website_email__isnull=True).exclude(website_email='').count()
     )
+
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    profile.check_and_reset_quotas()
+    
+    # Calculate usage percentages
+    web_usage_pct = (profile.jobs_this_month_count / profile.job_limit_monthly * 100) if profile.job_limit_monthly > 0 else 100
+    li_usage_pct = (profile.linkedin_this_month_count / profile.linkedin_limit_monthly * 100) if profile.linkedin_limit_monthly > 0 else 100
+    email_usage_pct = (profile.emails_this_month_count / profile.email_outreach_limit_monthly * 100) if profile.email_outreach_limit_monthly > 0 else 100
+    
+    smtp_count = user_smtp.count()
+    smtp_usage_pct = (smtp_count / profile.smtp_limit * 100) if profile.smtp_limit > 0 else 100
 
     return render(request, 'dashboard.html', {
         'active_page':     'dashboard',
+        'profile':         profile,
+        'web_usage_pct':   min(web_usage_pct, 100),
+        'li_usage_pct':    min(li_usage_pct, 100),
+        'email_usage_pct': min(email_usage_pct, 100),
+        'smtp_count':      smtp_count,
+        'smtp_usage_pct':  min(smtp_usage_pct, 100),
+        'web_remaining':   max(profile.job_limit_monthly - profile.jobs_this_month_count, 0),
+        'li_remaining':    max(profile.linkedin_limit_monthly - profile.linkedin_this_month_count, 0),
+        'email_remaining': max(profile.email_outreach_limit_monthly - profile.emails_this_month_count, 0),
+        'smtp_available':  max(profile.smtp_limit - smtp_count, 0),
         'total_jobs':      total_jobs,
         'completed_jobs':  completed_jobs,
         'running_jobs':    running_jobs,
         'failed_jobs':     failed_jobs,
         'total_profiles':  total_profiles,
         'emails_found':    emails_found,
-        'total_campaigns': EmailCampaign.objects.count(),
-        'total_emails_sent': sum(c.sent_count for c in EmailCampaign.objects.all()),
-        'active_campaigns': EmailCampaign.objects.filter(status='running').count(),
-        'smtp_accounts': SMTPCredential.objects.all(),
+        'total_campaigns': user_campaigns.count(),
+        'total_emails_sent': sum(c.sent_count for c in user_campaigns),
+        'active_campaigns': user_campaigns.filter(status='running').count(),
+        'smtp_accounts': user_smtp,
         'recent_website_jobs':  website_jobs.order_by('-created_at')[:5],
         'recent_linkedin_jobs': linkedin_jobs.order_by('-created_at')[:5],
-        'recent_campaigns': EmailCampaign.objects.all().order_by('-created_at')[:5],
+        'recent_campaigns': user_campaigns.order_by('-created_at')[:5],
     })
 
 
@@ -136,7 +187,7 @@ def linkedin_scraper_page(request):
 @login_required
 def website_job_detail(request, pk):
     """Detail page for a website scrape job."""
-    job = get_object_or_404(ScrapeJob, pk=pk)
+    job = get_object_or_404(ScrapeJob, pk=pk, user=request.user)
     results = job.results.all().order_by('-scraped_at')
 
     emails_found = sum(1 for r in results if r.email)
@@ -164,7 +215,7 @@ def website_job_detail(request, pk):
 @login_required
 def linkedin_job_detail(request, pk):
     """Detail page for a LinkedIn scrape job — with all profiles."""
-    job = get_object_or_404(LinkedInScrapeJob, pk=pk)
+    job = get_object_or_404(LinkedInScrapeJob, pk=pk, user=request.user)
     profiles = job.profiles.all().order_by('-scraped_at')
 
     profiles_with_website = profiles.exclude(website__isnull=True).exclude(website='').count()
@@ -182,11 +233,39 @@ def linkedin_job_detail(request, pk):
 
 
 @login_required
+def subscription_page(request):
+    """View to show membership details and quotas."""
+    profile, _ = UserProfile.objects.get_or_create(user=request.user)
+    profile.check_and_reset_quotas()
+    
+    # Calculate usage percentages for the bars
+    web_usage_pct = (profile.jobs_this_month_count / profile.job_limit_monthly * 100) if profile.job_limit_monthly > 0 else 100
+    li_usage_pct = (profile.linkedin_this_month_count / profile.linkedin_limit_monthly * 100) if profile.linkedin_limit_monthly > 0 else 100
+    email_usage_pct = (profile.emails_this_month_count / profile.email_outreach_limit_monthly * 100) if profile.email_outreach_limit_monthly > 0 else 100
+    
+    smtp_count = SMTPCredential.objects.filter(user=request.user).count()
+    smtp_usage_pct = (smtp_count / profile.smtp_limit * 100) if profile.smtp_limit > 0 else 100
+
+    return render(request, 'subscription.html', {
+        'active_page': 'subscription',
+        'profile': profile,
+        'web_usage_pct': min(web_usage_pct, 100),
+        'li_usage_pct': min(li_usage_pct, 100),
+        'email_usage_pct': min(email_usage_pct, 100),
+        'smtp_count': smtp_count,
+        'smtp_usage_pct': min(smtp_usage_pct, 100),
+        'web_remaining':   max(profile.job_limit_monthly - profile.jobs_this_month_count, 0),
+        'li_remaining':    max(profile.linkedin_limit_monthly - profile.linkedin_this_month_count, 0),
+        'email_remaining': max(profile.email_outreach_limit_monthly - profile.emails_this_month_count, 0),
+        'smtp_available':  max(profile.smtp_limit - smtp_count, 0),
+    })
+
+@login_required
 def all_jobs_page(request):
     """List all website and LinkedIn jobs."""
     from django.core.paginator import Paginator
-    website_jobs_list  = ScrapeJob.objects.all().order_by('-created_at')
-    linkedin_jobs_list = LinkedInScrapeJob.objects.all().order_by('-created_at')
+    website_jobs_list  = ScrapeJob.objects.filter(user=request.user).order_by('-created_at')
+    linkedin_jobs_list = LinkedInScrapeJob.objects.filter(user=request.user).order_by('-created_at')
 
     paginator_linkedin = Paginator(linkedin_jobs_list, 10)
     page_li = request.GET.get('page_li')

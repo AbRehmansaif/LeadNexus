@@ -43,6 +43,10 @@ def run_scrape_job(job_id: int):
     job.started_at = timezone.now()
     job.save(update_fields=['status', 'started_at'])
 
+    # Increment Usage
+    if job.user and hasattr(job.user, 'profile'):
+        job.user.profile.increment_web_usage()
+
     try:
         scraper = WebsiteScraper(timeout=15)
         
@@ -90,6 +94,10 @@ def run_scrape_job(job_id: int):
 
                 # Also save to data/ folder
                 _save_website_to_file(job, data)
+
+                # Update Lifetime Stats
+                if job.user and hasattr(job.user, 'profile'):
+                    job.user.profile.increment_records_found()
             except Exception as e:
                 logger.error(f"Failed to scrape {current_url} in job #{job_id}: {e}")
 
@@ -138,6 +146,10 @@ def run_linkedin_job(job_id: int):
     job.started_at = timezone.now()
     job.progress = 0
     job.save(update_fields=['status', 'started_at', 'progress'])
+
+    # Increment Usage
+    if job.user and hasattr(job.user, 'profile'):
+        job.user.profile.increment_linkedin_usage()
 
     scraper = None
 
@@ -222,6 +234,10 @@ def run_linkedin_job(job_id: int):
             
             # Update progress
             LinkedInScrapeJob.objects.filter(pk=job_id).update(progress=len(saved_profiles))
+
+            # Update Lifetime Stats
+            if job.user and hasattr(job.user, 'profile'):
+                job.user.profile.increment_records_found()
 
         # Start search and scrape loop
         scraper.search_and_scrape(

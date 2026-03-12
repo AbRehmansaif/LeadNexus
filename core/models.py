@@ -11,13 +11,142 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
+class GlobalSettings(models.Model):
+    """Singleton model for system-wide configurations."""
+    registrations_enabled = models.BooleanField(default=True, help_text="If disabled, new users cannot register accounts.")
+    maintenance_mode = models.BooleanField(default=False, help_text="If enabled, shows a maintenance notice.")
+
+    class Meta:
+        verbose_name = "Global System Setting"
+        verbose_name_plural = "Global System Settings"
+
+    def __str__(self):
+        return "Global System Configuration"
+
+    def save(self, *args, **kwargs):
+        # Ensure only one instance exists
+        if not self.pk and GlobalSettings.objects.exists():
+            return
+        return super().save(*args, **kwargs)
+
 class UserProfile(models.Model):
+    MEMBERSHIP_CHOICES = [
+        ('free', 'Free Operative'),
+        ('pro', 'Pro Operative'),
+        ('enterprise', 'Enterprise'),
+    ]
+
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
+    membership_status = models.CharField(max_length=20, choices=MEMBERSHIP_CHOICES, default='free')
+    is_verified = models.BooleanField(default=False)
+    
+    # SaaS Quotas
+    job_limit_monthly = models.PositiveIntegerField(default=150, help_text="Max website scrape jobs per month")
+    linkedin_limit_monthly = models.PositiveIntegerField(default=60, help_text="Max LinkedIn scrape jobs per month")
+    smtp_limit = models.PositiveIntegerField(default=2, help_text="Max SMTP accounts allowed")
+    email_outreach_limit_monthly = models.PositiveIntegerField(default=1000, help_text="Max emails sent per month")
+    
+    # Usage Tracking
+    jobs_this_month_count = models.PositiveIntegerField(default=0)
+    linkedin_this_month_count = models.PositiveIntegerField(default=0)
+    emails_this_month_count = models.PositiveIntegerField(default=0)
+    last_action_date = models.DateField(auto_now=True)
+    
+    # Lifetime Stats
+    total_emails_sent = models.PositiveIntegerField(default=0)
+    total_websites_scraped = models.PositiveIntegerField(default=0)
+    total_linkedin_scraped = models.PositiveIntegerField(default=0)
+    total_records_scraped = models.PositiveIntegerField(default=0, help_text="Total verified contacts found across all origins")
+    
+    # Payment & Subscription Status
+    is_paid = models.BooleanField(default=False, help_text="True if user has an active paid subscription")
+    last_payment_date = models.DateTimeField(null=True, blank=True)
+    subscription_end_date = models.DateTimeField(null=True, blank=True)
+    
+    admin_notes = models.TextField(blank=True, help_text="Internal notes regarding this user (billing, support, etc)")
+    
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     bio = models.TextField(max_length=500, blank=True)
     
     def __str__(self):
-        return f"Profile for {self.user.username}"
+        return f"Profile for {self.user.username} ({self.get_membership_status_display()})"
+
+    def check_and_reset_quotas(self):
+        """Reset all usage counters if a new month has started."""
+        today = timezone.localdate()
+        needs_save = False
+
+        # Check if we switched to a new month or year
+        if self.last_action_date.month != today.month or self.last_action_date.year != today.year:
+            self.jobs_this_month_count = 0
+            self.linkedin_this_month_count = 0
+            self.emails_this_month_count = 0
+            needs_save = True
+        
+        if needs_save:
+            self.last_action_date = today
+            self.save(update_fields=['jobs_this_month_count', 'linkedin_this_month_count', 'emails_this_month_count', 'last_action_date'])
+            return True
+        return False
+
+    def can_scrape_website(self):
+        self.check_and_reset_quotas()
+        return self.jobs_this_month_count < self.job_limit_monthly
+
+    def can_scrape_linkedin(self):
+        self.check_and_reset_quotas()
+        return self.linkedin_this_month_count < self.linkedin_limit_monthly
+
+    def can_send_email(self, count=1):
+        self.check_and_reset_quotas()
+        return (self.emails_this_month_count + count) <= self.email_outreach_limit_monthly
+
+    def can_add_smtp(self):
+        current_count = self.user.smtp_credentials.count()
+        return current_count < self.smtp_limit
+
+    def increment_web_usage(self):
+        self.check_and_reset_quotas()
+        self.jobs_this_month_count += 1
+        self.total_websites_scraped += 1
+        self.save(update_fields=['jobs_this_month_count', 'total_websites_scraped', 'last_action_date'])
+
+    def increment_linkedin_usage(self):
+        self.check_and_reset_quotas()
+        self.linkedin_this_month_count += 1
+        self.total_linkedin_scraped += 1
+        self.save(update_fields=['linkedin_this_month_count', 'total_linkedin_scraped', 'last_action_date'])
+
+    def increment_email_usage(self, count=1):
+        self.check_and_reset_quotas()
+        self.emails_this_month_count += count
+        self.total_emails_sent += count
+        self.save(update_fields=['emails_this_month_count', 'total_emails_sent', 'last_action_date'])
+
+    def increment_records_found(self, count=1):
+        self.total_records_scraped += count
+        self.save(update_fields=['total_records_scraped'])
+
+    @property
+    def subscription_is_active(self):
+        """Returns True only if is_paid=True AND subscription_end_date is in the future (or not set)."""
+        if not self.is_paid:
+            return False
+        if self.subscription_end_date and timezone.now() > self.subscription_end_date:
+            return False
+        return True
+
+
+class PasswordResetCode(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    def is_valid(self):
+        # Code valid for 15 minutes
+        expiration_time = self.created_at + timezone.timedelta(minutes=15)
+        return not self.is_used and timezone.now() <= expiration_time
 
 
 class LinkedInAccount(models.Model):
@@ -53,6 +182,9 @@ class ScrapeJob(models.Model):
         ('failed',    'Failed'),
         ('cancelled', 'Cancelled'),
     ]
+
+    # Owner
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='website_jobs', null=True, blank=True)
 
     # Config
     name              = models.CharField(max_length=255, blank=True, help_text="Name of the job (e.g., Bulk Upload CSV)")
@@ -133,6 +265,9 @@ class LinkedInScrapeJob(models.Model):
         ('failed',    'Failed'),
         ('cancelled', 'Cancelled'),
     ]
+
+    # Owner
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='linkedin_jobs', null=True, blank=True)
 
     # Config
     niche           = models.CharField(max_length=500, help_text="Search niche / keywords")

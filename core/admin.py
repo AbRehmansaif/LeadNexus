@@ -3,7 +3,75 @@ Admin configuration for the core app.
 Registers both Website and LinkedIn scraping models.
 """
 from django.contrib import admin
-from .models import ScrapeJob, ScrapedWebsite, LinkedInScrapeJob, ScrapedLinkedInProfile
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.models import User
+from .models import (
+    ScrapeJob, ScrapedWebsite, LinkedInScrapeJob, 
+    ScrapedLinkedInProfile, UserProfile, GlobalSettings
+)
+
+# ── System Settings ────────────────────────────────────
+
+@admin.register(GlobalSettings)
+class GlobalSettingsAdmin(admin.ModelAdmin):
+    list_display = ('__str__', 'registrations_enabled', 'maintenance_mode')
+    
+    def has_add_permission(self, request):
+        # Only allow one instance
+        return not GlobalSettings.objects.exists()
+
+    def has_delete_permission(self, request, obj=None):
+        return False
+
+# ── User Management ────────────────────────────────────
+
+class UserProfileInline(admin.StackedInline):
+    model = UserProfile
+    can_delete = False
+    verbose_name_plural = 'Membership & Quotas'
+    fieldsets = (
+        ('Status', {
+            'fields': ('membership_status', 'is_verified', 'admin_notes')
+        }),
+        ('Quotas', {
+            'fields': (('job_limit_monthly', 'linkedin_limit_monthly', 'smtp_limit', 'email_outreach_limit_monthly'), ('jobs_this_month_count', 'linkedin_this_month_count', 'emails_this_month_count')),
+            'description': 'Manage monthly resource allocations.'
+        }),
+        ('Lifetime Intelligence', {
+            'fields': (('total_websites_scraped', 'total_linkedin_scraped'), 'total_emails_sent', 'total_records_scraped'),
+            'description': 'Historical performance and data acquisition metrics.'
+        }),
+        ('Billing & Payments', {
+            'fields': ('is_paid', 'last_payment_date', 'subscription_end_date'),
+            'description': 'Tracking user payment history and active subscription periods.'
+        }),
+        ('Profile', {
+            'fields': ('avatar', 'bio'),
+            'classes': ('collapse',),
+        }),
+    )
+
+class UserAdmin(BaseUserAdmin):
+    inlines = (UserProfileInline,)
+    list_display = ('username', 'email', 'first_name', 'last_name', 'is_active', 'is_staff', 'get_membership')
+    list_filter = ('is_active', 'is_staff', 'profile__membership_status')
+    actions = ['activate_users', 'deactivate_users']
+
+    def get_membership(self, obj):
+        return obj.profile.membership_status
+    get_membership.short_description = 'Plan'
+
+    def activate_users(self, request, queryset):
+        queryset.update(is_active=True)
+    activate_users.short_description = "Activate selected identities"
+
+    def deactivate_users(self, request, queryset):
+        queryset.update(is_active=False)
+    deactivate_users.short_description = "Lock selected identities (Ban)"
+
+# Re-register UserAdmin
+admin.site.unregister(User)
+admin.site.register(User, UserAdmin)
 
 
 # ── Website Scraping ───────────────────────────────────

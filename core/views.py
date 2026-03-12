@@ -51,7 +51,8 @@ class ScrapeJobListCreateView(ListCreateAPIView):
     GET  /api/jobs/   → list all website-scrape jobs
     POST /api/jobs/   → create & start a new website-scrape job
     """
-    queryset = ScrapeJob.objects.prefetch_related('results').all()
+    def get_queryset(self):
+        return ScrapeJob.objects.filter(user=self.request.user).prefetch_related('results').all()
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -59,15 +60,29 @@ class ScrapeJobListCreateView(ListCreateAPIView):
         return ScrapeJobSerializer
 
     def create(self, request, *args, **kwargs):
+        # Check Quota
+        if not request.user.profile.can_scrape_website():
+            return Response(
+                {'error': 'Monthly website scraping quota reached. Upgrade your plan for more bandwidth.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         serializer = ScrapeJobCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        job = serializer.save(status='pending')
+        job = serializer.save(status='pending', user=request.user)
         run_scrape_job_async(job.id)
         return Response(ScrapeJobSerializer(job).data, status=status.HTTP_201_CREATED)
 
 @api_view(['POST'])
 def bulk_scrape_jobs_csv(request):
     """POST /api/jobs/bulk/ -> upload a CSV, create one ScrapeJob with all valid URLs."""
+    # Check Quota
+    if not request.user.profile.can_scrape_website():
+        return Response(
+            {'error': 'Monthly website scraping quota reached. Upgrade your plan for more bandwidth.'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+
     import io
     file = request.FILES.get('file')
     if not file:
@@ -122,6 +137,7 @@ def bulk_scrape_jobs_csv(request):
             return Response({'error': 'No valid URLs found in CSV.'}, status=status.HTTP_400_BAD_REQUEST)
 
         job = ScrapeJob.objects.create(
+            user=request.user,
             name=f"Bulk Upload: {file.name}",
             urls_to_scrape=valid_urls,
             scrape_contact=scrape_contact,
@@ -141,13 +157,15 @@ def bulk_scrape_jobs_csv(request):
 
 class ScrapeJobDetailView(RetrieveAPIView):
     """GET /api/jobs/<id>/"""
-    queryset = ScrapeJob.objects.prefetch_related('results').all()
+    def get_queryset(self):
+        return ScrapeJob.objects.filter(user=self.request.user).prefetch_related('results').all()
     serializer_class = ScrapeJobSerializer
 
 
 class ScrapeJobDeleteView(DestroyAPIView):
     """DELETE /api/jobs/<id>/delete/"""
-    queryset = ScrapeJob.objects.all()
+    def get_queryset(self):
+        return ScrapeJob.objects.filter(user=self.request.user)
     serializer_class = ScrapeJobSerializer
 
 
@@ -155,7 +173,7 @@ class ScrapeJobDeleteView(DestroyAPIView):
 def job_status(request, pk):
     """GET /api/jobs/<id>/status/"""
     try:
-        job = ScrapeJob.objects.get(pk=pk)
+        job = ScrapeJob.objects.get(pk=pk, user=request.user)
     except ScrapeJob.DoesNotExist:
         return Response({'error': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -175,7 +193,7 @@ def job_status(request, pk):
 def toggle_job_pause(request, pk):
     """POST /api/jobs/<id>/toggle-pause/"""
     try:
-        job = ScrapeJob.objects.get(pk=pk)
+        job = ScrapeJob.objects.get(pk=pk, user=request.user)
     except ScrapeJob.DoesNotExist:
         return Response({'error': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -194,7 +212,7 @@ def toggle_job_pause(request, pk):
 def job_result(request, pk):
     """GET /api/jobs/<id>/result/"""
     try:
-        job = ScrapeJob.objects.prefetch_related('results').get(pk=pk)
+        job = ScrapeJob.objects.prefetch_related('results').get(pk=pk, user=request.user)
     except ScrapeJob.DoesNotExist:
         return Response({'error': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -230,7 +248,8 @@ class LinkedInJobListCreateView(ListCreateAPIView):
       "linkedin_password": "secret"
     }
     """
-    queryset = LinkedInScrapeJob.objects.prefetch_related('profiles').all()
+    def get_queryset(self):
+        return LinkedInScrapeJob.objects.filter(user=self.request.user).prefetch_related('profiles').all()
 
     def get_serializer_class(self):
         if self.request.method == 'POST':
@@ -238,9 +257,16 @@ class LinkedInJobListCreateView(ListCreateAPIView):
         return LinkedInScrapeJobListSerializer
 
     def create(self, request, *args, **kwargs):
+        # Check Quota
+        if not request.user.profile.can_scrape_linkedin():
+            return Response(
+                {'error': 'Monthly LinkedIn scraping quota reached. Upgrade your plan for more searches.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         serializer = LinkedInScrapeJobCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        job = serializer.save(status='pending')
+        job = serializer.save(status='pending', user=request.user)
 
         # Launch background thread
         run_linkedin_job_async(job.id)
@@ -253,13 +279,15 @@ class LinkedInJobListCreateView(ListCreateAPIView):
 
 class LinkedInJobDetailView(RetrieveAPIView):
     """GET /api/linkedin/jobs/<id>/  — full detail including all profiles"""
-    queryset = LinkedInScrapeJob.objects.prefetch_related('profiles').all()
+    def get_queryset(self):
+        return LinkedInScrapeJob.objects.filter(user=self.request.user).prefetch_related('profiles').all()
     serializer_class = LinkedInScrapeJobSerializer
 
 
 class LinkedInJobDeleteView(DestroyAPIView):
     """DELETE /api/linkedin/jobs/<id>/delete/"""
-    queryset = LinkedInScrapeJob.objects.all()
+    def get_queryset(self):
+        return LinkedInScrapeJob.objects.filter(user=self.request.user)
     serializer_class = LinkedInScrapeJobListSerializer
 
 
@@ -269,7 +297,7 @@ def linkedin_job_status(request, pk):
     GET /api/linkedin/jobs/<id>/status/   → lightweight polling endpoint
     """
     try:
-        job = LinkedInScrapeJob.objects.get(pk=pk)
+        job = LinkedInScrapeJob.objects.get(pk=pk, user=request.user)
     except LinkedInScrapeJob.DoesNotExist:
         return Response({'error': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -293,7 +321,7 @@ def linkedin_job_profiles(request, pk):
     GET /api/linkedin/jobs/<id>/profiles/  → return all scraped profiles
     """
     try:
-        job = LinkedInScrapeJob.objects.get(pk=pk)
+        job = LinkedInScrapeJob.objects.get(pk=pk, user=request.user)
     except LinkedInScrapeJob.DoesNotExist:
         return Response({'error': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
 
@@ -334,7 +362,7 @@ def export_results_csv(request):
     GET /api/export/csv/           → all website results as CSV
     GET /api/export/csv/?job_id=X  → single job
     """
-    qs = ScrapedWebsite.objects.select_related('job').all()
+    qs = ScrapedWebsite.objects.filter(job__user=request.user).select_related('job').all()
     job_id = request.query_params.get('job_id')
     if job_id:
         qs = qs.filter(job_id=job_id)
@@ -361,7 +389,7 @@ def export_results_csv(request):
 @api_view(['GET'])
 def export_results_json(request):
     """GET /api/export/json/"""
-    qs = ScrapedWebsite.objects.select_related('job').all()
+    qs = ScrapedWebsite.objects.filter(job__user=request.user).select_related('job').all()
     job_id = request.query_params.get('job_id')
     if job_id:
         qs = qs.filter(job_id=job_id)
@@ -381,7 +409,7 @@ def export_linkedin_csv(request):
     GET /api/export/linkedin/csv/            → all LinkedIn profiles as CSV
     GET /api/export/linkedin/csv/?job_id=X   → single job
     """
-    qs = ScrapedLinkedInProfile.objects.select_related('job').all()
+    qs = ScrapedLinkedInProfile.objects.filter(job__user=request.user).select_related('job').all()
     job_id = request.query_params.get('job_id')
     if job_id:
         qs = qs.filter(job_id=job_id)
@@ -414,7 +442,7 @@ def export_linkedin_csv(request):
 @api_view(['GET'])
 def export_linkedin_json(request):
     """GET /api/export/linkedin/json/"""
-    qs = ScrapedLinkedInProfile.objects.select_related('job').all()
+    qs = ScrapedLinkedInProfile.objects.filter(job__user=request.user).select_related('job').all()
     job_id = request.query_params.get('job_id')
     if job_id:
         qs = qs.filter(job_id=job_id)
@@ -434,26 +462,26 @@ def export_linkedin_json(request):
 
 @api_view(['GET'])
 def dashboard_stats(request):
-    """GET /api/stats/"""
+    user = request.user
 
     # Website jobs
-    web_total     = ScrapeJob.objects.count()
-    web_pending   = ScrapeJob.objects.filter(status='pending').count()
-    web_running   = ScrapeJob.objects.filter(status='running').count()
-    web_completed = ScrapeJob.objects.filter(status='completed').count()
-    web_failed    = ScrapeJob.objects.filter(status='failed').count()
+    web_total     = ScrapeJob.objects.filter(user=user).count()
+    web_pending   = ScrapeJob.objects.filter(user=user, status='pending').count()
+    web_running   = ScrapeJob.objects.filter(user=user, status='running').count()
+    web_completed = ScrapeJob.objects.filter(user=user, status='completed').count()
+    web_failed    = ScrapeJob.objects.filter(user=user, status='failed').count()
 
-    with_email  = ScrapedWebsite.objects.exclude(email__isnull=True).exclude(email='').count()
-    with_phone  = ScrapedWebsite.objects.exclude(phone__isnull=True).exclude(phone='').count()
-    with_social = ScrapedWebsite.objects.exclude(facebook__isnull=True).count()
+    with_email  = ScrapedWebsite.objects.filter(job__user=user).exclude(email__isnull=True).exclude(email='').count()
+    with_phone  = ScrapedWebsite.objects.filter(job__user=user).exclude(phone__isnull=True).exclude(phone='').count()
+    with_social = ScrapedWebsite.objects.filter(job__user=user).exclude(facebook__isnull=True).count()
 
     # LinkedIn jobs
-    li_total     = LinkedInScrapeJob.objects.count()
-    li_pending   = LinkedInScrapeJob.objects.filter(status='pending').count()
-    li_running   = LinkedInScrapeJob.objects.filter(status='running').count()
-    li_completed = LinkedInScrapeJob.objects.filter(status='completed').count()
-    li_failed    = LinkedInScrapeJob.objects.filter(status='failed').count()
-    li_profiles  = ScrapedLinkedInProfile.objects.count()
+    li_total     = LinkedInScrapeJob.objects.filter(user=user).count()
+    li_pending   = LinkedInScrapeJob.objects.filter(user=user, status='pending').count()
+    li_running   = LinkedInScrapeJob.objects.filter(user=user, status='running').count()
+    li_completed = LinkedInScrapeJob.objects.filter(user=user, status='completed').count()
+    li_failed    = LinkedInScrapeJob.objects.filter(user=user, status='failed').count()
+    li_profiles  = ScrapedLinkedInProfile.objects.filter(job__user=user).count()
 
     return Response({
         'website_jobs': {

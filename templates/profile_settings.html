@@ -1,80 +1,362 @@
 {% extends "base.html" %}
-{% block title %}Neural Profile — LeadNexus{% endblock %}
+{% block title %}Operator Profile — LeadNexus{% endblock %}
 
 {% block content %}
 <div class="page-header">
     <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
         <div>
             <h1 class="page-title">Operator Profile</h1>
-            <p class="page-subtitle">Configure your sending identity and personalization profile.</p>
+            <p class="page-subtitle">Manage your identity, credentials, and operational footprint.</p>
         </div>
         <a href="{% url 'dashboard' %}" class="btn btn-secondary btn-sm">← Back to Terminal</a>
     </div>
 </div>
 
-<div class="card" style="max-width: 600px; margin: 0 auto; padding: 40px;">
-    <form method="POST" enctype="multipart/form-data">
-        {% csrf_token %}
-        
-        <!-- Avatar Preview/Upload -->
-        <div style="text-align: center; margin-bottom: 32px;">
-            <div style="position: relative; display: inline-block;">
+<div style="display: grid; grid-template-columns: 320px 1fr; gap: 28px; align-items: start;">
+
+    <!-- ══ LEFT COLUMN: Identity Card ══ -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
+        <!-- Avatar & Identity -->
+        <div class="card" style="padding: 32px; text-align: center; position: relative; overflow: hidden;">
+            <!-- Glow BG -->
+            <div style="position: absolute; top: -40px; left: 50%; transform: translateX(-50%); width: 200px; height: 200px; background: radial-gradient(circle, rgba(139,92,246,0.15) 0%, transparent 70%); pointer-events: none;"></div>
+
+            <!-- Membership Badge -->
+            <div style="position: absolute; top: 16px; right: 16px;">
+                <span class="badge badge-{{ profile.membership_status }}" style="font-size: 0.65rem; padding: 3px 10px; border-radius: 20px;">
+                    {{ profile.get_membership_status_display }}
+                </span>
+            </div>
+
+            <!-- Avatar -->
+            <div style="position: relative; display: inline-block; margin-bottom: 16px;">
                 {% if profile.avatar %}
-                    <img src="{{ profile.avatar.url }}" id="avatar-preview" style="width: 120px; height: 120px; border-radius: 50%; object-fit: cover; border: 4px solid var(--accent-purple); box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);">
+                    <img src="{{ profile.avatar.url }}" id="avatar-preview" style="width: 110px; height: 110px; border-radius: 50%; object-fit: cover; border: 3px solid var(--accent-purple); box-shadow: 0 0 24px rgba(139,92,246,0.4);">
                 {% else %}
-                    <div id="avatar-placeholder" style="width: 120px; height: 120px; border-radius: 50%; background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; font-size: 3rem; font-weight: 800; color: white;">
+                    <div id="avatar-placeholder" style="width: 110px; height: 110px; border-radius: 50%; background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; font-size: 2.8rem; font-weight: 800; color: white; box-shadow: 0 0 24px rgba(139,92,246,0.3);">
                         {{ user.username|slice:":1"|upper }}
                     </div>
                 {% endif %}
-                
-                <label for="avatar-input" style="position: absolute; bottom: 0; right: 0; background: var(--accent-blue); width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: white; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.3); border: 2px solid var(--bg-card);">
-                    📷
+                <label for="avatar-input-sidebar" style="position: absolute; bottom: 2px; right: 2px; background: var(--accent-blue); width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.4); border: 2px solid var(--bg-card);">
+                    <i data-lucide="camera" style="width:13px; height:13px; color:white;"></i>
                 </label>
-                <input type="file" name="avatar" id="avatar-input" style="display: none;" accept="image/*">
+                <input type="file" id="avatar-input-sidebar" style="display: none;" accept="image/*" onchange="previewAvatar(this)">
             </div>
-            <p style="margin-top: 12px; color: var(--text-muted); font-size: 0.85rem;">Click icon to upload new avatar</p>
+
+            <div style="font-size: 1.1rem; font-weight: 700;">{{ user.get_full_name|default:user.username }}</div>
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">@{{ user.username }}</div>
+            <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">{{ user.email }}</div>
+
+            {% if profile.bio %}
+                <p style="font-size: 0.82rem; color: var(--text-muted); margin-top: 14px; line-height: 1.6; font-style: italic; border-top: 1px solid var(--border); padding-top: 14px;">
+                    "{{ profile.bio }}"
+                </p>
+            {% endif %}
+
+            <!-- Member Since -->
+            <div style="margin-top: 16px; padding: 10px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid var(--border);">
+                <div style="font-size: 0.66rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Operative Since</div>
+                <div style="font-size: 0.85rem; font-weight: 600; margin-top: 2px;">{{ member_since|date:"N j, Y" }}</div>
+            </div>
         </div>
 
-        <div class="form-group">
-            <label class="form-label" style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block;">Operator Name</label>
-            <input type="text" value="{{ user.username }}" class="form-control" disabled style="opacity: 0.6; cursor: not-allowed; background: rgba(0,0,0,0.2);">
+        <!-- Quick Stats -->
+        <div class="card" style="padding: 20px;">
+            <h3 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.08em; margin: 0 0 16px 0;">Operational Footprint</h3>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(139,92,246,0.07); border-radius: 10px; border: 1px solid rgba(139,92,246,0.15);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="globe" style="width:15px; height:15px; color: var(--accent-purple);"></i>
+                        <span style="font-size: 0.82rem; color: var(--text-muted);">Web Jobs</span>
+                    </div>
+                    <span style="font-size: 0.9rem; font-weight: 700; color: var(--accent-purple);">{{ website_job_count }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(59,130,246,0.07); border-radius: 10px; border: 1px solid rgba(59,130,246,0.15);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="linkedin" style="width:15px; height:15px; color: var(--accent-blue);"></i>
+                        <span style="font-size: 0.82rem; color: var(--text-muted);">LinkedIn Jobs</span>
+                    </div>
+                    <span style="font-size: 0.9rem; font-weight: 700; color: var(--accent-blue);">{{ linkedin_job_count }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(6,182,212,0.07); border-radius: 10px; border: 1px solid rgba(6,182,212,0.15);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="send" style="width:15px; height:15px; color: var(--accent-cyan);"></i>
+                        <span style="font-size: 0.82rem; color: var(--text-muted);">Campaigns</span>
+                    </div>
+                    <span style="font-size: 0.9rem; font-weight: 700; color: var(--accent-cyan);">{{ campaign_count }}</span>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: rgba(245,158,11,0.07); border-radius: 10px; border: 1px solid rgba(245,158,11,0.15);">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="mail" style="width:15px; height:15px; color: var(--accent-amber);"></i>
+                        <span style="font-size: 0.82rem; color: var(--text-muted);">SMTP Accounts</span>
+                    </div>
+                    <span style="font-size: 0.9rem; font-weight: 700; color: var(--accent-amber);">{{ smtp_count }}</span>
+                </div>
+            </div>
         </div>
 
-        <div class="form-group" style="margin-top: 24px;">
-            <label class="form-label" style="color: var(--text-muted); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; display: block;">Operation Bio</label>
-            <textarea name="bio" class="form-control" rows="4" placeholder="Describe your mission goals..." style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: white; width: 100%; padding: 12px; font-family: inherit;">{{ profile.bio }}</textarea>
+        <!-- Billing Status -->
+        <div class="card" style="padding: 20px;">
+            <h3 style="font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted); letter-spacing: 0.08em; margin: 0 0 16px 0; display: flex; align-items: center; gap: 6px;">
+                <i data-lucide="credit-card" style="width:13px; height:13px; color: var(--accent-amber);"></i> Billing
+            </h3>
+            {% if profile.is_paid %}
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: rgba(16,185,129,0.08); border-radius: 10px; border: 1px solid rgba(16,185,129,0.2);">
+                    <span style="width: 9px; height: 9px; background: var(--accent-green); border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px var(--accent-green);"></span>
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: 600; color: var(--accent-green);">Paid Subscription</div>
+                        {% if profile.subscription_end_date %}
+                            <div style="font-size: 0.7rem; color: var(--text-muted);">Renews {{ profile.subscription_end_date|date:"N j, Y" }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% else %}
+                <div style="display: flex; align-items: center; gap: 10px; padding: 12px; background: rgba(255,255,255,0.03); border-radius: 10px; border: 1px solid var(--border); margin-bottom: 12px;">
+                    <span style="width: 9px; height: 9px; background: var(--text-muted); border-radius: 50%; flex-shrink: 0;"></span>
+                    <div>
+                        <div style="font-size: 0.8rem; font-weight: 600; color: var(--text-muted);">Free Plan</div>
+                        <div style="font-size: 0.7rem; color: var(--text-muted);">Limited monthly quotas</div>
+                    </div>
+                </div>
+                <a href="{% url 'subscription' %}" class="btn btn-primary" style="width: 100%; font-size: 0.82rem; text-align: center;">
+                    <i data-lucide="zap" style="width:13px; height:13px; margin-right:5px;"></i> Upgrade Plan
+                </a>
+            {% endif %}
         </div>
 
-        <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 32px; height: 48px; font-weight: 700;">
-            Update Protocol Identity
-        </button>
-    </form>
+    </div>
+
+    <!-- ══ RIGHT COLUMN: Edit Forms ══ -->
+    <div style="display: flex; flex-direction: column; gap: 20px;">
+
+        <!-- Personal Info Form -->
+        <div class="card" style="padding: 32px;">
+            <h2 style="font-size: 1rem; font-weight: 700; margin: 0 0 24px 0; display: flex; align-items: center; gap: 10px;">
+                <span style="width: 28px; height: 28px; background: rgba(139,92,246,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="user" style="width:14px; height:14px; color: var(--accent-purple);"></i>
+                </span>
+                Personal Information
+            </h2>
+
+            <form method="POST" enctype="multipart/form-data" id="profile-form">
+                {% csrf_token %}
+                <input type="file" name="avatar" id="avatar-input" style="display: none;" accept="image/*">
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); display: block; margin-bottom: 8px;">First Name</label>
+                        <input type="text" name="first_name" value="{{ user.first_name }}" placeholder="Enter first name" class="form-control" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: white; height: 44px; padding: 0 14px; width: 100%;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); display: block; margin-bottom: 8px;">Last Name</label>
+                        <input type="text" name="last_name" value="{{ user.last_name }}" placeholder="Enter last name" class="form-control" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: white; height: 44px; padding: 0 14px; width: 100%;">
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); display: block; margin-bottom: 8px;">Operator Handle</label>
+                    <div style="position: relative;">
+                        <input type="text" value="{{ user.username }}" class="form-control" disabled style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: rgba(255,255,255,0.4); height: 44px; padding: 0 14px 0 40px; width: 100%; cursor: not-allowed;">
+                        <i data-lucide="at-sign" style="width:15px; height:15px; position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                        <span style="position: absolute; right: 14px; top: 50%; transform: translateY(-50%); font-size: 0.7rem; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 2px 8px; border-radius: 4px;">Locked</span>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); display: block; margin-bottom: 8px;">Contact Email</label>
+                    <div style="position: relative;">
+                        <input type="email" name="email" value="{{ user.email }}" class="form-control" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: white; height: 44px; padding: 0 14px 0 40px; width: 100%;">
+                        <i data-lucide="mail" style="width:15px; height:15px; position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 28px;">
+                    <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); display: block; margin-bottom: 8px;">Operation Bio</label>
+                    <textarea name="bio" rows="4" placeholder="Describe your mission, goals, or specialization..." style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: white; width: 100%; padding: 12px 14px; font-family: inherit; font-size: 0.9rem; resize: vertical; line-height: 1.6;">{{ profile.bio }}</textarea>
+                    <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 6px;">Used as your personalization signature in email campaigns.</div>
+                </div>
+
+                <div style="display: flex; gap: 12px;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1; height: 46px; font-weight: 700;">
+                        <i data-lucide="save" style="width:15px; height:15px; margin-right:7px;"></i> Save Changes
+                    </button>
+                    <label for="avatar-input" class="btn btn-secondary" style="height: 46px; display: flex; align-items: center; gap: 7px; cursor: pointer; padding: 0 20px;">
+                        <i data-lucide="camera" style="width:15px; height:15px;"></i> Change Avatar
+                    </label>
+                </div>
+            </form>
+        </div>
+
+        <!-- Monthly Quota Overview -->
+        <div class="card" style="padding: 32px;">
+            <h2 style="font-size: 1rem; font-weight: 700; margin: 0 0 24px 0; display: flex; align-items: center; gap: 10px;">
+                <span style="width: 28px; height: 28px; background: rgba(6,182,212,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="bar-chart-2" style="width:14px; height:14px; color: var(--accent-cyan);"></i>
+                </span>
+                Monthly Resource Allocations
+                <a href="{% url 'subscription' %}" style="margin-left: auto; font-size: 0.75rem; color: var(--accent-purple); font-weight: 400;">View Full Plan →</a>
+            </h2>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                {% with web_pct=profile.jobs_this_month_count|default:0 %}
+                <div style="padding: 16px; background: rgba(139,92,246,0.06); border-radius: 12px; border: 1px solid rgba(139,92,246,0.15);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
+                        <span style="display: flex; align-items: center; gap: 6px;"><i data-lucide="globe" style="width:13px; height:13px; color:var(--accent-purple);"></i> Web Scraping</span>
+                        <span style="color: white; font-weight: 600;">{{ profile.jobs_this_month_count }} / {{ profile.job_limit_monthly }}</span>
+                    </div>
+                    <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+                        {% if profile.job_limit_monthly > 0 %}
+                        <div style="width: {% widthratio profile.jobs_this_month_count profile.job_limit_monthly 100 %}%; height: 100%; background: var(--accent-purple); border-radius: 3px;"></div>
+                        {% endif %}
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">{{ profile.job_limit_monthly|add:"-"|add:profile.jobs_this_month_count }} remaining this month</div>
+                </div>
+                {% endwith %}
+
+                <div style="padding: 16px; background: rgba(59,130,246,0.06); border-radius: 12px; border: 1px solid rgba(59,130,246,0.15);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
+                        <span style="display: flex; align-items: center; gap: 6px;"><i data-lucide="linkedin" style="width:13px; height:13px; color:var(--accent-blue);"></i> LinkedIn</span>
+                        <span style="color: white; font-weight: 600;">{{ profile.linkedin_this_month_count }} / {{ profile.linkedin_limit_monthly }}</span>
+                    </div>
+                    <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+                        {% if profile.linkedin_limit_monthly > 0 %}
+                        <div style="width: {% widthratio profile.linkedin_this_month_count profile.linkedin_limit_monthly 100 %}%; height: 100%; background: var(--accent-blue); border-radius: 3px;"></div>
+                        {% endif %}
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Resets 1st of each month</div>
+                </div>
+
+                <div style="padding: 16px; background: rgba(6,182,212,0.06); border-radius: 12px; border: 1px solid rgba(6,182,212,0.15);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
+                        <span style="display: flex; align-items: center; gap: 6px;"><i data-lucide="send" style="width:13px; height:13px; color:var(--accent-cyan);"></i> Email Outreach</span>
+                        <span style="color: white; font-weight: 600;">{{ profile.emails_this_month_count }} / {{ profile.email_outreach_limit_monthly }}</span>
+                    </div>
+                    <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+                        {% if profile.email_outreach_limit_monthly > 0 %}
+                        <div style="width: {% widthratio profile.emails_this_month_count profile.email_outreach_limit_monthly 100 %}%; height: 100%; background: var(--accent-cyan); border-radius: 3px;"></div>
+                        {% endif %}
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Monthly send quota</div>
+                </div>
+
+                <div style="padding: 16px; background: rgba(245,158,11,0.06); border-radius: 12px; border: 1px solid rgba(245,158,11,0.15);">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
+                        <span style="display: flex; align-items: center; gap: 6px;"><i data-lucide="server" style="width:13px; height:13px; color:var(--accent-amber);"></i> SMTP Slots</span>
+                        <span style="color: white; font-weight: 600;">{{ smtp_count }} / {{ profile.smtp_limit }}</span>
+                    </div>
+                    <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
+                        {% if profile.smtp_limit > 0 %}
+                        <div style="width: {% widthratio smtp_count profile.smtp_limit 100 %}%; height: 100%; background: var(--accent-amber); border-radius: 3px;"></div>
+                        {% endif %}
+                    </div>
+                    <div style="font-size: 0.7rem; color: var(--text-muted);">Connected sender accounts</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Lifetime Achievement Stats -->
+        <div class="card" style="padding: 32px;">
+            <h2 style="font-size: 1rem; font-weight: 700; margin: 0 0 24px 0; display: flex; align-items: center; gap: 10px;">
+                <span style="width: 28px; height: 28px; background: rgba(16,185,129,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="trophy" style="width:14px; height:14px; color: var(--accent-green);"></i>
+                </span>
+                Lifetime Intelligence Record
+            </h2>
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px;">
+                <div style="text-align: center; padding: 20px 12px; background: rgba(139,92,246,0.06); border-radius: 12px; border: 1px solid rgba(139,92,246,0.15);">
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--accent-purple); line-height: 1;">{{ profile.total_websites_scraped }}</div>
+                    <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 6px;">Sites Scraped</div>
+                </div>
+                <div style="text-align: center; padding: 20px 12px; background: rgba(59,130,246,0.06); border-radius: 12px; border: 1px solid rgba(59,130,246,0.15);">
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--accent-blue); line-height: 1;">{{ profile.total_linkedin_scraped }}</div>
+                    <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 6px;">LI Profiles</div>
+                </div>
+                <div style="text-align: center; padding: 20px 12px; background: rgba(16,185,129,0.06); border-radius: 12px; border: 1px solid rgba(16,185,129,0.15);">
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--accent-green); line-height: 1;">{{ profile.total_records_scraped }}</div>
+                    <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 6px;">Leads Found</div>
+                </div>
+                <div style="text-align: center; padding: 20px 12px; background: rgba(6,182,212,0.06); border-radius: 12px; border: 1px solid rgba(6,182,212,0.15);">
+                    <div style="font-size: 1.75rem; font-weight: 800; color: var(--accent-cyan); line-height: 1;">{{ profile.total_emails_sent }}</div>
+                    <div style="font-size: 0.68rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 6px;">Emails Sent</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Security Section -->
+        <div class="card" style="padding: 32px;">
+            <h2 style="font-size: 1rem; font-weight: 700; margin: 0 0 24px 0; display: flex; align-items: center; gap: 10px;">
+                <span style="width: 28px; height: 28px; background: rgba(245,158,11,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="shield" style="width:14px; height:14px; color: var(--accent-amber);"></i>
+                </span>
+                Security & Access
+            </h2>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+                <!-- Account Status -->
+                <div style="padding: 18px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px;">Verification Status</div>
+                    {% if profile.is_verified %}
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="width: 8px; height: 8px; background: var(--accent-green); border-radius: 50%; box-shadow: 0 0 6px var(--accent-green);"></span>
+                            <span style="font-size: 0.85rem; font-weight: 600; color: var(--accent-green);">Verified Operative</span>
+                        </div>
+                    {% else %}
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <span style="width: 8px; height: 8px; background: var(--accent-amber); border-radius: 50%;"></span>
+                            <span style="font-size: 0.85rem; font-weight: 600; color: var(--accent-amber);">Pending Verification</span>
+                        </div>
+                    {% endif %}
+                </div>
+                <!-- Last Login -->
+                <div style="padding: 18px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border);">
+                    <div style="font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 8px;">Last Login</div>
+                    <div style="font-size: 0.85rem; font-weight: 600;">{{ user.last_login|date:"N j, Y, g:i a"|default:"—" }}</div>
+                </div>
+                <!-- Password Reset Link -->
+                <div style="padding: 18px; background: rgba(255,255,255,0.02); border-radius: 12px; border: 1px solid var(--border); grid-column: span 2;">
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div>
+                            <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 2px;">Security Key (Password)</div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted);">Change your login credentials securely.</div>
+                        </div>
+                        <a href="{% url 'password_reset' %}" class="btn btn-secondary btn-sm" style="flex-shrink: 0;">
+                            <i data-lucide="key" style="width:13px; height:13px; margin-right:5px;"></i> Reset Key
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 
 <script>
-    document.getElementById('avatar-input').onchange = function (evt) {
-        const [file] = this.files;
-        if (file) {
-            const preview = document.getElementById('avatar-preview');
-            const placeholder = document.getElementById('avatar-placeholder');
-            
-            const url = URL.createObjectURL(file);
-            
-            if (preview) {
-                preview.src = url;
-            } else if (placeholder) {
-                const img = document.createElement('img');
-                img.id = 'avatar-preview';
-                img.src = url;
-                img.style.width = '120px';
-                img.style.height = '120px';
-                img.style.borderRadius = '50%';
-                img.style.objectFit = 'cover';
-                img.style.border = '4px solid var(--accent-purple)';
-                img.style.boxShadow = '0 0 20px rgba(139, 92, 246, 0.3)';
-                placeholder.replaceWith(img);
-            }
-        }
+function previewAvatar(input) {
+    if (!input.files || !input.files[0]) return;
+    const url = URL.createObjectURL(input.files[0]);
+    const preview = document.getElementById('avatar-preview');
+    const placeholder = document.getElementById('avatar-placeholder');
+    // Copy the file to the form's hidden input
+    const dt = new DataTransfer();
+    dt.items.add(input.files[0]);
+    document.getElementById('avatar-input').files = dt.files;
+    if (preview) {
+        preview.src = url;
+    } else if (placeholder) {
+        const img = document.createElement('img');
+        img.id = 'avatar-preview';
+        img.src = url;
+        img.style.cssText = 'width:110px;height:110px;border-radius:50%;object-fit:cover;border:3px solid var(--accent-purple);box-shadow:0 0 24px rgba(139,92,246,0.4);';
+        placeholder.replaceWith(img);
     }
+}
+// Sync sidebar avatar-input-sidebar to form avatar-input on change
+document.getElementById('avatar-input-sidebar').addEventListener('change', function() {
+    previewAvatar(this);
+});
+// Also trigger form preview from the main "Change Avatar" label button
+document.getElementById('avatar-input').addEventListener('change', function() {
+    previewAvatar(this);
+});
 </script>
 {% endblock %}

@@ -29,8 +29,8 @@ def send_campaign_emails(campaign_id):
         # Get all pending recipients
         recipients = campaign.recipients.filter(status='pending')
         
-        # Get all SMTP credentials, we will filter active ones after checking limits
-        all_smtp_credentials = list(SMTPCredential.objects.all())
+        # Get all SMTP credentials for THIS user
+        all_smtp_credentials = list(SMTPCredential.objects.filter(user=campaign.user))
         if not all_smtp_credentials:
             campaign.status = 'failed'
             campaign.save(update_fields=['status'])
@@ -42,12 +42,20 @@ def send_campaign_emails(campaign_id):
             cred.check_and_reset_limit()
 
         smtp_index = 0
+        user_profile = campaign.user.profile
 
         for recipient in recipients:
             # Re-fetch campaign status to allow pausing/stopping
             campaign.refresh_from_db()
             if campaign.status != 'running':
                 logger.info(f"Campaign {campaign_id} stopped or paused.")
+                break
+
+            # Check Global User Outreach Quota
+            if not user_profile.can_send_email():
+                campaign.status = 'failed'
+                campaign.save(update_fields=['status'])
+                logger.error(f"User {campaign.user.username} reached monthly email outreach quota.")
                 break
 
             # Filter active credentials (some might have deactivated mid-loop if hit limit)
@@ -114,6 +122,7 @@ def send_campaign_emails(campaign_id):
 
                 # Update usage
                 creds.increment_usage()
+                user_profile.increment_email_usage()
 
                 # Update recipient
                 recipient.status = 'sent'

@@ -6,13 +6,13 @@ from .models import EmailCampaign, SMTPCredential, Recipient
 @login_required
 def mail_dashboard(request):
     """Mail sender dashboard - overview of campaigns and SMTP status."""
-    campaigns_list = EmailCampaign.objects.all().order_by('-created_at')
+    campaigns_list = EmailCampaign.objects.filter(user=request.user).order_by('-created_at')
     
     paginator = Paginator(campaigns_list, 10)
     page_number = request.GET.get('page')
     campaigns = paginator.get_page(page_number)
     
-    smtp_accounts = SMTPCredential.objects.all()
+    smtp_accounts = SMTPCredential.objects.filter(user=request.user)
     
     total_emails_sent = sum(c.sent_count for c in campaigns_list)
     active_campaigns = campaigns_list.filter(status='running').count()
@@ -36,7 +36,7 @@ def create_campaign_page(request):
 @login_required
 def campaign_detail_page(request, pk):
     """Detail page for a specific campaign with progress tracking."""
-    campaign = get_object_or_404(EmailCampaign, pk=pk)
+    campaign = get_object_or_404(EmailCampaign, pk=pk, user=request.user)
     recipients = campaign.recipients.all().order_by('-sent_at')
     
     return render(request, 'mail/campaign_detail.html', {
@@ -48,7 +48,7 @@ def campaign_detail_page(request, pk):
 @login_required
 def smtp_settings_page(request):
     """Manage SMTP backend accounts."""
-    accounts_list = SMTPCredential.objects.all().order_by('-created_at')
+    accounts_list = SMTPCredential.objects.filter(user=request.user).order_by('-created_at')
     
     for account in accounts_list:
         account.check_and_reset_limit()

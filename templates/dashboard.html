@@ -3,9 +3,120 @@
 
 {% block content %}
 <!-- Page Header -->
-<div class="page-header">
-    <h1 class="page-title">Dashboard</h1>
-    <p class="page-subtitle">Real time overview of your lead acquisition and outreach performance.</p>
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
+    <div>
+        <h1 class="page-title">Dashboard</h1>
+        <p class="page-subtitle">Real time overview of your lead acquisition and outreach performance.</p>
+    </div>
+    <div style="text-align: right;">
+        <span class="badge badge-{{ profile.membership_status }}" style="font-size: 0.9rem; padding: 8px 16px; border-radius: 30px;">
+            <i data-lucide="crown" style="width:14px; height:14px; margin-right: 6px;"></i>
+            {{ profile.get_membership_status_display|upper }}
+        </span>
+    </div>
+</div>
+
+<!-- SaaS Identity & Quotas -->
+<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 32px;">
+    <!-- Web Discovery Quota -->
+    <div class="card" style="margin-bottom: 0; padding: 24px; border-left: 4px solid var(--accent-purple);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <div>
+                <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin: 0;">Monthly Web Discovery</h3>
+                <div style="font-size: 1.5rem; font-weight: 700; margin-top: 4px;">{{ profile.jobs_this_month_count }} <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 400;">/ {{ profile.job_limit_monthly }} Used</span></div>
+            </div>
+            <div class="stat-icon purple" style="background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); padding: 8px; border-radius: 8px;">
+                <i data-lucide="globe" style="width:20px; height:20px;"></i>
+            </div>
+        </div>
+        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
+            <div style="width: {{ web_usage_pct }}%; height: 100%; background: var(--accent-purple); border-radius: 3px;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+            <span>Used: <strong>{{ profile.jobs_this_month_count }}</strong></span>
+            <span>Remaining: <strong style="color: var(--accent-purple);">{{ web_remaining }}</strong></span>
+        </div>
+    </div>
+
+    <!-- LinkedIn Quota -->
+    <div class="card" style="margin-bottom: 0; padding: 24px; border-left: 4px solid var(--accent-blue);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <div>
+                <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin: 0;">Monthly LinkedIn Searches</h3>
+                <div style="font-size: 1.5rem; font-weight: 700; margin-top: 4px;">{{ profile.linkedin_this_month_count }} <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 400;">/ {{ profile.linkedin_limit_monthly }} Used</span></div>
+            </div>
+            <div class="stat-icon blue" style="background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); padding: 8px; border-radius: 8px;">
+                <i data-lucide="linkedin" style="width:20px; height:20px;"></i>
+            </div>
+        </div>
+        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
+            <div style="width: {{ li_usage_pct }}%; height: 100%; background: var(--accent-blue); border-radius: 3px;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+            <span>Used: <strong>{{ profile.linkedin_this_month_count }}</strong></span>
+            <span>Remaining: <strong style="color: var(--accent-blue);">{{ li_remaining }}</strong></span>
+        </div>
+    </div>
+
+    <!-- Email Outreach Quota -->
+    <div class="card" style="margin-bottom: 0; padding: 24px; border-left: 4px solid var(--accent-cyan);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <div>
+                <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin: 0;">Monthly Outreach Executions</h3>
+                <div style="font-size: 1.5rem; font-weight: 700; margin-top: 4px;">{{ profile.emails_this_month_count }} <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 400;">/ {{ profile.email_outreach_limit_monthly }} Used</span></div>
+            </div>
+            <div class="stat-icon cyan" style="background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); padding: 8px; border-radius: 8px;">
+                <i data-lucide="send" style="width:20px; height:20px;"></i>
+            </div>
+        </div>
+        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
+            <div style="width: {{ email_usage_pct }}%; height: 100%; background: var(--accent-cyan); border-radius: 3px;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+            <span>Used: <strong>{{ profile.emails_this_month_count }}</strong></span>
+            <span>Remaining: <strong style="color: var(--accent-cyan);">{{ email_remaining }}</strong></span>
+        </div>
+    </div>
+
+    <!-- SMTP Infrastructure Quota -->
+    <div class="card" style="margin-bottom: 0; padding: 24px; border-left: 4px solid var(--accent-amber);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
+            <div>
+                <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin: 0;">SMTP Infrastructure</h3>
+                <div style="font-size: 1.5rem; font-weight: 700; margin-top: 4px;">{{ smtp_count }} <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 400;">/ {{ profile.smtp_limit }} Slotted</span></div>
+            </div>
+            <div class="stat-icon amber" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-amber); padding: 8px; border-radius: 8px;">
+                <i data-lucide="mail" style="width:20px; height:20px;"></i>
+            </div>
+        </div>
+        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
+            <div style="width: {{ smtp_usage_pct }}%; height: 100%; background: var(--accent-amber); border-radius: 3px;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
+            <span>Active: <strong>{{ smtp_count }}</strong></span>
+            <span>Available: <strong style="color: var(--accent-amber);">{{ smtp_available }}</strong></span>
+        </div>
+    </div>
+</div>
+
+    <div class="card" style="margin-bottom: 0; padding: 24px; border-left: 4px solid var(--accent-green);">
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+            <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin: 0;">Lifetime Intelligence</h3>
+            <div class="stat-icon green" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-green); padding: 4px; border-radius: 4px;">
+                <i data-lucide="bar-chart-3" style="width:14px; height:14px;"></i>
+            </div>
+        </div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+            <div>
+                <div style="font-size: 1.1rem; font-weight: 700;">{{ profile.total_records_scraped }}</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted);">FOUND LEADS</div>
+            </div>
+            <div>
+                <div style="font-size: 1.1rem; font-weight: 700;">{{ profile.total_emails_sent }}</div>
+                <div style="font-size: 0.65rem; color: var(--text-muted);">EMAILS SENT</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 <!-- Stats Grid -->

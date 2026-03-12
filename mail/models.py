@@ -1,5 +1,6 @@
 from django.db import models
 from django.utils import timezone
+from django.contrib.auth.models import User
 
 class SMTPCredential(models.Model):
     PROVIDER_CHOICES = [
@@ -9,6 +10,8 @@ class SMTPCredential(models.Model):
         ('microsoft_365', 'Microsoft 365'),
         ('custom', 'Custom SMTP'),
     ]
+    
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='smtp_credentials', null=True, blank=True)
 
     name = models.CharField(max_length=100)
     provider = models.CharField(max_length=50, choices=PROVIDER_CHOICES, default='custom')
@@ -63,6 +66,7 @@ class EmailCampaign(models.Model):
         ('failed', 'Failed'),
     ]
 
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='email_campaigns', null=True, blank=True)
     name = models.CharField(max_length=255, default="Untitled Campaign", help_text="A friendly name for your campaign")
     subject = models.CharField(max_length=255)
     body = models.TextField(help_text="Use {{ name }} for placeholders")
