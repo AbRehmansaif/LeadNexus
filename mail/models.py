@@ -73,10 +73,17 @@ class EmailCampaign(models.Model):
     total_recipients = models.IntegerField(default=0)
     sent_count = models.IntegerField(default=0)
     failed_count = models.IntegerField(default=0)
+    open_count = models.IntegerField(default=0)
 
     @property
     def pending_count(self):
         return max(0, self.total_recipients - self.sent_count - self.failed_count)
+
+    @property
+    def open_rate(self):
+        if self.sent_count == 0:
+            return 0
+        return int((self.open_count / self.sent_count) * 100)
 
     @property
     def progress_percentage(self):
@@ -101,6 +108,9 @@ class Recipient(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     error_message = models.TextField(blank=True, null=True)
     sent_at = models.DateTimeField(blank=True, null=True)
+    is_opened = models.BooleanField(default=False)
+    opened_at = models.DateTimeField(blank=True, null=True)
+    open_count = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.email} for {self.campaign.name}"

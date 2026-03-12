@@ -1,5 +1,7 @@
 import csv
 import io
+from django.http import HttpResponse
+from django.utils import timezone
 from rest_framework import viewsets, status, decorators
 from rest_framework.response import Response
 from .models import SMTPCredential, EmailCampaign, Recipient
@@ -136,3 +138,29 @@ class RecipientViewSet(viewsets.ReadOnlyModelViewSet):
         if campaign_id:
             queryset = queryset.filter(campaign_id=campaign_id)
         return queryset
+
+def track_open(request, recipient_id):
+    """
+    View to track email opens using a 1x1 pixel.
+    """
+    try:
+        recipient = Recipient.objects.get(id=recipient_id)
+        
+        if not recipient.is_opened:
+            recipient.is_opened = True
+            recipient.opened_at = timezone.now()
+            
+            # Update campaign open count
+            campaign = recipient.campaign
+            campaign.open_count += 1
+            campaign.save(update_fields=['open_count'])
+        
+        recipient.open_count += 1
+        recipient.save(update_fields=['is_opened', 'opened_at', 'open_count'])
+        
+    except Recipient.DoesNotExist:
+        pass
+        
+    # Always return the GIF, even if recipient not found
+    pixel_data = b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b'
+    return HttpResponse(pixel_data, content_type='image/gif')

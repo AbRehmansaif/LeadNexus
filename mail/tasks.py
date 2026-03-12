@@ -6,6 +6,8 @@ from django.core.mail import get_connection, EmailMessage
 from django.utils import timezone
 from .models import EmailCampaign, Recipient, SMTPCredential
 from django.template import Template, Context
+from django.conf import settings
+from django.urls import reverse
 
 logger = logging.getLogger(__name__)
 
@@ -92,6 +94,11 @@ def send_campaign_emails(campaign_id):
                 if creds.from_name:
                     from_email = f"{creds.from_name} <{creds.from_email}>"
 
+                # Add tracking pixel
+                tracking_url = f"{settings.SITE_URL}{reverse('track-open', args=[recipient.id])}"
+                pixel_tag = f'<img src="{tracking_url}" width="1" height="1" style="display:none !important;" />'
+                rendered_body += f"\n{pixel_tag}"
+
                 # Create email
                 email = EmailMessage(
                     subject=campaign.subject,
@@ -100,6 +107,7 @@ def send_campaign_emails(campaign_id):
                     to=[recipient.email],
                     connection=connection,
                 )
+                email.content_subtype = "html" # Set to HTML for tracking pixel
                 
                 # Send
                 email.send()

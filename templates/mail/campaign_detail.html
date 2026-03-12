@@ -36,6 +36,11 @@
         <div class="stat-label">Pending</div>
         <div class="stat-value" id="pendingCount">{{ campaign.pending_count }}</div>
     </div>
+    <div class="stat-card amber">
+        <div class="stat-label">Unique Opens</div>
+        <div class="stat-value" id="openCount">{{ campaign.open_count }}</div>
+        <div class="stat-sub">Rate: <span id="openRate">{{ campaign.open_rate }}</span>%</div>
+    </div>
 </div>
 
 <!-- Progress Bar -->
@@ -61,6 +66,7 @@
                     <th>Name</th>
                     <th>Status</th>
                     <th>Sent At</th>
+                    <th>Opened</th>
                     <th>Error</th>
                 </tr>
             </thead>
@@ -71,6 +77,15 @@
                     <td>{{ r.name|default:"-" }}</td>
                     <td><span class="badge badge-{{ r.status }}">{{ r.status }}</span></td>
                     <td>{{ r.sent_at|date:"H:i:s"|default:"-" }}</td>
+                    <td>
+                        {% if r.is_opened %}
+                            <span class="badge badge-sent" title="Opened at {{ r.opened_at|date:'H:i:s' }}">
+                                <i data-lucide="eye" style="width:14px;height:14px;"></i> {{ r.open_count }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
                     <td style="color: var(--accent-red); font-size: 0.8rem;">{{ r.error_message|truncatechars:50|default:"" }}</td>
                 </tr>
                 {% endfor %}
@@ -108,6 +123,9 @@ if ("{{ campaign.status }}" === "running") {
             document.getElementById('sentCount').innerText = data.sent_count;
             document.getElementById('failedCount').innerText = data.failed_count;
             document.getElementById('pendingCount').innerText = data.total_recipients - data.sent_count - data.failed_count;
+            document.getElementById('openCount').innerText = data.open_count;
+            const rate = data.sent_count > 0 ? Math.round((data.open_count / data.sent_count) * 100) : 0;
+            document.getElementById('openRate').innerText = rate;
             document.getElementById('campaignStatus').innerText = data.status.toUpperCase();
             
             updateProgressBar(data.sent_count, data.failed_count, data.total_recipients);
