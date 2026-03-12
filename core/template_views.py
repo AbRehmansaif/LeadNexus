@@ -14,6 +14,14 @@ from mail.models import EmailCampaign, SMTPCredential
 
 def landing_page(request):
     """Product introduction and attraction page - accessible without login."""
+    try:
+        from subscriptions.models import PlanFeature, SubscriptionPlan
+        plan_rows = PlanFeature.objects.all()
+        subscription_plans = list(SubscriptionPlan.objects.all())
+    except Exception:
+        plan_rows = []
+        subscription_plans = []
+
     if request.user.is_authenticated:
         # If already logged in, show stats or redirect to dashboard (optional)
         # For now, let's just let them see the landing page too.
@@ -21,6 +29,8 @@ def landing_page(request):
     
     return render(request, 'landing.html', {
         'active_page': 'landing',
+        'plan_rows': plan_rows,
+        'subscription_plans': subscription_plans,
     })
 
 @login_required
@@ -273,6 +283,14 @@ def subscription_page(request):
     )
     days_until_reset = (next_reset - today).days + 1
 
+    try:
+        from subscriptions.models import PlanFeature, SubscriptionPlan
+        plan_rows = PlanFeature.objects.all()
+        subscription_plans = list(SubscriptionPlan.objects.all())
+    except Exception:
+        plan_rows = []
+        subscription_plans = []
+
     return render(request, 'subscription.html', {
         'active_page': 'subscription',
         'profile': profile,
@@ -286,6 +304,8 @@ def subscription_page(request):
         'email_remaining':   max(profile.email_outreach_limit_monthly - profile.emails_this_month_count, 0),
         'smtp_available':    max(profile.smtp_limit - smtp_count, 0),
         'days_until_reset':  days_until_reset,
+        'plan_rows':         plan_rows,
+        'subscription_plans': subscription_plans,
     })
 
 @login_required

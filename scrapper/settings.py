@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     # Local
     'core',
     'mail',
+    'subscriptions',
 ]
 
 MIDDLEWARE = [

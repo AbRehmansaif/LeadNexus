@@ -98,46 +98,91 @@
                     <tr>
                         <th style="text-align: left; padding: 14px 16px; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border);">Feature</th>
                         <th style="text-align: center; padding: 14px 16px; border-bottom: 1px solid var(--border);">
-                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">Free</div>
-                            <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">Current</div>
+                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">
+                                {% if subscription_plans.0 %}{{ subscription_plans.0.name }}{% else %}Free{% endif %}
+                            </div>
+                            <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">
+                                {% if subscription_plans.0 %}${{ subscription_plans.0.monthly_price|floatformat:0 }} / mo{% else %}Current{% endif %}
+                            </div>
                         </th>
                         <th style="text-align: center; padding: 14px 16px; border-bottom: 1px solid var(--border); background: rgba(139,92,246,0.06); border-radius: 8px 8px 0 0;">
-                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-purple);">Pro</div>
-                            <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">Recommended</div>
+                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-purple);">
+                                {% if subscription_plans.1 %}{{ subscription_plans.1.name }}{% else %}Pro{% endif %}
+                            </div>
+                            <div style="font-size: 0.68rem; color: var(--accent-purple); opacity: 0.8; margin-top: 2px;">
+                                {% if subscription_plans.1 %}${{ subscription_plans.1.monthly_price|floatformat:0 }} / mo{% else %}Recommended{% endif %}
+                            </div>
                         </th>
                         <th style="text-align: center; padding: 14px 16px; border-bottom: 1px solid var(--border);">
-                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-amber);">Enterprise</div>
-                            <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">Contact Us</div>
+                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-amber);">
+                                {% if subscription_plans.2 %}{{ subscription_plans.2.name }}{% else %}Enterprise{% endif %}
+                            </div>
+                            <div style="font-size: 0.68rem; color: var(--accent-amber); opacity: 0.8; margin-top: 2px;">
+                                {% if subscription_plans.2 and not subscription_plans.2.is_custom_pricing %}${{ subscription_plans.2.monthly_price|floatformat:0 }} / mo{% elif subscription_plans.2.is_custom_pricing %}Custom Price{% else %}Contact Us{% endif %}
+                            </div>
                         </th>
                     </tr>
                 </thead>
                 <tbody>
                     {% for row in plan_rows %}
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 13px 16px; color: var(--text-muted);">{{ row.name }}</td>
+                        
+                        <td style="text-align: center; padding: 13px 16px; color: #fff;">
+                            {% if row.free_value|lower == "yes" or row.free_value|lower == "true" or row.free_value == "✔" %}
+                                <span style="color: var(--accent-green);">✔</span>
+                            {% elif row.free_value|lower == "no" or row.free_value|lower == "false" or row.free_value == "✘" %}
+                                <span style="opacity: 0.3;">✘</span>
+                            {% else %}
+                                {{ row.free_value }}
+                            {% endif %}
+                        </td>
+                        
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-purple); font-weight: 600; background: rgba(139,92,246,0.04);">
+                            {% if row.pro_value|lower == "yes" or row.pro_value|lower == "true" or row.pro_value == "✔" %}
+                                <span style="color: var(--accent-green);">✔</span>
+                            {% elif row.pro_value|lower == "no" or row.pro_value|lower == "false" or row.pro_value == "✘" %}
+                                <span style="opacity: 0.3;">✘</span>
+                            {% else %}
+                                {{ row.pro_value }}
+                            {% endif %}
+                        </td>
+                        
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">
+                            {% if row.enterprise_value|lower == "yes" or row.enterprise_value|lower == "true" or row.enterprise_value == "✔" %}
+                                <span style="color: var(--accent-green);">✔</span>
+                            {% elif row.enterprise_value|lower == "no" or row.enterprise_value|lower == "false" or row.enterprise_value == "✘" %}
+                                <span style="opacity: 0.3;">✘</span>
+                            {% else %}
+                                {{ row.enterprise_value }}
+                            {% endif %}
+                        </td>
+                    </tr>
                     {% empty %}
                     <!-- Hardcoded comparison rows -->
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
                         <td style="padding: 13px 16px; color: var(--text-muted);">Web Scrape Jobs / mo</td>
                         <td style="text-align: center; padding: 13px 16px; color: #fff;">150</td>
                         <td style="text-align: center; padding: 13px 16px; color: var(--accent-purple); font-weight: 600; background: rgba(139,92,246,0.04);">1,000</td>
-                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">Unlimited</td>
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">according to user</td>
                     </tr>
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
                         <td style="padding: 13px 16px; color: var(--text-muted);">LinkedIn Searches / mo</td>
                         <td style="text-align: center; padding: 13px 16px; color: #fff;">60</td>
                         <td style="text-align: center; padding: 13px 16px; color: var(--accent-purple); font-weight: 600; background: rgba(139,92,246,0.04);">500</td>
-                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">Unlimited</td>
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">according to user</td>
                     </tr>
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
                         <td style="padding: 13px 16px; color: var(--text-muted);">Email Outreach / mo</td>
                         <td style="text-align: center; padding: 13px 16px; color: #fff;">500</td>
                         <td style="text-align: center; padding: 13px 16px; color: var(--accent-purple); font-weight: 600; background: rgba(139,92,246,0.04);">10,000</td>
-                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">Unlimited</td>
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">according to user</td>
                     </tr>
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
                         <td style="padding: 13px 16px; color: var(--text-muted);">SMTP Accounts</td>
                         <td style="text-align: center; padding: 13px 16px; color: #fff;">2</td>
                         <td style="text-align: center; padding: 13px 16px; color: var(--accent-purple); font-weight: 600; background: rgba(139,92,246,0.04);">10</td>
-                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">Unlimited</td>
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">according to user</td>
                     </tr>
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
                         <td style="padding: 13px 16px; color: var(--text-muted);">Multi-thread Extraction</td>
@@ -175,7 +220,7 @@
         </div>
 
         <div style="margin-top: 0; text-align: center;">
-            <button class="btn btn-primary" style="padding: 12px 32px; font-size: 1rem;">Upgrade To Pro Protocol</button>
+            <button class="btn btn-primary" style="padding: 12px 32px; font-size: 1rem;">Upgrade To Pro </button>
         </div>
     </div>
 
