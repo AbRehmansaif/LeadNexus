@@ -199,7 +199,6 @@
             </h2>
 
             <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
-                {% with web_pct=profile.jobs_this_month_count|default:0 %}
                 <div style="padding: 16px; background: rgba(139,92,246,0.06); border-radius: 12px; border: 1px solid rgba(139,92,246,0.15);">
                     <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
                         <span style="display: flex; align-items: center; gap: 6px;"><i data-lucide="globe" style="width:13px; height:13px; color:var(--accent-purple);"></i> Web Scraping</span>
@@ -210,9 +209,11 @@
                         <div style="width: {% widthratio profile.jobs_this_month_count profile.job_limit_monthly 100 %}%; height: 100%; background: var(--accent-purple); border-radius: 3px;"></div>
                         {% endif %}
                     </div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted);">{{ profile.job_limit_monthly|add:"-"|add:profile.jobs_this_month_count }} remaining this month</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
+                        <span>Resets in {{ days_until_reset }} day{{ days_until_reset|pluralize }}</span>
+                        <span style="color: var(--accent-purple);">{{ profile.job_limit_monthly|add:"-"|add:profile.jobs_this_month_count }} left</span>
+                    </div>
                 </div>
-                {% endwith %}
 
                 <div style="padding: 16px; background: rgba(59,130,246,0.06); border-radius: 12px; border: 1px solid rgba(59,130,246,0.15);">
                     <div style="display: flex; justify-content: space-between; font-size: 0.78rem; color: var(--text-muted); margin-bottom: 10px;">
@@ -224,7 +225,10 @@
                         <div style="width: {% widthratio profile.linkedin_this_month_count profile.linkedin_limit_monthly 100 %}%; height: 100%; background: var(--accent-blue); border-radius: 3px;"></div>
                         {% endif %}
                     </div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted);">Resets 1st of each month</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
+                        <span>Resets in {{ days_until_reset }} day{{ days_until_reset|pluralize }}</span>
+                        <span style="color: var(--accent-blue);">{{ profile.linkedin_limit_monthly|add:"-"|add:profile.linkedin_this_month_count }} left</span>
+                    </div>
                 </div>
 
                 <div style="padding: 16px; background: rgba(6,182,212,0.06); border-radius: 12px; border: 1px solid rgba(6,182,212,0.15);">
@@ -237,7 +241,10 @@
                         <div style="width: {% widthratio profile.emails_this_month_count profile.email_outreach_limit_monthly 100 %}%; height: 100%; background: var(--accent-cyan); border-radius: 3px;"></div>
                         {% endif %}
                     </div>
-                    <div style="font-size: 0.7rem; color: var(--text-muted);">Monthly send quota</div>
+                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
+                        <span>Resets in {{ days_until_reset }} day{{ days_until_reset|pluralize }}</span>
+                        <span style="color: var(--accent-cyan);">{{ profile.email_outreach_limit_monthly|add:"-"|add:profile.emails_this_month_count }} left</span>
+                    </div>
                 </div>
 
                 <div style="padding: 16px; background: rgba(245,158,11,0.06); border-radius: 12px; border: 1px solid rgba(245,158,11,0.15);">
@@ -327,8 +334,129 @@
             </div>
         </div>
 
+        <!-- ⚠️ Danger Zone -->
+        <div class="card" style="padding: 32px; border: 1px solid rgba(239,68,68,0.25); background: rgba(239,68,68,0.02);">
+            <h2 style="font-size: 1rem; font-weight: 700; margin: 0 0 8px 0; display: flex; align-items: center; gap: 10px; color: #ef4444;">
+                <span style="width: 28px; height: 28px; background: rgba(239,68,68,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="alert-triangle" style="width:14px; height:14px; color: #ef4444;"></i>
+                </span>
+                Danger Zone
+            </h2>
+            <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px; line-height: 1.6;">
+                Irreversible actions affecting your account and all associated data. Proceed with caution.
+            </p>
+            <div style="display: flex; flex-direction: column; gap: 12px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(239,68,68,0.1);">
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 2px;">Clear All Scraped Data</div>
+                        <div style="font-size: 0.73rem; color: var(--text-muted);">Permanently delete all website and LinkedIn scrape results.</div>
+                    </div>
+                    <button type="button" onclick="showDangerModal('clear')" class="btn btn-sm" style="background: rgba(239,68,68,0.1); color: #ef4444; border: 1px solid rgba(239,68,68,0.3); flex-shrink: 0; transition: all 0.2s;">
+                        Clear Data
+                    </button>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding: 16px; background: rgba(255,255,255,0.02); border-radius: 10px; border: 1px solid rgba(239,68,68,0.1);">
+                    <div>
+                        <div style="font-size: 0.85rem; font-weight: 600; margin-bottom: 2px;">Delete Account</div>
+                        <div style="font-size: 0.73rem; color: var(--text-muted);">Permanently remove your account, data, and all associated records. Cannot be undone.</div>
+                    </div>
+                    <button type="button" onclick="showDangerModal('delete')" class="btn btn-sm" style="background: rgba(239,68,68,0.12); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); flex-shrink: 0; transition: all 0.2s;">
+                        Delete Account
+                    </button>
+                </div>
+            </div>
+        </div>
+
+    </div>
     </div>
 </div>
+
+<!-- Custom Danger Modal -->
+<div id="custom-danger-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); background: rgba(9, 9, 11, 0.65); opacity: 0; transition: opacity 0.3s ease;">
+    <div style="background: #111115; border: 1px solid rgba(239,68,68,0.25); border-radius: 16px; width: 90%; max-width: 420px; box-shadow: 0 24px 48px -12px rgba(239,68,68,0.25), inset 0 1px 0 rgba(255,255,255,0.05); padding: 32px; position: relative; transform: translateY(20px) scale(0.95); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);">
+        
+        <div style="width: 48px; height: 48px; border-radius: 50%; background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2); display: flex; align-items: center; justify-content: center; margin-bottom: 20px;">
+            <i data-lucide="alert-triangle" style="width: 24px; height: 24px; color: #ef4444;"></i>
+        </div>
+        
+        <h3 id="danger-modal-title" style="font-size: 1.25rem; font-weight: 700; color: #ffffff; margin: 0 0 10px 0;">Are you sure?</h3>
+        <p id="danger-modal-desc" style="font-size: 0.9rem; color: var(--text-muted); line-height: 1.5; margin: 0 0 32px 0;">This action cannot be undone.</p>
+        
+        <!-- Action Buttons -->
+        <div id="danger-modal-actions" style="display: flex; gap: 12px; justify-content: flex-end;">
+            <button type="button" onclick="closeDangerModal()" class="btn" style="background: rgba(255,255,255,0.05); color: var(--text-1); border: 1px solid var(--border); padding: 10px 20px; border-radius: 8px;">Cancel</button>
+            <button type="button" id="danger-modal-confirm" class="btn" style="background: #ef4444; color: #fff; border: 1px solid #dc2626; padding: 10px 20px; font-weight: 600; border-radius: 8px; box-shadow: 0 4px 12px rgba(239,68,68,0.3);">Yes, proceed</button>
+        </div>
+
+        <!-- Success/Support Message (Hidden by default) -->
+        <div id="danger-modal-message" style="display: none; text-align: center; padding: 10px 0;">
+            <i data-lucide="shield-alert" style="width: 36px; height: 36px; color: #ef4444; margin: 0 auto 16px auto;"></i>
+            <h4 style="font-weight: 600; color: #fff; margin-bottom: 8px; font-size: 1.1rem;">Verification Required</h4>
+            <p id="danger-modal-message-text" style="font-size: 0.85rem; color: var(--text-muted); line-height: 1.5;">Please contact support.</p>
+            <button type="button" onclick="closeDangerModal()" class="btn" style="background: rgba(255,255,255,0.08); border: 1px solid var(--border); color: #fff; width: 100%; margin-top: 28px; padding: 12px; border-radius: 8px;">Got it, close</button>
+        </div>
+    </div>
+</div>
+
+<script>
+let currentDangerAction = '';
+
+function showDangerModal(action) {
+    currentDangerAction = action;
+    const modal = document.getElementById('custom-danger-modal');
+    const title = document.getElementById('danger-modal-title');
+    const desc = document.getElementById('danger-modal-desc');
+    const actions = document.getElementById('danger-modal-actions');
+    const message = document.getElementById('danger-modal-message');
+    
+    // Reset state
+    actions.style.display = 'flex';
+    message.style.display = 'none';
+    
+    if (action === 'clear') {
+        title.innerText = 'Clear Scraped Data?';
+        desc.innerText = 'You are about to permanently delete all website and LinkedIn scrape results. Are you sure you wish to proceed?';
+    } else if (action === 'delete') {
+        title.innerText = 'Delete Account?';
+        desc.innerText = 'You are about to permanently remove your account and all associated data records. This is completely irreversible.';
+    }
+    
+    // Show modal with animation
+    modal.style.display = 'flex';
+    // Small delay to allow CSS transitions to run
+    setTimeout(() => {
+        modal.style.opacity = '1';
+        modal.firstElementChild.style.transform = 'translateY(0) scale(1)';
+    }, 10);
+    
+    if (window.lucide) {
+        window.lucide.createIcons();
+    }
+}
+
+function closeDangerModal() {
+    const modal = document.getElementById('custom-danger-modal');
+    modal.style.opacity = '0';
+    modal.firstElementChild.style.transform = 'translateY(20px) scale(0.95)';
+    
+    setTimeout(() => {
+        modal.style.display = 'none';
+    }, 300);
+}
+
+// Confirm button click
+document.getElementById('danger-modal-confirm').addEventListener('click', function() {
+    document.getElementById('danger-modal-actions').style.display = 'none';
+    document.getElementById('danger-modal-message').style.display = 'block';
+    
+    const msgText = document.getElementById('danger-modal-message-text');
+    if (currentDangerAction === 'clear') {
+        msgText.innerHTML = 'Automated data wipes are currently restricted.<br><br>Please contact <strong style="color:#ef4444;">support@leadnexus.io</strong> to authorize the scheduled deletion of your workspace data.';
+    } else {
+        msgText.innerHTML = 'Account termination request noted.<br><br>For security regulations, please email <strong style="color:#ef4444;">support@leadnexus.io</strong> from your registered email address to finalize deletion.';
+    }
+});
+</script>
 
 <script>
 function previewAvatar(input) {

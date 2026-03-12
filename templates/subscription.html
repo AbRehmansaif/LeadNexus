@@ -86,7 +86,95 @@
             </li>
         </ul>
         
-        <div style="margin-top: 40px; text-align: center;">
+        <h3 style="margin-bottom: 20px; margin-top: 40px; font-size: 1.1rem; border-bottom: 1px solid var(--border); padding-bottom: 12px; display: flex; align-items: center; gap: 10px;">
+            <i data-lucide="layers" style="width:16px; height:16px; color: var(--accent-purple);"></i>
+            Plan Comparison
+        </h3>
+
+        <!-- Plan Comparison Table -->
+        <div style="overflow-x: auto; margin-bottom: 40px;">
+            <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem;">
+                <thead>
+                    <tr>
+                        <th style="text-align: left; padding: 14px 16px; color: var(--text-muted); font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.06em; border-bottom: 1px solid var(--border);">Feature</th>
+                        <th style="text-align: center; padding: 14px 16px; border-bottom: 1px solid var(--border);">
+                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--text-muted);">Free</div>
+                            <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">Current</div>
+                        </th>
+                        <th style="text-align: center; padding: 14px 16px; border-bottom: 1px solid var(--border); background: rgba(139,92,246,0.06); border-radius: 8px 8px 0 0;">
+                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-purple);">Pro</div>
+                            <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">Recommended</div>
+                        </th>
+                        <th style="text-align: center; padding: 14px 16px; border-bottom: 1px solid var(--border);">
+                            <div style="font-size: 0.8rem; font-weight: 700; color: var(--accent-amber);">Enterprise</div>
+                            <div style="font-size: 0.68rem; color: var(--text-muted); margin-top: 2px;">Contact Us</div>
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in plan_rows %}
+                    {% empty %}
+                    <!-- Hardcoded comparison rows -->
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 13px 16px; color: var(--text-muted);">Web Scrape Jobs / mo</td>
+                        <td style="text-align: center; padding: 13px 16px; color: #fff;">150</td>
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-purple); font-weight: 600; background: rgba(139,92,246,0.04);">1,000</td>
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">Unlimited</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 13px 16px; color: var(--text-muted);">LinkedIn Searches / mo</td>
+                        <td style="text-align: center; padding: 13px 16px; color: #fff;">60</td>
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-purple); font-weight: 600; background: rgba(139,92,246,0.04);">500</td>
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">Unlimited</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 13px 16px; color: var(--text-muted);">Email Outreach / mo</td>
+                        <td style="text-align: center; padding: 13px 16px; color: #fff;">500</td>
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-purple); font-weight: 600; background: rgba(139,92,246,0.04);">10,000</td>
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">Unlimited</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 13px 16px; color: var(--text-muted);">SMTP Accounts</td>
+                        <td style="text-align: center; padding: 13px 16px; color: #fff;">2</td>
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-purple); font-weight: 600; background: rgba(139,92,246,0.04);">10</td>
+                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">Unlimited</td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 13px 16px; color: var(--text-muted);">Multi-thread Extraction</td>
+                        <td style="text-align: center; padding: 13px 16px;"><span style="color: var(--accent-green);">✔</span></td>
+                        <td style="text-align: center; padding: 13px 16px; background: rgba(139,92,246,0.04);"><span style="color: var(--accent-green);">✔</span></td>
+                        <td style="text-align: center; padding: 13px 16px;"><span style="color: var(--accent-green);">✔</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 13px 16px; color: var(--text-muted);">CSV Export</td>
+                        <td style="text-align: center; padding: 13px 16px;"><span style="color: var(--accent-green);">✔</span></td>
+                        <td style="text-align: center; padding: 13px 16px; background: rgba(139,92,246,0.04);"><span style="color: var(--accent-green);">✔</span></td>
+                        <td style="text-align: center; padding: 13px 16px;"><span style="color: var(--accent-green);">✔</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 13px 16px; color: var(--text-muted);">Priority Execution Core</td>
+                        <td style="text-align: center; padding: 13px 16px;"><span style="opacity: 0.3;">✘</span></td>
+                        <td style="text-align: center; padding: 13px 16px; background: rgba(139,92,246,0.04);"><span style="color: var(--accent-green);">✔</span></td>
+                        <td style="text-align: center; padding: 13px 16px;"><span style="color: var(--accent-green);">✔</span></td>
+                    </tr>
+                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
+                        <td style="padding: 13px 16px; color: var(--text-muted);">Dedicated IP Rotation</td>
+                        <td style="text-align: center; padding: 13px 16px;"><span style="opacity: 0.3;">✘</span></td>
+                        <td style="text-align: center; padding: 13px 16px; background: rgba(139,92,246,0.04);"><span style="opacity: 0.3;">✘</span></td>
+                        <td style="text-align: center; padding: 13px 16px;"><span style="color: var(--accent-green);">✔</span></td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 13px 16px; color: var(--text-muted);">Support Level</td>
+                        <td style="text-align: center; padding: 13px 16px; font-size: 0.8rem; color: var(--text-muted);">Community</td>
+                        <td style="text-align: center; padding: 13px 16px; font-size: 0.8rem; color: var(--accent-purple); font-weight: 600; background: rgba(139,92,246,0.04);">Priority Email</td>
+                        <td style="text-align: center; padding: 13px 16px; font-size: 0.8rem; color: var(--accent-amber);">Dedicated Manager</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <div style="margin-top: 0; text-align: center;">
             <button class="btn btn-primary" style="padding: 12px 32px; font-size: 1rem;">Upgrade To Pro Protocol</button>
         </div>
     </div>
@@ -136,6 +224,12 @@
                     <span>Used: {{ profile.emails_this_month_count }}</span>
                     <span>Remaining: {{ email_remaining }}</span>
                 </div>
+            </div>
+
+            <div style="background: rgba(255,255,255,0.03); padding: 14px; border-radius: 10px; border: 1px solid var(--border); text-align: center;">
+                <div style="font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); margin-bottom: 4px;">Quota Reset</div>
+                <div style="font-size: 1.1rem; font-weight: 800; color: var(--accent-cyan);">{{ days_until_reset }} day{{ days_until_reset|pluralize }}</div>
+                <div style="font-size: 0.7rem; color: var(--text-muted);">until all counters reset</div>
             </div>
 
             <div style="background: rgba(139, 92, 246, 0.05); padding: 16px; border-radius: 12px; border: 1px dashed var(--accent-purple);">

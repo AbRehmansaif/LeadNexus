@@ -60,6 +60,19 @@ def profile_settings(request):
     campaigns      = EmailCampaign.objects.filter(user=request.user)
     smtp_count     = SMTPCredential.objects.filter(user=request.user).count()
 
+    # Monthly reset countdown
+    from django.utils import timezone as tz
+    import calendar
+    today = tz.localdate()
+    last_day = calendar.monthrange(today.year, today.month)[1]
+    from datetime import date
+    next_reset = date(today.year, today.month, last_day) if today.day < last_day else date(
+        today.year + (1 if today.month == 12 else 0),
+        1 if today.month == 12 else today.month + 1,
+        1
+    )
+    days_until_reset = (next_reset - today).days + 1
+
     return render(request, 'profile_settings.html', {
         'active_page':        'profile',
         'profile':            profile,
@@ -69,6 +82,7 @@ def profile_settings(request):
         'campaign_count':     campaigns.count(),
         'smtp_count':         smtp_count,
         'member_since':       request.user.date_joined,
+        'days_until_reset':   days_until_reset,
     })
 
 
@@ -246,6 +260,19 @@ def subscription_page(request):
     smtp_count = SMTPCredential.objects.filter(user=request.user).count()
     smtp_usage_pct = (smtp_count / profile.smtp_limit * 100) if profile.smtp_limit > 0 else 100
 
+    # Monthly reset countdown
+    from django.utils import timezone as tz
+    import calendar
+    from datetime import date
+    today = tz.localdate()
+    last_day = calendar.monthrange(today.year, today.month)[1]
+    next_reset = date(today.year, today.month, last_day) if today.day < last_day else date(
+        today.year + (1 if today.month == 12 else 0),
+        1 if today.month == 12 else today.month + 1,
+        1
+    )
+    days_until_reset = (next_reset - today).days + 1
+
     return render(request, 'subscription.html', {
         'active_page': 'subscription',
         'profile': profile,
@@ -254,10 +281,20 @@ def subscription_page(request):
         'email_usage_pct': min(email_usage_pct, 100),
         'smtp_count': smtp_count,
         'smtp_usage_pct': min(smtp_usage_pct, 100),
-        'web_remaining':   max(profile.job_limit_monthly - profile.jobs_this_month_count, 0),
-        'li_remaining':    max(profile.linkedin_limit_monthly - profile.linkedin_this_month_count, 0),
-        'email_remaining': max(profile.email_outreach_limit_monthly - profile.emails_this_month_count, 0),
-        'smtp_available':  max(profile.smtp_limit - smtp_count, 0),
+        'web_remaining':     max(profile.job_limit_monthly - profile.jobs_this_month_count, 0),
+        'li_remaining':      max(profile.linkedin_limit_monthly - profile.linkedin_this_month_count, 0),
+        'email_remaining':   max(profile.email_outreach_limit_monthly - profile.emails_this_month_count, 0),
+        'smtp_available':    max(profile.smtp_limit - smtp_count, 0),
+        'days_until_reset':  days_until_reset,
+    })
+
+@login_required
+def linkedin_accounts_page(request):
+    """Manage connected LinkedIn accounts."""
+    from .models import LinkedInAccount
+    return render(request, 'linkedin_accounts.html', {
+        'active_page': 'profile',
+        'linkedin_accounts': LinkedInAccount.objects.filter(user=request.user)
     })
 
 @login_required

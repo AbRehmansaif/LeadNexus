@@ -44,6 +44,7 @@ urlpatterns = [
     path('',                       template_views.landing_page,        name='landing'),
     path('dashboard/',             template_views.dashboard,           name='dashboard'),
     path('profile/',               template_views.profile_settings,    name='profile-settings'),
+    path('profile/linkedin-accounts/', template_views.linkedin_accounts_page, name='linkedin-accounts'),
     path('subscription/',          template_views.subscription_page,    name='subscription'),
     path('',                       include('mail.urls')), 
     path('website-scraper/',       template_views.website_scraper_page, name='website-scraper'),
