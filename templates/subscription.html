@@ -235,7 +235,7 @@
                     <span style="color: var(--accent-purple);">{{ profile.jobs_this_month_count }} / {{ profile.job_limit_monthly }}</span>
                 </div>
                 <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 6px;">
-                    <div style="width: {{ web_usage_pct }}%; height: 100%; background: var(--accent-purple); border-radius: 4px;"></div>
+                    <div class="progress-fill" data-width="{{ web_usage_pct }}" style="height: 100%; background: var(--accent-purple); border-radius: 4px; width: 0;"></div>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
                     <span>Used: {{ profile.jobs_this_month_count }}</span>
@@ -249,7 +249,7 @@
                     <span style="color: var(--accent-blue);">{{ profile.linkedin_this_month_count }} / {{ profile.linkedin_limit_monthly }}</span>
                 </div>
                 <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 6px;">
-                    <div style="width: {{ li_usage_pct }}%; height: 100%; background: var(--accent-blue); border-radius: 4px;"></div>
+                    <div class="progress-fill" data-width="{{ li_usage_pct }}" style="height: 100%; background: var(--accent-blue); border-radius: 4px; width: 0;"></div>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
                     <span>Used: {{ profile.linkedin_this_month_count }}</span>
@@ -263,7 +263,7 @@
                     <span style="color: var(--accent-cyan);">{{ profile.emails_this_month_count }} / {{ profile.email_outreach_limit_monthly }}</span>
                 </div>
                 <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 6px;">
-                    <div style="width: {{ email_usage_pct }}%; height: 100%; background: var(--accent-cyan); border-radius: 4px;"></div>
+                    <div class="progress-fill" data-width="{{ email_usage_pct }}" style="height: 100%; background: var(--accent-cyan); border-radius: 4px; width: 0;"></div>
                 </div>
                 <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
                     <span>Used: {{ profile.emails_this_month_count }}</span>
@@ -328,4 +328,15 @@
 
     </div>
 </div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.progress-fill').forEach(function(bar) {
+        var w = bar.getAttribute('data-width') || 0;
+        bar.style.width = Math.min(parseFloat(w), 100) + '%';
+    });
+});
+</script>
 {% endblock %}
