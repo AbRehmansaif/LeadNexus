@@ -1,385 +1,690 @@
 {% extends "base.html" %}
-{% block title %}Dashboard — LeadNexus{% endblock %}
+{% block title %}Neural Console — LeadNexus{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Dashboard Specific Enhancements */
+    .dashboard-grid {
+        display: grid;
+        grid-template-columns: repeat(12, 1fr);
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+
+    .bento-card {
+        background: var(--bg-card);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-lg);
+        padding: 24px;
+        transition: var(--transition);
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .bento-card:hover {
+        border-color: rgba(139, 92, 246, 0.3);
+        transform: translateY(-4px);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4), 0 0 20px rgba(139, 92, 246, 0.1);
+    }
+
+    .bento-card::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: radial-gradient(circle at top right, var(--card-accent, transparent), transparent 70%);
+        opacity: 0.03;
+        transition: var(--transition);
+    }
+
+    .bento-card:hover::after {
+        opacity: 0.08;
+    }
+
+    .quota-value {
+        font-size: 2rem;
+        font-weight: 800;
+        letter-spacing: -0.02em;
+        margin: 8px 0;
+        display: flex;
+        align-items: baseline;
+        gap: 8px;
+    }
+
+    .quota-limit {
+        font-size: 0.9rem;
+        color: var(--text-muted);
+        font-weight: 500;
+    }
+
+    .progress-minimal {
+        height: 6px;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 10px;
+        overflow: hidden;
+        margin: 16px 0;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: var(--card-accent, var(--accent-purple));
+        border-radius: 10px;
+        box-shadow: 0 0 10px var(--card-accent, var(--accent-purple));
+    }
+
+    .stat-mini-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+        gap: 16px;
+    }
+
+    .stat-pill {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border);
+        padding: 16px;
+        border-radius: var(--radius-md);
+        transition: var(--transition);
+    }
+
+    .stat-pill:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--card-accent, var(--border));
+    }
+
+    .stat-pill-label {
+        font-size: 0.65rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
+        margin-bottom: 4px;
+        font-weight: 600;
+    }
+
+    .stat-pill-value {
+        font-size: 1.2rem;
+        font-weight: 700;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .activity-table-card {
+        grid-column: span 12;
+    }
+
+    .badge-neural {
+        background: rgba(139, 92, 246, 0.1);
+        border: 1px solid rgba(139, 92, 246, 0.2);
+        color: var(--accent-purple);
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.05em;
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 800;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        color: var(--text-primary);
+    }
+
+    .section-title i {
+        color: var(--accent-purple);
+    }
+
+    /* Accent colors for JS-less variants if needed */
+    .acc-purple { --card-accent: var(--accent-purple); }
+    .acc-blue { --card-accent: var(--accent-blue); }
+    .acc-cyan { --card-accent: var(--accent-cyan); }
+    .acc-green { --card-accent: var(--accent-green); }
+    .acc-amber { --card-accent: var(--accent-amber); }
+    .acc-red { --card-accent: var(--accent-red); }
+
+    /* Operational Manual Steps */
+    .protocol-steps {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        margin-top: 16px;
+    }
+
+    .protocol-step {
+        background: rgba(255, 255, 255, 0.02);
+        border: 1px solid var(--border);
+        padding: 16px;
+        border-radius: var(--radius-md);
+        display: flex;
+        align-items: center;
+        gap: 16px;
+        transition: var(--transition);
+    }
+
+    .protocol-step:hover {
+        background: rgba(255, 255, 255, 0.04);
+        border-color: var(--step-accent);
+        transform: translateX(4px);
+    }
+
+    .step-number {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 0.75rem;
+        color: #fff;
+        background: linear-gradient(135deg, var(--step-accent) 0%, rgba(255, 255, 255, 0.2) 100%);
+        width: 32px;
+        height: 32px;
+        min-width: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        font-weight: 800;
+        box-shadow: 0 0 15px rgba(0, 0, 0, 0.3), 0 0 10px var(--step-accent);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .step-text {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: var(--text-secondary);
+        line-height: 1.4;
+    }
+
+    .manual-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        gap: 32px;
+    }
+
+    .manual-column {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    .manual-divider {
+        height: 1px;
+        background: linear-gradient(90deg, var(--border), transparent);
+        margin: 24px 0;
+    }
+
+    .manual-action-btn {
+        margin-top: auto;
+        width: 100%;
+        padding: 14px;
+        font-size: 0.85rem;
+        letter-spacing: 0.05em;
+        transition: var(--transition);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        position: relative;
+        z-index: 100;
+        pointer-events: auto !important;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        text-decoration: none;
+    }
+
+    .manual-action-btn:hover {
+        transform: translateY(-2px);
+        filter: brightness(1.2);
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+    }
+
+    .manual-action-btn:active {
+        transform: translateY(0) scale(0.98);
+    }
+
+    /* Responsive Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 40px;
+        gap: 20px;
+    }
+
+    .header-primary {
+        flex: 1;
+    }
+
+    .header-meta {
+        text-align: right;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-end;
+        gap: 8px;
+    }
+
+    @media (max-width: 768px) {
+        .page-header {
+            flex-direction: column;
+            align-items: stretch;
+            margin-bottom: 30px;
+        }
+
+        .header-meta {
+            text-align: left;
+            align-items: flex-start;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 20px;
+        }
+
+        .page-title {
+            font-size: 2rem;
+        }
+    }
+
+    @media (max-width: 1200px) {
+        .dashboard-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        .bento-card {
+            grid-column: span 1 !important;
+        }
+        .activity-table-card {
+            grid-column: span 2 !important;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .dashboard-grid {
+            grid-template-columns: 1fr;
+        }
+        .bento-card {
+            grid-column: span 1 !important;
+        }
+        .activity-table-card {
+            grid-column: span 1 !important;
+        }
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 <!-- Page Header -->
-<div class="page-header" style="display: flex; justify-content: space-between; align-items: flex-end;">
-    <div>
+<div class="page-header">
+    <div class="header-primary">
+        <div class="badge-neural" style="margin-bottom: 12px;">
+            <i data-lucide="shield-check" style="width:14px; height:14px;"></i>
+            AUTHENTICATED SESSION: {{ user.username|upper }}
+        </div>
         <h1 class="page-title">Dashboard</h1>
         <p class="page-subtitle">Real time overview of your lead acquisition and outreach performance.</p>
     </div>
-    <div style="text-align: right;">
-        <span class="badge badge-{{ profile.membership_status }}" style="font-size: 0.9rem; padding: 8px 16px; border-radius: 30px;">
-            <i data-lucide="crown" style="width:14px; height:14px; margin-right: 6px;"></i>
-            {{ profile.get_membership_status_display|upper }}
+    <div class="header-meta">
+        <span class="badge badge-{{ profile.membership_status }}" style="font-size: 0.85rem; padding: 10px 20px; border-radius: 30px; box-shadow: var(--shadow-glow);">
+            <i data-lucide="crown" style="width:16px; height:16px; margin-right: 8px;"></i>
+            {{ profile.get_membership_status_display|upper }} OPERATOR
         </span>
-    </div>
-</div>
-
-<!-- SaaS Identity & Quotas -->
-<div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); margin-bottom: 32px;">
-    <!-- Web Discovery Quota -->
-    <div class="card" style="margin-bottom: 0; padding: 24px; border-left: 4px solid var(--accent-purple);">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-            <div>
-                <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin: 0;">Monthly Web Discovery</h3>
-                <div style="font-size: 1.5rem; font-weight: 700; margin-top: 4px;">{{ profile.jobs_this_month_count }} <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 400;">/ {{ profile.job_limit_monthly }} Used</span></div>
-            </div>
-            <div class="stat-icon purple" style="background: rgba(139, 92, 246, 0.1); color: var(--accent-purple); padding: 8px; border-radius: 8px;">
-                <i data-lucide="globe" style="width:20px; height:20px;"></i>
-            </div>
-        </div>
-        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
-            <div style="width: {{ web_usage_pct }}%; height: 100%; background: var(--accent-purple); border-radius: 3px;"></div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
-            <span>Used: <strong>{{ profile.jobs_this_month_count }}</strong></span>
-            <span>Remaining: <strong style="color: var(--accent-purple);">{{ web_remaining }}</strong></span>
-        </div>
-    </div>
-
-    <!-- LinkedIn Quota -->
-    <div class="card" style="margin-bottom: 0; padding: 24px; border-left: 4px solid var(--accent-blue);">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-            <div>
-                <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin: 0;">Monthly LinkedIn Searches</h3>
-                <div style="font-size: 1.5rem; font-weight: 700; margin-top: 4px;">{{ profile.linkedin_this_month_count }} <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 400;">/ {{ profile.linkedin_limit_monthly }} Used</span></div>
-            </div>
-            <div class="stat-icon blue" style="background: rgba(59, 130, 246, 0.1); color: var(--accent-blue); padding: 8px; border-radius: 8px;">
-                <i data-lucide="linkedin" style="width:20px; height:20px;"></i>
-            </div>
-        </div>
-        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
-            <div style="width: {{ li_usage_pct }}%; height: 100%; background: var(--accent-blue); border-radius: 3px;"></div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
-            <span>Used: <strong>{{ profile.linkedin_this_month_count }}</strong></span>
-            <span>Remaining: <strong style="color: var(--accent-blue);">{{ li_remaining }}</strong></span>
-        </div>
-    </div>
-
-    <!-- Email Outreach Quota -->
-    <div class="card" style="margin-bottom: 0; padding: 24px; border-left: 4px solid var(--accent-cyan);">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-            <div>
-                <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin: 0;">Monthly Outreach Executions</h3>
-                <div style="font-size: 1.5rem; font-weight: 700; margin-top: 4px;">{{ profile.emails_this_month_count }} <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 400;">/ {{ profile.email_outreach_limit_monthly }} Used</span></div>
-            </div>
-            <div class="stat-icon cyan" style="background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); padding: 8px; border-radius: 8px;">
-                <i data-lucide="send" style="width:20px; height:20px;"></i>
-            </div>
-        </div>
-        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
-            <div style="width: {{ email_usage_pct }}%; height: 100%; background: var(--accent-cyan); border-radius: 3px;"></div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
-            <span>Used: <strong>{{ profile.emails_this_month_count }}</strong></span>
-            <span>Remaining: <strong style="color: var(--accent-cyan);">{{ email_remaining }}</strong></span>
-        </div>
-    </div>
-
-    <!-- SMTP Infrastructure Quota -->
-    <div class="card" style="margin-bottom: 0; padding: 24px; border-left: 4px solid var(--accent-amber);">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 16px;">
-            <div>
-                <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin: 0;">SMTP Infrastructure</h3>
-                <div style="font-size: 1.5rem; font-weight: 700; margin-top: 4px;">{{ smtp_count }} <span style="font-size: 0.9rem; color: var(--text-muted); font-weight: 400;">/ {{ profile.smtp_limit }} Slotted</span></div>
-            </div>
-            <div class="stat-icon amber" style="background: rgba(245, 158, 11, 0.1); color: var(--accent-amber); padding: 8px; border-radius: 8px;">
-                <i data-lucide="mail" style="width:20px; height:20px;"></i>
-            </div>
-        </div>
-        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 3px; overflow: hidden; margin-bottom: 12px;">
-            <div style="width: {{ smtp_usage_pct }}%; height: 100%; background: var(--accent-amber); border-radius: 3px;"></div>
-        </div>
-        <div style="display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted);">
-            <span>Active: <strong>{{ smtp_count }}</strong></span>
-            <span>Available: <strong style="color: var(--accent-amber);">{{ smtp_available }}</strong></span>
+        <div style="font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; opacity: 0.6;">
+            PROTOCOL_V: 2.4.1 // LATENCY: 24MS 
         </div>
     </div>
 </div>
 
-    <div class="card" style="margin-bottom: 0; padding: 24px; border-left: 4px solid var(--accent-green);">
-        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-            <h3 style="font-size: 0.8rem; text-transform: uppercase; color: var(--text-muted); margin: 0;">Lifetime Intelligence</h3>
-            <div class="stat-icon green" style="background: rgba(16, 185, 129, 0.1); color: var(--accent-green); padding: 4px; border-radius: 4px;">
-                <i data-lucide="bar-chart-3" style="width:14px; height:14px;"></i>
+<!-- Main Dashboard Grid -->
+<div class="dashboard-grid">
+    
+    <!-- Quota Row -->
+    <div class="bento-card acc-purple" style="grid-column: span 3;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="stat-pill-label">Web Discovery</span>
+            <i data-lucide="globe" style="width:18px; height:18px; color: var(--accent-purple);"></i>
+        </div>
+        <div class="quota-value">
+            {{ profile.jobs_this_month_count }}
+            <span class="quota-limit">/ {{ profile.job_limit_monthly }}</span>
+        </div>
+        <div class="progress-minimal">
+            <div class="progress-fill" style="--progress: {{ web_usage_pct }}%; width: var(--progress);"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+            <span>USG: {{ web_usage_pct }}%</span>
+            <span>REM: {{ web_remaining }}</span>
+        </div>
+    </div>
+
+    <div class="bento-card acc-blue" style="grid-column: span 3;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="stat-pill-label">LinkedIn Intel</span>
+            <i data-lucide="linkedin" style="width:18px; height:18px; color: var(--accent-blue);"></i>
+        </div>
+        <div class="quota-value">
+            {{ profile.linkedin_this_month_count }}
+            <span class="quota-limit">/ {{ profile.linkedin_limit_monthly }}</span>
+        </div>
+        <div class="progress-minimal">
+            <div class="progress-fill" style="--progress: {{ li_usage_pct }}%; width: var(--progress);"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+            <span>USG: {{ li_usage_pct }}%</span>
+            <span>REM: {{ li_remaining }}</span>
+        </div>
+    </div>
+
+    <div class="bento-card acc-cyan" style="grid-column: span 3;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="stat-pill-label">Outreach Exec</span>
+            <i data-lucide="send" style="width:18px; height:18px; color: var(--accent-cyan);"></i>
+        </div>
+        <div class="quota-value">
+            {{ profile.emails_this_month_count }}
+            <span class="quota-limit">/ {{ profile.email_outreach_limit_monthly }}</span>
+        </div>
+        <div class="progress-minimal">
+            <div class="progress-fill" style="--progress: {{ email_usage_pct }}%; width: var(--progress);"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+            <span>USG: {{ email_usage_pct }}%</span>
+            <span>REM: {{ email_remaining }}</span>
+        </div>
+    </div>
+
+    <div class="bento-card acc-amber" style="grid-column: span 3;">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="stat-pill-label">SMTP Capacity</span>
+            <i data-lucide="mail-search" style="width:18px; height:18px; color: var(--accent-amber);"></i>
+        </div>
+        <div class="quota-value">
+            {{ smtp_count }}
+            <span class="quota-limit">/ {{ profile.smtp_limit }}</span>
+        </div>
+        <div class="progress-minimal">
+            <div class="progress-fill" style="--progress: {{ smtp_usage_pct }}%; width: var(--progress);"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace;">
+            <span>ACTIVE: {{ smtp_count }}</span>
+            <span>SLOTS: {{ smtp_available }}</span>
+        </div>
+    </div>
+
+    <!-- Stats & Lifetime Row -->
+    <div class="bento-card" style="grid-column: span 4; background: linear-gradient(135deg, rgba(139, 92, 246, 0.08) 0%, rgba(17, 24, 39, 0.7) 100%);">
+        <h3 class="section-title" style="margin-bottom: 20px;">
+            <i data-lucide="activity"></i> Lifetime Yield
+        </h3>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 16px;">
+            <div class="stat-pill acc-purple">
+                <div class="stat-pill-label">Cumulative Lead Extraction</div>
+                <div class="stat-pill-value" style="color: var(--accent-purple);">{{ profile.total_records_scraped }}</div>
+                <div style="font-size: 0.65rem; color: var(--accent-green); margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                    <i data-lucide="bar-chart" style="width:10px; height:10px;"></i> Node Efficiency: High
+                </div>
+            </div>
+            <div class="stat-pill acc-cyan">
+                <div class="stat-pill-label">Total Outbound Transmission</div>
+                <div class="stat-pill-value" style="color: var(--accent-cyan);">{{ profile.total_emails_sent }}</div>
+                <div style="font-size: 0.65rem; color: var(--accent-blue); margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                    <i data-lucide="cpu" style="width:10px; height:10px;"></i> Protocol Verification: Positive
+                </div>
             </div>
         </div>
-        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
-            <div>
-                <div style="font-size: 1.1rem; font-weight: 700;">{{ profile.total_records_scraped }}</div>
-                <div style="font-size: 0.65rem; color: var(--text-muted);">FOUND LEADS</div>
+    </div>
+
+    <div class="bento-card" style="grid-column: span 8;">
+        <h3 class="section-title">
+            <i data-lucide="monitor"></i> System Matrix
+        </h3>
+        <div class="stat-mini-grid">
+            <div class="stat-pill acc-purple">
+                <div class="stat-pill-label">Total Jobs</div>
+                <div class="stat-pill-value">{{ total_jobs }}</div>
             </div>
-            <div>
-                <div style="font-size: 1.1rem; font-weight: 700;">{{ profile.total_emails_sent }}</div>
-                <div style="font-size: 0.65rem; color: var(--text-muted);">EMAILS SENT</div>
+            <div class="stat-pill acc-green">
+                <div class="stat-pill-label">Completed</div>
+                <div class="stat-pill-value" style="color: var(--accent-green);">{{ completed_jobs }}</div>
+            </div>
+            <div class="stat-pill acc-blue">
+                <div class="stat-pill-label">Active</div>
+                <div class="stat-pill-value" style="color: var(--accent-blue);">{{ running_jobs }}</div>
+            </div>
+            <div class="stat-pill acc-cyan">
+                <div class="stat-pill-label">Prospects</div>
+                <div class="stat-pill-value" style="color: var(--accent-cyan);">{{ total_profiles }}</div>
+            </div>
+            <div class="stat-pill acc-amber">
+                <div class="stat-pill-label">Verified</div>
+                <div class="stat-pill-value" style="color: var(--accent-amber);">{{ emails_found }}</div>
+            </div>
+            <div class="stat-pill acc-red">
+                <div class="stat-pill-label">Exceptions</div>
+                <div class="stat-pill-value" style="color: var(--accent-red);">{{ failed_jobs }}</div>
+            </div>
+            <div class="stat-pill acc-purple">
+                <div class="stat-pill-label">Campaigns</div>
+                <div class="stat-pill-value">{{ total_campaigns }}</div>
+            </div>
+            <div class="stat-pill acc-blue">
+                <div class="stat-pill-label">Active Camp.</div>
+                <div class="stat-pill-value" style="color: var(--accent-blue);">{{ active_campaigns }}</div>
+            </div>
+            <div class="stat-pill acc-amber">
+                <div class="stat-pill-label">SMTP Nodes</div>
+                <div class="stat-pill-value">{{ smtp_accounts.count }}</div>
+            </div>
+            <div class="stat-pill acc-cyan">
+                <div class="stat-pill-label">Email Trans.</div>
+                <div class="stat-pill-value">{{ total_emails_sent }}</div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Stats Grid -->
-<div class="stats-grid">
-    <div class="stat-card purple">
-        <div class="stat-label">Total Outreach</div>
-        <div class="stat-value">{{ total_jobs }}</div>
-        <div class="stat-sub">Webs + ProFinder</div>
-    </div>
-    <div class="stat-card green">
-        <div class="stat-label">Completed Outreach</div>
-        <div class="stat-value">{{ completed_jobs }}</div>
-    </div>
-    <div class="stat-card blue">
-        <div class="stat-label">Active Outreach</div>
-        <div class="stat-value">{{ running_jobs }}</div>
-    </div>
-    <div class="stat-card cyan">
-        <div class="stat-label">Prospects Discovered</div>
-        <div class="stat-value">{{ total_profiles }}</div>
-    </div>
-    <div class="stat-card amber">
-        <div class="stat-label">Verified Contacts Captured</div>
-        <div class="stat-value">{{ emails_found }}</div>
-    </div>
-    <div class="stat-card red">
-        <div class="stat-label">System Exceptions</div>
-        <div class="stat-value">{{ failed_jobs }}</div>
-    </div>
-    <div class="stat-card purple">
-        <div class="stat-label">Total Outreach Delivered</div>
-        <div class="stat-value">{{ total_emails_sent }}</div>
-        <div class="stat-sub">Across all campaigns</div>
-    </div>
-    <div class="stat-card blue">
-        <div class="stat-label">Active Campaigns</div>
-        <div class="stat-value">{{ active_campaigns }}</div>
-        <div class="stat-sub">Currently executing</div>
-    </div>
-    <div class="stat-card cyan">
-        <div class="stat-label">Total Campaigns</div>
-        <div class="stat-value">{{ total_campaigns }}</div>
-        <div class="stat-sub">Across all sequences</div>
-    </div>
-    <div class="stat-card amber">
-        <div class="stat-label">Delivery Accounts</div>
-        <div class="stat-value">{{ smtp_accounts.count }}</div>
-        <div class="stat-sub">Connected sending infrastructure</div>
-    </div>
-</div>
-
-
-<!-- Recent Jobs -->
-{% if recent_website_jobs or recent_linkedin_jobs %}
-<div style="margin-top: 36px;">
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title"><span class="card-icon">🕐</span> Recent Activity</h2>
+    <!-- Recent Activity Section -->
+    {% if recent_website_jobs or recent_linkedin_jobs or recent_campaigns %}
+    <div class="bento-card activity-table-card">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <h3 class="section-title" style="margin-bottom: 0;">
+                <i data-lucide="clock"></i> Active Protocols
+            </h3>
+            <a href="{% url 'all-jobs' %}" class="btn btn-secondary btn-sm" style="position: relative; z-index: 10; pointer-events: auto;">Full Audit History</a>
         </div>
 
         {% if recent_campaigns %}
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="margin: 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Growth Campaigns</h3>
-            <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;">View All</a>
-        </div>
-        <div class="table-wrapper" style="margin-bottom: 24px;">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Campaign Name</th>
-                        <th>Status</th>
-                        <th>Progress</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for campaign in recent_campaigns %}
-                    <tr>
-                        <td>#{{ campaign.id }}</td>
-                        <td class="cell-name">{{ campaign.name }}</td>
-                        <td><span class="badge badge-{{ campaign.status }}"><span class="badge-dot"></span> {{ campaign.status|upper }}</span></td>
-                        <td>
-                            <div style="font-size: 0.8rem; margin-bottom: 2px;">{{ campaign.progress_percentage }}%</div>
-                            <div style="width: 80px; height: 3px; background: var(--border); border-radius: 2px;">
-                                <div style="width: {{ campaign.progress_percentage }}%; height: 100%; background: var(--accent-purple); border-radius: 2px;"></div>
-                            </div>
-                        </td>
-                        <td><a href="/mail/campaign/{{ campaign.id }}/" class="btn btn-secondary btn-sm">Track →</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div style="margin-bottom: 32px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-left: 3px solid var(--accent-purple); padding-left: 12px;">
+                <h4 style="font-size: 0.8rem; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;">Growth Campaign Flow</h4>
+                <a href="{% url 'mail-dashboard' %}" style="font-size: 0.75rem; color: var(--accent-purple); font-weight: 600;">ACCESS HUB</a>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>HEX_ID</th>
+                            <th>PROTOCOL_IDENTIFIER</th>
+                            <th>STATE</th>
+                            <th>TRANS_PROGRESS</th>
+                            <th>IO_ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for campaign in recent_campaigns %}
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; opacity: 0.7;">#00{{ campaign.id }}</td>
+                            <td class="cell-name">{{ campaign.name }}</td>
+                            <td><span class="badge badge-{{ campaign.status }}"><span class="badge-dot"></span> {{ campaign.status|upper }}</span></td>
+                            <td>
+                                <div style="display: flex; align-items: center; gap: 12px;">
+                                    <div style="flex: 1; height: 3px; background: rgba(255,255,255,0.05); border-radius: 2px; overflow: hidden;">
+                                        <div style="--progress: {{ campaign.progress_percentage }}%; width: var(--progress); height: 100%; background: var(--accent-purple); box-shadow: 0 0 10px var(--accent-purple);"></div>
+                                    </div>
+                                    <span style="font-size: 0.75rem; font-family: 'JetBrains Mono', monospace;">{{ campaign.progress_percentage }}%</span>
+                                </div>
+                            </td>
+                            <td><a href="{% url 'mail-campaign-detail' campaign.id %}" class="btn btn-secondary btn-sm" style="padding: 4px 12px; font-size: 0.7rem; border-color: rgba(139, 92, 246, 0.3); position: relative; z-index: 10; pointer-events: auto;">TRACK</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
         {% endif %}
 
         {% if recent_linkedin_jobs %}
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="margin: 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">ProFinder Intelligence</h3>
-            <a href="/jobs/" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;">View All</a>
-        </div>
-        <div class="table-wrapper" style="margin-bottom: 24px;">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Niche</th>
-                        <th>Progress</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for job in recent_linkedin_jobs %}
-                    <tr>
-                        <td>#{{ job.id }}</td>
-                        <td class="cell-name">{{ job.niche }}</td>
-                        <td>{{ job.progress }} / {{ job.max_profiles }}</td>
-                        <td><span class="badge badge-{{ job.status }}"><span class="badge-dot"></span> {{ job.status }}</span></td>
-                        <td>{{ job.created_at|date:"M d, Y H:i" }}</td>
-                        <td><a href="/linkedin-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div style="margin-bottom: 32px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-left: 3px solid var(--accent-blue); padding-left: 12px;">
+                <h4 style="font-size: 0.8rem; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;">ProFinder Extractions</h4>
+                <a href="{% url 'linkedin-scraper' %}" style="font-size: 0.75rem; color: var(--accent-blue); font-weight: 600;">ACCESS HUB</a>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>NODE</th>
+                            <th>TARGET_NICHE</th>
+                            <th>DATA_RECOVERY</th>
+                            <th>STATE</th>
+                            <th>IO_ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in recent_linkedin_jobs %}
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; opacity: 0.7;">#L{{ job.id }}</td>
+                            <td class="cell-name">{{ job.niche }}</td>
+                            <td style="font-family: 'JetBrains Mono', monospace;">{{ job.progress }} <span style="opacity: 0.3;">/</span> {{ job.max_profiles }}</td>
+                            <td><span class="badge badge-{{ job.status }}"><span class="badge-dot"></span> {{ job.status|upper }}</span></td>
+                            <td><a href="{% url 'linkedin-job-detail' job.id %}" class="btn btn-secondary btn-sm" style="padding: 4px 12px; font-size: 0.7rem; border-color: rgba(59, 130, 246, 0.3); position: relative; z-index: 10; pointer-events: auto;">VIEW</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
         {% endif %}
 
         {% if recent_website_jobs %}
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-            <h3 style="margin: 0; font-size: 0.9rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.06em;">Web Intelligence</h3>
-            <a href="/jobs/" class="btn btn-secondary btn-sm" style="font-size: 0.75rem; padding: 4px 8px;">View All</a>
-        </div>
-        <div class="table-wrapper">
-            <table class="data-table">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>URL</th>
-                        <th>Status</th>
-                        <th>Created</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for job in recent_website_jobs %}
-                    <tr>
-                        <td>#{{ job.id }}</td>
-                        <td class="cell-url">{{ job.url|truncatechars:60 }}</td>
-                        <td><span class="badge badge-{{ job.status }}"><span class="badge-dot"></span> {{ job.status }}</span></td>
-                        <td>{{ job.created_at|date:"M d, Y H:i" }}</td>
-                        <td><a href="/website-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a></td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+        <div>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; border-left: 3px solid var(--accent-cyan); padding-left: 12px;">
+                <h4 style="font-size: 0.8rem; color: var(--text-primary); text-transform: uppercase; letter-spacing: 0.08em; font-weight: 700;">Web Intelligence Scans</h4>
+                <a href="{% url 'website-scraper' %}" style="font-size: 0.75rem; color: var(--accent-cyan); font-weight: 600;">ACCESS HUB</a>
+            </div>
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>SCAN_ID</th>
+                            <th>TARGET_DOMAIN</th>
+                            <th>STATE</th>
+                            <th>TIMESTAMP</th>
+                            <th>IO_ACTION</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for job in recent_website_jobs %}
+                        <tr>
+                            <td style="font-family: 'JetBrains Mono', monospace; opacity: 0.7;">#W{{ job.id }}</td>
+                            <td class="cell-url">{{ job.url|truncatechars:40 }}</td>
+                            <td><span class="badge badge-{{ job.status }}"><span class="badge-dot"></span> {{ job.status|upper }}</span></td>
+                            <td style="font-size: 0.75rem; opacity: 0.7;">{{ job.created_at|date:"Y.m.d H:i" }}</td>
+                            <td><a href="{% url 'website-job-detail' job.id %}" class="btn btn-secondary btn-sm" style="padding: 4px 12px; font-size: 0.7rem; border-color: rgba(6, 182, 212, 0.3); position: relative; z-index: 10; pointer-events: auto;">VIEW</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         </div>
         {% endif %}
     </div>
+    {% endif %}
+
+    <div class="bento-card" style="grid-column: span 12; background: rgba(139, 92, 246, 0.02); border-color: rgba(139, 92, 246, 0.15);">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 32px;">
+            <h3 class="section-title" style="margin-bottom: 0;">
+                <i data-lucide="terminal"></i> Neural Operations Manual
+            </h3>
+            <span style="font-size: 0.7rem; color: var(--text-muted); font-family: 'JetBrains Mono', monospace; letter-spacing: 0.1em;">
+                CORE_ENGINE_v4.2 // LEAD_NEXUS_EXTRACTOR
+            </span>
+        </div>
+        
+        <div class="manual-grid">
+            <!-- LinkedIn Column -->
+            <div class="manual-column">
+                <h4 style="color: var(--accent-purple); font-size: 1rem; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; font-weight: 700;">
+                    <i data-lucide="users" style="width:18px; height:18px;"></i> ProFinder Engine
+                </h4>
+                <div class="protocol-steps">
+                    <div class="protocol-step" style="--step-accent: var(--accent-purple);">
+                        <span class="step-number">01</span>
+                        <div class="step-text">Industry targeting and niche mapping.</div>
+                    </div>
+                    <div class="protocol-step" style="--step-accent: var(--accent-purple);">
+                        <span class="step-number">02</span>
+                        <div class="step-text">AI company identification & extraction.</div>
+                    </div>
+                    <div class="protocol-step" style="--step-accent: var(--accent-purple);">
+                        <span class="step-number">03</span>
+                        <div class="step-text">Lead intelligence & profile capture.</div>
+                    </div>
+                </div>
+                <a href="{% url 'linkedin-scraper' %}" class="btn btn-primary manual-action-btn" style="background: linear-gradient(135deg, var(--accent-purple) 0%, #6366f1 100%); box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);">
+                    <i data-lucide="search" style="width:18px; height:18px;"></i> LAUNCH PROFINDER
+                </a>
+            </div>
+
+            <!-- Web Column -->
+            <div class="manual-column">
+                <h4 style="color: var(--accent-cyan); font-size: 1rem; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; font-weight: 700;">
+                    <i data-lucide="globe" style="width:18px; height:18px;"></i> Web Intelligence
+                </h4>
+                <div class="protocol-steps">
+                    <div class="protocol-step" style="--step-accent: var(--accent-cyan);">
+                        <span class="step-number">01</span>
+                        <div class="step-text">Target domain ingestion and analysis.</div>
+                    </div>
+                    <div class="protocol-step" style="--step-accent: var(--accent-cyan);">
+                        <span class="step-number">02</span>
+                        <div class="step-text">Deep lead fingerprinting (Email, SMTP, Social).</div>
+                    </div>
+                    <div class="protocol-step" style="--step-accent: var(--accent-cyan);">
+                        <span class="step-number">03</span>
+                        <div class="step-text">Automated lead structuring for outreach.</div>
+                    </div>
+                </div>
+                <a href="{% url 'website-scraper' %}" class="btn btn-primary manual-action-btn" style="background: linear-gradient(135deg, var(--accent-cyan) 0%, #06b6d4 100%); box-shadow: 0 4px 15px rgba(6, 182, 212, 0.3);">
+                    <i data-lucide="plus-circle" style="width:18px; height:18px;"></i> LAUNCH WEB SCAN
+                </a>
+            </div>
+
+            <!-- Outreach Column -->
+            <div class="manual-column">
+                <h4 style="color: var(--accent-blue); font-size: 1rem; display: flex; align-items: center; gap: 10px; margin-bottom: 4px; font-weight: 700;">
+                    <i data-lucide="rocket" style="width:18px; height:18px;"></i> Outbound Protocol
+                </h4>
+                <div class="protocol-steps">
+                    <div class="protocol-step" style="--step-accent: var(--accent-blue);">
+                        <span class="step-number">01</span>
+                        <div class="step-text">Neural SMTP Sync with high rotation logic.</div>
+                    </div>
+                    <div class="protocol-step" style="--step-accent: var(--accent-blue);">
+                        <span class="step-number">02</span>
+                        <div class="step-text">{% verbatim %}Dynamic AI payload delivery ({{ operator_name }}).{% endverbatim %}</div>
+                    </div>
+                    <div class="protocol-step" style="--step-accent: var(--accent-blue);">
+                        <span class="step-number">03</span>
+                        <div class="step-text">Global execution with adaptive sending gaps.</div>
+                    </div>
+                </div>
+                <a href="{% url 'mail-dashboard' %}" class="btn btn-primary manual-action-btn" style="background: linear-gradient(135deg, var(--accent-blue) 0%, #3b82f6 100%); box-shadow: 0 4px 15px rgba(59, 130, 246, 0.3);">
+                    <i data-lucide="rocket" style="width:18px; height:18px;"></i> LAUNCH GROWTH CAMPAIGN
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buttons removed from here and moved into Manual Columns above -->
+
 </div>
 
-<!-- Quick Actions -->
-<div class="action-cards" style="margin-top: 36px;">
-    <a href="/website-scraper/" class="action-card">
-        <div class="action-icon purple"><i data-lucide="globe" style="width:25px; height:25px;"></i></div>
-        <h3>Web Lead Discovery</h3>
-        <p>Enter any company domain and instantly capture emails, phone numbers, locations, and digital footprint data.</p>
-    </a>
-    <a href="/linkedin-scraper/" class="action-card">
-        <div class="action-icon blue"><i data-lucide="users" style="width:25px; height:25px;"></i></div>
-        <h3>LinkedIn Prospecting Engine</h3>
-        <p>Identify targeted companies by niche and automatically extract key decision-makers, company data, and associated websites.</p>
-    </a>
-    <a href="/jobs/" class="action-card">
-        <div class="action-icon cyan"><i data-lucide="clipboard-list" style="width:25px; height:25px;"></i></div>
-        <h3>Campaign Control Panel</h3>
-        <p>Monitor campaign progress, manage extracted leads, and export structured data for outreach automation.</p>
-    </a>
-</div>
-
-<!-- How it Works -->
-<div class="card">
-    <div class="card-header">
-        <h2 class="card-title"><span class="card-icon"><i data-lucide="zap" style="width:16px; height:16px;"></i></span> How It Works</h2>
-    </div>
-
-    <h3 style="margin-bottom: 16px; color: var(--accent-purple);"><i data-lucide="users" style="width:16px; height:16px;"></i> LinkedIn Prospecting Engine</h3>
-    <div class="steps">
-        <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-title">Intelligent Search Activation</div>
-            <div class="step-desc">Target industries, niches, or keywords.</div>
-        </div>
-        <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-title">Company Mapping</div>
-            <div class="step-desc">AI identifies relevant businesses.</div>
-        </div>
-        <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-title">Profile Intelligence Extraction</div>
-            <div class="step-desc">Decision makers and company metadata collected.</div>
-        </div>
-        <div class="step">
-            <div class="step-number">4</div>
-            <div class="step-title">Web Expansion</div>
-            <div class="step-desc">Associated domains scanned for contact intelligence.</div>
-        </div>
-        <div class="step">
-            <div class="step-number">5</div>
-            <div class="step-title">Structured Data Deployment</div>
-            <div class="step-desc">ReClean, organized lead data stored &amp; ready for outreach.</div>
-        </div>
-    </div>
-
-    <div class="section-divider"></div>
-
-    <h3 style="margin-bottom: 16px; color: var(--accent-cyan);"><i data-lucide="globe" style="width:16px; height:16px;"></i> Web Intelligence Engine</h3>
-    <div class="steps">
-        <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-title">Domain Input</div>
-            <div class="step-desc">Provide any business website.</div>
-        </div>
-        <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-title">Multi-Layer Data Extraction</div>
-            <div class="step-desc">Emails, phones, addresses, social channels, and metadata captured.</div>
-        </div>
-        <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-title">Lead Structuring</div>
-            <div class="step-desc">Data cleaned and prepared for CRM or campaign injection.</div>
-        </div>
-    </div>
-
-    <div class="section-divider"></div>
-
-    <h3 style="margin-bottom: 16px; color: var(--accent-blue);"><i data-lucide="rocket" style="width:16px; height:16px;"></i> Autonomous Outreach Protocol</h3>
-    <div class="steps">
-        <div class="step">
-            <div class="step-number">1</div>
-            <div class="step-title">Neural SMTP Sync</div>
-            <div class="step-desc">Connect 15+ email accounts for high-deliverability rotation</div>
-        </div>
-        <div class="step">
-            <div class="step-number">2</div>
-            <div class="step-title">Sequence Logic</div>
-            <div class="step-desc">Design your payload with dynamic AI placeholders ({{ name }})</div>
-        </div>
-        <div class="step">
-            <div class="step-number">3</div>
-            <div class="step-title">Lead Injection</div>
-            <div class="step-desc">Import verified leads discovered by Neural Extractions</div>
-        </div>
-        <div class="step">
-            <div class="step-number">4</div>
-            <div class="step-title">Global Execution</div>
-            <div class="step-desc">The AI protocol manages sending gaps and SMTP handovers</div>
-        </div>
-    </div>
-</div>
-
-{% endif %}
 {% endblock %}
+
