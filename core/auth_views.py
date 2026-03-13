@@ -14,6 +14,7 @@ from .models import PasswordResetCode, GlobalSettings
 
 class LoginView(auth_views.LoginView):
     template_name = 'registration/login.html'
+    redirect_authenticated_user = False
     
     def get_success_url(self):
         messages.success(self.request, f"Welcome back, {self.request.user.username}!")

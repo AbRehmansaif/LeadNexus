@@ -30,127 +30,161 @@
                 
                 <div class="navbar-menu">
                     <ul class="navbar-nav">
-                        {% if user.is_authenticated %}
-                        <li>
-                            <a href="{% url 'dashboard' %}" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
-                                <span class="nav-icon-wrapper"><i data-lucide="layout-dashboard" style="width:16px; height:16px;"></i></span>
-                                <span>Dashboard</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/website-scraper/" class="nav-link {% if active_page == 'website-scraper' %}active{% endif %}">
-                                <span class="nav-icon-wrapper"><i data-lucide="globe" style="width:16px; height:16px;"></i></span>
-                                <span>Web Intelligence</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/linkedin-scraper/" class="nav-link {% if active_page == 'linkedin-scraper' %}active{% endif %}">
-                                <span class="nav-icon-wrapper"><i data-lucide="users" style="width:16px; height:16px;"></i></span>
-                                <span>ProFinder</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/jobs/" class="nav-link {% if active_page == 'jobs' %}active{% endif %}">
-                                <span class="nav-icon-wrapper"><i data-lucide="zap" style="width:16px; height:16px;"></i></span>
-                                <span>Outreach Engine</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="{% url 'mail-dashboard' %}" class="nav-link {% if active_page == 'campaigns' %}active{% endif %}">
-                                <span class="nav-icon-wrapper"><i data-lucide="rocket" style="width:16px; height:16px;"></i></span>
-                                <span>Growth Campaigns</span>
-                            </a>
-                        </li>
+                        {% if active_page == 'landing' %}
+                            {# --- MARKETING NAVBAR (Always shown on Landing Page) --- #}
+                            <li>
+                                <a href="{% url 'landing' %}" class="nav-link active">
+                                    <span>Home</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/#features" class="nav-link">
+                                    <span>Capabilities</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/#contact" class="nav-link">
+                                    <span>Contact</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/#pricing" class="nav-link">
+                                    <span>Pricing</span>
+                                </a>
+                            </li>
+                        {% elif user.is_authenticated %}
+                            {# --- APP NAVBAR (Shown when logged in and inside the app) --- #}
+                            <li>
+                                <a href="{% url 'dashboard' %}" class="nav-link {% if active_page == 'dashboard' %}active{% endif %}">
+                                    <span class="nav-icon-wrapper"><i data-lucide="layout-dashboard" style="width:16px; height:16px;"></i></span>
+                                    <span>Dashboard</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/website-scraper/" class="nav-link {% if active_page == 'website-scraper' %}active{% endif %}">
+                                    <span class="nav-icon-wrapper"><i data-lucide="globe" style="width:16px; height:16px;"></i></span>
+                                    <span>Web Intelligence</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/linkedin-scraper/" class="nav-link {% if active_page == 'linkedin-scraper' %}active{% endif %}">
+                                    <span class="nav-icon-wrapper"><i data-lucide="users" style="width:16px; height:16px;"></i></span>
+                                    <span>ProFinder</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/jobs/" class="nav-link {% if active_page == 'jobs' %}active{% endif %}">
+                                    <span class="nav-icon-wrapper"><i data-lucide="zap" style="width:16px; height:16px;"></i></span>
+                                    <span>Outreach Engine</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="{% url 'mail-dashboard' %}" class="nav-link {% if active_page == 'campaigns' %}active{% endif %}">
+                                    <span class="nav-icon-wrapper"><i data-lucide="rocket" style="width:16px; height:16px;"></i></span>
+                                    <span>Growth Campaigns</span>
+                                </a>
+                            </li>
                         {% else %}
-                        <li>
-                            <a href="{% url 'landing' %}" class="nav-link {% if active_page == 'landing' %}active{% endif %}">
-                                <span>Home</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/#features" class="nav-link">
-                                <span>Capabilities</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/#contact" class="nav-link">
-                                <span>Contact</span>
-                            </a>
-                        </li>
-                        <li>
-                            <a href="/#pricing" class="nav-link">
-                                <span>Pricing</span>
-                            </a>
-                        </li>
+                            {# --- GUEST NAVBAR (Fallback) --- #}
+                            <li>
+                                <a href="{% url 'landing' %}" class="nav-link">
+                                    <span>Home</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/#features" class="nav-link">
+                                    <span>Capabilities</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/#contact" class="nav-link">
+                                    <span>Contact</span>
+                                </a>
+                            </li>
+                            <li>
+                                <a href="/#pricing" class="nav-link">
+                                    <span>Pricing</span>
+                                </a>
+                            </li>
                         {% endif %}
                     </ul>
                     
                     <div class="navbar-bottom-actions">
-                        {% if user.is_authenticated %}
-                        <div class="user-menu" style="display: flex; align-items: center; gap: 12px; position: relative;">
-                            <span class="badge badge-{{ user.profile.membership_status }}" style="font-size: 0.7rem; padding: 4px 10px; border-radius: 20px;">
-                                {{ user.profile.get_membership_status_display|upper }}
-                            </span>
-                            <div class="profile-circle" style="padding:0; overflow:hidden; border: 2px solid transparent; background: linear-gradient(var(--bg-primary), var(--bg-primary)) padding-box, var(--gradient-primary) border-box;">
-                                {% if user.profile.avatar %}
-                                    <img src="{{ user.profile.avatar.url }}" style="width:100%; height:100%; object-fit:cover;">
-                                {% else %}
-                                    {{ user.username|slice:":1" }}
-                                {% endif %}
-                            </div>
-                            <div class="dropdown-menu">
-                                <div class="dropdown-header">
-                                    <div style="display:flex; align-items:center; justify-content: space-between; gap:12px; margin-bottom:4px;">
-                                        <span class="dropdown-user-name" style="font-weight: 700;">{{ user.username }}</span>
-                                        <span class="badge badge-{{ user.profile.membership_status }}" style="font-size: 0.6rem; padding: 2px 8px;">{{ user.profile.get_membership_status_display }}</span>
-                                    </div>
-                                    <span class="dropdown-user-email" style="color: var(--text-muted); font-size: 0.8rem;">{{ user.email|default:"Neural Operator" }}</span>
-                                </div>
-                                
-                                <!-- Mini Usage Indicator -->
-                                <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02);">
-                                    <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 500;">
-                                        <span>Monthly Usage</span>
-                                        <span>{{ user.profile.jobs_this_month_count }}/{{ user.profile.job_limit_monthly }}</span>
-                                    </div>
-                                    <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
-                                        {% if user.profile.job_limit_monthly > 0 %}
-                                            <div style="width: {% widthratio user.profile.jobs_this_month_count user.profile.job_limit_monthly 100 %}%; height: 100%; background: var(--gradient-primary);"></div>
-                                        {% endif %}
-                                    </div>
-                                    {% if user.profile.is_paid %}
-                                        <div style="font-size: 0.65rem; color: var(--accent-green); display: flex; align-items: center; gap: 6px; font-weight: 600;">
-                                            <span style="width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; display: inline-block;"></span>
-                                            Active Subscription
-                                        </div>
+                        {% if user.is_authenticated and active_page != 'landing' %}
+                            {# --- APP ACTION (User Menu) --- #}
+                            <div class="user-menu" style="display: flex; align-items: center; gap: 12px; position: relative;">
+                                <span class="badge badge-{{ user.profile.membership_status }}" style="font-size: 0.7rem; padding: 4px 10px; border-radius: 20px;">
+                                    {{ user.profile.get_membership_status_display|upper }}
+                                </span>
+                                <div class="profile-circle" style="padding:0; overflow:hidden; border: 2px solid transparent; background: linear-gradient(var(--bg-primary), var(--bg-primary)) padding-box, var(--gradient-primary) border-box;">
+                                    {% if user.profile.avatar %}
+                                        <img src="{{ user.profile.avatar.url }}" style="width:100%; height:100%; object-fit:cover;">
                                     {% else %}
-                                        <div style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
-                                            <span style="width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; display: inline-block;"></span>
-                                            Free Plan
-                                        </div>
+                                        {{ user.username|slice:":1" }}
                                     {% endif %}
                                 </div>
+                                <div class="dropdown-menu">
+                                    <div class="dropdown-header">
+                                        <div style="display:flex; align-items:center; justify-content: space-between; gap:12px; margin-bottom:4px;">
+                                            <span class="dropdown-user-name" style="font-weight: 700;">{{ user.username }}</span>
+                                            <span class="badge badge-{{ user.profile.membership_status }}" style="font-size: 0.6rem; padding: 2px 8px;">{{ user.profile.get_membership_status_display }}</span>
+                                        </div>
+                                        <span class="dropdown-user-email" style="color: var(--text-muted); font-size: 0.8rem;">{{ user.email|default:"Neural Operator" }}</span>
+                                    </div>
+                                    
+                                    <!-- Mini Usage Indicator -->
+                                    <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02);">
+                                        <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 500;">
+                                            <span>Monthly Usage</span>
+                                            <span>{{ user.profile.jobs_this_month_count }}/{{ user.profile.job_limit_monthly }}</span>
+                                        </div>
+                                        <div style="width: 100%; height: 6px; background: rgba(255,255,255,0.05); border-radius: 4px; overflow: hidden; margin-bottom: 8px;">
+                                            {% if user.profile.job_limit_monthly > 0 %}
+                                                <div style="width: {% widthratio user.profile.jobs_this_month_count user.profile.job_limit_monthly 100 %}%; height: 100%; background: var(--gradient-primary);"></div>
+                                            {% endif %}
+                                        </div>
+                                        {% if user.profile.is_paid %}
+                                            <div style="font-size: 0.65rem; color: var(--accent-green); display: flex; align-items: center; gap: 6px; font-weight: 600;">
+                                                <span style="width: 6px; height: 6px; background: var(--accent-green); border-radius: 50%; display: inline-block;"></span>
+                                                Active Subscription
+                                            </div>
+                                        {% else %}
+                                            <div style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 6px;">
+                                                <span style="width: 6px; height: 6px; background: var(--text-muted); border-radius: 50%; display: inline-block;"></span>
+                                                Free Plan
+                                            </div>
+                                        {% endif %}
+                                    </div>
 
-                                <a href="{% url 'profile-settings' %}" class="dropdown-item">
-                                    <i data-lucide="user-cog" style="width:16px; height:16px; margin-right:8px;"></i> Profile Settings
-                                </a>
-                                <a href="{% url 'subscription' %}" class="dropdown-item">
-                                    <i data-lucide="crown" style="width:16px; height:16px; margin-right:8px; color: var(--accent-amber);"></i> Manage Plan
-                                </a>
-                                <form action="{% url 'logout' %}" method="post" class="logout-form">
-                                    {% csrf_token %}
-                                    <button type="submit" class="dropdown-item logout" style="color: var(--accent-red);">
-                                        <i data-lucide="log-out" style="width:16px; height:16px; margin-right:8px;"></i> Sign Out
-                                    </button>
-                                </form>
+                                    <a href="{% url 'profile-settings' %}" class="dropdown-item">
+                                        <i data-lucide="user-cog" style="width:16px; height:16px; margin-right:8px;"></i> Profile Settings
+                                    </a>
+                                    <a href="{% url 'subscription' %}" class="dropdown-item">
+                                        <i data-lucide="crown" style="width:16px; height:16px; margin-right:8px; color: var(--accent-amber);"></i> Manage Plan
+                                    </a>
+                                    <form action="{% url 'logout' %}" method="post" class="logout-form">
+                                        {% csrf_token %}
+                                        <button type="submit" class="dropdown-item logout" style="color: var(--accent-red);">
+                                            <i data-lucide="log-out" style="width:16px; height:16px; margin-right:8px;"></i> Sign Out
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
-                        </div>
                         {% else %}
-                        <div class="navbar-actions">
-                            <a href="{% url 'login' %}" class="btn btn-primary btn-login">
-                                <i data-lucide="zap"></i> <span>Operator Login</span>
-                            </a>
-                        </div>
+                            {# --- GUEST ACTION (Login Button) --- #}
+                            <div class="navbar-actions">
+                                {% if active_page == 'landing' %}
+                                    <a href="{% url 'login' %}" class="btn btn-primary btn-login">
+                                        <i data-lucide="zap"></i> 
+                                        <span>Operator Login</span>
+                                    </a>
+                                {% else %}
+                                    <a href="{% if request.user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'login' %}{% endif %}" class="btn btn-primary btn-login">
+                                        <i data-lucide="zap"></i> 
+                                        <span>{% if request.user.is_authenticated %}Operator Console{% else %}Operator Login{% endif %}</span>
+                                    </a>
+                                {% endif %}
+                            </div>
                         {% endif %}
                     </div>
                 </div>

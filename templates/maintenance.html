@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeadNexus — System Calibration</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-base: #020617;
+            --p-rgb: 139, 92, 246;
+            --text-primary: #ffffff;
+            --text-muted: #94a3b8;
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background: var(--bg-base);
+            color: var(--text-primary);
+            font-family: 'Inter', -apple-system, sans-serif;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            text-align: center;
+        }
+
+        .maint-container {
+            position: relative;
+            z-index: 2;
+            padding: 24px;
+            max-width: 500px;
+        }
+
+        .bg-glow {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 500px;
+            height: 500px;
+            background: radial-gradient(circle, rgba(var(--p-rgb), 0.15) 0%, transparent 70%);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .icon-box {
+            width: 80px;
+            height: 80px;
+            background: rgba(var(--p-rgb), 0.1);
+            border: 1px solid rgba(var(--p-rgb), 0.2);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #a78bfa;
+            margin: 0 auto 32px;
+            animation: pulse 2s infinite ease-in-out;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.8; }
+            50% { transform: scale(1.05); opacity: 1; box-shadow: 0 0 30px rgba(var(--p-rgb), 0.2); }
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 900;
+            letter-spacing: -0.04em;
+            margin: 0 0 16px;
+        }
+
+        p {
+            color: var(--text-muted);
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 32px;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(var(--p-rgb), 0.1);
+            padding: 8px 16px;
+            border-radius: 100px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #c4b5fd;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .loader {
+            width: 40px;
+            height: 2px;
+            background: rgba(var(--p-rgb), 0.2);
+            margin: 40px auto 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loader::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 100%;
+            background: #8b5cf6;
+            animation: slide 1s infinite linear;
+        }
+
+        @keyframes slide {
+            0% { left: -20px; }
+            100% { left: 40px; }
+        }
+
+        .wa-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: #25d366;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            margin-top: 32px;
+            transition: all 0.3s ease;
+            box-shadow: 0 10px 20px rgba(37, 211, 102, 0.2);
+        }
+
+        .wa-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(37, 211, 102, 0.3);
+            background: #22c35e;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-glow"></div>
+    
+    <div class="maint-container">
+        <div class="icon-box">
+            <i data-lucide="cpu" style="width: 40px; height: 40px;"></i>
+        </div>
+        
+        <div class="status-badge">
+            <span style="width: 6px; height: 6px; background: #8b5cf6; border-radius: 50%; display: block; animation: blink 1s infinite;"></span>
+            System Calibration Sequence
+        </div>
+        
+        <h1>The Website is at maintenance</h1>
+        <p>
+            LeadNexus neural pathways are currently undergoing scheduled optimization. 
+            We'll be back online with enhanced targeting capabilities shortly.
+        </p>
+
+        {% if global_settings.whatsapp_number %}
+        <a href="https://wa.me/{{ global_settings.whatsapp_number|urlencode }}" target="_blank" class="wa-btn">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+            Contact via WhatsApp
+        </a>
+        {% endif %}
+
+        <div class="loader"></div>
+    </div>
+
+    <script>
+        lucide.createIcons();
+    </script>
+    <style>
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+    </style>
+</body>
+</html>
