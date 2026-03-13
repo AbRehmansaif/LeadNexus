@@ -15,6 +15,10 @@ class GlobalSettings(models.Model):
     """Singleton model for system-wide configurations."""
     registrations_enabled = models.BooleanField(default=True, help_text="If disabled, new users cannot register accounts.")
     maintenance_mode = models.BooleanField(default=False, help_text="If enabled, shows a maintenance notice.")
+    
+    # Contact Information for Landing Page
+    contact_email = models.EmailField(default="sales@leadnexus.ai", help_text="Public contact email displayed on the landing page.")
+    whatsapp_number = models.CharField(max_length=20, default="+1234567890", help_text="WhatsApp number with country code (e.g. +1234567890) for the chat button.")
 
     class Meta:
         verbose_name = "Global System Setting"

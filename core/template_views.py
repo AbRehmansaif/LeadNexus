@@ -22,6 +22,9 @@ def landing_page(request):
         plan_rows = []
         subscription_plans = []
 
+    from core.models import GlobalSettings
+    global_settings = GlobalSettings.objects.first()
+
     if request.user.is_authenticated:
         # If already logged in, show stats or redirect to dashboard (optional)
         # For now, let's just let them see the landing page too.
@@ -31,6 +34,7 @@ def landing_page(request):
         'active_page': 'landing',
         'plan_rows': plan_rows,
         'subscription_plans': subscription_plans,
+        'global_settings': global_settings,
     })
 
 @login_required

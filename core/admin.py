@@ -14,7 +14,16 @@ from .models import (
 
 @admin.register(GlobalSettings)
 class GlobalSettingsAdmin(admin.ModelAdmin):
-    list_display = ('__str__', 'registrations_enabled', 'maintenance_mode')
+    list_display = ('__str__', 'registrations_enabled', 'maintenance_mode', 'contact_email')
+    fieldsets = (
+        ('System Config', {
+            'fields': ('registrations_enabled', 'maintenance_mode')
+        }),
+        ('Landing Page Contact', {
+            'fields': ('contact_email', 'whatsapp_number'),
+            'description': 'Contact info displayed publicly to visitors.'
+        }),
+    )
     
     def has_add_permission(self, request):
         # Only allow one instance

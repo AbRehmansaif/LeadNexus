@@ -1,971 +1,756 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}LeadNexus — Enterprise Growth Intelligence & Neural Outreach{% endblock %}
+{% block title %}LeadNexus — Enterprise Growth Intelligence{% endblock %}
 
 {% block extra_css %}
-<!-- Add Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
 <style>
-    /* ── Advanced Neural Aesthetic Styling ────────────────── */
-    :root {
-        --glow-purple: rgba(139, 92, 246, 0.45);
-        --glow-blue: rgba(59, 130, 246, 0.35);
-        --glow-cyan: rgba(6, 182, 212, 0.2);
-    }
+/* ──────────────────────────────────────────────────────────
+   LANDING PAGE NEW ARCHITECTURE - Fully Mobile Native
+   ────────────────────────────────────────────────────────── */
+:root {
+    --p-rgb: 139, 92, 246; /* Purple */
+    --b-rgb: 59, 130, 246; /* Blue */
+    --bg-base: #020617;
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
 
-    /* Scroll Reveal Baseline */
-    .reveal {
-        opacity: 0;
-        transform: translateY(40px);
-        transition: all 1.2s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-    .reveal.active {
-        opacity: 1;
-        transform: translateY(0);
-    }
+body, html {
+    width: 100%;
+    background: var(--bg-base);
+    scroll-behavior: smooth;
+    margin: 0; padding: 0;
+}
 
-    /* ── Hero Refinement ─────────────────────────────────── */
-    .hero-section {
-        position: relative;
-        padding: 180px 0 120px;
-        text-align: center;
-        background: radial-gradient(circle at 50% -20%, var(--glow-purple), transparent 70%);
-        overflow: hidden;
-    }
+.landing-wrap {
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+}
 
-    .hero-bg-shapes {
-        position: absolute;
-        inset: 0;
-        z-index: -1;
-        pointer-events: none;
-    }
+.landing-container {
+    width: 100%;
+    max-width: 1240px;
+    margin: 0 auto;
+    padding: 0 24px;
+    box-sizing: border-box;
+}
 
-    .glow-sphere {
-        position: absolute;
-        border-radius: 50%;
-        filter: blur(120px);
-        opacity: 0.3;
-        animation: float-glow 25s infinite alternate;
-    }
+/* Typography Fluid (No overflow) */
+.h-title {
+    font-size: clamp(2.5rem, 8vw, 5.5rem);
+    font-weight: 950;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+    color: #fff;
+    margin: 0 0 24px 0;
+}
+.h-subtitle {
+    font-size: clamp(0.95rem, 3vw, 1.25rem);
+    color: #94a3b8;
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto;
+}
+.h-section {
+    font-size: clamp(2rem, 6vw, 3rem);
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -0.03em;
+    margin-bottom: 16px;
+}
 
-    @keyframes float-glow {
-        from { transform: translate(0, 0) scale(1); }
-        to { transform: translate(150px, 100px) scale(1.2); }
-    }
+/* Gradients */
+.text-gradient-purple {
+    background: linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
-    .hero-title {
-        font-size: 6rem;
-        font-weight: 950;
-        letter-spacing: -0.06em;
-        line-height: 1.1;
-        margin-bottom: 32px;
-        background: linear-gradient(180deg, #FFFFFF 0%, #94A3B8 100%);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-    }
+/* UI Components */
+.pill-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(var(--p-rgb), 0.1);
+    border: 1px solid rgba(var(--p-rgb), 0.2);
+    padding: 8px 16px;
+    border-radius: 100px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #c4b5fd;
+    margin-bottom: 32px;
+    white-space: nowrap; /* Prevent wrap in badge */
+}
 
-    .hero-title span {
-        display: block;
-        background: var(--gradient-primary);
-        -webkit-background-clip: text;
-        background-clip: text;
-        -webkit-text-fill-color: transparent;
-        animation: text-shine 6s linear infinite;
-        background-size: 200% auto;
-    }
+.l-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 32px;
+    height: 56px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: var(--transition);
+    text-decoration: none;
+    border: none;
+    width: 100%; /* Default Mobile Full Width */
+    box-sizing: border-box;
+    white-space: nowrap;
+}
+@media(min-width: 640px){
+    .l-btn { width: auto; }
+}
 
-    @keyframes text-shine { to { background-position: 200% center; } }
+.l-btn-primary {
+    background: #8b5cf6;
+    color: #fff;
+    box-shadow: 0 4px 20px rgba(var(--p-rgb), 0.4);
+}
+.l-btn-primary:hover {
+    background: #7c3aed;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 30px rgba(var(--p-rgb), 0.6);
+    color: #fff;
+}
+.l-btn-secondary {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    color: #fff;
+}
+.l-btn-secondary:hover {
+    background: rgba(255,255,255,0.1);
+    color: #fff;
+}
 
-    .hero-subtitle {
-        font-size: 1.25rem;
-        color: var(--text-secondary);
-        max-width: 800px;
-        margin: 0 auto 48px;
-        line-height: 1.6;
-    }
+/* Hero Section */
+.hero {
+    position: relative;
+    padding: 140px 0 80px;
+    text-align: center;
+}
+.hero-bg {
+    position: absolute;
+    top: -100px; left: 50%;
+    transform: translateX(-50%);
+    width: 600px; height: 600px;
+    background: radial-gradient(circle, rgba(var(--p-rgb),0.2) 0%, transparent 60%);
+    z-index: -1;
+    pointer-events: none;
+}
+.hero-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: center;
+    justify-content: center;
+    margin-top: 40px;
+    width: 100%;
+}
+@media(min-width: 640px) {
+    .hero-btns { flex-direction: row; }
+}
 
-    .hero-actions {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 24px;
-    }
+.hero-dashboard {
+    margin-top: 60px;
+    width: 100%;
+    aspect-ratio: 16/9;
+    max-height: 500px;
+    background: #020617;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: var(--radius-lg);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.6), 0 0 80px rgba(var(--p-rgb),0.15);
+    position: relative;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+.dash-header {
+    height: 40px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    gap: 8px;
+    background: rgba(255,255,255,0.02);
+}
+.dash-dot { width: 10px; height: 10px; border-radius: 50%; }
+.dash-dot.r { background: #ef4444; }
+.dash-dot.y { background: #eab308; }
+.dash-dot.g { background: #22c55e; }
+.dash-body {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    position: relative;
+}
 
-    /* ── NEW: Capabilities Showcase ──────────────────────── */
-    .capability-section {
-        padding: 140px 0;
-        background: linear-gradient(180deg, transparent, rgba(139, 92, 246, 0.05) 50%, transparent);
-    }
+/* Sections */
+.section { padding: 80px 0; }
+.section-header { text-align: center; margin-bottom: 48px; }
 
-    .cap-grid {
-        display: grid;
-        grid-template-columns: repeat(2, 1fr);
-        gap: 80px;
-        align-items: center;
-    }
+/* Features Grid */
+.grid-3 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 20px;
+}
+@media(min-width: 768px) { .grid-3 { grid-template-columns: repeat(3, 1fr); gap: 24px; } }
 
-    .cap-visual {
-        position: relative;
-        border-radius: 32px;
-        background: rgba(15, 23, 42, 0.6);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        padding: 40px;
-        overflow: hidden;
-    }
+.card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: var(--radius-md);
+    padding: 32px 24px;
+    transition: var(--transition);
+}
+.card:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(var(--p-rgb), 0.3);
+}
+.card-icon {
+    width: 48px; height: 48px;
+    border-radius: 12px;
+    background: rgba(var(--p-rgb), 0.1);
+    color: #a78bfa;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+}
+.card h3 { font-size: 1.3rem; color: #fff; font-weight: 800; margin-bottom: 12px; }
+.card p { color: #94a3b8; line-height: 1.5; font-size: 0.95rem; margin: 0; }
 
-    .cap-visual::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(45deg, var(--glow-purple), transparent 60%);
-        opacity: 0.1;
-    }
+/* Pricing Area */
+.pricing-grid {
+    display: grid; grid-template-columns: 1fr; gap: 20px;
+    align-items: stretch;
+}
+@media(min-width: 1024px) { 
+    .pricing-grid { grid-template-columns: repeat(3, 1fr); align-items: center; } 
+}
 
-    .cap-content h2 {
-        font-size: 3.5rem;
-        font-weight: 900;
-        color: #fff;
-        margin-bottom: 24px;
-        line-height: 1.1;
+.p-card {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: var(--radius-lg);
+    padding: 32px 24px;
+    display: flex; flex-direction: column;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.p-card:hover {
+    transform: translateY(-8px);
+    border-color: rgba(139, 92, 246, 0.4);
+    box-shadow: 0 20px 40px rgba(0,0,0,0.4), 0 0 40px rgba(139, 92, 246, 0.1);
+}
+.p-card.popular {
+    background: linear-gradient(180deg, rgba(var(--p-rgb), 0.08) 0%, rgba(255,255,255,0.02) 100%);
+    border-color: rgba(var(--p-rgb), 0.3);
+}
+@media(min-width: 1024px) {
+    .p-card.popular {
+        transform: scale(1.03); 
+        box-shadow: 0 20px 40px rgba(var(--p-rgb), 0.1);
     }
+    .p-card.popular:hover {
+        transform: scale(1.03) translateY(-8px);
+        box-shadow: 0 30px 60px rgba(var(--p-rgb), 0.2);
+    }
+}
 
-    .cap-content p {
-        font-size: 1.2rem;
-        color: var(--text-secondary);
-        margin-bottom: 32px;
-        line-height: 1.7;
-    }
+.p-badge {
+    background: #8b5cf6; color: #fff; font-size: 0.7rem; font-weight: 800;
+    padding: 4px 12px; border-radius: 100px; text-transform: uppercase;
+    align-self: flex-start; margin-bottom: 20px;
+}
+.p-name { font-size: 1.2rem; font-weight: 800; color: #fff; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.05em; }
+.p-price { font-size: 3rem; font-weight: 950; color: #fff; line-height: 1; margin-bottom: 20px; }
+.p-price span { font-size: 0.9rem; color: #94a3b8; font-weight: 600; }
+.p-features { list-style: none; padding: 0; margin: 0 0 32px; flex: 1; }
+.p-features li { display: flex; align-items: center; gap: 12px; color: #cbd5e1; margin-bottom: 14px; font-size: 0.9rem; }
+.p-features i { color: #22c55e; width: 16px; height: 16px; flex-shrink: 0; }
 
-    /* ── NEW: Feature Cards ──────────────────────────────── */
-    .insight-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 32px;
-        margin-top: 100px;
-    }
-
-    .insight-card {
-        padding: 48px;
-        background: rgba(255, 255, 255, 0.02);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 40px;
-        transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .insight-card:hover {
-        background: rgba(139, 92, 246, 0.05);
-        border-color: var(--accent-purple);
-        transform: translateY(-12px) scale(1.02);
-    }
-
-    .insight-card i {
-        margin-bottom: 32px;
-        padding: 16px;
-        background: rgba(139, 92, 246, 0.1);
-        border-radius: 20px;
-        color: var(--accent-purple);
-    }
-
-    /* ── NEW: Objection FAQ ──────────────────────────────── */
-    .faq-section {
-        padding: 140px 0;
-    }
-
-    .faq-grid {
-        max-width: 900px;
-        margin: 0 auto;
-        display: grid;
-        gap: 20px;
-    }
-
-    .faq-item {
-        background: rgba(15, 23, 42, 0.4);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 20px;
-        padding: 32px;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .faq-item:hover {
-        border-color: rgba(255, 255, 255, 0.2);
-        background: rgba(255, 255, 255, 0.03);
-    }
-
-    .faq-question {
-        font-size: 1.2rem;
-        font-weight: 700;
-        color: #fff;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-    }
-
-    .faq-answer {
-        margin-top: 16px;
-        color: var(--text-secondary);
-        line-height: 1.6;
-        display: none;
-    }
-
-    .faq-item.expanded .faq-answer { display: block; }
-    .faq-item.expanded i { transform: rotate(180deg); }
-
-    /* ── Pricing Refinement ──────────────────────────────── */
-    .pricing-grid {
-        display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 32px;
-        margin-top: 80px;
-    }
-
-    .pricing-card {
-        background: rgba(15, 23, 42, 0.6);
-        backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 40px;
-        padding: 60px 48px;
-        transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
-    }
-
-    .pricing-card:hover {
-        border-color: var(--accent-purple);
-        transform: translateY(-20px) scale(1.05);
-        box-shadow: 0 40px 100px -20px rgba(139, 92, 246, 0.2);
-    }
-
-    .pricing-card.featured {
-        background: radial-gradient(circle at top right, rgba(139, 92, 246, 0.15), rgba(15, 23, 42, 0.8));
-        border-color: var(--accent-purple);
-    }
-
-    /* ── Floating Signal Feed (Persistent) ───────────────── */
-    .signal-feed {
-        position: absolute;
-        right: 2rem;
-        top: 220px;
-        width: 320px;
-        max-height: 400px;
-        mask-image: linear-gradient(to bottom, transparent, black 15%, black 85%, transparent);
-        z-index: 10;
-        pointer-events: none;
-    }
-
-    .signal-item {
-        background: rgba(255, 255, 255, 0.03);
-        backdrop-filter: blur(8px);
-        border: 1px solid rgba(255, 255, 255, 0.05);
-        border-radius: 12px;
-        padding: 12px 20px;
-        display: flex;
-        gap: 12px;
-        align-items: center;
-        margin-bottom: 12px;
-        box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-    }
-    
-    @keyframes slide-up-signal {
-        0% { transform: translateY(100%); opacity: 0; }
-        15% { opacity: 1; transform: translateY(0); }
-        85% { opacity: 1; transform: translateY(0); }
-        100% { transform: translateY(-500%); opacity: 0; }
-    }
-
-    /* ── Mobile Logic ────────────────────────────────────── */
-    @media (max-width: 1200px) {
-        .signal-feed { display: none !important; }
-        .hero-title { font-size: 4rem; }
-    }
-    @media (max-width: 768px) {
-        .hero-title { font-size: 3rem; }
-        .hero-section { padding: 120px 0 80px; }
-    }
-
-    /* ── Hero Visualizer ─────────────────────────────────── */
-    .dashboard-preview {
-        box-shadow: 0 0 100px rgba(139, 92, 246, 0.3);
-    }
-
-    /* ── NEW: Neural Bridge (Contact) ───────────────────── */
-    .contact-input-group {
-        position: relative;
-        margin-bottom: 24px;
-    }
-
-    .contact-input {
-        width: 100%;
-        background: rgba(255, 255, 255, 0.03);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-        border-radius: 16px;
-        padding: 16px 16px 16px 48px;
-        color: #fff;
-        font-size: 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .contact-input:focus {
-        outline: none;
-        border-color: var(--accent-purple);
-        background: rgba(139, 92, 246, 0.05);
-        box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
-    }
-
-    .contact-icon {
-        position: absolute;
-        left: 16px;
-        top: 50%;
-        transform: translateY(-50%);
-        color: var(--text-muted);
-        transition: color 0.3s ease;
-    }
-
-    .contact-input:focus + .contact-icon {
-        color: var(--accent-purple);
-    }
-
-    textarea.contact-input {
-        min-height: 150px;
-        resize: none;
-        padding-top: 16px;
-    }
-
-    .contact-icon-top {
-        top: 24px;
-        transform: none;
-    }
-
+/* Contact Form Grid */
+.contact-grid {
+    display: grid; grid-template-columns: 1fr; gap: 40px;
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: var(--radius-lg);
+    padding: 32px 20px;
+}
+@media(min-width: 900px) {
+    .contact-grid { grid-template-columns: 1fr 1.2fr; padding: 60px; gap: 60px; }
+}
+.form-group { margin-bottom: 16px; position: relative; }
+.form-input {
+    width: 100%; height: 52px;
+    background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 0 16px 0 44px;
+    color: #fff; font-size: 0.95rem; box-sizing: border-box;
+    transition: var(--transition);
+}
+.form-input:focus {
+    outline: none; border-color: #8b5cf6; background: rgba(var(--p-rgb),0.05);
+}
+.form-icon {
+    position: absolute; left: 16px; top: 14px; color: #64748b; width: 18px; height: 18px;
+}
+textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
 </style>
 {% endblock %}
 
 {% block content %}
-<div class="hero-bg-shapes">
-    <div class="glow-sphere" style="width: 600px; height: 600px; top: -200px; left: -100px; background: var(--glow-purple);"></div>
-    <div class="glow-sphere" style="width: 500px; height: 500px; bottom: 0; right: -100px; background: var(--glow-blue); animation-delay: -5s;"></div>
+<div class="landing-wrap">
+
+    <!-- 1. HERO -->
+    <section class="hero landing-container">
+        <div class="hero-bg"></div>
+        <div class="pill-badge">
+            <i data-lucide="zap"></i> V1.1 is Live
+        </div>
+        <h1 class="h-title">
+            Turn Intent into<br/>
+            <span class="text-gradient-purple">Market Dominance</span>
+        </h1>
+        <p class="h-subtitle">
+            LeadNexus is the autonomous growth engine. Stop chasing stale leads — locate intent and execute outreach with mathematical precision.
+        </p>
+        <div class="hero-btns">
+            {% if user.is_authenticated %}
+                <a href="{% url 'dashboard' %}" class="l-btn l-btn-primary">Enter Operator Console</a>
+            {% else %}
+                <a href="{% url 'login' %}" class="l-btn l-btn-primary">Scale My Revenue</a>
+                <a href="#features" class="l-btn l-btn-secondary">Explore Architecture</a>
+            {% endif %}
+        </div>
+
+        <div class="hero-dashboard">
+            <div class="dash-header">
+                <div class="dash-dot r"></div>
+                <div class="dash-dot y"></div>
+                <div class="dash-dot g"></div>
+            </div>
+            <div class="dash-body">
+                <div style="text-align:center;">
+                    <i data-lucide="cpu" style="width: 60px; height: 60px; color: #8b5cf6; opacity: 0.6; margin-bottom: 16px;"></i>
+                    <h2 style="color: #fff; font-size: clamp(1.2rem, 4vw, 2rem); font-weight: 900; letter-spacing: 0.2em; margin:0;">NEURAL CORE</h2>
+                    <p style="color: #64748b; font-size: 0.7rem; letter-spacing: 0.3em; margin-top:8px;">SYSTEMS OPERATIONAL</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- 2. CAPABILITIES / FEATURES -->
+    <section id="features" class="section landing-container">
+        <div class="section-header">
+            <h2 class="h-section">Unfair Advantage</h2>
+            <p class="h-subtitle">Outpace competitors using live signals instead of stale databases.</p>
+        </div>
+        <div class="grid-3">
+            <div class="card">
+                <div class="card-icon"><i data-lucide="network"></i></div>
+                <h3>Identity Mapping</h3>
+                <p>Map entire professional hierarchies and reveal the hidden decision-makers in any enterprise org-chart instantly.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="shield-check"></i></div>
+                <h3>Domain Fortress</h3>
+                <p>Advanced reputation shielding automatically rotates delivery paths to maintain perfect sender health.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="cpu"></i></div>
+                <h3>Neural Context</h3>
+                <p>Every outreach is custom-woven with hyper-relevant context, creating responses bots can't match.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- 3. PRICING (DJANGO DYNAMIC + FALLBACKS) -->
+    <section id="pricing" class="section landing-container">
+        <div class="section-header">
+            <h2 class="h-section">Transparent Scaling</h2>
+            <p class="h-subtitle">No hidden fees. Choose the architecture that aligns with your ambition.</p>
+            
+            <div style="display:flex; justify-content:center; align-items:center; gap:12px; margin-top:32px; font-weight:600; font-size:0.9rem;">
+                <span id="label-monthly" style="color:#fff; transition:0.3s;">Monthly</span>
+                <label style="position:relative; display:inline-block; width:52px; height:28px; cursor:pointer;">
+                    <input type="checkbox" id="pricing-toggle" onchange="togglePricing()" style="opacity:0; width:0; height:0;">
+                    <span style="position:absolute; inset:0; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:30px; transition:0.3s;">
+                        <span id="toggle-slider" style="position:absolute; width:20px; height:20px; left:4px; top:3px; background:#8b5cf6; border-radius:50%; transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:0 0 10px rgba(139,92,246,0.6);"></span>
+                    </span>
+                </label>
+                <span id="label-yearly" style="color:#94a3b8; transition:0.3s; display:flex; align-items:center; gap:8px;">
+                    Annually <span style="background:rgba(34,197,94,0.15); color:#22c55e; padding:3px 8px; border-radius:100px; font-size:0.65rem; font-weight:800; border:1px solid rgba(34,197,94,0.3); letter-spacing:0.05em;">SAVE 20%</span>
+                </span>
+            </div>
+        </div>
+        <div class="pricing-grid">
+            {% for plan in subscription_plans %}
+            <div class="p-card {% if plan.is_featured %}popular{% endif %}">
+                {% if plan.badge %}<div class="p-badge">{{ plan.badge }}</div>{% endif %}
+                <div class="p-name">{{ plan.name }}</div>
+
+                {% if plan.is_custom_pricing %}
+                    <div class="p-price" style="font-size: 2.2rem; line-height: 1.4;">Custom</div>
+                    <p style="color:#94a3b8; margin-bottom:24px; font-size:0.85rem;">Tailored to your team size</p>
+                {% else %}
+                    <div class="p-price">$<span class="price-val" data-monthly="{{ plan.monthly_price|floatformat:0 }}" data-yearly="{{ plan.yearly_price|floatformat:0 }}">{{ plan.monthly_price|floatformat:0 }}</span><span>/mo</span></div>
+                    <p style="color:#94a3b8; margin-bottom:24px; font-size:0.85rem;">{{ plan.short_description|default:"For growing teams" }}</p>
+                {% endif %}
+
+                <ul class="p-features">
+                    {% if plan_rows %}
+                        {% for row in plan_rows %}
+                        <li><i data-lucide="check"></i> {{ row.name }}: 
+                            <strong style="color:#fff; margin-left:4px;">
+                            {% if forloop.parentloop.counter0 == 0 %}{{ row.free_value }}
+                            {% elif forloop.parentloop.counter0 == 1 %}{{ row.pro_value }}
+                            {% else %}{{ row.enterprise_value }}{% endif %}
+                            </strong>
+                        </li>
+                        {% endfor %}
+                    {% else %}
+                        {% for feature in plan.get_features_list %}
+                        <li><i data-lucide="check"></i> {{ feature }}</li>
+                        {% endfor %}
+                    {% endif %}
+                </ul>
+                <a href="{% url plan.btn_url_name|default:'login' %}" class="l-btn {% if plan.is_featured %}l-btn-primary{% else %}l-btn-secondary{% endif %}" style="margin-top:auto;">{{ plan.btn_text }}</a>
+            </div>
+            {% empty %}
+            <!-- STATIC FALLBACK if missing database -->
+            <div class="p-card">
+                <div class="p-name">Initiate</div>
+                <div class="p-price">$<span class="price-val" data-monthly="99" data-yearly="79">99</span><span>/mo</span></div>
+                <ul class="p-features">
+                    <li><i data-lucide="check"></i> 150 Jobs / mo</li>
+                    <li><i data-lucide="check"></i> 500 Emails / mo</li>
+                </ul>
+                <a href="{% url 'login' %}" class="l-btn l-btn-secondary" style="margin-top:auto;">Start Free Trial</a>
+            </div>
+            <div class="p-card popular">
+                <div class="p-badge">Most Popular</div>
+                <div class="p-name">Professional</div>
+                <div class="p-price">$<span class="price-val" data-monthly="299" data-yearly="239">299</span><span>/mo</span></div>
+                <ul class="p-features">
+                    <li><i data-lucide="check"></i> 1,000 Jobs / mo</li>
+                    <li><i data-lucide="check"></i> 10,000 Emails / mo</li>
+                    <li><i data-lucide="check"></i> Priority Core</li>
+                </ul>
+                <a href="{% url 'login' %}" class="l-btn l-btn-primary" style="margin-top:auto;">Scale Growth Now</a>
+            </div>
+            <div class="p-card">
+                <div class="p-name">Enterprise</div>
+                <div class="p-price" style="font-size: 2.2rem; line-height: 1.4;">Custom</div>
+                <ul class="p-features">
+                    <li><i data-lucide="check"></i> Unlimited Operations</li>
+                    <li><i data-lucide="check"></i> Dedicated Routing</li>
+                </ul>
+                <a href="#contact" class="l-btn l-btn-secondary" style="margin-top:auto;">Contact Architects</a>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    <!-- 4. CONTACT FORM -->
+    <section id="contact" class="section landing-container" style="padding-bottom:120px;">
+        <div class="contact-grid" style="align-items: center;">
+            <!-- Left Side -->
+            <div style="padding-right: 2rem;">
+                <div style="color: #a78bfa; font-weight: 800; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px;">CONTACT US</div>
+                <h2 style="font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; color: #fff; line-height: 1.1; margin-bottom: 24px; letter-spacing:-0.03em;">Connect with<br>us</h2>
+                <p style="font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 420px; margin-bottom: 48px;">
+                    Ready to deploy LeadNexus at scale? Or do you have special requirements for your neural network? Our commanders are standing by to assist your expansion.
+                </p>
+                
+                <div style="display:flex; flex-direction:column; gap:24px;">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <div style="width:56px; height:56px; border-radius:14px; background:rgba(255,255,255,0.03); border:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:center; color:#a78bfa; flex-shrink:0;">
+                            <i data-lucide="mail" style="width:24px; height:24px;"></i>
+                        </div>
+                        <div>
+                            <div style="color:#64748b; font-size:0.75rem; text-transform:uppercase; font-weight:800; letter-spacing:0.05em; margin-bottom:4px;">Direct Uplink</div>
+                            <div style="color:#fff; font-weight:700; font-size:1.1rem;">{{ global_settings.contact_email|default:'sales@leadnexus.ai' }}</div>
+                        </div>
+                    </div>
+                    
+                    {% if global_settings.whatsapp_number %}
+                    <a href="https://wa.me/{{ global_settings.whatsapp_number|urlencode }}" target="_blank" style="display:flex; align-items:center; gap:16px; text-decoration:none; transition:transform 0.2s ease;" onmouseover="this.style.transform='translateX(6px)'" onmouseout="this.style.transform='translateX(0)'">
+                        <div style="width:56px; height:56px; border-radius:14px; background:rgba(37,211,102,0.1); border:1px solid rgba(37,211,102,0.2); display:flex; align-items:center; justify-content:center; color:#25d366; flex-shrink:0;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                        </div>
+                        <div>
+                            <div style="color:#64748b; font-size:0.75rem; text-transform:uppercase; font-weight:800; letter-spacing:0.05em; margin-bottom:4px;">Chat with us</div>
+                            <div style="color:#fff; font-weight:700; font-size:1.1rem;">WhatsApp</div>
+                        </div>
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Right Side (Form) -->
+            <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:24px; padding:clamp(24px, 5vw, 40px); box-shadow:0 25px 50px rgba(0,0,0,0.3);">
+                <form id="contactForm" novalidate onsubmit="handleContact(event)">
+                    <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:16px;">
+                        <div class="form-group" id="groupName" style="margin-bottom:0;">
+                            <i data-lucide="user" class="form-icon"></i>
+                            <input type="text" id="contactName" class="form-input" placeholder="Full Name *" oninput="clearError('Name')" style="border-radius:12px;">
+                            <div id="errName" style="color:#ef4444; font-size:0.8rem; font-weight:600; margin-top:6px; margin-left:14px; display:none;"></div>
+                        </div>
+                        <div class="form-group" id="groupIndustry" style="margin-bottom:0;">
+                            <i data-lucide="briefcase" class="form-icon"></i>
+                            <input type="text" id="contactIndustry" class="form-input" placeholder="Industry *" oninput="clearError('Industry')" style="border-radius:12px;">
+                            <div id="errIndustry" style="color:#ef4444; font-size:0.8rem; font-weight:600; margin-top:6px; margin-left:14px; display:none;"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="groupEmail" style="margin-bottom:16px;">
+                        <i data-lucide="at-sign" class="form-icon"></i>
+                        <input type="email" id="contactEmail" class="form-input" placeholder="Email Address *" oninput="clearError('Email')" style="border-radius:12px;">
+                        <div id="errEmail" style="color:#ef4444; font-size:0.8rem; font-weight:600; margin-top:6px; margin-left:14px; display:none;"></div>
+                    </div>
+                    
+                    <div class="form-group" id="groupPhone" style="margin-bottom:16px;">
+                        <i data-lucide="phone" class="form-icon"></i>
+                        <input type="tel" id="contactPhone" class="form-input" placeholder="Phone Number" oninput="clearError('Phone')" style="border-radius:12px;">
+                    </div>
+
+                    <div class="form-group" id="groupMessage" style="margin-bottom:24px;">
+                        <i data-lucide="message-square" class="form-icon" style="top:20px;"></i>
+                        <textarea id="contactMessage" class="form-input" placeholder="Tell us about your mission goals... *" oninput="clearError('Message')" style="min-height:140px; border-radius:12px;"></textarea>
+                        <div id="errMessage" style="color:#ef4444; font-size:0.8rem; font-weight:600; margin-top:6px; margin-left:14px; display:none;"></div>
+                    </div>
+                    
+                    <button type="submit" id="contactBtn" style="width:100%; background:linear-gradient(90deg, #8b5cf6, #0ea5e9); color:#fff; border:none; padding:16px; border-radius:12px; font-weight:800; font-size:1.1rem; cursor:pointer; transition:all 0.3s ease; box-shadow:0 10px 20px rgba(139, 92, 246, 0.2);">Submit</button>
+                    
+                    <div id="contactSuccess" style="display:none; color:#22c55e; margin-top:20px; font-weight:600; text-align:center; background:rgba(34, 197, 94, 0.1); padding:16px; border-radius:12px; border:1px solid rgba(34, 197, 94, 0.2);">
+                        <i data-lucide="check-circle" style="vertical-align:middle; margin-right:4px;"></i> Mission Control alerted. We'll deploy comms shortly.
+                    </div>
+                </form>
+            </div>
+        </div>
+    </section>
+
 </div>
 
-<!-- SECTION 1: HERO (USER LIKES - POLISHED) -->
-<section class="hero-section">
-    <div class="container relative">
-        <div class="signal-feed reveal">
-            <div class="signal-item" style="animation: slide-up-signal 10s infinite;">
-                <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-green);"></div>
-                <div style="font-size: 0.75rem; color: #fff;">Identity Resolved: VP Sales at CloudX</div>
-            </div>
-            <div class="signal-item" style="animation: slide-up-signal 12s infinite 1s; margin-top: 12px;">
-                <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-purple);"></div>
-                <div style="font-size: 0.75rem; color: #fff;">Neural Signal: High-Intent Pattern Found</div>
-            </div>
-            <div class="signal-item" style="animation: slide-up-signal 8s infinite 2s; margin-top: 12px;">
-                <div style="width: 10px; height: 10px; border-radius: 50%; background: var(--accent-blue);"></div>
-                <div style="font-size: 0.75rem; color: #fff;">Delivery Status: Verified Handshake</div>
-            </div>
-        </div>
-
-        <div class="hero-badge reveal">
-            <i data-lucide="zap" style="width: 14px; color: var(--accent-purple);"></i>
-            <span>LeadNexus Intelligence V1.1 is Live</span>
-        </div>
-        
-        <h1 class="hero-title reveal">
-            Turn Intent into <span>Market Dominance</span>
-        </h1>
-        
-        <p class="hero-subtitle reveal">
-            Stop chasing leads. Start detecting signals. LeadNexus is the autonomous growth platform 
-            that maps your entire market and executes outreach with mathematical precision.
-        </p>
-        
-        <div class="hero-actions reveal">
-            {% if user.is_authenticated %}
-                <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg" style="height: 60px; padding: 0 40px; font-weight: 700; border-radius: 14px;">Enter Operator Console</a>
-            {% else %}
-                <a href="{% url 'login' %}" class="btn btn-primary btn-lg" style="height: 60px; padding: 0 40px; font-weight: 700; border-radius: 14px; box-shadow: 0 0 40px rgba(139, 92, 246, 0.4);">Scale My Revenue</a>
-                <a href="#how-it-works" class="btn btn-secondary btn-lg" style="height: 60px; padding: 0 40px; font-weight: 700; border-radius: 14px; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.2); color: #fff;">Explore Architecture</a>
-            {% endif %}
-        </div>
-
-        <div class="dashboard-preview reveal" id="parallax-dashboard" style="margin-top: 120px; transition: transform 0.1s ease-out;">
-            <div class="preview-header">
-                <div class="dot-btn dot-red"></div>
-                <div class="dot-btn dot-yellow"></div>
-                <div class="dot-btn dot-green"></div>
-            </div>
-            <div class="preview-body" style="background: #020617; position: relative;">
-                <div style="position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; opacity: 0.2;">
-                    <div style="font-size: 15rem; color: var(--accent-purple);">⚡</div>
-                </div>
-                <div style="text-align: center; z-index: 1;">
-                    <h2 style="color: #fff; font-size: 3rem; font-weight: 950; letter-spacing: 0.2em; text-shadow: 0 0 30px var(--accent-purple);">NEURAL CORE</h2>
-                    <p style="color: var(--text-secondary); letter-spacing: 0.5em; font-size: 0.8rem; margin-top: 12px;">SYSTEMS ENGAGED • ANALYSIS RUNNING</p>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- NEW SECTION: THE COST OF INACTION (URGENCY) -->
-<section class="container reveal" style="padding: 120px 0; text-align: center;">
-    <div style="background: rgba(239, 68, 68, 0.03); border: 1px solid rgba(239, 68, 68, 0.1); border-radius: 48px; padding: 100px 40px; position: relative; overflow: hidden;">
-        <div style="position: absolute; top: -50px; right: -50px; font-size: 15rem; opacity: 0.03; color: var(--accent-red);">⚠️</div>
-        <span style="color: var(--accent-red); font-weight: 800; letter-spacing: 0.1em; font-size: 0.9rem; display: block; margin-bottom: 24px;">REVENUE LEAK IDENTIFIED</span>
-        <h2 style="font-size: 4.5rem; font-weight: 950; color: #fff; line-height: 1.1; margin-bottom: 32px;">Manual Prospecting is <br><span>Killing Your Growth</span></h2>
-        <p class="hero-subtitle" style="margin: 0 auto 56px; max-width: 800px;">Every hour spent copying and pasting is an hour lost to your competitors. Stop wasting elite talent on robotic tasks.</p>
-        
-        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 32px; text-align: left;">
-            <div style="padding: 40px; background: rgba(0,0,0,0.3); border-radius: 24px; border-left: 4px solid var(--accent-red); transition: transform 0.3s ease;">
-                <h4 style="color: #fff; margin-bottom: 12px; font-size: 1.2rem;">90% Fatigue Rate</h4>
-                <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6;">Manual data entry leads to massive human error and team burnout which costs thousands in hidden errors.</p>
-            </div>
-            <div style="padding: 40px; background: rgba(0,0,0,0.3); border-radius: 24px; border-left: 4px solid var(--accent-red); transition: transform 0.3s ease;">
-                 <h4 style="color: #fff; margin-bottom: 12px; font-size: 1.2rem;">Zero Scalability</h4>
-                <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6;">Your current process cannot scale with your ambition. LeadNexus provides the infinite leverage you need.</p>
-            </div>
-            <div style="padding: 40px; background: rgba(0,0,0,0.3); border-radius: 24px; border-left: 4px solid var(--accent-red); transition: transform 0.3s ease;">
-                 <h4 style="color: #fff; margin-bottom: 12px; font-size: 1.2rem;">Reputation Risk</h4>
-                <p style="font-size: 0.95rem; color: var(--text-secondary); line-height: 1.6;">Unprotected outreach gets you blacklisted. We provide the neural shield that protects your primary domains.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- SECTION 2: THE "WHY" (NEW & STUNNING) -->
-<section id="how-it-works" class="capability-section">
-    <div class="container">
-        <div class="cap-grid">
-            <div class="reveal">
-                <span style="color: var(--accent-purple); font-weight: 800; letter-spacing: 0.1em; font-size: 0.9rem; display: block; margin-bottom: 24px;">PHASE 01: MAP</span>
-                <h2 style="font-size: 4.5rem; font-weight: 950; line-height: 1.2; margin-bottom: 32px;">Deep Network <br><span>Identity Mapping</span></h2>
-                <p style="font-size: 1.2rem; color: var(--text-secondary); line-height: 1.7; margin-bottom: 40px;">LeadNexus doesn't just find emails. It maps entire professional hierarchies, identifies decision-makers by intent, and creates a high-fidelity map of your entire market.</p>
-                <div style="display: flex; gap: 32px; color: #fff; font-weight: 700; font-size: 1.1rem;">
-                    <div><span style="color: var(--accent-green);">✓</span> Intent-First Logic</div>
-                    <div><span style="color: var(--accent-green);">✓</span> 99.9% Accuracy</div>
-                </div>
-            </div>
-            <div class="cap-visual reveal" style="height: 400px; display: flex; align-items: center; justify-content: center;">
-                 <i data-lucide="network" style="width: 150px; height: 150px; color: var(--accent-purple); opacity: 0.4;"></i>
-                 <div style="position: absolute; inset: 0; background: radial-gradient(circle, transparent, #020617);"></div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- SECTION 3: REVENUE ENGINE (NEW GRID) -->
-<section id="features" class="container" style="padding: 140px 0;">
-    <div class="text-center reveal" style="margin-bottom: 80px;">
-        <h2 style="font-size: 4.5rem; font-weight: 950; color: #fff; letter-spacing: -0.04em;">Performance Intelligence</h2>
-        <p class="hero-subtitle">Every module is designed to maximize your revenue velocity.</p>
-    </div>
-
-    <!-- Features with hover glow -->
-    <div class="insight-grid">
-        <div class="insight-card reveal">
-            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: var(--accent-purple); filter: blur(60px); opacity: 0.1;"></div>
-            <i data-lucide="shield-check" style="width: 64px; height: 64px;"></i>
-            <h3 style="font-size: 1.8rem; font-weight: 850; color: #fff; margin-bottom: 20px;">Domain Fortress</h3>
-            <p style="color: var(--text-secondary); line-height: 1.7;">Advanced reputation shielding that automatically rotates delivery paths to maintain 100% sender health.</p>
-        </div>
-        <div class="insight-card reveal" style="transition-delay: 0.1s;">
-            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: var(--accent-blue); filter: blur(60px); opacity: 0.1;"></div>
-            <i data-lucide="cpu" style="width: 64px; height: 64px;"></i>
-            <h3 style="font-size: 1.8rem; font-weight: 850; color: #fff; margin-bottom: 20px;">Neural Context</h3>
-            <p style="color: var(--text-secondary); line-height: 1.7;">Custom identity mappings that ensure every outreach message feels like it was written by a human specialist.</p>
-        </div>
-        <div class="insight-card reveal" style="transition-delay: 0.2s;">
-            <div style="position: absolute; top: -20px; right: -20px; width: 100px; height: 100px; background: var(--accent-green); filter: blur(60px); opacity: 0.1;"></div>
-            <i data-lucide="bar-chart-3" style="width: 64px; height: 64px;"></i>
-            <h3 style="font-size: 1.8rem; font-weight: 850; color: #fff; margin-bottom: 20px;">Signal Analytics</h3>
-            <p style="color: var(--text-secondary); line-height: 1.7;">Real-time intelligence dashboard showing exactly where your market is moving and which signals convert.</p>
-        </div>
-    </div>
-</section>
-
-<!-- SECTION: SOCIAL PROOF (TRUST BUILDER) -->
-<section class="container reveal" style="padding-bottom: 140px;">
-    <div style="text-align: center; margin-bottom: 80px;">
-        <h2 style="font-size: 3rem; font-weight: 900; color: #fff;">Trusted by Growth Commanders</h2>
-    </div>
-    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 32px;">
-        <div style="background: rgba(15,23,42,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 40px; border-radius: 32px; border-top: 4px solid var(--accent-purple);">
-            <p style="color: var(--text-secondary); font-style: italic; margin-bottom: 24px;">"LeadNexus has completely replaced our team of 5 researchers. The signal accuracy is unlike anything we've used before."</p>
-            <div style="display: flex; align-items: center; gap: 16px;">
-                <div style="width: 48px; height: 48px; border-radius: 50%; background: #222; border: 1px solid #333;"></div>
-                <div>
-                    <div style="color: #fff; font-weight: 700;">Marcus Thorne</div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted);">Head of Growth, VelocityX</div>
-                </div>
-            </div>
-        </div>
-        <div style="background: rgba(15,23,42,0.4); border: 1px solid rgba(255,255,255,0.05); padding: 40px; border-radius: 32px; border-top: 4px solid var(--accent-blue);">
-            <p style="color: var(--text-secondary); font-style: italic; margin-bottom: 24px;">"We scaled our outreach from 50 to 2,000 personalized emails daily without losing a single account. A total game changer."</p>
-            <div style="display: flex; align-items: center; gap: 16px;">
-                <div style="width: 48px; height: 48px; border-radius: 50%; background: #222; border: 1px solid #333;"></div>
-                <div>
-                    <div style="color: #fff; font-weight: 700;">Sarah Jenkins</div>
-                    <div style="font-size: 0.8rem; color: var(--text-muted);">Founder, StealthOutreach</div>
-                </div>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- SECTION 4: COMPARISON (USER REQUESTED "MUST BUY" PROOF) -->
-<section class="container" style="padding-bottom: 140px;">
-    <div class="reveal" style="background: rgba(139, 92, 246, 0.03); border: 1px solid rgba(139, 92, 246, 0.1); border-radius: 48px; padding: 100px 60px;">
-        <div style="text-align: center; margin-bottom: 60px;">
-            <h2 style="font-size: 3.5rem; font-weight: 950; color: #fff;">Unfair Competitive Advantage</h2>
-            <p style="color: var(--text-secondary);">Manual vs. Neural. There is no competition.</p>
-        </div>
-        
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 24px; font-weight: 800; color: var(--text-muted); letter-spacing: 0.1em;">
-            <div>CAPABILITY</div>
-            <div>TYPICAL TOOLS</div>
-            <div style="color: var(--accent-purple);">LEADNEXUS NEURAL</div>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; padding: 40px 0; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center;">
-            <div style="font-weight: 700; color: #fff;">Market Vision</div>
-            <div>Static Database</div>
-            <div style="color: var(--accent-green); font-weight: 800; font-size: 1.2rem;">Live Signal Engine</div>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; padding: 40px 0; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center;">
-            <div style="font-weight: 700; color: #fff;">Sender Health</div>
-            <div>Single SMTP (High Risk)</div>
-            <div style="color: var(--accent-green); font-weight: 800; font-size: 1.2rem;">Neural Path Rotation</div>
-        </div>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); text-align: center; padding: 40px 0; align-items: center;">
-            <div style="font-weight: 700; color: #fff;">Operational Cost</div>
-            <div>Thousands/Mo (Virtual Assistants)</div>
-            <div style="color: var(--accent-green); font-weight: 800; font-size: 1.2rem;">95% Cost Reduction</div>
-        </div>
-    </div>
-</section>
-
-<!-- SECTION 5: PRICING (USER LIKES - POLISHED) -->
-<section id="pricing" class="container text-center" style="padding-bottom: 120px;">
-    <h2 class="reveal" style="font-size: 4rem; font-weight: 950; color: #fff; margin-bottom: 60px;">Pricing</h2>
-    <div style="display: flex; justify-content: center; align-items: center; gap: 16px; margin-bottom: 60px; font-weight: 700;">
-        <span id="label-monthly" style="color: #fff; transition: color 0.3s;">Billed Monthly</span>
-        <label style="position: relative; display: inline-block; width: 60px; height: 32px;">
-            <input type="checkbox" id="pricing-toggle" style="opacity: 0; width: 0; height: 0;" onchange="togglePricing()">
-            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(255,255,255,0.05); transition: .4s; border-radius: 32px; border: 1px solid rgba(255,255,255,0.15);">
-                <span id="toggle-slider" style="position: absolute; content: ''; height: 24px; width: 24px; left: 4px; bottom: 3px; background-color: var(--accent-purple); transition: .4s; border-radius: 50%; box-shadow: 0 0 10px rgba(139,92,246,0.6);"></span>
-            </span>
-        </label>
-        <span id="label-yearly" style="color: var(--text-muted); transition: color 0.3s; display: flex; align-items: center; gap: 8px;">
-            Billed Annually <span style="background: rgba(16, 185, 129, 0.15); color: var(--accent-green); padding: 2px 8px; border-radius: 12px; font-size: 0.65rem; border: 1px solid rgba(16, 185, 129, 0.2);">SAVE ~20%</span>
-        </span>
-    </div>
-
-    <div class="pricing-grid">
-        {% for plan in subscription_plans %}
-        <div class="pricing-card {% if plan.is_featured %}featured{% endif %} reveal" style="{% if plan.is_featured %}background: linear-gradient(145deg, rgba(139, 92, 246, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(139, 92, 246, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);{% else %}background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05);{% endif %} border-radius: 24px; transition-delay: 0.1s; position: relative; padding: 40px 30px;">
-            {% if plan.badge %}
-            <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gradient-primary); padding: 6px 20px; border-radius: 100px; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.1em; color: #fff; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">{{ plan.badge }}</div>
-            {% endif %}
-            <h3 style="color: {% if plan.is_featured %}#fff{% else %}var(--text-secondary){% endif %}; font-weight: 800; letter-spacing: 0.3em; font-size: 0.8rem; text-transform: uppercase;">{{ plan.name }}</h3>
-            
-            {% if plan.is_custom_pricing %}
-                <div class="pricing-price" style="font-size: 2.5rem; margin: 42px 0; color: #fff; font-weight: 900;">CUSTOM</div>
-            {% else %}
-                <div class="pricing-price" style="display: flex; justify-content: center; align-items: baseline; margin: 30px 0;">
-                    <span style="font-size: 1.5rem; color: {% if plan.is_featured %}#94a3b8{% else %}var(--text-secondary){% endif %}; margin-right: 4px;">$</span>
-                    <span class="price-val" style="font-size: {% if plan.is_featured %}4rem{% else %}3.5rem{% endif %}; font-weight: 950; color: #fff; {% if plan.is_featured %}text-shadow: 0 0 20px rgba(139,92,246,0.3);{% endif %}" data-monthly="{{ plan.monthly_price|floatformat:0 }}" data-yearly="{{ plan.yearly_price|floatformat:0 }}">{{ plan.monthly_price|floatformat:0 }}</span>
-                    <span style="font-size: 1rem; color: {% if plan.is_featured %}#94a3b8{% else %}var(--text-secondary){% endif %}; margin-left: 8px;">/ mo</span>
-                </div>
-                {% if plan.get_discount_pct > 0 %}
-                <div class="discount-badge" style="display: none; background: rgba(16, 185, 129, 0.1); color: var(--accent-green); padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; width: max-content; margin: -20px auto 20px auto; border: 1px solid rgba(16, 185, 129, 0.2);">Yearly Savings: {{ plan.get_discount_pct }}%</div>
-                {% endif %}
-            {% endif %}
-
-            <ul style="list-style: none; text-align: left; padding: 0; color: {% if plan.is_featured %}#cbd5e1{% else %}var(--text-secondary){% endif %}; line-height: 2; margin-top: 32px; font-size: 0.85rem;">
-                {% if plan_rows %}
-                    {% for row in plan_rows %}
-                        <li style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;">
-                            <span style="opacity: 0.9;">{{ row.name }}</span>
-                            <span style="font-weight: 700; color: {% if plan.is_featured %}#fff{% else %}var(--text-secondary){% endif %}; text-align: right;">
-                                {% if forloop.parentloop.counter0 == 0 %}
-                                    {% if row.free_value|lower == "yes" or row.free_value|lower == "true" or row.free_value == "✔" %}<i data-lucide="check" style="width:16px; color:var(--accent-green);"></i>{% elif row.free_value|lower == "no" or row.free_value|lower == "false" or row.free_value == "✘" %}<span style="opacity:0.3; padding-right: 4px;">-</span>{% else %}{{ row.free_value }}{% endif %}
-                                {% elif forloop.parentloop.counter0 == 1 %}
-                                    {% if row.pro_value|lower == "yes" or row.pro_value|lower == "true" or row.pro_value == "✔" %}<i data-lucide="check" style="width:16px; color:var(--accent-green);"></i>{% elif row.pro_value|lower == "no" or row.pro_value|lower == "false" or row.pro_value == "✘" %}<span style="opacity:0.3; padding-right: 4px;">-</span>{% else %}{{ row.pro_value }}{% endif %}
-                                {% else %}
-                                    {% if row.enterprise_value|lower == "yes" or row.enterprise_value|lower == "true" or row.enterprise_value == "✔" %}<i data-lucide="check" style="width:16px; color:var(--accent-green);"></i>{% elif row.enterprise_value|lower == "no" or row.enterprise_value|lower == "false" or row.enterprise_value == "✘" %}<span style="opacity:0.3; padding-right: 4px;">-</span>{% else %}{{ row.enterprise_value }}{% endif %}
-                                {% endif %}
-                            </span>
-                        </li>
-                    {% endfor %}
-                {% else %}
-                    {% for feature in plan.get_features_list %}
-                    <li style="padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.05);"><i data-lucide="check" style="width:16px; margin-right:12px; color:var(--accent-green);"></i> {{ feature }}</li>
-                    {% endfor %}
-                {% endif %}
-            </ul>
-            <a href="{% url plan.btn_url_name|default:'login' %}" class="btn {% if plan.is_featured %}btn-primary{% else %}btn-secondary{% endif %} btn-lg" style="width: 100%; margin-top: 50px; border-radius: 12px; {% if plan.is_featured %}box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;{% else %}transition: all 0.3s ease;{% endif %}">{{ plan.btn_text }}</a>
-        </div>
-        {% empty %}
-        <!-- Hardcoded Default Pricing Cards (Upgraded Aesthetics) -->
-        <div class="pricing-card reveal" style="transition-delay: 0.1s; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 40px 30px;">
-            <h3 style="color: var(--text-secondary); font-weight: 800; letter-spacing: 0.3em; font-size: 0.8rem;">INITIATE</h3>
-            <div class="pricing-price" style="display: flex; justify-content: center; align-items: baseline; margin: 30px 0;">
-                <span style="font-size: 1.5rem; color: var(--text-secondary); margin-right: 4px;">$</span>
-                <span class="price-val" data-monthly="99" data-yearly="79" style="font-size: 3.5rem; font-weight: 950; color: #fff;">99</span>
-                <span style="font-size: 1rem; color: var(--text-secondary); margin-left: 8px;">/ mo</span>
-            </div>
-            <ul style="list-style: none; text-align: left; padding: 0; color: var(--text-secondary); line-height: 2; margin-top: 32px; font-size: 0.85rem;">
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Web Scrape Jobs / mo</span><span style="font-weight: 700; color: var(--text-secondary);">150</span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">LinkedIn Searches / mo</span><span style="font-weight: 700; color: var(--text-secondary);">60</span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Email Outreach / mo</span><span style="font-weight: 700; color: var(--text-secondary);">500</span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">SMTP Accounts</span><span style="font-weight: 700; color: var(--text-secondary);">2</span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Multi-thread Extraction</span><span style="font-weight: 700; color: var(--text-secondary);"><i data-lucide="check" style="width:16px; color:var(--accent-green);"></i></span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Priority Execution Core</span><span style="font-weight: 700; color: var(--text-secondary);"><span style="opacity: 0.3;">-</span></span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Support Level</span><span style="font-weight: 700; color: var(--text-secondary);">Community</span></li>
-            </ul>
-            <a href="{% url 'login' %}" class="btn btn-secondary btn-lg" style="width: 100%; margin-top: 50px; border-radius: 12px; transition: all 0.3s ease;">Initiate Growth</a>
-        </div>
-
-        <div class="pricing-card featured reveal" style="background: linear-gradient(145deg, rgba(139, 92, 246, 0.15) 0%, rgba(15, 23, 42, 0.8) 100%); backdrop-filter: blur(20px); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 24px; transition-delay: 0.2s; position: relative; padding: 40px 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);">
-            <div style="position: absolute; top: -15px; left: 50%; transform: translateX(-50%); background: var(--gradient-primary); padding: 6px 20px; border-radius: 100px; font-size: 0.75rem; font-weight: 900; letter-spacing: 0.1em; color: #fff; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">MOST POWERFUL</div>
-            <h3 style="color: #fff; font-weight: 900; letter-spacing: 0.3em; font-size: 0.8rem;">PROFESSIONAL</h3>
-            <div class="pricing-price" style="display: flex; justify-content: center; align-items: baseline; margin: 30px 0;">
-                <span style="font-size: 1.5rem; color: #94a3b8; margin-right: 4px;">$</span>
-                <span class="price-val" data-monthly="299" data-yearly="239" style="font-size: 4rem; font-weight: 950; color: #fff; text-shadow: 0 0 20px rgba(139,92,246,0.3);">299</span>
-                <span style="font-size: 1rem; color: #94a3b8; margin-left: 8px;">/ mo</span>
-            </div>
-             <ul style="list-style: none; text-align: left; padding: 0; color: #cbd5e1; line-height: 2; margin-top: 32px; font-size: 0.85rem;">
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Web Scrape Jobs / mo</span><span style="font-weight: 700; color: #fff;">1,000</span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">LinkedIn Searches / mo</span><span style="font-weight: 700; color: #fff;">500</span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Email Outreach / mo</span><span style="font-weight: 700; color: #fff;">10,000</span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">SMTP Accounts</span><span style="font-weight: 700; color: #fff;">10</span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Multi-thread Extraction</span><span style="font-weight: 700; color: #fff;"><i data-lucide="check" style="width:16px; color:var(--accent-green);"></i></span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Priority Execution Core</span><span style="font-weight: 700; color: #fff;"><i data-lucide="check" style="width:16px; color:var(--accent-green);"></i></span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Support Level</span><span style="font-weight: 700; color: #fff;">Priority Email</span></li>
-            </ul>
-            <a href="{% url 'login' %}" class="btn btn-primary btn-lg" style="width: 100%; margin-top: 50px; border-radius: 12px; box-shadow: 0 10px 30px rgba(139, 92, 246, 0.4); text-transform: uppercase; font-weight: 800; letter-spacing: 1px;">Initiate Growth</a>
-        </div>
-
-        <div class="pricing-card reveal" style="transition-delay: 0.3s; background: rgba(15, 23, 42, 0.5); backdrop-filter: blur(20px); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 24px; padding: 40px 30px;">
-            <h3 style="color: var(--text-secondary); font-weight: 800; letter-spacing: 0.3em; font-size: 0.8rem;">ENTERPRISE</h3>
-            <div class="pricing-price" style="font-size: 2.5rem; margin: 42px 0; color: #fff; font-weight: 900;">CUSTOM</div>
-             <ul style="list-style: none; text-align: left; padding: 0; color: var(--text-secondary); line-height: 2; margin-top: 32px; font-size: 0.85rem;">
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Web Scrape Jobs / mo</span><span style="font-weight: 700; color: var(--text-secondary);">CUSTOM</span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">LinkedIn Searches / mo</span><span style="font-weight: 700; color: var(--text-secondary);">CUSTOM</span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Email Outreach / mo</span><span style="font-weight: 700; color: var(--text-secondary);">CUSTOM</span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">SMTP Accounts</span><span style="font-weight: 700; color: var(--text-secondary);">CUSTOM</span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Multi-thread Extraction</span><span style="font-weight: 700; color: var(--text-secondary);"><i data-lucide="check" style="width:16px; color:var(--accent-green);"></i></span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Priority Execution Core</span><span style="font-weight: 700; color: var(--text-secondary);"><i data-lucide="check" style="width:16px; color:var(--accent-green);"></i></span></li>
-                <li style="display: flex; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); padding: 12px 0;"><span style="opacity: 0.9;">Support Level</span><span style="font-weight: 700; color: var(--text-secondary);">Dedicated Manager</span></li>
-            </ul>
-            <a href="{% url 'login' %}" class="btn btn-secondary btn-lg" style="width: 100%; margin-top: 50px; border-radius: 12px;">Contact Sales</a>
-        </div>
-        {% endfor %}
-    </div>
-
-    <!-- Detailed Capability Comparison Table has been elegantly merged directly into the Pricing Cards above -->
-</section>
-
-<!-- LIVE PERFORMANCE STATS -->
-<section class="container reveal" style="padding-bottom: 120px; text-align: center;">
-    <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 40px;">
-        <div>
-            <div id="stat-mappings" style="font-size: 3.5rem; font-weight: 950; color: #fff;">1,240,000</div>
-            <div style="color: var(--text-muted); font-weight: 600; letter-spacing: 0.1em;">IDENTITY MAPPINGS</div>
-        </div>
-        <div>
-            <div id="stat-signals" style="font-size: 3.5rem; font-weight: 950; color: #fff;">482,102</div>
-            <div style="color: var(--text-muted); font-weight: 600; letter-spacing: 0.1em;">ACTIVE SIGNALS</div>
-        </div>
-        <div>
-            <div id="stat-delivery" style="font-size: 3.5rem; font-weight: 950; color: var(--accent-green);">99.8%</div>
-            <div style="color: var(--text-muted); font-weight: 600; letter-spacing: 0.1em;">DELIVERY HEALTH</div>
-        </div>
-    </div>
-</section>
-
-<!-- SECTION 6: FAQ (NEW - ANTI-OBJECTION) -->
-<section class="container" style="padding-bottom: 140px;">
-    <div class="text-center reveal" style="margin-bottom: 60px;">
-        <h2 style="font-size: 3rem; font-weight: 950; color: #fff;">Frequently Asked Questions</h2>
-    </div>
-    <div class="faq-grid">
-        <div class="faq-item reveal">
-            <div class="faq-question">How does LeadNexus ensure deliverability? <i data-lucide="chevron-down"></i></div>
-            <div class="faq-answer">We use a proprietary Neural Path Rotation system. Instead of sending all emails from one IP, we intelligently distribute traffic across verified authentication tunnels, ensuring your domain reputation remains pristine.</div>
-        </div>
-        <div class="faq-item reveal">
-            <div class="faq-question">Is the market data real-time? <i data-lucide="chevron-down"></i></div>
-            <div class="faq-answer">Yes. Unlike legacy static databases, LeadNexus scans live signals in the background, verifying identities and intent at the exact moment you launch your campaign.</div>
-        </div>
-        <div class="faq-item reveal">
-            <div class="faq-question">Can I integrate my existing team? <i data-lucide="chevron-down"></i></div>
-            <div class="faq-answer">Absolutely. The Commander and Enterprise plans include Team Terminals, allowing multiple operators to manage growth signals from one centralized dashboard.</div>
-        </div>
-    </div>
-</section>
-
-</section>
-
-<!-- SECTION: NEURAL BRIDGE (CONTACT US) -->
-<section id="contact" class="container reveal" style="padding-bottom: 140px;">
-    <div style="background: rgba(15, 23, 42, 0.4); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 48px; padding: 80px; display: grid; grid-template-columns: 1fr 1.2fr; gap: 80px; align-items: start;">
-        
-        <!-- Left: Context -->
-        <div>
-            <span style="color: var(--accent-purple); font-weight: 800; letter-spacing: 0.1em; font-size: 0.9rem; display: block; margin-bottom: 24px;">CONTACT US</span>
-            <h2 style="font-size: 3.5rem; font-weight: 950; color: #fff; line-height: 1.1; margin-bottom: 32px;">Connect with us</h2>
-            <p style="color: var(--text-secondary); font-size: 1.1rem; line-height: 1.7; margin-bottom: 40px;">
-                Ready to deploy LeadNexus at scale? Or do you have special requirements for your neural network? Our commanders are standing by to assist your expansion.
-            </p>
-            
-            <div style="display: grid; gap: 32px;">
-                <div style="display: flex; gap: 20px; align-items: center;">
-                    <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(139, 92, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent-purple);">
-                        <i data-lucide="mail"></i>
-                    </div>
-                    <div>
-                        <div style="color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Direct Uplink</div>
-                        <div style="color: #fff; font-weight: 600;">sale@leadnexus.ai</div>
-                    </div>
-                </div>
-                <div style="display: flex; gap: 20px; align-items: center;">
-                    <div style="width: 56px; height: 56px; border-radius: 16px; background: rgba(59, 130, 246, 0.1); display: flex; align-items: center; justify-content: center; color: var(--accent-blue);">
-                        <i data-lucide="phone"></i>
-                    </div>
-                    <div>
-                        <div style="color: #64748b; font-size: 0.8rem; font-weight: 700; text-transform: uppercase;">Voice Secure</div>
-                        <div style="color: #fff; font-weight: 600;">+1 (800) LEAD-NEXUS</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Right: Form -->
-        <div style="background: rgba(0,0,0,0.2); padding: 48px; border-radius: 32px; border: 1px solid rgba(255, 255, 255, 0.03); position: relative;">
-            <form id="neuralContactForm" novalidate>
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 24px;">
-                    <div class="contact-input-group">
-                        <input type="text" id="contactName" placeholder="Full Name *" class="contact-input" required>
-                        <i data-lucide="user" class="contact-icon" style="width:18px;"></i>
-                    </div>
-                    <div class="contact-input-group">
-                        <input type="text" id="contactIndustry" placeholder="Industry *" class="contact-input" required>
-                        <i data-lucide="briefcase" class="contact-icon" style="width:18px;"></i>
-                    </div>
-                </div>
-
-                <div class="contact-input-group">
-                    <input type="email" id="contactEmail" placeholder="Email Address *" class="contact-input" required>
-                    <i data-lucide="at-sign" class="contact-icon" style="width:18px;"></i>
-                </div>
-
-                <div class="contact-input-group">
-                    <input type="tel" id="contactPhone" placeholder="Phone Number" class="contact-input">
-                    <i data-lucide="phone" class="contact-icon" style="width:18px;"></i>
-                </div>
-
-                <div class="contact-input-group">
-                    <textarea id="contactMessage" placeholder="Tell us about your mission goals... *" class="contact-input" required></textarea>
-                    <i data-lucide="message-square" class="contact-icon contact-icon-top" style="width:18px;"></i>
-                </div>
-
-                <div id="formErrorMessage" style="color: #ef4444; font-size: 0.85rem; font-weight: 600; margin-bottom: 20px; display: none; align-items: center; gap: 8px;">
-                    <i data-lucide="alert-circle" style="width:16px;"></i> PROTOCOL ERROR: ALL STARRED FIELDS REQUIRED
-                </div>
-
-                <button type="submit" class="btn btn-primary" style="width: 100%; height: 60px; font-weight: 800; border-radius: 16px; font-size: 1rem; letter-spacing: 0.05em;">
-                    Submit
-                </button>
-            </form>
-
-            <!-- Success Overlay (Hidden) -->
-            <div id="contactSuccess" style="display: none; height: 100%; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 40px 0;">
-                <div style="width: 80px; height: 80px; border-radius: 50%; background: var(--accent-green); display: flex; align-items: center; justify-content: center; color: #fff; font-size: 2rem; margin-bottom: 24px; box-shadow: 0 0 30px rgba(16, 185, 129, 0.4);">
-                    ✓
-                </div>
-                <h3 style="color: #fff; font-size: 1.5rem; font-weight: 900; margin-bottom: 12px;">SIGNAL RECEIVED</h3>
-                <p style="color: var(--text-secondary); line-height: 1.6;">Your coordinates have been logged. An architect will contact you shortly.</p>
-            </div>
-        </div>
-    </div>
-</section>
-
-<!-- FINAL CALL (IMPROVED) -->
-
-<section class="container reveal" style="padding-bottom: 150px;">
-    <div style="background: var(--gradient-hero); border-radius: 64px; padding: 120px 40px; text-align: center; border: 1px solid rgba(139, 92, 246, 0.2); position: relative; overflow: hidden;">
-        <div style="position: absolute; top:0; left:50%; width: 800px; height: 300px; background: var(--glow-purple); filter: blur(100px); opacity: 0.1; transform: translateX(-50%);"></div>
-        <h2 style="font-size: 4.5rem; font-weight: 950; color: #fff; margin-bottom: 32px; letter-spacing: -0.05em;">Scale or Die.</h2>
-        <p style="font-size: 1.4rem; color: #94a3b8; max-width: 600px; margin: 0 auto 48px;">
-            In a market of signals, the fastest architect wins. Reclaim your time and dominate your industry today.
-        </p>
-        <div style="display: flex; gap: 20px; justify-content: center;">
-            <a href="{% url 'register' %}" class="btn btn-primary btn-lg" style="height: 64px; border:none; background: #fff; color: #020617; padding: 0 64px; font-weight: 800;">Let's Start</a>
-        </div>
-    </div>
-</section>
+{% if global_settings.whatsapp_number %}
+<!-- WhatsApp Floating Widget -->
+<a href="https://wa.me/{{ global_settings.whatsapp_number|urlencode }}" target="_blank" class="whatsapp-float">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+    </svg>
+</a>
+<style>
+.whatsapp-float {
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 60px;
+    height: 60px;
+    background-color: #25d366;
+    color: #fff;
+    border-radius: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(37, 211, 102, 0.4);
+    z-index: 1000;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.whatsapp-float:hover {
+    transform: translateY(-4px) scale(1.05);
+    box-shadow: 0 8px 30px rgba(37, 211, 102, 0.6);
+    color: #fff;
+}
+@media(max-width: 768px) {
+    .whatsapp-float {
+        bottom: 20px;
+        right: 20px;
+        width: 52px;
+        height: 52px;
+    }
+    .whatsapp-float svg {
+        width: 24px;
+        height: 24px;
+    }
+}
+</style>
+{% endif %}
 
 {% endblock %}
 
 {% block extra_js %}
 <script>
-    // Initialize Lucide Icons
-    lucide.createIcons();
+    // Initialize Icons
+    if (window.lucide) { lucide.createIcons(); }
 
-    // Scroll Reveal Interaction (Improved)
-    const revealElements = document.querySelectorAll('.reveal');
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.classList.add('active');
-                observer.unobserve(entry.target); // Reveal only once
+    // Smooth Scroll & Auto-Close Mobile Menu (Supports absolute paths like /#features)
+    document.querySelectorAll('a[href*="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            const href = this.getAttribute('href');
+            
+            // Check if it's a local section link (either "#id" or "/#id")
+            if (href.startsWith('#') || href.startsWith('/#')) {
+                const targetId = href.startsWith('/#') ? href.substring(1) : href;
+                const target = document.querySelector(targetId);
+
+                if (target && targetId !== '#') {
+                    e.preventDefault();
+                    
+                    // 1. Close mobile menu if open
+                    document.body.classList.remove('menu-open');
+
+                    // 2. Scroll to target with proper navbar offset
+                    const navHeight = document.querySelector('.navbar').offsetHeight;
+                    const targetPosition = target.getBoundingClientRect().top + window.pageYOffset - navHeight;
+                    
+                    window.scrollTo({
+                        top: targetPosition,
+                        behavior: 'smooth'
+                    });
+                }
             }
         });
-    }, { threshold: 0.15 });
-
-    revealElements.forEach(el => observer.observe(el));
-
-    // Refined Parallax Dashboard
-    const dashboard = document.getElementById('parallax-dashboard');
-    document.addEventListener('mousemove', (e) => {
-        const x = (window.innerWidth / 2 - e.pageX) / 100;
-        const y = (window.innerHeight / 2 - e.pageY) / 100;
-        dashboard.style.transform = `perspective(2000px) rotateY(${x}deg) rotateX(${y}deg)`;
     });
 
-    // FAQ Accordion
-    document.querySelectorAll('.faq-item').forEach(item => {
-        item.addEventListener('click', () => {
-            item.classList.toggle('expanded');
-        });
-    });
-
-    // Contact Form Simulation with Validation
-    const contactForm = document.getElementById('neuralContactForm');
-    const contactSuccess = document.getElementById('contactSuccess');
-    const formError = document.getElementById('formErrorMessage');
-
-    if (contactForm) {
-        contactForm.addEventListener('submit', (e) => {
-            e.preventDefault();
-            // ... (rest holds contact code inside) ...
-            
-            contactForm.style.display = 'none';
-            contactSuccess.style.display = 'flex';
-        });
-    }
-
-    // Toggle Pricing Logic
-    function togglePricing() {
+    // Pricing Toggle Logic
+    window.togglePricing = function() {
         const toggle = document.getElementById('pricing-toggle');
         const slider = document.getElementById('toggle-slider');
         const lblMonthly = document.getElementById('label-monthly');
         const lblYearly = document.getElementById('label-yearly');
-        
         const priceVals = document.querySelectorAll('.price-val');
-        const discountBadges = document.querySelectorAll('.discount-badge');
-
+        
         if (toggle.checked) {
-            // Annually
-            slider.style.transform = 'translateX(28px)';
-            lblMonthly.style.color = 'var(--text-muted)';
+            slider.style.transform = 'translateX(22px)';
+            lblMonthly.style.color = '#94a3b8';
             lblYearly.style.color = '#fff';
-            
-            priceVals.forEach(el => {
-                if (el.dataset.yearly) el.innerText = el.dataset.yearly;
+            priceVals.forEach(el => { 
+                if (el.dataset.yearly) {
+                    animateValue(el, parseInt(el.innerText), parseInt(el.dataset.yearly), 300);
+                } 
             });
-            discountBadges.forEach(el => el.style.display = 'block');
         } else {
-            // Monthly
             slider.style.transform = 'translateX(0)';
             lblMonthly.style.color = '#fff';
-            lblYearly.style.color = 'var(--text-muted)';
-            
-            priceVals.forEach(el => {
-                if (el.dataset.monthly) el.innerText = el.dataset.monthly;
+            lblYearly.style.color = '#94a3b8';
+            priceVals.forEach(el => { 
+                if (el.dataset.monthly) {
+                    animateValue(el, parseInt(el.innerText), parseInt(el.dataset.monthly), 300);
+                } 
             });
-            discountBadges.forEach(el => el.style.display = 'none');
         }
-    }
-</script>
-</body>
-</html>
-            
-            const requiredFields = [
-                document.getElementById('contactName'),
-                document.getElementById('contactIndustry'),
-                document.getElementById('contactEmail'),
-                document.getElementById('contactMessage')
-            ];
-            
-            let hasError = false;
-            requiredFields.forEach(field => {
-                if (!field.value.trim()) {
-                    hasError = true;
-                    field.style.borderColor = 'rgba(239, 68, 68, 0.5)';
-                    field.parentElement.animate([
-                        { transform: 'translateX(0)' },
-                        { transform: 'translateX(-5px)' },
-                        { transform: 'translateX(5px)' },
-                        { transform: 'translateX(0)' }
-                    ], { duration: 300 });
-                } else {
-                    field.style.borderColor = '';
-                }
-            });
+    };
 
-            if (hasError) {
-                formError.style.display = 'flex';
-                lucide.createIcons();
-                return;
-            }
-
-            formError.style.display = 'none';
-            const btn = contactForm.querySelector('button');
-            
-            btn.disabled = true;
-            btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="width:20px; height:20px;"></i> ENCRYPTING...';
-            lucide.createIcons();
-
-            setTimeout(() => {
-                contactForm.style.display = 'none';
-                contactSuccess.style.display = 'flex';
-                contactSuccess.classList.add('reveal', 'active');
-            }, 2000);
-        });
-    }
-
-    // Simulated Stats Counter
-    function animateValue(id, start, end, duration) {
-        let obj = document.getElementById(id);
-        if(!obj) return;
-        let range = end - start;
-        let current = start;
-        let increment = end > start ? 1 : -1;
-        let stepTime = Math.abs(Math.floor(duration / range));
-        let timer = setInterval(function() {
-            current += increment * 1000; // Increment by thousands for scale
-            if (current >= end) {
-                obj.innerHTML = end.toLocaleString();
-                clearInterval(timer);
+    function animateValue(obj, start, end, duration) {
+        if(isNaN(start) || isNaN(end)) {
+            obj.innerText = end;
+            return;
+        }
+        let startTimestamp = null;
+        const step = (timestamp) => {
+            if (!startTimestamp) startTimestamp = timestamp;
+            const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+            obj.innerText = Math.floor(progress * (end - start) + start);
+            if (progress < 1) {
+                window.requestAnimationFrame(step);
             } else {
-                obj.innerHTML = current.toLocaleString();
+                obj.innerText = end; // Ensure exact final value
             }
-        }, 10);
+        };
+        window.requestAnimationFrame(step);
     }
-    
-    // Trigger animations on reveal
-    const statObserver = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                animateValue("stat-mappings", 1000000, 1429203, 2000);
-                animateValue("stat-signals", 400000, 482102, 2000);
-                statObserver.unobserve(entry.target);
-            }
-        });
-    }, { threshold: 0.5 });
-    
-    const statsSection = document.getElementById('stat-mappings')?.parentElement?.parentElement;
-    if(statsSection) statObserver.observe(statsSection);
+
+    // Custom Contact Form handler (No browser popups, Inline strict validation)
+    function clearError(field) {
+        const input = document.getElementById('contact' + field);
+        const err = document.getElementById('err' + field);
+        input.style.borderColor = 'rgba(255,255,255,0.08)';
+        input.style.background = 'rgba(0,0,0,0.3)';
+        err.style.display = 'none';
+        err.innerText = '';
+    }
+
+    function showError(field, message) {
+        const input = document.getElementById('contact' + field);
+        const err = document.getElementById('err' + field);
+        input.style.borderColor = '#ef4444';
+        input.style.background = 'rgba(239, 68, 68, 0.05)';
+        err.innerText = message;
+        err.style.display = 'block';
+
+        // Subtle shake on the container
+        const group = document.getElementById('group' + field);
+        group.style.transform = 'translateX(-4px)';
+        setTimeout(() => group.style.transform = 'translateX(4px)', 80);
+        setTimeout(() => group.style.transform = 'translateX(-2px)', 160);
+        setTimeout(() => group.style.transform = 'translateX(0)', 240);
+    }
+
+    function handleContact(e) {
+        e.preventDefault();
+        
+        const btn = document.getElementById('contactBtn');
+        const success = document.getElementById('contactSuccess');
+        
+        const name = document.getElementById('contactName').value.trim();
+        const industry = document.getElementById('contactIndustry').value.trim();
+        const email = document.getElementById('contactEmail').value.trim();
+        const phone = document.getElementById('contactPhone').value.trim();
+        const msg = document.getElementById('contactMessage').value.trim();
+
+        let isValid = true;
+
+        if (!name) {
+            showError('Name', 'Full Name is required.');
+            isValid = false;
+        }
+
+        if (!industry) {
+            showError('Industry', 'Industry is required.');
+            isValid = false;
+        }
+        
+        if (!email) {
+            showError('Email', 'Email Address is required.');
+            isValid = false;
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+            showError('Email', 'Please enter a valid format.');
+            isValid = false;
+        }
+
+        if (!msg) {
+            showError('Message', 'Please provide a brief overview.');
+            isValid = false;
+        }
+
+        if (!isValid) return;
+        
+        btn.innerHTML = '<i data-lucide="loader-2" class="spin" style="margin-right:8px;"></i> Submitting...';
+        if (window.lucide) { lucide.createIcons(); }
+        btn.disabled = true;
+
+        setTimeout(() => {
+            btn.style.display = 'none';
+            document.getElementById('contactForm').reset();
+            success.style.display = 'block';
+            
+            // Reset after some time
+            setTimeout(() => {
+                success.style.display = 'none';
+                btn.style.display = 'block';
+                btn.innerHTML = 'Submit';
+                btn.disabled = false;
+            }, 5000);
+        }, 1500);
+    }
 </script>
+<style>
+    @keyframes spin { 100% { transform: rotate(360deg); } }
+    .spin { animation: spin 1s linear infinite; }
+</style>
 {% endblock %}
