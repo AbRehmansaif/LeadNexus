@@ -208,7 +208,7 @@
                     </div>
                     <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
                         {% if profile.job_limit_monthly > 0 %}
-                        <div style="width: {% widthratio profile.jobs_this_month_count profile.job_limit_monthly 100 %}%; height: 100%; background: var(--accent-purple); border-radius: 3px;"></div>
+                        <div class="progress-fill" data-width="{% widthratio profile.jobs_this_month_count profile.job_limit_monthly 100 %}" style="height: 100%; background: var(--accent-purple); border-radius: 3px; width: 0;"></div>
                         {% endif %}
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
@@ -224,7 +224,7 @@
                     </div>
                     <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
                         {% if profile.linkedin_limit_monthly > 0 %}
-                        <div style="width: {% widthratio profile.linkedin_this_month_count profile.linkedin_limit_monthly 100 %}%; height: 100%; background: var(--accent-blue); border-radius: 3px;"></div>
+                        <div class="progress-fill" data-width="{% widthratio profile.linkedin_this_month_count profile.linkedin_limit_monthly 100 %}" style="height: 100%; background: var(--accent-blue); border-radius: 3px; width: 0;"></div>
                         {% endif %}
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
@@ -240,7 +240,7 @@
                     </div>
                     <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
                         {% if profile.email_outreach_limit_monthly > 0 %}
-                        <div style="width: {% widthratio profile.emails_this_month_count profile.email_outreach_limit_monthly 100 %}%; height: 100%; background: var(--accent-cyan); border-radius: 3px;"></div>
+                        <div class="progress-fill" data-width="{% widthratio profile.emails_this_month_count profile.email_outreach_limit_monthly 100 %}" style="height: 100%; background: var(--accent-cyan); border-radius: 3px; width: 0;"></div>
                         {% endif %}
                     </div>
                     <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted);">
@@ -256,7 +256,7 @@
                     </div>
                     <div style="width: 100%; height: 5px; background: rgba(255,255,255,0.06); border-radius: 3px; overflow: hidden; margin-bottom: 8px;">
                         {% if profile.smtp_limit > 0 %}
-                        <div style="width: {% widthratio smtp_count profile.smtp_limit 100 %}%; height: 100%; background: var(--accent-amber); border-radius: 3px;"></div>
+                        <div class="progress-fill" data-width="{% widthratio smtp_count profile.smtp_limit 100 %}" style="height: 100%; background: var(--accent-amber); border-radius: 3px; width: 0;"></div>
                         {% endif %}
                     </div>
                     <div style="font-size: 0.7rem; color: var(--text-muted);">Connected sender accounts</div>
@@ -487,6 +487,13 @@ document.getElementById('avatar-input-sidebar').addEventListener('change', funct
 // Also trigger form preview from the main "Change Avatar" label button
 document.getElementById('avatar-input').addEventListener('change', function() {
     previewAvatar(this);
+});
+// Animate progress bars from data-width attribute
+document.addEventListener('DOMContentLoaded', function() {
+    document.querySelectorAll('.progress-fill').forEach(function(bar) {
+        var w = bar.getAttribute('data-width') || 0;
+        bar.style.width = Math.min(parseInt(w), 100) + '%';
+    });
 });
 </script>
 {% endblock %}
