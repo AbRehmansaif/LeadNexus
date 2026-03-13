@@ -119,9 +119,15 @@ Deploy multi-threaded data extraction to instantly harvest verified emails, soci
 
 <!-- What we extract -->
 <div style="margin-top: 32px;">
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title"><span class="card-icon"><i data-lucide="clipboard" style="width:20px; height:20px;"></i></span> Captured Intelligence Fields</h2>
+    <div class="card" style="padding: 28px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+            <span style="width: 32px; height: 32px; background: rgba(6,182,212,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i data-lucide="clipboard" style="width:16px; height:16px; color: var(--accent-cyan);"></i>
+            </span>
+            <div>
+                <h2 style="margin: 0; font-size: 1rem; font-weight: 700;">Captured Intelligence Fields</h2>
+                <p style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--text-muted);">Data points extracted per domain during intelligence analysis.</p>
+            </div>
         </div>
         <div class="intelligence-grid">
             <div class="intelligence-card purple">
@@ -173,13 +179,6 @@ Deploy multi-threaded data extraction to instantly harvest verified emails, soci
                     <div class="intelligence-desc">Corporate entity and employee LinkedIn network presence.</div>
                 </div>
             </div>
-            <!-- <div class="intelligence-card purple">
-                <div class="intelligence-icon"><i data-lucide="file-text"></i></div>
-                <div>
-                    <div class="intelligence-title">Pages Scraped</div>
-                    <div class="intelligence-desc">List of all pages visited during scraping analysis.</div>
-                </div>
-            </div> -->
         </div>
     </div>
 
