@@ -3,79 +3,143 @@
 
 {% block content %}
 <div class="page-header">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-        <div>
-            <h1 class="page-title">New Email Campaign</h1>
-            <p class="page-subtitle">Configure your automated email sequence</p>
+    <div class="header-flex">
+        <div class="header-main">
+            <h1 class="page-title"><i data-lucide="mail-plus" style="width:25px; height:25px; color: var(--accent-purple);"></i> New Growth Campaign</h1>
+            <p class="page-subtitle">Configure your automated sequence and high conversion delivery infrastructure.</p>
         </div>
-        <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary btn-sm">← Back to Dashboard</a>
+        <div class="header-actions">
+            <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary btn-sm">← Back to Dashboard</a>
+        </div>
     </div>
 </div>
 
-<div class="card" style="max-width: 800px; margin: 0 auto;">
-    <form id="campaignForm" class="scraper-form" novalidate>
-        <div class="form-group">
-            <label class="form-label" for="name">Campaign Name</label>
-            <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Winter Sale 2024" required>
-        </div>
+<div class="campaign-creation-container">
+    <div class="card campaign-card">
+        <form id="campaignForm" class="scraper-form" novalidate>
+            <div class="form-section">
+                <h3 class="form-section-title"><i data-lucide="settings" style="width:18px; height:18px;"></i> Campaign Protocol</h3>
+                <div class="form-group">
+                    <label class="form-label" for="name">Campaign Identifier</label>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Q4 Web Dev Outreach 2024" required>
+                    <div class="error-feedback">Campaign Identifier is required to track this mission.</div>
+                    <p class="form-help">Internal name for campaign tracking.</p>
+                </div>
 
-        <div class="form-group">
-            <label class="form-label" for="subject">Email Subject</label>
-            <input type="text" id="subject" name="subject" class="form-control" placeholder="Enter email subject" required>
-        </div>
+                <div class="form-group">
+                    <label class="form-label" for="subject">Email Subject Protocol</label>
+                    <input type="text" id="subject" name="subject" class="form-control" placeholder="The high-converting subject line" required>
+                    <div class="error-feedback">An email subject is mandatory for transmission.</div>
+                </div>
 
-        <div class="form-group">
-            <label class="form-label" for="body">Email Body (Markdown/HTML)</label>
-            <textarea id="body" name="body" class="form-control" style="height: 250px;" placeholder="Hello {{ name }},\n\nYour message here..." required></textarea>
-            <p class="form-help">Use {{ name }} and {{ email }} as placeholders. Other CSV columns can also be used.</p>
-        </div>
+                <div class="form-group">
+                    <label class="form-label" for="body">Transmission Payload (Markdown/HTML)</label>
+                    <textarea id="body" name="body" class="form-control payload-area" placeholder="Hello {% verbatim %}{{ name }}{% endverbatim %},\n\nYour message here..." required></textarea>
+                    <div class="error-feedback">Transmission payload cannot be empty.</div>
+                    <p class="form-help">Use {% verbatim %}{{ name }}{% endverbatim %} and {% verbatim %}{{ email }}{% endverbatim %} as dynamic injection tokens.</p>
+                </div>
 
-        <div class="form-group">
-            <label class="form-label" for="gap_minutes">Send Gap (Seconds)</label>
-            <input type="number" id="gap_minutes" name="gap_minutes" class="form-control" value="1" min="0">
-            <p class="form-help">Wait time between each email to avoid spam triggers (in seconds).</p>
-        </div>
+                <div class="form-group">
+                    <label class="form-label" for="gap_minutes">Latency Buffer (Seconds)</label>
+                    <input type="number" id="gap_minutes" name="gap_minutes" class="form-control" value="60" min="0">
+                    <p class="form-help">Injection delay between transmissions to mimic human behavior.</p>
+                </div>
+            </div>
 
-        <div class="section-divider"></div>
+            <div class="section-divider"></div>
 
-        <div class="form-group">
-            <label class="form-label" for="csv_file">Upload Recipients (CSV)</label>
-            <input type="file" id="csv_file" name="csv_file" class="form-control" accept=".csv" style="padding: 10px;">
-            <p class="form-help">CSV should have headers: <strong>email</strong>, <strong>name</strong> (optional).</p>
-        </div>
+            <div class="form-section">
+                <h3 class="form-section-title"><i data-lucide="users" style="width:18px; height:18px;"></i> Lead Ingestion</h3>
+                
+                <div class="lead-input-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="csv_file">Bulk Upload (CSV)</label>
+                        <div class="file-drop-area" id="csvDropArea">
+                            <input type="file" id="csv_file" name="csv_file" class="file-input" accept=".csv">
+                            <div class="file-dummy">
+                                <i data-lucide="upload-cloud"></i>
+                                <span>Click to upload or drag CSV</span>
+                            </div>
+                        </div>
+                        <div class="error-feedback">Please provide leads via CSV or manual input.</div>
+                        <p class="form-help">Format: email, name (optional)</p>
+                    </div>
 
-        <div style="text-align: center; margin: 24px 0; color: var(--text-muted);">— OR —</div>
+                    <div class="separator-text"><span>OR</span></div>
 
-        <div class="form-group">
-            <label class="form-label" for="manual_recipients">Manual Input (Paste Leads)</label>
-            <textarea id="manual_recipients" class="form-control" style="height: 120px;" placeholder="email1@example.com, Name 1, Industry 1&#10;email2@example.com, Name 2, Industry 2"></textarea>
-            <p class="form-help">Format: <strong>email, name, industry</strong> (one per line). Use commas to separate.</p>
-        </div>
+                    <div class="form-group">
+                        <label class="form-label" for="manual_recipients">Manual Lead Injection</label>
+                        <textarea id="manual_recipients" class="form-control manual-leads-area" placeholder="email1@example.com, Name 1, Industry 1&#10;email2@example.com, Name 2, Industry 2"></textarea>
+                        <div class="error-feedback">Please provide leads via CSV or manual input.</div>
+                        <p class="form-help">Structure: email, name, industry (one per line)</p>
+                    </div>
+                </div>
+            </div>
 
-        <div class="form-actions">
-            <button type="submit" id="submitBtn" class="btn btn-primary btn-lg">Create & Start Campaign</button>
-            <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary btn-lg">Cancel</a>
-        </div>
-    </form>
+            <div class="form-actions">
+                <button type="submit" id="submitBtn" class="btn btn-primary btn-lg">Create & Start Campaign</button>
+                <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary btn-lg">Cancel</a>
+            </div>
+        </form>
+    </div>
 </div>
 
 <script>
 document.getElementById('campaignForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    // 1. Reset Errors
+    document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
+    
+    // 2. Validate Fields
+    const name = document.getElementById('name');
+    const subject = document.getElementById('subject');
+    const body = document.getElementById('body');
+    const csvFile = document.getElementById('csv_file').files[0];
+    const manualInput = document.getElementById('manual_recipients');
+    
+    let isValid = true;
+    
+    if (!name.value.trim()) {
+        name.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    if (!subject.value.trim()) {
+        subject.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    if (!body.value.trim()) {
+        body.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    const hasLeads = !!csvFile || !!manualInput.value.trim();
+    if (!hasLeads) {
+        document.getElementById('csvDropArea').classList.add('is-invalid');
+        manualInput.classList.add('is-invalid');
+        isValid = false;
+    }
+    
+    if (!isValid) {
+        showNotification('Mission blocked: Please complete all mandatory protocol fields.', 'error');
+        return;
+    }
+
     const btn = document.getElementById('submitBtn');
     btn.disabled = true;
     btn.innerHTML = 'Creating...';
 
     const formData = new FormData();
-    formData.append('name', document.getElementById('name').value);
-    formData.append('subject', document.getElementById('subject').value);
-    formData.append('body', document.getElementById('body').value);
+    formData.append('name', name.value);
+    formData.append('subject', subject.value);
+    formData.append('body', body.value);
     formData.append('gap_minutes', document.getElementById('gap_minutes').value);
 
-    const csvFile = document.getElementById('csv_file').files[0];
     if (csvFile) {
         if (!csvFile.name.toLowerCase().endsWith('.csv')) {
-            showNotification('Invalid file format. Please upload a .csv file (Excel/XLSX is not supported).', 'error');
+            showNotification('Invalid file format. Please upload a .csv file.', 'error');
             btn.disabled = false;
             btn.innerHTML = 'Create & Start Campaign';
             return;
@@ -83,9 +147,8 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
         formData.append('csv_file', csvFile);
     }
 
-    const manualInput = document.getElementById('manual_recipients').value;
-    if (manualInput.trim()) {
-        const recipients = manualInput.split('\n').map(line => {
+    if (manualInput.value.trim()) {
+        const recipients = manualInput.value.split('\n').map(line => {
             const parts = line.split(',').map(s => s.trim());
             return {
                 email: parts[0],
@@ -150,6 +213,30 @@ document.addEventListener('DOMContentLoaded', () => {
             const leadCount = leadsString.split('\n').filter(l => l.trim()).length;
             showNotification(`Imported ${leadCount} leads from your recent search!`, 'success');
         }
+    }
+});
+// Real-time error clearing
+document.querySelectorAll('.form-control, .file-input').forEach(input => {
+    input.addEventListener('input', () => {
+        input.classList.remove('is-invalid');
+        // Handle specialized containers
+        if (input.id === 'csv_file') {
+            document.getElementById('csvDropArea').classList.remove('is-invalid');
+            document.getElementById('manual_recipients').classList.remove('is-invalid');
+        }
+        if (input.id === 'manual_recipients') {
+            document.getElementById('csvDropArea').classList.remove('is-invalid');
+            input.classList.remove('is-invalid');
+        }
+    });
+});
+
+// Update file upload UI
+document.getElementById('csv_file').addEventListener('change', function(e) {
+    const fileName = e.target.files[0]?.name;
+    if (fileName) {
+        const dummy = document.querySelector('.file-dummy span');
+        if (dummy) dummy.textContent = 'Selected: ' + fileName;
     }
 });
 </script>
