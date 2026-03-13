@@ -5,7 +5,7 @@
 <div class="page-header">
     <h1 class="page-title"><i data-lucide="rocket" style="width:25px; height:25px; color: var(--accent-purple);"></i> Growth Campaigns</h1>
     <p class="page-subtitle">Multi account outreach automation powered by intelligent delivery infrastructure.</p>
-    <div style="margin-top: 16px;">
+    <div class="header-actions">
         <a href="{% url 'mail-campaign-create' %}" class="btn btn-primary">Launch Growth Campaign</a>
         <a href="{% url 'mail-smtp-settings' %}" class="btn btn-secondary">Manage Delivery Infrastructure</a>
     </div>
@@ -85,11 +85,11 @@
 
     <!-- Pagination Controls -->
     {% if campaigns.has_other_pages %}
-    <div style="padding: 16px 20px; border-top: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; background: #0f172a; border-radius: 0 0 var(--radius) var(--radius);">
+    <div class="pagination-flex">
         <span class="text-muted" style="font-size: 0.85rem;">
             Showing <strong>{{ campaigns.start_index }}</strong> to <strong>{{ campaigns.end_index }}</strong> of <strong>{{ total_campaigns }}</strong> campaigns
         </span>
-        <div style="display: flex; gap: 8px;">
+        <div class="pagination-actions">
             {% if campaigns.has_previous %}
             <a href="?page={{ campaigns.previous_page_number }}" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem;">← Prev</a>
             {% else %}
@@ -97,7 +97,7 @@
             {% endif %}
             
             <span style="display: inline-flex; align-items: center; padding: 0 12px; font-size: 0.85rem; color: #fff; background: #1e293b; border-radius: 6px;">
-                Page {{ campaigns.number }} of {{ campaigns.paginator.num_pages }}
+                {{ campaigns.number }} / {{ campaigns.paginator.num_pages }}
             </span>
 
             {% if campaigns.has_next %}

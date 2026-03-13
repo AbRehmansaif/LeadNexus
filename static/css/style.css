@@ -592,6 +592,30 @@ select.form-control {
     flex-wrap: wrap;
 }
 
+/* ── Growth Dashboard Components ───────────────────────── */
+.header-actions {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    flex-wrap: wrap;
+}
+
+.pagination-flex {
+    padding: 16px 20px;
+    border-top: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 0 0 var(--radius-lg) var(--radius-lg);
+}
+
+.pagination-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
 /* ── Status Badges ─────────────────────────────────────── */
 .badge {
     display: inline-flex;
@@ -2088,35 +2112,106 @@ form.logout-form button {
 /* ── 768px: Tablet Portrait / Large Mobile ────────────────── */
 @media (max-width: 768px) {
     .container { padding: 0 16px; }
-
-    html, body { padding: 0; margin: 0; }
-
-    h1, h2, h3, h4 {
-        overflow-wrap: break-word;
-        word-break: break-word;
+    
+    /* Global Reset Overrides */
+    *, *::before, *::after {
+        box-sizing: border-box !important;
     }
 
-    /* Tables become scrollable */
-    .table-wrapper { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    /* Navbar brand fix */
+    .navbar-brand {
+        font-size: 1.1rem !important;
+        gap: 8px !important;
+    }
+    .brand-logo-img {
+        height: 32px !important;
+    }
 
-    /* Stats grid */
-    .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 14px; }
+    /* Growth Dashboard Specific Mobile fixes */
+    .page-title {
+        font-size: clamp(0.95rem, 6vw, 1.3rem) !important;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: wrap;
+        word-break: break-word;
+        width: 100%;
+        margin-bottom: 8px;
+        line-height: 1.25;
+    }
+    .page-title i {
+        flex-shrink: 0;
+        width: 18px !important;
+        height: 18px !important;
+    }
+    .page-subtitle {
+        font-size: 0.8rem !important;
+        line-height: 1.4;
+        margin-top: 4px;
+        color: var(--text-secondary);
+        overflow-wrap: break-word;
+        max-width: 100%;
+    }
+    .header-actions {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        width: 100%;
+        margin-top: 16px;
+    }
+    .header-actions .btn {
+        width: 100%;
+        justify-content: flex-start;
+        padding: 10px 14px;
+        font-size: 0.78rem;
+        min-height: 42px;
+        white-space: normal;
+        border-radius: 8px;
+    }
+
+    .pagination-flex {
+        flex-direction: column !important;
+        gap: 12px;
+        align-items: flex-start !important;
+        padding: 14px 10px !important;
+        width: 100%;
+    }
+    .pagination-actions {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        gap: 4px;
+    }
 
     /* Buttons */
-    .btn-group { flex-direction: column; }
+    .btn-group { flex-direction: column; width: 100%; }
+    
+    /* Global scrollbar fix */
+    html, body { 
+        max-width: 100%;
+        overflow-x: hidden !important; 
+        margin: 0;
+        padding: 0;
+        width: 100%;
+    }
+    .app-wrapper { 
+        overflow-x: hidden !important; 
+        width: 100%;
+        position: relative;
+    }
 }
 
 /* ── 480px: Small Mobile ─────────────────────────────────── */
 @media (max-width: 480px) {
     .container { padding: 0 12px; }
 
-    .nav-link { padding: 10px 12px; font-size: 0.9rem; }
+    .nav-link { padding: 8px 10px; font-size: 0.85rem; }
 
-    .stats-grid { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: 1fr; gap: 10px; }
 
-    .page-title { font-size: 1.6rem; }
+    .page-title { font-size: 1.25rem !important; }
 
-    .btn-lg { padding: 14px 24px; font-size: 0.95rem; }
+    .btn-lg { padding: 12px 20px; font-size: 0.9rem; }
 }
 
 /* ── Intelligence Extraction Grid ──────────────────────── */
