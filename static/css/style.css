@@ -2551,6 +2551,99 @@ form.logout-form button {
     }
 }
 
+/* Subscription Specific */
+.subscription-grid {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 32px;
+}
+
+.protocol-allocation-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+}
+
+.lifetime-intelligence-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.protocol-features-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.plan-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+    margin-bottom: 32px;
+}
+
+.plan-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    word-break: break-word;
+}
+
+.plan-header .badge {
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+@media (max-width: 1200px) {
+    .subscription-grid {
+        grid-template-columns: 1.5fr 1fr !important;
+        gap: 24px !important;
+    }
+}
+
+@media (max-width: 992px) {
+    .subscription-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .protocol-allocation-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .protocol-allocation-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .lifetime-intelligence-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: 12px !important;
+    }
+    .protocol-features-list {
+        grid-template-columns: 1fr !important;
+    }
+    .plan-comparison-wrapper table {
+        min-width: 600px;
+    }
+}
+
+@media (max-width: 480px) {
+    .plan-details-card {
+        padding: 24px 16px !important;
+    }
+    .lifetime-intelligence-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .plan-header h2 {
+        font-size: 1.15rem !important;
+    }
+    .plan-header .badge {
+        font-size: 0.8rem !important;
+        padding: 7px 14px !important;
+    }
+}
+
 /* Global scrollbar fix */
 html, body { 
     max-width: 100%;
