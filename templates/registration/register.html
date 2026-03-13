@@ -4,294 +4,480 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Initiate Deployment — LeadNexus Registration</title>
+    <title>Initiate Identity — LeadNexus Operator Registration</title>
     <link rel="icon" href="{% static 'logo_svg.png' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --login-bg: #05070a;
-            --login-card: rgba(13, 17, 23, 0.7);
+            --auth-bg: #030712;
+            --brand-primary: #8b5cf6;
+            --brand-secondary: #3b82f6;
+            --glass-bg: rgba(15, 23, 42, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --text-dim: #94a3b8;
         }
 
         body {
             min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: var(--login-bg);
             margin: 0;
-            padding: 40px 0;
-            font-family: 'Inter', sans-serif;
+            padding: 0;
+            background: var(--auth-bg);
+            font-family: 'Outfit', 'Inter', sans-serif;
             color: #fff;
             overflow-x: hidden;
+            display: flex;
         }
 
-        /* ── Dynamic AI Background ────────────────────────── */
-        .bg-mesh {
+        /* ── Neural Cursor ────────────────────────────────── */
+        .cursor-dot, .cursor-outline {
+            pointer-events: none;
             position: fixed;
-            top: 0;
-            left: 0;
+            top: 0; left: 0;
+            transform: translate(-50%, -50%);
+            border-radius: 50%;
+            z-index: 9999;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .cursor-dot {
+            width: 8px;
+            height: 8px;
+            background: var(--brand-primary);
+        }
+
+        .cursor-outline {
+            width: 40px;
+            height: 40px;
+            border: 2px solid rgba(139, 92, 246, 0.3);
+        }
+
+        @media (pointer: fine) {
+            body, a, button, input {
+                cursor: none !important;
+            }
+            body:hover .cursor-dot { opacity: 1; }
+        }
+
+        @media (pointer: coarse) {
+            .cursor-dot, .cursor-outline { display: none; }
+        }
+
+        .cursor-hover .cursor-outline {
+            transform: translate(-50%, -50%) scale(1.5);
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--brand-primary);
+        }
+
+        .cursor-click .cursor-outline {
+            transform: translate(-50%, -50%) scale(0.9);
+            background: rgba(139, 92, 246, 0.2);
+        }
+
+        /* ── Split Layout ──────────────────────────────────── */
+        .auth-container {
+            display: flex;
             width: 100%;
-            height: 100%;
-            z-index: -1;
-            background: 
-                radial-gradient(circle at 20% 30%, rgba(139, 92, 246, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 80% 70%, rgba(59, 130, 246, 0.15) 0%, transparent 40%),
-                radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.1) 0%, transparent 50%);
-            filter: blur(60px);
-            animation: bgShift 20s ease-in-out infinite alternate;
+            min-height: 100vh;
         }
 
-        @keyframes bgShift {
-            0% { transform: scale(1) translate(0, 0); }
-            50% { transform: scale(1.1) translate(20px, -20px); }
-            100% { transform: scale(1) translate(-20px, 20px); }
-        }
-
-        .bg-grid {
-            position: fixed;
+        /* ── Left Side (Brand Hero) ────────────────────────── */
+        .auth-hero {
+            flex: 1;
+            position: sticky;
             top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: -1;
-            background-image: 
-                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
-            background-size: 50px 50px;
-            mask-image: radial-gradient(circle at center, black, transparent 80%);
+            height: 100vh;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            padding: 80px;
+            background: radial-gradient(circle at 0% 100%, rgba(139, 92, 246, 0.1) 0%, transparent 60%);
         }
 
-        /* ── Register Card ───────────────────────────────────── */
-        .login-card {
-            width: 480px;
-            background: var(--login-card);
-            backdrop-filter: blur(20px) saturate(180%);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 24px;
-            padding: 48px;
-            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+        .auth-hero::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
+            opacity: 0.8;
+            mask-image: linear-gradient(to right, black, transparent);
+        }
+
+        .hero-glow {
+            position: absolute;
+            bottom: -200px;
+            left: -200px;
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .hero-content {
             position: relative;
-            animation: cardFadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+            z-index: 2;
+            max-width: 500px;
         }
 
-        @keyframes cardFadeIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        .brand-section {
-            text-align: center;
+        .brand-logo {
             margin-bottom: 40px;
+            animation: fadeIn 1s ease-out;
         }
 
-        .brand-logo-container {
-            margin-bottom: 20px;
+        .hero-title {
+            font-size: 3.5rem;
+            font-weight: 900;
+            line-height: 1.1;
+            letter-spacing: -0.04em;
+            margin-bottom: 24px;
+            animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
-        .brand-logo-img-large {
-            height: 50px;
-            filter: drop-shadow(0 0 10px rgba(139, 92, 246, 0.5));
+        .hero-title span {
+            display: block;
+            background: linear-gradient(to right, #fff, #818cf8);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
 
-        .brand-name {
-            font-size: 1.75rem;
+        .hero-description {
+            font-size: 1.15rem;
+            color: var(--text-dim);
+            line-height: 1.6;
+            margin-bottom: 48px;
+            animation: slideDown 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .stat-group {
+            display: flex;
+            gap: 40px;
+            animation: slideDown 0.8s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .stat-item h3 {
+            font-size: 2rem;
+            font-weight: 800;
+            margin: 0 0 4px;
+            color: #fff;
+        }
+
+        .stat-item p {
+            font-size: 0.85rem;
+            color: #64748b;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            font-weight: 700;
+        }
+
+        /* ── Right Side (Register View) ────────────────────── */
+        .auth-form-side {
+            flex: 1.2;
+            background: #000;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 60px 40px;
+            overflow-y: auto;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 520px;
+            position: relative;
+            z-index: 10;
+        }
+
+        .form-header {
+            margin-bottom: 48px;
+        }
+
+        .form-header h2 {
+            font-size: 2.25rem;
             font-weight: 800;
             letter-spacing: -0.02em;
-            background: linear-gradient(135deg, #fff 0%, #a5b4fc 100%);
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
+            margin-bottom: 12px;
         }
 
-        .brand-tagline {
-            color: #94a3b8;
-            font-size: 0.875rem;
-            font-weight: 500;
+        .form-header p {
+            color: var(--text-dim);
+            font-size: 1rem;
         }
 
-        /* ── Form Styles ──────────────────────────────────── */
-        .form-label {
+        /* ── Form Inputs ──────────────────────────────────── */
+        .input-group {
+            margin-bottom: 28px;
+        }
+
+        .input-group label {
             display: block;
-            margin-bottom: 8px;
-            font-size: 0.8125rem;
+            font-size: 0.85rem;
             font-weight: 600;
             color: #64748b;
+            margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 0.05em;
         }
 
-        .input-wrapper {
-            position: relative;
-            margin-bottom: 20px;
-        }
-
-        /* Django form style helper */
-        .input-wrapper input {
+        /* Django form adjustment - selects all inputs in the wrapper */
+        .input-group input, 
+        .input-group select, 
+        .input-group textarea {
             width: 100%;
-            height: 52px;
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 12px;
+            height: 56px;
+            background: rgba(15, 23, 42, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 14px;
             padding: 0 16px;
             color: #fff;
-            font-size: 0.95rem;
-            transition: all 0.2s;
+            font-size: 1rem;
+            transition: all 0.3s;
         }
 
-        .input-wrapper input:focus {
+        .input-group input:focus {
             outline: none;
-            border-color: var(--accent-purple);
-            background: rgba(0, 0, 0, 0.5);
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.15);
+            border-color: var(--brand-primary);
+            background: rgba(139, 92, 246, 0.05);
+            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
         }
 
         .form-help-text {
             display: block;
             font-size: 0.75rem;
-            color: #64748b;
-            margin-top: 4px;
-            line-height: 1.4;
-        }
-
-        .submit-btn {
-            width: 100%;
-            height: 52px;
-            background: var(--gradient-primary);
-            border: none;
-            border-radius: 12px;
-            color: #fff;
-            font-size: 1rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-top: 16px;
-            box-shadow: 0 4px 20px rgba(139, 92, 246, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(139, 92, 246, 0.5);
+            color: #475569;
+            margin-top: 8px;
+            line-height: 1.5;
         }
 
         .errorlist {
             list-style: none;
             padding: 0;
-            margin: 0 0 10px 0;
-            color: #fca5a5;
+            margin: 8px 0 0 0;
+            color: #f87171;
             font-size: 0.8rem;
+            font-weight: 500;
         }
 
-        .footer-links {
-            margin-top: 32px;
-            text-align: center;
-            font-size: 0.875rem;
-            color: #94a3b8;
+        /* ── Password Strength ───────────────────────────── */
+        .strength-meter {
+            height: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            margin-top: 12px;
+            overflow: hidden;
+            display: flex;
+            gap: 4px;
         }
 
-        .footer-links a {
-            color: var(--accent-purple);
-            text-decoration: none;
-            font-weight: 600;
-            transition: color 0.2s;
+        .strength-segment {
+            flex: 1;
+            height: 100%;
+            border-radius: 10px;
+            transition: all 0.4s ease;
+            background: rgba(255, 255, 255, 0.05);
         }
 
-        .footer-links a:hover {
-            color: #a78bfa;
-            text-decoration: underline;
+        /* ── Submit Button ────────────────────────────────── */
+        .submit-btn {
+            width: 100%;
+            height: 60px;
+            background: var(--brand-primary);
+            border: none;
+            border-radius: 16px;
+            color: #fff;
+            font-size: 1.15rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            margin-top: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: 0 10px 30px -5px rgba(139, 92, 246, 0.4);
         }
 
-        /* Allow default cursor on inputs for usability */
-        input, select, textarea {
-            cursor: auto !important;
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            background: #7c3aed;
+            box-shadow: 0 20px 40px -5px rgba(139, 92, 246, 0.6);
         }
-        
-        @media (pointer: fine) {
-            body, a, button {
-                cursor: none !important;
+
+        /* ── Responsive ─────────────────────────────────── */
+        @media (max-width: 1100px) {
+            .auth-hero {
+                display: none;
             }
+            .auth-form-side {
+                background: var(--auth-bg);
+            }
+        }
+
+        @media (max-width: 500px) {
+            .auth-form-side {
+                padding: 40px 24px;
+            }
+            .form-header h2 {
+                font-size: 1.75rem;
+            }
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
         }
     </style>
 </head>
 <body>
-    <div class="bg-mesh"></div>
-    <div class="bg-grid"></div>
-
-    <div class="login-card">
-        <div class="brand-section">
-            <div class="brand-logo-container">
-                <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" class="brand-logo-img-large">
-            </div>
-            <h1 class="brand-name">Create Terminal</h1>
-            <p class="brand-tagline">Begin your journey to market dominance</p>
-        </div>
-
-        {% if not registrations_enabled %}
-        <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 24px; border-radius: 12px; text-align: center; margin-bottom: 24px;">
-            <div style="font-size: 2rem; margin-bottom: 12px;">🔒</div>
-            <h3 style="margin-bottom: 8px;">Registration Terminated</h3>
-            <p style="font-size: 0.875rem; color: #94a3b8; line-height: 1.5;">New operative enrollment is currently suspended by LeadNexus command center. Please contact support for identity allocation.</p>
-        </div>
-        {% else %}
-
-        {% if messages %}
-        <div style="margin-bottom: 20px;">
-            {% for message in messages %}
-            <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 12px; border-radius: 8px; font-size: 0.875rem;">
-                ⚠️ {{ message }}
-            </div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
-        <form method="POST">
-            {% csrf_token %}
-            
-            {% for field in form %}
-            <div class="input-wrapper">
-                <label class="form-label">{{ field.label }}</label>
-                {{ field }}
+    <div class="auth-container">
+        <!-- ── Left Side: Brand View ──────────────────────── -->
+        <section class="auth-hero">
+            <div class="hero-glow"></div>
+            <div class="hero-content">
+                <div class="brand-logo">
+                    <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" style="height: 44px;">
+                </div>
                 
-                {% if field.name == 'password1' %}
-                    <div id="password-strength" style="height: 4px; background: rgba(255,255,255,0.1); border-radius: 2px; margin-top: 8px; overflow: hidden;">
-                        <div id="strength-bar" style="width: 0%; height: 100%; transition: all 0.3s; background: #ef4444;"></div>
+                <h1 class="hero-title">
+                    <span>Initiate your</span>
+                    <span>Growth Protocols.</span>
+                </h1>
+                
+                <p class="hero-description">
+                    Join the next generation of business intelligence and automation. Deploy your identity to begin.
+                </p>
+
+                <div class="stat-group">
+                    <div class="stat-item">
+                        <h3>99.9%</h3>
+                        <p>Accuracy</p>
                     </div>
-                    <span class="form-help-text">Entropy level: <span id="strength-text">Critical</span></span>
-                {% endif %}
-
-                {% if field.help_text %}
-                    <span class="form-help-text">{{ field.help_text|safe }}</span>
-                {% endif %}
-                {% if field.errors %}
-                    <ul class="errorlist">
-                        {% for error in field.errors %}
-                            <li>⚠️ {{ error }}</li>
-                        {% endfor %}
-                    </ul>
-                {% endif %}
+                    <div class="stat-item">
+                        <h3>10x</h3>
+                        <p>Efficiency</p>
+                    </div>
+                </div>
             </div>
-            {% endfor %}
+        </section>
 
-            <button type="submit" class="submit-btn" id="deployBtn">
-                <span>Deploy Account</span>
-                <span id="btn-icon" style="font-size: 1.2rem;">→</span>
-            </button>
-        </form>
-        {% endif %}
+        <!-- ── Right Side: Register Form ──────────────────── -->
+        <section class="auth-form-side">
+            <div class="auth-card">
+                <div class="form-header">
+                    <h2>Deploy Identity</h2>
+                    <p>Enter your operational details to initiate enrollment.</p>
+                </div>
 
-        <div class="footer-links">
-            Already have an identity? <a href="{% url 'login' %}">Access Portal</a>
-        </div>
+                {% if not registrations_enabled %}
+                <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); color: #fca5a5; padding: 32px; border-radius: 20px; text-align: center;">
+                    <i data-lucide="shield-off" style="width: 48px; height: 48px; margin-bottom: 20px; color: #f87171;"></i>
+                    <h3 style="margin: 0 0 12px;">Protocol Suspended</h3>
+                    <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.6;">New enrollment sessions are currently disabled by the network administrator. Internal protocol code required.</p>
+                </div>
+                {% else %}
+
+                {% if messages %}
+                <div style="margin-bottom: 32px;">
+                    {% for message in messages %}
+                    <div style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.2); color: #93c5fd; padding: 16px; border-radius: 14px; font-size: 0.9rem; display: flex; align-items: center; gap: 12px;">
+                        <i data-lucide="info" style="width: 20px; height: 20px;"></i>
+                        {{ message }}
+                    </div>
+                    {% endfor %}
+                </div>
+                {% endif %}
+
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    {% for field in form %}
+                    <div class="input-group">
+                        <label>{{ field.label }}</label>
+                        {{ field }}
+                        
+                        {% if field.name == 'password1' %}
+                            <div class="strength-meter">
+                                <div class="strength-segment" id="seg-1"></div>
+                                <div class="strength-segment" id="seg-2"></div>
+                                <div class="strength-segment" id="seg-3"></div>
+                                <div class="strength-segment" id="seg-4"></div>
+                            </div>
+                        {% endif %}
+
+                        {% if field.help_text %}
+                            <span class="form-help-text">{{ field.help_text|safe }}</span>
+                        {% endif %}
+                        
+                        {% if field.errors %}
+                            <ul class="errorlist">
+                                {% for error in field.errors %}
+                                    <li><i data-lucide="alert-circle" style="width: 14px; height: 14px; display: inline-block; vertical-align: middle; margin-right: 4px;"></i> {{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        {% endif %}
+                    </div>
+                    {% endfor %}
+
+                    <button type="submit" class="submit-btn">
+                        <span>Initiate Deployment</span>
+                        <i data-lucide="chevron-right" style="width: 20px; height: 20px;"></i>
+                    </button>
+                </form>
+                {% endif %}
+
+                <div style="margin-top: 40px; text-align: center; color: var(--text-dim); font-size: 0.95rem;">
+                    Already authorized? <a href="{% url 'login' %}" style="color: #fff; text-decoration: none; font-weight: 700;">Access Portal</a>
+                </div>
+
+                <div style="margin-top: 60px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
+                    <a href="/" style="color: #475569; text-decoration: none; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
+                        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Return to Main Terminal
+                    </a>
+                </div>
+            </div>
+        </section>
     </div>
-    <div class="cursor-dot"></div>
-    <div class="cursor-outline"></div>
+
     <script>
-        // Custom Neural Cursor Logic
+        lucide.createIcons();
+
+        // Password Strength Tracker
+        const passField = document.querySelector('input[name="password1"]');
+        if (passField) {
+            passField.addEventListener('input', (e) => {
+                const val = e.target.value;
+                const segs = [
+                    document.getElementById('seg-1'),
+                    document.getElementById('seg-2'),
+                    document.getElementById('seg-3'),
+                    document.getElementById('seg-4')
+                ];
+                
+                // Reset colors
+                segs.forEach(s => s.style.background = 'rgba(255,255,255,0.05)');
+                
+                let score = 0;
+                if (val.length >= 8) score++;
+                if (/[A-Z]/.test(val)) score++;
+                if (/[0-9]/.test(val)) score++;
+                if (/[^A-Za-z0-9]/.test(val)) score++;
+
+                const colors = ['#f87171', '#fbbf24', '#60a5fa', '#34d399'];
+                for (let i = 0; i < score; i++) {
+                    segs[i].style.background = colors[score-1];
+                }
+            });
+        }
+
+        // Neural Cursor Logic
         const dot = document.querySelector('.cursor-dot');
         const outline = document.querySelector('.cursor-outline');
 
@@ -308,7 +494,6 @@
             }, { duration: 500, fill: "forwards" });
         });
 
-        // Hover effect for links and buttons
         const hoverables = document.querySelectorAll('a, button, input');
         hoverables.forEach(el => {
             el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
@@ -317,39 +502,8 @@
 
         document.addEventListener('mousedown', () => document.body.classList.add('cursor-click'));
         document.addEventListener('mouseup', () => document.body.classList.remove('cursor-click'));
-
-        // Password Strength Tracker
-        const passInput = document.querySelector('input[name="password1"]');
-        const strengthBar = document.getElementById('strength-bar');
-        const strengthText = document.getElementById('strength-text');
-
-        if (passInput) {
-            passInput.addEventListener('input', (e) => {
-                const val = e.target.value;
-                let strength = 0;
-                
-                if (val.length >= 8) strength += 25;
-                if (/[A-Z]/.test(val)) strength += 25;
-                if (/[0-9]/.test(val)) strength += 25;
-                if (/[^A-Za-z0-9]/.test(val)) strength += 25;
-
-                strengthBar.style.width = strength + '%';
-                
-                if (strength <= 25) {
-                    strengthBar.style.background = '#ef4444';
-                    strengthText.innerText = 'Critical';
-                } else if (strength <= 50) {
-                    strengthBar.style.background = '#f59e0b';
-                    strengthText.innerText = 'Low';
-                } else if (strength <= 75) {
-                    strengthBar.style.background = '#3b82f6';
-                    strengthText.innerText = 'Secure';
-                } else {
-                    strengthBar.style.background = '#10b981';
-                    strengthText.innerText = 'Maximum';
-                }
-            });
-        }
     </script>
+    <div class="cursor-dot"></div>
+    <div class="cursor-outline"></div>
 </body>
 </html>
