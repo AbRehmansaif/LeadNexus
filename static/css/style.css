@@ -2334,6 +2334,58 @@ form.logout-form button {
         border-radius: 8px;
     }
 
+    /* SMTP & Infrastructure Specific */
+    .page-header > div {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 16px;
+    }
+    .page-header .btn-sm {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .tabs {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        gap: 4px;
+        padding-bottom: 8px;
+        border-bottom: 1px solid var(--border);
+        -webkit-overflow-scrolling: touch;
+    }
+    .tab-btn {
+        flex: 0 0 auto;
+        padding: 10px 16px !important;
+        font-size: 0.85rem !important;
+    }
+
+    .table-wrapper {
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        margin: 15px -16px; /* Bleed out slightly or just fit */
+        width: calc(100% + 32px);
+        padding: 0 16px;
+    }
+    .data-table {
+        min-width: 800px; /* Force internal scrolling */
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .card-header {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .card[style*="max-width: 600px"] {
+        max-width: 100% !important;
+    }
+
     .pagination-flex {
         flex-direction: column !important;
         gap: 12px;
@@ -2366,6 +2418,47 @@ form.logout-form button {
     }
     .form-section { margin-bottom: 30px; }
     .payload-area { min-height: 200px; }
+    
+    /* Delivery Infrastructure (SMTP) */
+    .usage-progress-container {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        min-width: 140px;
+    }
+    .usage-progress-bg {
+        flex-grow: 1;
+        background: rgba(255,255,255,0.05);
+        height: 6px;
+        border-radius: 3px;
+        overflow: hidden;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+    .usage-progress-fill {
+        height: 100%;
+        transition: width 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        background: var(--gradient-primary);
+    }
+    .usage-text {
+        font-size: 0.75rem;
+        color: var(--text-muted);
+        font-weight: 600;
+        min-width: 60px;
+        text-align: right;
+    }
+    .status-indicator {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .status-label {
+        font-size: 0.8rem;
+        font-weight: 500;
+    }
+    .row-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
     
     /* Global scrollbar fix */
     html, body { 
