@@ -1264,6 +1264,57 @@ select.form-control {
     max-width: 600px;
 }
 
+/* ── CSV Upload Zone ───────────────────────────────────── */
+.csv-upload-zone {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 16px;
+    padding: 48px 24px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1.5px dashed rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+    min-height: 200px;
+    margin-top: 8px;
+}
+
+.csv-upload-zone:hover {
+    border-color: var(--accent-blue);
+    background: rgba(59, 130, 246, 0.04);
+}
+
+.csv-upload-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    text-align: center;
+}
+
+.csv-upload-icon-wrapper {
+    transition: transform 0.25s ease;
+}
+
+.csv-upload-zone:hover .csv-upload-icon-wrapper {
+    transform: translateY(-4px);
+}
+
+.csv-upload-main {
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: var(--text-secondary);
+    letter-spacing: -0.01em;
+}
+
+.csv-upload-sub {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+}
+
 /* ── Quick Action Cards ────────────────────────────────── */
 .action-cards {
     display: grid;

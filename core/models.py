@@ -45,10 +45,10 @@ class UserProfile(models.Model):
     is_verified = models.BooleanField(default=False)
     
     # SaaS Quotas
-    job_limit_monthly = models.PositiveIntegerField(default=150, help_text="Max website scrape jobs per month")
-    linkedin_limit_monthly = models.PositiveIntegerField(default=60, help_text="Max LinkedIn scrape jobs per month")
-    smtp_limit = models.PositiveIntegerField(default=2, help_text="Max SMTP accounts allowed")
-    email_outreach_limit_monthly = models.PositiveIntegerField(default=1000, help_text="Max emails sent per month")
+    job_limit_monthly = models.PositiveIntegerField(default=100, help_text="Max website scrape jobs per month")
+    linkedin_limit_monthly = models.PositiveIntegerField(default=50, help_text="Max LinkedIn scrape jobs per month")
+    smtp_limit = models.PositiveIntegerField(default=1, help_text="Max SMTP accounts allowed")
+    email_outreach_limit_monthly = models.PositiveIntegerField(default=100, help_text="Max emails sent per month")
     
     # Usage Tracking
     jobs_this_month_count = models.PositiveIntegerField(default=0)
