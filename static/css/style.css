@@ -634,6 +634,13 @@ select.form-control {
     flex-wrap: wrap;
 }
 
+.btn-flex {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
 /* ── Growth Dashboard Components ───────────────────────── */
 .header-actions {
     display: flex;
@@ -2338,6 +2345,18 @@ form.logout-form button {
         border-radius: 8px;
     }
 
+    .btn-flex {
+        flex-direction: column;
+        width: 100%;
+    }
+    .btn-flex .btn {
+        width: 100%;
+    }
+
+    .card {
+        padding: 20px 16px !important;
+    }
+
     /* SMTP & Infrastructure Specific */
     .page-header > div {
         flex-direction: column !important;
@@ -2463,20 +2482,87 @@ form.logout-form button {
         display: flex;
         justify-content: flex-end;
     }
+
+    .danger-row {
+        flex-direction: column !important;
+        align-items: flex-start !important;
+        gap: 16px;
+    }
+    .danger-row .btn {
+        width: 100%;
+        justify-content: center;
+    }
     
-    /* Global scrollbar fix */
-    html, body { 
-        max-width: 100%;
-        overflow-x: hidden !important; 
-        margin: 0;
-        padding: 0;
-        width: 100%;
+}
+
+/* Profile Specific */
+.profile-grid {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 28px;
+    align-items: start;
+}
+
+.lifetime-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+}
+
+.lifetime-stat-item {
+    text-align: center;
+    padding: 24px 16px;
+    background: rgba(255, 255, 255, 0.03);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    transition: var(--transition);
+}
+
+.lifetime-stat-value {
+    font-size: 1.75rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 8px;
+}
+
+@media (max-width: 992px) {
+    .profile-grid {
+        grid-template-columns: 1fr;
     }
-    .app-wrapper { 
-        overflow-x: hidden !important; 
-        width: 100%;
-        position: relative;
+}
+
+@media (max-width: 768px) {
+    .lifetime-stats-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 16px;
     }
+}
+
+@media (max-width: 480px) {
+    .lifetime-stats-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    .lifetime-stat-item {
+        padding: 20px 12px;
+    }
+    .lifetime-stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+/* Global scrollbar fix */
+html, body { 
+    max-width: 100%;
+    overflow-x: hidden !important; 
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+.app-wrapper { 
+    overflow-x: hidden !important; 
+    width: 100%;
+    position: relative;
 }
 
 /* ── 480px: Small Mobile ─────────────────────────────────── */
