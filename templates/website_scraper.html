@@ -4,14 +4,15 @@
 {% block content %}
 <!-- Page Header -->
 <div class="page-header">
-    <h1 class="page-title">🌐 Web Intelligence Engine</h1>
-    <p class="page-subtitle">Transform any website into actionable lead data.</p>
+    <h1 class="page-title"><i data-lucide="globe" style="width:27px; height:27px; color: var(--accent-cyan);"></i> Web Intelligence Engine</h1>
+    <p class="page-subtitle">Transform any business website into structured, actionable lead intelligence. <br>
+Deploy multi-threaded data extraction to instantly harvest verified emails, social presences, and corporate metadata.</p>
 </div>
 
 <!-- Hero Banner -->
 <div class="hero-banner">
-    <h2>Extract data from any website</h2>
-    <p>Enter a company domain to initiate a multi-layer data extraction process. Our engine scans key pages and structures verified contact information for outreach readiness.</p>
+    <h2>Uncover Hidden Domain Intelligence</h2>
+    <p>Enter a single web domain or upload a bulk CSV to initiate multi-layer extraction. Our engine deep-scans critical pages, expanding into contact pathways, and rigorously structures verified data for immediate cold outreach.</p>
 </div>
 
 <!-- Scraper Forms (Tabs) -->
@@ -23,7 +24,7 @@
 
     <!-- 1. Single Domain Tab -->
     <div class="tab-content active" id="singleDomain">
-        <div class="card" style="border-top-left-radius: 0;">
+        <div class="card">
             <div class="card-header">
                 <h2 class="card-title"><span class="card-icon"><i data-lucide="chrome" style="width:25px; height:25px;"></i></span> Domain Intelligence Activation</h2>
             </div>
@@ -70,7 +71,7 @@
 
     <!-- 2. Bulk Upload Tab -->
     <div class="tab-content" id="bulkDomain">
-        <div class="card" style="border-top-left-radius: 0;">
+        <div class="card">
             <div class="card-header">
                 <h2 class="card-title"><span class="card-icon">📁</span> Bulk Intelligence Activation</h2>
             </div>
@@ -122,40 +123,64 @@
         <div class="card-header">
             <h2 class="card-title"><span class="card-icon"><i data-lucide="clipboard" style="width:20px; height:20px;"></i></span> Captured Intelligence Fields</h2>
         </div>
-        <div class="result-grid">
-            <div class="result-item">
-                <div class="result-label"><i data-lucide="mail" style="width:15px; height:15px;"></i> Verified Emails</div>
-                <div class="result-value">Business contact emails detected via text parsing and mail protocols.</div>
+        <div class="intelligence-grid">
+            <div class="intelligence-card purple">
+                <div class="intelligence-icon"><i data-lucide="mail"></i></div>
+                <div>
+                    <div class="intelligence-title">Verified Emails</div>
+                    <div class="intelligence-desc">Business contact emails detected via text parsing and mail protocols.</div>
+                </div>
             </div>
-            <div class="result-item">
-                <div class="result-label"><i data-lucide="phone" style="width:15px; height:15px;"></i> Direct Phone Numbers</div>
-                <div class="result-value">Company contact numbers extracted from structured and unstructured sources.</div>
+            <div class="intelligence-card cyan">
+                <div class="intelligence-icon"><i data-lucide="phone"></i></div>
+                <div>
+                    <div class="intelligence-title">Direct Phone Numbers</div>
+                    <div class="intelligence-desc">Company contact numbers extracted from structured and unstructured sources.</div>
+                </div>
             </div>
-            <div class="result-item">
-                <div class="result-label"><i data-lucide="pin" style="width:15px; height:15px;"></i> Registered Business Address</div>
-                <div class="result-value">Physical location detected using structured metadata and schema markup.</div>
+            <div class="intelligence-card amber">
+                <div class="intelligence-icon"><i data-lucide="map-pin"></i></div>
+                <div>
+                    <div class="intelligence-title">Registered Business Address</div>
+                    <div class="intelligence-desc">Physical location detected using structured metadata and schema markup.</div>
+                </div>
             </div>
-            <div class="result-item">
-                <div class="result-label"><i data-lucide="Facebook" style="width:15px; height:15px;"></i> Facebook</div>
-                <div class="result-value">Facebook page links found on the website</div>
+            <div class="intelligence-card blue">
+                <div class="intelligence-icon"><i data-lucide="facebook"></i></div>
+                <div>
+                    <div class="intelligence-title">Facebook</div>
+                    <div class="intelligence-desc">Official Facebook business page presence and links.</div>
+                </div>
             </div>
-            <div class="result-item">
-                <div class="result-label"><i data-lucide="Twitter" style="width:15px; height:15px;"></i> Twitter</div>
-                <div class="result-value">Twitter/X profile links</div>
+            <div class="intelligence-card cyan">
+                <div class="intelligence-icon"><i data-lucide="twitter"></i></div>
+                <div>
+                    <div class="intelligence-title">Twitter</div>
+                    <div class="intelligence-desc">Twitter/X profile links for the company or founders.</div>
+                </div>
             </div>
-            <div class="result-item">
-                <div class="result-label"><i data-lucide="Instagram" style="width:15px; height:15px;"></i> Instagram</div>
-                <div class="result-value">Instagram profile links</div>
+            <div class="intelligence-card pink">
+                <div class="intelligence-icon"><i data-lucide="instagram"></i></div>
+                <div>
+                    <div class="intelligence-title">Instagram</div>
+                    <div class="intelligence-desc">Instagram visual branding and social profile tracking.</div>
+                </div>
             </div>
-            <div class="result-item">
-                <div class="result-label"><i data-lucide="linkedin" style="width:15px; height:15px;"></i> LinkedIn</div>
-                <div class="result-value">LinkedIn company/profile links</div>
+            <div class="intelligence-card blue">
+                <div class="intelligence-icon"><i data-lucide="linkedin"></i></div>
+                <div>
+                    <div class="intelligence-title">LinkedIn</div>
+                    <div class="intelligence-desc">Corporate entity and employee LinkedIn network presence.</div>
+                </div>
             </div>
-            <!-- <div class="result-item">
-                <div class="result-label">📄 Pages Scraped</div>
-                <div class="result-value">List of all pages visited during scraping</div>
-            </div>
-        </div> -->
+            <!-- <div class="intelligence-card purple">
+                <div class="intelligence-icon"><i data-lucide="file-text"></i></div>
+                <div>
+                    <div class="intelligence-title">Pages Scraped</div>
+                    <div class="intelligence-desc">List of all pages visited during scraping analysis.</div>
+                </div>
+            </div> -->
+        </div>
     </div>
 
     <!-- Data Accuracy Protocol -->
