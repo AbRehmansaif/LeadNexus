@@ -284,7 +284,11 @@ a:hover {
 
 /* ── Page Header ───────────────────────────────────────── */
 .page-header {
-    margin-bottom: 24px;
+    margin-bottom: 48px;
+}
+
+.content-section {
+    padding-top: 40px;
 }
 
 .header-flex {

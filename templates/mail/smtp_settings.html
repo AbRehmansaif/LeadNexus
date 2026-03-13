@@ -3,12 +3,14 @@
 
 {% block content %}
 <div class="page-header">
-    <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%;">
-        <div>
-            <h1 class="page-title">Delivery Infrastructure</h1>
+    <div class="header-flex">
+        <div class="header-main">
+            <h1 class="page-title"><i data-lucide="server" style="width:25px; height:25px; color: var(--accent-purple);"></i> Delivery Infrastructure</h1>
             <p class="page-subtitle">Connect and manage your outbound sending infrastructure for scalable, reputation safe delivery.</p>
         </div>
-        <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary btn-sm">← Back to Dashboard</a>
+        <div class="header-actions">
+            <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary btn-sm">← Back to Dashboard</a>
+        </div>
     </div>
 </div>
 
