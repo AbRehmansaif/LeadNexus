@@ -26,6 +26,8 @@ class EmailCampaignSerializer(ModelSerializer):
         fields = '__all__'
 
 class SMTPCredentialViewSet(viewsets.ModelViewSet):
+    serializer_class = SMTPCredentialSerializer
+    
     def get_queryset(self):
         return SMTPCredential.objects.filter(user=self.request.user)
 
