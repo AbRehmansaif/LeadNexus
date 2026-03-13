@@ -238,36 +238,79 @@ The LinkedIn Intelligence Engine identifies relevant businesses, analyzes their 
 
 <!-- Example Niches -->
 <div style="margin-top: 32px;">
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title"><span class="card-icon">💡</span> Example Searches</h2>
+    <div class="card" style="padding: 28px;">
+        <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 24px;">
+            <span style="width: 32px; height: 32px; background: rgba(139,92,246,0.15); border-radius: 10px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                <i data-lucide="lightbulb" style="width:16px; height:16px; color: var(--accent-purple);"></i>
+            </span>
+            <div>
+                <h2 style="margin: 0; font-size: 1rem; font-weight: 700;">Example Searches</h2>
+                <p style="margin: 2px 0 0 0; font-size: 0.78rem; color: var(--text-muted);">Click any query to auto-fill the search input above.</p>
+            </div>
         </div>
-        <div class="result-grid">
-            <div class="result-item">
-                <div class="result-label">Tech Companies</div>
-                <div class="result-value">"software development company"</div>
+
+        <div class="example-searches-grid">
+            <!-- Tech Companies -->
+            <div class="example-search-card" data-niche="software development company" onclick="fillNiche(this)">
+                <div class="example-search-category" style="color: var(--accent-purple); background: rgba(139,92,246,0.1); border-color: rgba(139,92,246,0.2);">
+                    <i data-lucide="cpu" style="width:11px; height:11px;"></i> Tech Companies
+                </div>
+                <div class="example-search-query">"software development company"</div>
             </div>
-            <div class="result-item">
-                <div class="result-label">Marketing</div>
-                <div class="result-value">"digital marketing agency"</div>
+
+            <!-- Marketing -->
+            <div class="example-search-card" data-niche="digital marketing agency" onclick="fillNiche(this)">
+                <div class="example-search-category" style="color: var(--accent-blue); background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.2);">
+                    <i data-lucide="megaphone" style="width:11px; height:11px;"></i> Marketing
+                </div>
+                <div class="example-search-query">"digital marketing agency"</div>
             </div>
-            <div class="result-item">
-                <div class="result-label">Location-Based</div>
-                <div class="result-value">"web design agency new york"</div>
+
+            <!-- Location-Based -->
+            <div class="example-search-card" data-niche="web design agency new york" onclick="fillNiche(this)">
+                <div class="example-search-category" style="color: var(--accent-cyan); background: rgba(6,182,212,0.1); border-color: rgba(6,182,212,0.2);">
+                    <i data-lucide="map-pin" style="width:11px; height:11px;"></i> Location-Based
+                </div>
+                <div class="example-search-query">"web design agency new york"</div>
             </div>
-            <div class="result-item">
-                <div class="result-label">E-commerce</div>
-                <div class="result-value">"shopify development agency"</div>
+
+            <!-- E-Commerce -->
+            <div class="example-search-card" data-niche="shopify development agency" onclick="fillNiche(this)">
+                <div class="example-search-category" style="color: var(--accent-amber); background: rgba(245,158,11,0.1); border-color: rgba(245,158,11,0.2);">
+                    <i data-lucide="shopping-bag" style="width:11px; height:11px;"></i> E-Commerce
+                </div>
+                <div class="example-search-query">"shopify development agency"</div>
             </div>
-            <div class="result-item">
-                <div class="result-label">SaaS</div>
-                <div class="result-value">"SaaS company B2B"</div>
+
+            <!-- SaaS -->
+            <div class="example-search-card" data-niche="SaaS company B2B" onclick="fillNiche(this)">
+                <div class="example-search-category" style="color: var(--accent-green); background: rgba(16,185,129,0.1); border-color: rgba(16,185,129,0.2);">
+                    <i data-lucide="layers" style="width:11px; height:11px;"></i> SaaS
+                </div>
+                <div class="example-search-query">"SaaS company B2B"</div>
             </div>
-            <div class="result-item">
-                <div class="result-label">Consulting</div>
-                <div class="result-value">"management consulting firm"</div>
+
+            <!-- Consulting -->
+            <div class="example-search-card" data-niche="management consulting firm" onclick="fillNiche(this)">
+                <div class="example-search-category" style="color: var(--accent-pink); background: rgba(236,72,153,0.1); border-color: rgba(236,72,153,0.2);">
+                    <i data-lucide="briefcase" style="width:11px; height:11px;"></i> Consulting
+                </div>
+                <div class="example-search-query">"management consulting firm"</div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+function fillNiche(card) {
+    var niche = card.getAttribute('data-niche');
+    var input = document.getElementById('niche');
+    if (input) {
+        input.value = niche;
+        input.focus();
+        // Scroll to form
+        input.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+}
+</script>
 {% endblock %}
