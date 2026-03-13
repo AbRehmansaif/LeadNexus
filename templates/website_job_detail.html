@@ -66,27 +66,33 @@
             {% endif %}
             
             {% if job.status == 'running' or job.status == 'paused' %}
-            <button onclick="togglePauseJob({{ job.id }})" class="btn btn-warning btn-sm" id="pauseBtn">
+            <button onclick="togglePauseJob('{{ job.id }}')" class="btn btn-warning btn-sm" id="pauseBtn">
                 {% if job.status == 'paused' %}▶ Resume{% else %}⏸ Pause{% endif %}
             </button>
             {% endif %}
             
-            <button onclick="deleteWebsiteJob({{ job.id }})" class="btn btn-danger btn-sm">🗑 Delete</button>
+            <button onclick="deleteWebsiteJob('{{ job.id }}')" class="btn btn-danger btn-sm">🗑 Delete</button>
         </div>
     </div>
 
-    <script>
-    function startCampaignFromWebsite() {
-        const leads = [];
+    <script id="leads-data" type="application/json">
+    [
         {% for r in results %}
             {% if r.email %}
-            leads.push({
-                email: "{{ r.email|escapejs }}",
-                name: "{{ r.website_url|escapejs }}",
-                industry: "Web Lead"
-            });
+            {
+                "email": "{{ r.email|escapejs }}",
+                "name": "{{ r.website_url|escapejs }}",
+                "industry": "Web Lead"
+            }{% if not forloop.last %},{% endif %}
             {% endif %}
         {% endfor %}
+    ]
+    </script>
+
+    <script>
+    function startCampaignFromWebsite() {
+        const leadsData = document.getElementById('leads-data').textContent;
+        const leads = JSON.parse(leadsData);
 
         if (leads.length === 0) {
             alert("No leads with emails found in this job.");
@@ -138,7 +144,7 @@
     </div>
     <div class="progress-bar-wrapper">
         <div class="progress-bar-fill" id="progressBarFill"
-             style="width: {% widthratio progress total_domains 100 %}%;"></div>
+             data-progress="{% widthratio progress total_domains 100 %}"></div>
     </div>
 </div>
 
@@ -447,4 +453,16 @@
     <a href="/jobs/" class="btn btn-secondary">← Back to All Jobs</a>
     <a href="/website-scraper/" class="btn btn-secondary"> Another Website</a>
 </div>
+
+<script>
+    // Apply progress widths from data attributes
+    function applyProgressWidths() {
+        document.querySelectorAll('[data-progress]').forEach(el => {
+            const progress = el.getAttribute('data-progress');
+            el.style.width = progress + '%';
+        });
+    }
+    document.addEventListener('DOMContentLoaded', applyProgressWidths);
+    applyProgressWidths();
+</script>
 {% endblock %}

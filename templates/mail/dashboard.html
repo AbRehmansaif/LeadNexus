@@ -65,7 +65,7 @@
                     <td>
                         <div style="font-size: 0.85rem;">{{ campaign.sent_count }} / {{ campaign.total_recipients }}</div>
                         <div style="width: 100px; height: 4px; background: var(--border); border-radius: 2px; margin-top: 4px;">
-                            <div style="--progress: {{ campaign.progress_percentage|default:0 }}%; width: var(--progress); height: 100%; background: var(--accent-purple); border-radius: 2px;"></div>
+                            <div class="progress-fill" data-progress="{{ campaign.progress_percentage|default:0 }}" style="height: 100%; background: var(--accent-purple); border-radius: 2px;"></div>
                         </div>
                     </td>
                     <td>
@@ -113,4 +113,17 @@
     <p style="padding: 24px; text-align: center; color: var(--text-muted);">No campaigns found. Create your first campaign to get started.</p>
     {% endif %}
 </div>
+
+<script>
+    // System to apply progress widths without breaking CSS linters
+    function applyProgressWidths() {
+        document.querySelectorAll('[data-progress]').forEach(el => {
+            const progress = el.getAttribute('data-progress');
+            el.style.width = progress + '%';
+        });
+    }
+    document.addEventListener('DOMContentLoaded', applyProgressWidths);
+    // Also run immediately in case script is late
+    applyProgressWidths();
+</script>
 {% endblock %}
