@@ -43,9 +43,8 @@ def run_scrape_job(job_id: int):
     job.started_at = timezone.now()
     job.save(update_fields=['status', 'started_at'])
 
-    # Increment Usage
-    if job.user and hasattr(job.user, 'profile'):
-        job.user.profile.increment_web_usage()
+    # Job starts, we will increment usage PER DOMAIN inside the loop below
+    pass
 
     try:
         scraper = WebsiteScraper(timeout=15)
@@ -64,6 +63,18 @@ def run_scrape_job(job_id: int):
 
             if job.status == 'cancelled':
                 break
+
+            # --- SaaS Quota Check (Per Domain) ---
+            if job.user and hasattr(job.user, 'profile'):
+                if not job.user.profile.can_scrape_website():
+                    job.status = 'failed'
+                    job.error_message = "Monthly website scanning quota reached. Please upgrade your plan for more credits."
+                    job.save(update_fields=['status', 'error_message'])
+                    logger.error(f"User {job.user.username} reached monthly website quota mid-job #{job_id}")
+                    return
+
+                # Increment Usage BEFORE scrape to prevent 'free' overlaps
+                job.user.profile.increment_web_usage()
                 
             try:
                 data = scraper.scrape(
@@ -147,9 +158,8 @@ def run_linkedin_job(job_id: int):
     job.progress = 0
     job.save(update_fields=['status', 'started_at', 'progress'])
 
-    # Increment Usage
-    if job.user and hasattr(job.user, 'profile'):
-        job.user.profile.increment_linkedin_usage()
+    # Job starts, we will increment usage PER PROFILE inside the callback below
+    pass
 
     scraper = None
 
@@ -200,6 +210,18 @@ def run_linkedin_job(job_id: int):
             """Callback for each profile found during search_and_scrape."""
             website_data = {}
             website_url = profile_data.get('website')
+
+            # --- SaaS Quota Check (Per Profile) ---
+            if job.user and hasattr(job.user, 'profile'):
+                if not job.user.profile.can_scrape_linkedin():
+                    logger.warning(f"User {job.user.username} reached monthly LinkedIn quota mid-job #{job_id}")
+                    # We return early to skip this profile. The main loop in search_and_scrape 
+                    # should ideally also stop, but since it's inside the scraper class,
+                    # simply skipping saves credits.
+                    return
+
+                # Increment Usage
+                job.user.profile.increment_linkedin_usage()
 
             if website_scraper and website_url:
                 try:
@@ -301,40 +323,44 @@ def _save_linkedin_to_files(job: LinkedInScrapeJob, profiles):
         ts = datetime.now().strftime('%Y%m%d_%H%M%S')
         niche_slug = job.niche.replace(' ', '_').lower()[:40]
 
-        # ── JSON ──
-        json_data = {
+        # ── JSON preparation ──
+        profile_data_list = []
+        for profile_obj in profiles:
+            # profile_obj is an instance of ScrapedLinkedInProfile
+            p_dict = {
+                'profile_url': profile_obj.profile_url,
+                'name': profile_obj.name,
+                'headline': profile_obj.headline,
+                'location': profile_obj.location,
+                'about': profile_obj.about,
+                'company_size': profile_obj.company_size,
+                'company_type': profile_obj.company_type,
+                'industry': profile_obj.industry,
+                'founded': profile_obj.founded,
+                'website': profile_obj.website or '',
+                'website_email': profile_obj.website_email or '',
+                'website_phone': profile_obj.website_phone or '',
+                'website_address': profile_obj.website_address or '',
+                'website_facebook': profile_obj.website_facebook or '',
+                'website_twitter': profile_obj.website_twitter or '',
+                'website_instagram': profile_obj.website_instagram or '',
+                'website_linkedin': profile_obj.website_linkedin or '',
+            }
+            profile_data_list.append(p_dict)
+
+        output_json = {
             'metadata': {
                 'niche': job.niche,
                 'max_profiles': job.max_profiles,
                 'scraped_at': ts,
                 'total_profiles': len(profiles),
             },
-            'profiles': [],
+            'profiles': profile_data_list,
         }
-        for p in profiles:
-            json_data['profiles'].append({
-                'profile_url': p.profile_url,
-                'name': p.name,
-                'headline': p.headline,
-                'location': p.location,
-                'about': p.about,
-                'company_size': p.company_size,
-                'company_type': p.company_type,
-                'industry': p.industry,
-                'founded': p.founded,
-                'website': p.website or '',
-                'website_email': p.website_email or '',
-                'website_phone': p.website_phone or '',
-                'website_address': p.website_address or '',
-                'website_facebook': p.website_facebook or '',
-                'website_twitter': p.website_twitter or '',
-                'website_instagram': p.website_instagram or '',
-                'website_linkedin': p.website_linkedin or '',
-            })
 
         json_path = os.path.join(DATA_DIR, f'{niche_slug}_{ts}.json')
         with open(json_path, 'w', encoding='utf-8') as f:
-            json.dump(json_data, f, indent=2, ensure_ascii=False)
+            json.dump(output_json, f, indent=2, ensure_ascii=False)
         logger.info(f"Saved LinkedIn JSON → {json_path}")
 
         # ── CSV (combined) ──
@@ -348,8 +374,9 @@ def _save_linkedin_to_files(job: LinkedInScrapeJob, profiles):
         with open(csv_path, 'w', newline='', encoding='utf-8-sig') as f:
             writer = csv.DictWriter(f, fieldnames=fieldnames)
             writer.writeheader()
-            for entry in json_data['profiles']:
-                row = {k: entry.get(k, '') for k in fieldnames}
+            for entry_dict in profile_data_list:
+                # Use .get() on the dictionary
+                row = {k: entry_dict.get(k, '') for k in fieldnames}
                 writer.writerow(row)
         logger.info(f"Saved LinkedIn CSV → {csv_path}")
 
@@ -360,8 +387,8 @@ def _save_linkedin_to_files(job: LinkedInScrapeJob, profiles):
         with open(li_csv_path, 'w', newline='', encoding='utf-8-sig') as f:
             writer = csv.DictWriter(f, fieldnames=li_fields)
             writer.writeheader()
-            for entry in json_data['profiles']:
-                row = {k: entry.get(k, '') for k in li_fields}
+            for entry_dict in profile_data_list:
+                row = {k: entry_dict.get(k, '') for k in li_fields}
                 writer.writerow(row)
         logger.info(f"Saved LinkedIn-only CSV → {li_csv_path}")
 
@@ -373,9 +400,9 @@ def _save_linkedin_to_files(job: LinkedInScrapeJob, profiles):
         with open(web_csv_path, 'w', newline='', encoding='utf-8-sig') as f:
             writer = csv.DictWriter(f, fieldnames=web_fields)
             writer.writeheader()
-            for entry in json_data['profiles']:
-                if entry.get('website'):
-                    row = {k: entry.get(k, '') for k in web_fields}
+            for entry_dict in profile_data_list:
+                if entry_dict.get('website'):
+                    row = {k: entry_dict.get(k, '') for k in web_fields}
                     writer.writerow(row)
         logger.info(f"Saved website-only CSV → {web_csv_path}")
 

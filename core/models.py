@@ -44,16 +44,16 @@ class UserProfile(models.Model):
     membership_status = models.CharField(max_length=20, choices=MEMBERSHIP_CHOICES, default='free')
     is_verified = models.BooleanField(default=False)
     
-    # SaaS Quotas
-    job_limit_monthly = models.PositiveIntegerField(default=100, help_text="Max website scrape jobs per month")
-    linkedin_limit_monthly = models.PositiveIntegerField(default=50, help_text="Max LinkedIn scrape jobs per month")
+    # SaaS Quotas (Credit System)
+    job_limit_monthly = models.PositiveIntegerField(default=100, help_text="Max domains scanned per month")
+    linkedin_limit_monthly = models.PositiveIntegerField(default=50, help_text="Max LinkedIn profiles scraped per month")
     smtp_limit = models.PositiveIntegerField(default=1, help_text="Max SMTP accounts allowed")
-    email_outreach_limit_monthly = models.PositiveIntegerField(default=100, help_text="Max emails sent per month")
+    email_outreach_limit_monthly = models.PositiveIntegerField(default=100, help_text="Max individual emails sent per month")
     
-    # Usage Tracking
-    jobs_this_month_count = models.PositiveIntegerField(default=0)
-    linkedin_this_month_count = models.PositiveIntegerField(default=0)
-    emails_this_month_count = models.PositiveIntegerField(default=0)
+    # Usage Tracking (Current Month)
+    jobs_this_month_count = models.PositiveIntegerField(default=0, verbose_name="Domains Scanned This Month")
+    linkedin_this_month_count = models.PositiveIntegerField(default=0, verbose_name="Profiles Scraped This Month")
+    emails_this_month_count = models.PositiveIntegerField(default=0, verbose_name="Emails Sent This Month")
     last_action_date = models.DateField(auto_now=True)
     
     # Lifetime Stats
