@@ -7,26 +7,39 @@
     <title>Initiate Identity — LeadNexus Operator Registration</title>
     <link rel="icon" href="{% static 'logo_svg.png' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <script src="https://unpkg.com/lucide@latest"></script>
     <style>
         :root {
-            --auth-bg: #030712;
+            --auth-bg: #020617;
             --brand-primary: #8b5cf6;
             --brand-secondary: #3b82f6;
+            --p-rgb: 139, 92, 246;
+            --s-rgb: 59, 130, 246;
             --glass-bg: rgba(15, 23, 42, 0.6);
             --glass-border: rgba(255, 255, 255, 0.08);
             --text-dim: #94a3b8;
+            --text-muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+            overflow-x: hidden;
+            background: var(--auth-bg);
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
         }
 
         body {
-            min-height: 100vh;
-            margin: 0;
-            padding: 0;
-            background: var(--auth-bg);
-            font-family: 'Outfit', 'Inter', sans-serif;
-            color: #fff;
-            overflow-x: hidden;
             display: flex;
+            min-height: 100vh;
         }
 
         /* ── Neural Cursor ────────────────────────────────── */
@@ -34,305 +47,220 @@
             pointer-events: none;
             position: fixed;
             top: 0; left: 0;
-            transform: translate(-50%, -50%);
             border-radius: 50%;
             z-index: 9999;
-            transition: opacity 0.3s ease, transform 0.3s ease;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            will-change: transform;
         }
 
-        .cursor-dot {
-            width: 8px;
-            height: 8px;
-            background: var(--brand-primary);
-        }
-
-        .cursor-outline {
-            width: 40px;
-            height: 40px;
-            border: 2px solid rgba(139, 92, 246, 0.3);
-        }
+        .cursor-dot { width: 8px; height: 8px; background: var(--brand-primary); }
+        .cursor-outline { width: 40px; height: 40px; border: 2px solid rgba(var(--p-rgb), 0.3); }
 
         @media (pointer: fine) {
-            body, a, button, input {
-                cursor: none !important;
-            }
-            body:hover .cursor-dot { opacity: 1; }
-        }
-
-        @media (pointer: coarse) {
-            .cursor-dot, .cursor-outline { display: none; }
+            body, a, button, input, label { cursor: none !important; }
         }
 
         .cursor-hover .cursor-outline {
             transform: translate(-50%, -50%) scale(1.5);
-            background: rgba(139, 92, 246, 0.1);
+            background: rgba(var(--p-rgb), 0.1);
             border-color: var(--brand-primary);
         }
 
         .cursor-click .cursor-outline {
             transform: translate(-50%, -50%) scale(0.9);
-            background: rgba(139, 92, 246, 0.2);
+            background: rgba(var(--p-rgb), 0.2);
         }
 
-        /* ── Split Layout ──────────────────────────────────── */
+        /* ── Layout ───────────────────────────────────────── */
         .auth-container {
             display: flex;
             width: 100%;
-            min-height: 100vh;
+            height: 100vh;
         }
 
-        /* ── Left Side (Brand Hero) ────────────────────────── */
         .auth-hero {
-            flex: 1;
-            position: sticky;
-            top: 0;
-            height: 100vh;
+            flex: 1.2;
+            position: relative;
             overflow: hidden;
             display: flex;
             flex-direction: column;
             justify-content: center;
-            padding: 80px;
-            background: radial-gradient(circle at 0% 100%, rgba(139, 92, 246, 0.1) 0%, transparent 60%);
+            padding: 100px;
+            background: radial-gradient(circle at 0% 0%, rgba(var(--p-rgb), 0.12) 0%, transparent 50%),
+                        radial-gradient(circle at 100% 100%, rgba(var(--s-rgb), 0.08) 0%, transparent 50%);
         }
 
         .auth-hero::before {
             content: '';
             position: absolute;
             inset: 0;
-            background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3zm63 31c1.657 0 3-1.343 3-3s-1.343-3-3-3-3 1.343-3 3 1.343 3 3 3z' fill='%23ffffff' fill-opacity='0.03' fill-rule='evenodd'/%3E%3C/svg%3E");
-            opacity: 0.8;
-            mask-image: linear-gradient(to right, black, transparent);
+            background-image: 
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+            background-size: 60px 60px;
+            mask-image: radial-gradient(circle at center, black, transparent 80%);
         }
 
         .hero-glow {
             position: absolute;
-            bottom: -200px;
-            left: -200px;
-            width: 600px;
-            height: 600px;
-            background: radial-gradient(circle, rgba(59, 130, 246, 0.1) 0%, transparent 70%);
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 1200px; height: 1200px;
+            background: radial-gradient(circle, rgba(var(--p-rgb), 0.1) 0%, transparent 70%);
             z-index: 0;
-            pointer-events: none;
         }
 
-        .hero-content {
-            position: relative;
-            z-index: 2;
-            max-width: 500px;
-        }
-
-        .brand-logo {
-            margin-bottom: 40px;
-            animation: fadeIn 1s ease-out;
-        }
+        .hero-content { position: relative; z-index: 2; max-width: 520px; }
 
         .hero-title {
-            font-size: 3.5rem;
+            font-size: clamp(2.5rem, 5vw, 3.5rem);
             font-weight: 900;
-            line-height: 1.1;
+            line-height: 1.05;
             letter-spacing: -0.04em;
             margin-bottom: 24px;
-            animation: slideDown 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
         }
 
         .hero-title span {
             display: block;
-            background: linear-gradient(to right, #fff, #818cf8);
+            background: linear-gradient(to right, #fff, #a78bfa);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .hero-description {
-            font-size: 1.15rem;
+            font-size: 1.25rem;
             color: var(--text-dim);
             line-height: 1.6;
-            margin-bottom: 48px;
-            animation: slideDown 0.8s 0.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+            margin-bottom: 40px;
+            letter-spacing: -0.01em;
         }
 
-        .stat-group {
-            display: flex;
-            gap: 40px;
-            animation: slideDown 0.8s 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
+        .stat-group { display: flex; gap: 48px; }
         .stat-item h3 {
-            font-size: 2rem;
-            font-weight: 800;
-            margin: 0 0 4px;
-            color: #fff;
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(to bottom, #fff, #3b82f6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
-
         .stat-item p {
-            font-size: 0.85rem;
-            color: #64748b;
+            font-size: 0.8rem;
+            color: var(--text-muted);
             text-transform: uppercase;
-            letter-spacing: 0.1em;
-            font-weight: 700;
+            letter-spacing: 0.25em;
+            font-weight: 900;
         }
 
-        /* ── Right Side (Register View) ────────────────────── */
+        /* ── Form Side ────────────────────────────────────── */
         .auth-form-side {
-            flex: 1.2;
+            flex: 1;
             background: #000;
             position: relative;
             display: flex;
-            flex-direction: column;
             align-items: center;
             justify-content: flex-start;
-            padding: 60px 40px;
+            flex-direction: column;
+            padding: 60px 32px;
+            border-left: 1px solid var(--glass-border);
             overflow-y: auto;
+            scrollbar-width: none;
+        }
+
+        .auth-form-side::-webkit-scrollbar {
+            display: none;
+        }
+
+        .auth-form-side::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 100% 0%, rgba(var(--s-rgb), 0.1) 0%, transparent 50%);
+            pointer-events: none;
         }
 
         .auth-card {
             width: 100%;
-            max-width: 520px;
+            max-width: 440px;
             position: relative;
             z-index: 10;
+            background: rgba(15, 23, 42, 0.4);
+            padding: 20px 32px;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(30px);
+            box-shadow: 0 25px 80px -12px rgba(0, 0, 0, 0.6);
+            animation: cardIn 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        .form-header {
-            margin-bottom: 48px;
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .form-header h2 {
-            font-size: 2.25rem;
-            font-weight: 800;
-            letter-spacing: -0.02em;
-            margin-bottom: 12px;
-        }
+        .mobile-logo { display: none; margin-bottom: 24px; text-align: center; }
+        .form-header { margin-bottom: 24px; text-align: center; }
+        .form-header h2 { font-size: 1.6rem; font-weight: 800; margin-bottom: 4px; }
+        .form-header p { color: var(--text-dim); font-size: 0.8rem; }
 
-        .form-header p {
-            color: var(--text-dim);
-            font-size: 1rem;
-        }
-
-        /* ── Form Inputs ──────────────────────────────────── */
-        .input-group {
-            margin-bottom: 28px;
-        }
-
+        .input-group { margin-bottom: 10px; }
         .input-group label {
-            display: block;
-            font-size: 0.85rem;
-            font-weight: 600;
-            color: #64748b;
-            margin-bottom: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
+            display: block; font-size: 0.6rem; font-weight: 800;
+            color: var(--text-muted); margin-bottom: 3px;
+            text-transform: uppercase; letter-spacing: 0.12em;
         }
 
-        /* Django form adjustment - selects all inputs in the wrapper */
-        .input-group input, 
-        .input-group select, 
-        .input-group textarea {
-            width: 100%;
-            height: 56px;
-            background: rgba(15, 23, 42, 0.5);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 14px;
-            padding: 0 16px;
-            color: #fff;
-            font-size: 1rem;
+        .input-group input {
+            width: 100%; height: 40px;
+            background: rgba(255, 255, 255, 0.01);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+            border-radius: 6px;
+            padding: 0 12px; color: #fff; font-size: 0.85rem;
             transition: all 0.3s;
         }
 
         .input-group input:focus {
-            outline: none;
-            border-color: var(--brand-primary);
-            background: rgba(139, 92, 246, 0.05);
-            box-shadow: 0 0 0 4px rgba(139, 92, 246, 0.1);
+            outline: none; border-color: var(--brand-primary);
+            background: rgba(var(--p-rgb), 0.05);
+            box-shadow: 0 0 0 4px rgba(var(--p-rgb), 0.1);
         }
 
-        .form-help-text {
-            display: block;
-            font-size: 0.75rem;
-            color: #475569;
-            margin-top: 8px;
-            line-height: 1.5;
-        }
+        .form-help-text { font-size: 0.65rem; color: #475569; margin-top: 4px; display: block; }
+        .errorlist { color: #f87171; font-size: 0.7rem; list-style: none; padding: 0; margin-top: 4px; font-weight: 600; }
 
-        .errorlist {
-            list-style: none;
-            padding: 0;
-            margin: 8px 0 0 0;
-            color: #f87171;
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
+        .strength-meter { height: 4px; display: flex; gap: 4px; margin-top: 10px; }
+        .strength-segment { flex: 1; height: 100%; border-radius: 2px; background: rgba(255,255,255,0.05); transition: background 0.3s; }
 
-        /* ── Password Strength ───────────────────────────── */
-        .strength-meter {
-            height: 4px;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 10px;
-            margin-top: 12px;
-            overflow: hidden;
-            display: flex;
-            gap: 4px;
-        }
-
-        .strength-segment {
-            flex: 1;
-            height: 100%;
-            border-radius: 10px;
-            transition: all 0.4s ease;
-            background: rgba(255, 255, 255, 0.05);
-        }
-
-        /* ── Submit Button ────────────────────────────────── */
         .submit-btn {
-            width: 100%;
-            height: 60px;
-            background: var(--brand-primary);
-            border: none;
-            border-radius: 16px;
-            color: #fff;
-            font-size: 1.15rem;
-            font-weight: 700;
-            cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-            margin-top: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 12px;
-            box-shadow: 0 10px 30px -5px rgba(139, 92, 246, 0.4);
+            width: 100%; height: 44px;
+            background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
+            border: none; border-radius: 6px;
+            color: #fff; font-size: 0.95rem; font-weight: 700;
+            cursor: pointer; margin-top: 6px;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            transition: all 0.3s;
         }
 
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            background: #7c3aed;
-            box-shadow: 0 20px 40px -5px rgba(139, 92, 246, 0.6);
-        }
+        .submit-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
 
-        /* ── Responsive ─────────────────────────────────── */
-        @media (max-width: 1100px) {
-            .auth-hero {
-                display: none;
+        @media (max-width: 1024px) {
+            .auth-hero { display: none; }
+            .auth-form-side { 
+                border: none; 
+                padding: 60px 20px; 
+                overflow-y: auto;
+                justify-content: flex-start;
             }
-            .auth-form-side {
-                background: var(--auth-bg);
-            }
-        }
-
-        @media (max-width: 500px) {
-            .auth-form-side {
-                padding: 40px 24px;
-            }
-            .form-header h2 {
-                font-size: 1.75rem;
-            }
+            .mobile-logo { display: block; }
+            .cursor-dot, .cursor-outline { display: none !important; }
+            body, a, button, input, label { cursor: auto !important; }
         }
 
         @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
+            from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
     </style>
 </head>
@@ -342,8 +270,9 @@
         <section class="auth-hero">
             <div class="hero-glow"></div>
             <div class="hero-content">
-                <div class="brand-logo">
-                    <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" style="height: 44px;">
+                <div class="brand-logo" style="display: flex; align-items: center; gap: 16px; margin-bottom: 48px;">
+                    <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" style="height: 64px; filter: drop-shadow(0 0 20px rgba(var(--p-rgb), 0.5));">
+                    <!-- <span style="font-size: 1.75rem; font-weight: 900; letter-spacing: 0.15em; text-transform: uppercase; background: linear-gradient(to right, #fff, #a78bfa); -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;">Nexus</span> -->
                 </div>
                 
                 <h1 class="hero-title">
@@ -371,6 +300,9 @@
         <!-- ── Right Side: Register Form ──────────────────── -->
         <section class="auth-form-side">
             <div class="auth-card">
+                <div class="mobile-logo">
+                    <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" style="height: 48px; filter: drop-shadow(0 0 15px rgba(var(--p-rgb), 0.4));">
+                </div>
                 <div class="form-header">
                     <h2>Deploy Identity</h2>
                     <p>Enter your operational details to initiate enrollment.</p>
@@ -395,7 +327,7 @@
                 </div>
                 {% endif %}
 
-                <form method="POST">
+                <form method="POST" novalidate>
                     {% csrf_token %}
                     
                     {% for field in form %}
@@ -412,7 +344,8 @@
                             </div>
                         {% endif %}
 
-                        {% if field.help_text %}
+                        {# Hide verbose password requirements for a cleaner design #}
+                        {% if field.help_text and "password" not in field.name|lower %}
                             <span class="form-help-text">{{ field.help_text|safe }}</span>
                         {% endif %}
                         
@@ -433,77 +366,90 @@
                 </form>
                 {% endif %}
 
-                <div style="margin-top: 40px; text-align: center; color: var(--text-dim); font-size: 0.95rem;">
+                <div style="margin-top: 20px; text-align: center; color: var(--text-dim); font-size: 0.8rem;">
                     Already authorized? <a href="{% url 'login' %}" style="color: #fff; text-decoration: none; font-weight: 700;">Access Portal</a>
                 </div>
 
-                <div style="margin-top: 60px; padding-top: 32px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center;">
-                    <a href="/" style="color: #475569; text-decoration: none; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 8px;">
-                        <i data-lucide="arrow-left" style="width: 16px; height: 16px;"></i> Return to Main Terminal
+                <div style="margin-top: 20px; padding-top: 12px; border-top: 1px solid rgba(255,255,255,0.05); text-align: center; display: flex; flex-direction: column; align-items: center; gap: 6px;">
+                    <a href="/" style="color: #475569; text-decoration: none; font-size: 0.75rem; display: inline-flex; align-items: center; gap: 6px; transition: color 0.2s;">
+                        <i data-lucide="arrow-left" style="width: 12px; height: 12px;"></i> Return to Terminal
                     </a>
+                    <div style="font-size: 0.55rem; color: #475569; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600;">
+                        Powered by <span style="color: var(--brand-primary); font-weight: 800;">Abdul Rehman</span>
+                    </div>
                 </div>
             </div>
         </section>
     </div>
 
-    <script>
-        lucide.createIcons();
-
-        // Password Strength Tracker
-        const passField = document.querySelector('input[name="password1"]');
-        if (passField) {
-            passField.addEventListener('input', (e) => {
-                const val = e.target.value;
-                const segs = [
-                    document.getElementById('seg-1'),
-                    document.getElementById('seg-2'),
-                    document.getElementById('seg-3'),
-                    document.getElementById('seg-4')
-                ];
-                
-                // Reset colors
-                segs.forEach(s => s.style.background = 'rgba(255,255,255,0.05)');
-                
-                let score = 0;
-                if (val.length >= 8) score++;
-                if (/[A-Z]/.test(val)) score++;
-                if (/[0-9]/.test(val)) score++;
-                if (/[^A-Za-z0-9]/.test(val)) score++;
-
-                const colors = ['#f87171', '#fbbf24', '#60a5fa', '#34d399'];
-                for (let i = 0; i < score; i++) {
-                    segs[i].style.background = colors[score-1];
-                }
-            });
-        }
-
-        // Neural Cursor Logic
-        const dot = document.querySelector('.cursor-dot');
-        const outline = document.querySelector('.cursor-outline');
-
-        window.addEventListener('mousemove', (e) => {
-            const posX = e.clientX;
-            const posY = e.clientY;
-
-            dot.style.left = `${posX}px`;
-            dot.style.top = `${posY}px`;
-
-            outline.animate({
-                left: `${posX}px`,
-                top: `${posY}px`
-            }, { duration: 500, fill: "forwards" });
-        });
-
-        const hoverables = document.querySelectorAll('a, button, input');
-        hoverables.forEach(el => {
-            el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
-            el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
-        });
-
-        document.addEventListener('mousedown', () => document.body.classList.add('cursor-click'));
-        document.addEventListener('mouseup', () => document.body.classList.remove('cursor-click'));
-    </script>
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+
+            // Password Strength Tracker
+            const passField = document.querySelector('input[name="password1"]');
+            if (passField) {
+                passField.addEventListener('input', (e) => {
+                    const val = e.target.value;
+                    const segs = [
+                        document.getElementById('seg-1'),
+                        document.getElementById('seg-2'),
+                        document.getElementById('seg-3'),
+                        document.getElementById('seg-4')
+                    ];
+                    
+                    // Reset colors
+                    segs.forEach(s => s.style.background = 'rgba(255,255,255,0.05)');
+                    
+                    let score = 0;
+                    if (val.length >= 8) score++;
+                    if (/[A-Z]/.test(val)) score++;
+                    if (/[0-9]/.test(val)) score++;
+                    if (/[^A-Za-z0-9]/.test(val)) score++;
+
+                    const colors = ['#f87171', '#fbbf24', '#60a5fa', '#34d399'];
+                    for (let i = 0; i < score; i++) {
+                        segs[i].style.background = colors[score-1];
+                    }
+                });
+            }
+
+            // Neural Cursor Logic
+            const dot = document.querySelector('.cursor-dot');
+            const outline = document.querySelector('.cursor-outline');
+
+            if (dot && outline) {
+                window.addEventListener('mousemove', (e) => {
+                    const posX = e.clientX;
+                    const posY = e.clientY;
+
+                    requestAnimationFrame(() => {
+                        dot.style.transform = `translate3d(${posX}px, ${posY}px, 0) translate(-50%, -50%)`;
+                        
+                        outline.animate({
+                            transform: `translate3d(${posX}px, ${posY}px, 0) translate(-50%, -50%)`
+                        }, { duration: 100, fill: "forwards", easing: "ease-out" });
+                        
+                        if (dot.style.opacity === '0' || dot.style.opacity === '') {
+                            dot.style.opacity = '1';
+                            outline.style.opacity = '1';
+                        }
+                    });
+                });
+
+                const hoverables = document.querySelectorAll('a, button, input, .feature-item, label, .stat-item');
+                hoverables.forEach(el => {
+                    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
+                    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+                });
+
+                document.addEventListener('mousedown', () => document.body.classList.add('cursor-click'));
+                document.addEventListener('mouseup', () => document.body.classList.remove('cursor-click'));
+            }
+        });
+    </script>
 </body>
 </html>
