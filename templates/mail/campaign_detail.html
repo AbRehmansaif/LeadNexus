@@ -97,13 +97,47 @@
 <!-- Email Template Body (Hidden by default) -->
 <div id="templateCard" class="card" style="display: none; margin-bottom: 24px;">
     <div class="card-header" style="border-bottom: 1px solid var(--border); margin-bottom: 16px;">
-        <h2 class="card-title"><i data-lucide="file-text" style="width:20px; height:20px; vertical-align: middle; margin-right: 8px;"></i> Sent Message Template</h2>
+        <h2 class="card-title"><i data-lucide="file-text" style="width:20px; height:20px; vertical-align: middle; margin-right: 8px;"></i> All Message Steps</h2>
     </div>
-    <div class="template-preview" style="padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px dashed var(--border); white-space: pre-wrap; color: var(--text-primary); font-family: 'Inter', sans-serif; line-height: 1.6;">
+
+    <!-- Step Tabs -->
+    <div style="display: flex; gap: 8px; flex-wrap: wrap; padding: 0 20px 16px;">
+        {% for step in campaign.steps.all %}
+        <button
+            id="tab-{{ step.step_number }}"
+            onclick="showStepTab({{ step.step_number }})"
+            class="btn btn-secondary btn-sm"
+            style="{% if forloop.first %}background: var(--accent-purple); color: #fff; border-color: var(--accent-purple);{% endif %}"
+        >
+            Step {{ step.step_number }}{% if step.step_number == 1 %} (Initial){% else %} (Follow-up){% endif %}
+        </button>
+        {% endfor %}
+    </div>
+
+    <!-- Step Bodies -->
+    {% for step in campaign.steps.all %}
+    <div id="step-body-{{ step.step_number }}" style="padding: 0 20px 20px; {% if not forloop.first %}display:none;{% endif %}">
+        <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 6px;">
+            <strong style="color: var(--accent-purple);">Subject:</strong> {{ step.subject }}
+            {% if step.step_number > 1 %}
+            &nbsp;|&nbsp; <strong style="color: var(--text-muted);">Wait:</strong> {{ step.wait_days }} day{{ step.wait_days|pluralize }} after previous step
+            {% endif %}
+        </div>
+        <div class="template-preview" style="padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px dashed var(--border); white-space: pre-wrap; color: var(--text-primary); font-family: 'Inter', sans-serif; line-height: 1.6;">
+{{ step.body }}
+        </div>
+    </div>
+    {% empty %}
+    <div style="padding: 20px; color: var(--text-muted);">
+        <div class="template-preview" style="padding: 20px; background: rgba(0,0,0,0.3); border-radius: 8px; border: 1px dashed var(--border); white-space: pre-wrap; color: var(--text-primary); font-family: 'Inter', sans-serif; line-height: 1.6;">
 {{ campaign.body }}
+        </div>
     </div>
-    <div style="margin-top: 16px; font-size: 0.8rem; color: var(--text-muted);">
-        <i data-lucide="info" style="width:14px; height:14px; vertical-align: middle;"></i> Variables like <code>{% templatetag openvariable %} name {% templatetag closevariable %}</code> are replaced with recipient data during delivery.
+    {% endfor %}
+
+    <div style="padding: 0 20px 16px; font-size: 0.8rem; color: var(--text-muted);">
+        <i data-lucide="info" style="width:14px; height:14px; vertical-align: middle;"></i>
+        Variables like <code>{% templatetag openvariable %} name {% templatetag closevariable %}</code> are replaced with lead data at delivery time.
     </div>
 </div>
 
@@ -199,6 +233,27 @@ setInterval(async () => {
         if (document.getElementById('progressPercent')) document.getElementById('progressPercent').innerText = percent + '%';
     }
 }, 10000);
+
+function showStepTab(stepNumber) {
+    // Hide all step bodies
+    document.querySelectorAll('[id^="step-body-"]').forEach(el => el.style.display = 'none');
+    // Reset all tab styles
+    document.querySelectorAll('[id^="tab-"]').forEach(btn => {
+        btn.style.background = '';
+        btn.style.color = '';
+        btn.style.borderColor = '';
+    });
+    // Show selected step
+    const body = document.getElementById('step-body-' + stepNumber);
+    if (body) body.style.display = 'block';
+    // Highlight active tab
+    const tab = document.getElementById('tab-' + stepNumber);
+    if (tab) {
+        tab.style.background = 'var(--accent-purple)';
+        tab.style.color = '#fff';
+        tab.style.borderColor = 'var(--accent-purple)';
+    }
+}
 
 function toggleTemplate() {
     const card = document.getElementById('templateCard');
