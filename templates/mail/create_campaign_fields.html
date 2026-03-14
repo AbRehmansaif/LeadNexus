@@ -1,0 +1,77 @@
+            <div class="form-section">
+                <h3 class="form-section-title"><i data-lucide="mail" style="width:18px; height:18px;"></i> Step 1: Initial Outreach</h3>
+                <div class="form-group">
+                    <label class="form-label" for="subject">Step 1 Subject Line</label>
+                    <input type="text" id="subject" name="subject" class="form-control" placeholder="The high-converting subject line" required>
+                    <div class="error-feedback">An email subject is mandatory for transmission.</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="body">Step 1 Payload (Markdown/HTML)</label>
+                    <textarea id="body" name="body" class="form-control payload-area" placeholder="Hello {% verbatim %}{{ name }}{% endverbatim %},\n\nYour message here..." required></textarea>
+                    <div class="error-feedback">Transmission payload cannot be empty.</div>
+                    <p class="form-help">Use {% verbatim %}{{ name }}{% endverbatim %} and {% verbatim %}{{ email }}{% endverbatim %} for data injection. Variables are case-sensitive.</p>
+                </div>
+            </div>
+
+            <div id="followupContainer">
+                <!-- Dynamic Follow-up Steps injected here -->
+            </div>
+
+            <div style="margin-bottom: 24px;">
+                <button type="button" id="addFollowupBtn" class="btn btn-secondary btn-sm" style="background: rgba(var(--accent-purple-rgb), 0.1); border: 1px dashed var(--accent-purple); color: var(--accent-purple);">
+                    <i data-lucide="plus-circle" style="width:16px;height:16px;margin-right:8px;"></i> Add Automated Follow-up Step
+                </button>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="form-section">
+                <h3 class="form-section-title"><i data-lucide="settings" style="width:18px; height:18px;"></i> Delivery Protocol</h3>
+                <div class="form-group">
+                    <label class="form-label" for="name">Campaign Identifier</label>
+                    <input type="text" id="name" name="name" class="form-control" placeholder="e.g. Q4 Web Dev Outreach 2024" required>
+                    <div class="error-feedback">Campaign Identifier is required.</div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="gap_seconds">Latency Buffer (Seconds)</label>
+                    <input type="number" id="gap_seconds" name="gap_seconds" class="form-control" value="2" min="1">
+                    <p class="form-help">Wait time between individual emails in a batch to avoid spam filters.</p>
+                </div>
+            </div>
+
+            <div class="section-divider"></div>
+
+            <div class="form-section">
+                <h3 class="form-section-title"><i data-lucide="users" style="width:18px; height:18px;"></i> Lead Ingestion</h3>
+                
+                <div class="lead-input-grid">
+                    <div class="form-group">
+                        <label class="form-label" for="csv_file">Bulk Upload (CSV)</label>
+                        <div class="file-drop-area" id="csvDropArea">
+                            <input type="file" id="csv_file" name="csv_file" class="file-input" accept=".csv">
+                            <div class="file-dummy">
+                                <i data-lucide="upload-cloud"></i>
+                                <span>Click to upload or drag CSV</span>
+                            </div>
+                        </div>
+                        <div class="error-feedback">Please provide leads via CSV or manual input.</div>
+                        <p class="form-help">Ensure your CSV has an 'email' column.</p>
+                    </div>
+
+                    <div class="separator-text"><span>OR</span></div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="manual_recipients">Manual Lead Injection</label>
+                        <textarea id="manual_recipients" class="form-control manual-leads-area" placeholder="email1@example.com, Name 1&#10;email2@example.com, Name 2"></textarea>
+                        <div class="error-feedback">Please provide leads via CSV or manual input.</div>
+                        <p class="form-help">Comma separated: <strong>email, name</strong> (one per line)</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button type="submit" id="submitBtn" class="btn btn-primary btn-lg">Launch Campaign Sequence</button>
+                <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary btn-lg">Cancel</a>
+            </div>

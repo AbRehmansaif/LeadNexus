@@ -1,29 +1,58 @@
 import csv
 import io
+import json
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from rest_framework import viewsets, status, decorators, permissions
+from rest_framework import viewsets, status, decorators, permissions, serializers
 from rest_framework.response import Response
-from .models import SMTPCredential, EmailCampaign, Recipient
-from .tasks import start_campaign_async
-from rest_framework.serializers import ModelSerializer
+from .models import SMTPCredential, EmailCampaign, Recipient, CampaignStep, SentEmailLog
+from .tasks import trigger_followup_task, check_for_replies
+# Remove the old ModelSerializer import if it's redundant
 from django.core.mail import get_connection
 
-class SMTPCredentialSerializer(ModelSerializer):
+class SMTPCredentialSerializer(serializers.ModelSerializer):
     class Meta:
         model = SMTPCredential
         fields = '__all__'
 
-class RecipientSerializer(ModelSerializer):
+class CampaignStepSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CampaignStep
+        fields = '__all__'
+
+class RecipientSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipient
         fields = '__all__'
 
-class EmailCampaignSerializer(ModelSerializer):
+class EmailCampaignSerializer(serializers.ModelSerializer):
+    steps = CampaignStepSerializer(many=True, read_only=True)
+    stats = serializers.SerializerMethodField()
+
     class Meta:
         model = EmailCampaign
         fields = '__all__'
+    
+    def get_stats(self, obj):
+        recipients = obj.recipients.all()
+        total = recipients.count()
+        if total == 0: return {}
+        
+        replied = recipients.filter(is_replied=True).count()
+        opened = recipients.filter(is_opened=True).count()
+        sent = recipients.exclude(current_step_index=0).count()
+        
+        return {
+            'total_recipients': total,
+            'sent_count': sent,
+            'open_count': opened,
+            'reply_count': replied,
+            'open_rate': int((opened / sent * 100)) if sent > 0 else 0,
+            'reply_rate': int((replied / sent * 100)) if sent > 0 else 0,
+            'not_opened': total - opened,
+            'not_replied': total - replied
+        }
 
 class SMTPCredentialViewSet(viewsets.ModelViewSet):
     serializer_class = SMTPCredentialSerializer
@@ -135,9 +164,26 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
         if campaign.status == 'completed':
             return Response({'error': 'Campaign already completed'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Reset counts if starting again from failed/paused
-        start_campaign_async(campaign.id)
-        return Response({'status': 'Campaign started in background'})
+        # Start Step 1
+        trigger_followup_task(campaign.id, 1)
+        return Response({'status': 'Campaign started (Step 1) in background'})
+
+    @decorators.action(detail=True, methods=['post'])
+    def trigger_step(self, request, pk=None):
+        """Manually trigger a specific step for the campaign."""
+        campaign = self.get_object()
+        step_number = request.data.get('step_number')
+        if not step_number:
+            return Response({'error': 'step_number is required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        trigger_followup_task(campaign.id, int(step_number))
+        return Response({'status': f'Step {step_number} triggered in background'})
+
+    @decorators.action(detail=False, methods=['post'])
+    def check_replies(self, request):
+        """Manually trigger the IMAP reply checker."""
+        check_for_replies()
+        return Response({'status': 'Reply detection task initiated'})
 
     @decorators.action(detail=True, methods=['post'])
     def pause(self, request, pk=None):
@@ -152,7 +198,7 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
         name = data.get('name', '')
         subject = data.get('subject', '')
         body = data.get('body', '')
-        gap_minutes = data.get('gap_minutes', 1)
+        gap_seconds = data.get('gap_seconds', 2)
         
         # 1. Create Campaign
         campaign = EmailCampaign.objects.create(
@@ -160,8 +206,32 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
             name=name or subject,
             subject=subject,
             body=body,
-            gap_minutes=gap_minutes
+            gap_seconds=gap_seconds
         )
+
+        # 2. Setup Steps if provided
+        steps_data = data.get('steps', [])
+        if isinstance(steps_data, str):
+            steps_data = json.loads(steps_data)
+        
+        if steps_data:
+            for s in steps_data:
+                CampaignStep.objects.create(
+                    campaign=campaign,
+                    step_number=s.get('step_number'),
+                    wait_days=s.get('wait_days', 3),
+                    subject=s.get('subject'),
+                    body=s.get('body')
+                )
+        else:
+            # Fallback: Create Step 1 from basic campaign info
+            CampaignStep.objects.create(
+                campaign=campaign,
+                step_number=1,
+                wait_days=0,
+                subject=subject,
+                body=body
+            )
 
         recipient_list = []
 
@@ -202,7 +272,6 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
         manual_recipients = data.get('recipients', [])
         if isinstance(manual_recipients, str):
             try:
-                import json
                 manual_recipients = json.loads(manual_recipients)
             except json.JSONDecodeError:
                 manual_recipients = []
@@ -279,7 +348,7 @@ def download_campaign_csv(request, pk):
     
     writer = csv.writer(response)
     # Header
-    header = ['Email', 'Name', 'Status', 'Sent At', 'Is Opened', 'First Opened At', 'Total Opens', 'Error Message']
+    header = ['Email', 'Name', 'Status', 'Last Sent At', 'Step', 'Opened', 'Opened At', 'Replied', 'Replied At', 'Error']
     
     # Add custom data keys to header if they exist
     custom_keys = set()
@@ -296,11 +365,13 @@ def download_campaign_csv(request, pk):
         row = [
             r.email,
             r.name or '',
-            r.status.upper(),
-            r.sent_at.strftime('%Y-%m-%d %H:%M:%S') if r.sent_at else 'N/A',
+            r.get_status_display(),
+            r.last_sent_at.strftime('%Y-%m-%d %H:%M:%S') if r.last_sent_at else 'N/A',
+            r.current_step_index,
             'YES' if r.is_opened else 'NO',
-            r.opened_at.strftime('%Y-%m-%d %H:%M:%S') if r.opened_at else 'N/A',
-            r.open_count,
+            r.opened_at.strftime('%m-%d %H:%M') if r.opened_at else '-',
+            'YES' if r.is_replied else 'NO',
+            r.replied_at.strftime('%m-%d %H:%M') if r.replied_at else '-',
             r.error_message or ''
         ]
         

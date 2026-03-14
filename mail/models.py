@@ -70,7 +70,7 @@ class EmailCampaign(models.Model):
     name = models.CharField(max_length=255, default="Untitled Campaign", help_text="A friendly name for your campaign")
     subject = models.CharField(max_length=255)
     body = models.TextField(help_text="Use {{ name }} for placeholders")
-    gap_minutes = models.IntegerField(default=1, help_text="Wait time between each email")
+    gap_seconds = models.IntegerField(default=2, help_text="Wait time between each email (seconds)")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -99,23 +99,66 @@ class EmailCampaign(models.Model):
     def __str__(self):
         return self.name
 
+class CampaignStep(models.Model):
+    """Stores sequences for a campaign (e.g. Day 1 Intro, Day 3 Follow-up)."""
+    campaign = models.ForeignKey(EmailCampaign, related_name='steps', on_delete=models.CASCADE)
+    step_number = models.IntegerField(default=1, help_text="1 for first mail, 2 for first follow-up, etc.")
+    wait_days = models.IntegerField(default=3, help_text="Days to wait after previous step")
+    subject = models.CharField(max_length=255)
+    body = models.TextField(help_text="Template body. Supports {{ name }}")
+
+    class Meta:
+        ordering = ['step_number']
+        unique_together = ('campaign', 'step_number')
+
+    def __str__(self):
+        return f"Step {self.step_number} for {self.campaign.name}"
+
 class Recipient(models.Model):
+    """Tracks a lead's journey through a campaign."""
     STATUS_CHOICES = [
-        ('pending', 'Pending'),
-        ('sent', 'Sent'),
+        ('pending', 'Pending'),   # Not yet sent Step 1
+        ('active', 'Active'),     # In sequence
+        ('replied', 'Replied'),   # Automatically stopped
+        ('completed', 'Completed'), # Finished all steps
         ('failed', 'Failed'),
+        ('unsubscribed', 'Unsubscribed'),
     ]
 
     campaign = models.ForeignKey(EmailCampaign, related_name='recipients', on_delete=models.CASCADE)
     email = models.EmailField()
     name = models.CharField(max_length=255, blank=True, null=True)
     custom_data = models.JSONField(default=dict, blank=True)
+    
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     error_message = models.TextField(blank=True, null=True)
-    sent_at = models.DateTimeField(blank=True, null=True)
+    
+    # Sequence Tracking
+    current_step_index = models.IntegerField(default=0, help_text="Last successfully sent step number")
+    last_sent_at = models.DateTimeField(blank=True, null=True)
+    
+    # Interaction Tracking
     is_opened = models.BooleanField(default=False)
     opened_at = models.DateTimeField(blank=True, null=True)
     open_count = models.IntegerField(default=0)
+    
+    is_replied = models.BooleanField(default=False)
+    replied_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
-        return f"{self.email} for {self.campaign.name}"
+        return f"{self.email} ({self.campaign.name})"
+
+class SentEmailLog(models.Model):
+    """The 'Evidence' log: Exactly which account sent which message to which user."""
+    recipient = models.ForeignKey(Recipient, related_name='delivery_logs', on_delete=models.CASCADE)
+    step = models.ForeignKey(CampaignStep, on_delete=models.SET_NULL, null=True, blank=True)
+    smtp_used = models.ForeignKey(SMTPCredential, on_delete=models.SET_NULL, null=True, blank=True)
+    
+    subject = models.CharField(max_length=255)
+    body_sent = models.TextField()
+    
+    message_id = models.CharField(max_length=255, db_index=True, help_text="SMTP Message-ID for reply threading")
+    sent_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Log: Step {self.step.step_number if self.step else 'N/A'} to {self.recipient.email}"

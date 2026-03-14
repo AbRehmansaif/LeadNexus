@@ -6,6 +6,9 @@
     <h1 class="page-title"><i data-lucide="rocket" style="width:25px; height:25px; color: var(--accent-purple);"></i> Growth Campaigns</h1>
     <p class="page-subtitle">Multi account outreach automation powered by intelligent delivery infrastructure.</p>
     <div class="header-actions">
+        <button onclick="checkReplies()" class="btn btn-secondary">
+            <i data-lucide="refresh-cw" style="width:16px;height:16px;margin-right:8px;"></i> Check for New Replies
+        </button>
         <a href="{% url 'mail-campaign-create' %}" class="btn btn-primary">Launch Growth Campaign</a>
         <a href="{% url 'mail-smtp-settings' %}" class="btn btn-secondary">Manage Delivery Infrastructure</a>
     </div>
@@ -125,5 +128,29 @@
     document.addEventListener('DOMContentLoaded', applyProgressWidths);
     // Also run immediately in case script is late
     applyProgressWidths();
+
+    async function checkReplies() {
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.disabled = true;
+        btn.innerHTML = '<i data-lucide="loader" class="spin" style="width:16px;height:16px;margin-right:8px;"></i> Checking...';
+        lucide.createIcons();
+        
+        try {
+            const res = await fetch('/mail/api/campaigns/check_replies/', {
+                method: 'POST',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            if (res.ok) {
+                showNotification('Reply detection scan completed. Refreshing stats...', 'success');
+                setTimeout(() => window.location.reload(), 1500);
+            }
+        } catch (e) {
+            showNotification('Failed to check for replies.', 'error');
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
+    }
 </script>
 {% endblock %}
