@@ -48,7 +48,15 @@ def send_campaign_emails(campaign_id, step_number=1):
 
         if not recipients.exists():
             logger.info(f"No eligible recipients for step {step_number} in campaign {campaign_id}")
+            # Mark as completed if all step-1 recipients are done
+            if step_number == 1:
+                campaign.status = 'completed'
+                campaign.save(update_fields=['status'])
             return
+
+        # Mark campaign as running
+        campaign.status = 'running'
+        campaign.save(update_fields=['status'])
 
         # Get all SMTP credentials for THIS user
         all_smtp_credentials = list(SMTPCredential.objects.filter(user=campaign.user, is_active=True))
@@ -155,6 +163,11 @@ def send_campaign_emails(campaign_id, step_number=1):
                 recipient.status = 'failed'
                 recipient.error_message = str(e)
                 recipient.save()
+
+        # After loop: mark campaign as completed
+        campaign.refresh_from_db()
+        campaign.status = 'completed'
+        campaign.save(update_fields=['status'])
 
     except Exception as e:
         logger.exception(f"Error in campaign task: {e}")

@@ -64,7 +64,13 @@
                             <div style="font-size: 0.75rem; color: var(--text-muted);">Sub: {{ campaign.subject|truncatechars:30 }}</div>
                         </a>
                     </td>
-                    <td><span class="badge badge-{{ campaign.status }}"><span class="badge-dot"></span> {{ campaign.status|upper }}</span></td>
+                    <td>
+                        {% if campaign.status == 'pending' and campaign.sent_count > 0 %}
+                            <span class="badge badge-running"><span class="badge-dot"></span> RUNNING</span>
+                        {% else %}
+                            <span class="badge badge-{{ campaign.status }}"><span class="badge-dot"></span> {{ campaign.status|upper }}</span>
+                        {% endif %}
+                    </td>
                     <td>
                         <div style="font-size: 0.85rem;">{{ campaign.sent_count }} / {{ campaign.total_recipients }}</div>
                         <div style="width: 100px; height: 4px; background: var(--border); border-radius: 2px; margin-top: 4px;">
@@ -75,7 +81,7 @@
                         <div style="font-size: 0.85rem; font-weight: 700; color: var(--accent-blue);">{{ campaign.open_rate }}%</div>
                         <div style="font-size: 0.7rem; color: var(--text-muted);">{{ campaign.open_count }} opens</div>
                     </td>
-                    <td>{{ campaign.gap_minutes }}s</td>
+                    <td>{{ campaign.gap_seconds }}s</td>
                     <td>{{ campaign.created_at|date:"M d" }}</td>
                     <td>
                         <a href="{% url 'mail-campaign-detail' campaign.id %}" class="btn btn-secondary btn-sm">Manage</a>
