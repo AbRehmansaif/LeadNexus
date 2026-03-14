@@ -154,33 +154,6 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
     }
 });
 
-// Auto-populate logic preserved
-document.addEventListener('DOMContentLoaded', () => {
-    const leadsString = sessionStorage.getItem('pending_campaign_leads');
-    const suggestedName = sessionStorage.getItem('pending_campaign_name');
-    if (suggestedName) document.getElementById('name').value = suggestedName;
-    if (leadsString) document.getElementById('manual_recipients').value = leadsString;
-});
-
-document.querySelectorAll('.form-control, .file-input').forEach(input => {
-    input.addEventListener('input', () => {
-        input.classList.remove('is-invalid');
-        if (input.id === 'csv_file' || input.id === 'manual_recipients') {
-            document.getElementById('csvDropArea').classList.remove('is-invalid');
-            document.getElementById('manual_recipients').classList.remove('is-invalid');
-        }
-    });
-});
-
-document.getElementById('csv_file').addEventListener('change', function(e) {
-    const fileName = e.target.files[0]?.name;
-    if (fileName) {
-        const dummy = document.querySelector('.file-dummy span');
-        if (dummy) dummy.textContent = 'Selected: ' + fileName;
-    }
-});
-</script>
-
 // Auto-populate leads if passed from Scraper
 document.addEventListener('DOMContentLoaded', () => {
     const leadsString = sessionStorage.getItem('pending_campaign_leads');
@@ -202,21 +175,27 @@ document.addEventListener('DOMContentLoaded', () => {
             
             // Show a small notification
             const leadCount = leadsString.split('\n').filter(l => l.trim()).length;
-            showNotification(`Imported ${leadCount} leads from your recent search!`, 'success');
+            if (typeof showNotification === 'function') {
+                showNotification(`Imported ${leadCount} leads from your recent search!`, 'success');
+            }
         }
     }
 });
+
 // Real-time error clearing
 document.querySelectorAll('.form-control, .file-input').forEach(input => {
     input.addEventListener('input', () => {
         input.classList.remove('is-invalid');
         // Handle specialized containers
         if (input.id === 'csv_file') {
-            document.getElementById('csvDropArea').classList.remove('is-invalid');
-            document.getElementById('manual_recipients').classList.remove('is-invalid');
+            const dropArea = document.getElementById('csvDropArea');
+            const manualArea = document.getElementById('manual_recipients');
+            if (dropArea) dropArea.classList.remove('is-invalid');
+            if (manualArea) manualArea.classList.remove('is-invalid');
         }
         if (input.id === 'manual_recipients') {
-            document.getElementById('csvDropArea').classList.remove('is-invalid');
+            const dropArea = document.getElementById('csvDropArea');
+            if (dropArea) dropArea.classList.remove('is-invalid');
             input.classList.remove('is-invalid');
         }
     });
