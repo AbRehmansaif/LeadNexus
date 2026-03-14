@@ -104,7 +104,11 @@ class UserProfile(models.Model):
                 self.is_paid = False
 
     def save(self, *args, **kwargs):
-        # If this is a new profile OR the status has changed compared to DB
+        # 1. Check if the subscription just expired based on the date
+        # This allows the admin to set a past date and have it take effect immediately on save
+        self.check_subscription_expiry(commit=False)
+
+        # 2. Handle plan limit application on status change
         if not self.pk:
             self.apply_plan_limits()
         else:
@@ -122,14 +126,16 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"Profile for {self.user.username} ({self.get_membership_status_display()})"
 
-    def check_subscription_expiry(self):
+    def check_subscription_expiry(self, commit=True):
         """Checks if the paid subscription has expired and reverts to free plan if so."""
         if self.membership_status != 'free' and self.subscription_end_date:
             if timezone.now() > self.subscription_end_date:
                 self.membership_status = 'free'
                 self.is_paid = False
                 self.apply_plan_limits()
-                self.save(update_fields=['membership_status', 'is_paid', 'job_limit_monthly', 'linkedin_limit_monthly', 'smtp_limit', 'email_outreach_limit_monthly'])
+                if commit:
+                    # Save specific fields to avoid side effects
+                    self.save(update_fields=['membership_status', 'is_paid', 'job_limit_monthly', 'linkedin_limit_monthly', 'smtp_limit', 'email_outreach_limit_monthly'])
                 return True
         return False
 
