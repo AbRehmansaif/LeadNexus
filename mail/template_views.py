@@ -37,12 +37,27 @@ def create_campaign_page(request):
 def campaign_detail_page(request, pk):
     """Detail page for a specific campaign with progress tracking."""
     campaign = get_object_or_404(EmailCampaign, pk=pk, user=request.user)
-    recipients = campaign.recipients.all().order_by('-last_sent_at')
+    
+    # Sorting logic
+    sort_by = request.GET.get('sort', 'activity')
+    if sort_by == 'email':
+        order = 'email'
+    elif sort_by == 'status':
+        order = 'status'
+    elif sort_by == 'opened':
+        order = '-is_opened'
+    elif sort_by == 'replied':
+        order = '-is_replied'
+    else:  # activity
+        order = '-last_sent_at'
+        
+    recipients = campaign.recipients.all().order_by(order)
     
     return render(request, 'mail/campaign_detail.html', {
         'active_page': 'campaigns',
         'campaign': campaign,
         'recipients': recipients,
+        'current_sort': sort_by,
     })
 
 @login_required

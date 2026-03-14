@@ -503,6 +503,51 @@ select.form-control {
     padding-right: 40px;
 }
 
+/* ── Premium Neural Select ─────────────────────────────── */
+.neural-select {
+    appearance: none;
+    background: #0b1121 !important; /* Deeper shade for contrast */
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 10px 42px 10px 18px;
+    color: var(--text-primary);
+    font-size: 0.82rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' fill='none' stroke='%238b5cf6' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m4 6 4 4 4-4'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 14px center !important;
+    background-size: 13px !important;
+    min-width: 190px;
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 4px 6px -2px rgba(0, 0, 0, 0.2);
+    border-color: rgba(139, 92, 246, 0.2);
+}
+
+.neural-select:hover {
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 20px rgba(139, 92, 246, 0.15);
+    background: #111827 !important;
+    transform: translateY(-1px);
+}
+
+.neural-select:focus {
+    outline: none;
+    border-color: var(--accent-purple);
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.3);
+}
+
+.neural-select option {
+    background-color: #0f172a;
+    color: #fff;
+    padding: 16px;
+    font-size: 0.95rem;
+    text-transform: none;
+    letter-spacing: normal;
+}
+
 .form-help {
     font-size: 0.75rem;
     color: var(--text-muted);

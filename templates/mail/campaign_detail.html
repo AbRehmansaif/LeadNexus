@@ -142,8 +142,20 @@
 </div>
 
 <div class="card">
-    <div class="card-header">
-        <h2 class="card-title">Sequence Progress & Response Tracking</h2>
+    <div class="card-header" style="display: flex; justify-content: space-between; align-items: center; padding: 20px 24px;">
+        <h2 class="card-title" style="margin-bottom: 0; font-size: 1.1rem; letter-spacing: -0.01em;">Sequence Progress & Response Tracking</h2>
+        <div class="sort-wrapper" style="display: flex; align-items: center; gap: 14px;">
+            <div style="display: flex; align-items: center; gap: 8px; color: var(--text-muted); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em;">
+                <i data-lucide="filter" style="width:14px; height:14px; color: var(--accent-purple);"></i> Sort Sequence:
+            </div>
+            <select id="leadSorter" class="neural-select" onchange="sortLeads(this.value)">
+                <option value="activity" {% if current_sort == 'activity' %}selected{% endif %}>Last Activity</option>
+                <option value="email" {% if current_sort == 'email' %}selected{% endif %}>Lead Email</option>
+                <option value="status" {% if current_sort == 'status' %}selected{% endif %}>Status</option>
+                <option value="opened" {% if current_sort == 'opened' %}selected{% endif %}>Engagement (Opens)</option>
+                <option value="replied" {% if current_sort == 'replied' %}selected{% endif %}>Engagement (Replies)</option>
+            </select>
+        </div>
     </div>
     <div class="table-wrapper">
         <table class="data-table">
@@ -205,6 +217,12 @@ async function controlCampaign(action) {
         headers: { 'X-CSRFToken': '{{ csrf_token }}' }
     });
     if (res.ok) window.location.reload();
+}
+
+function sortLeads(val) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('sort', val);
+    window.location.href = url.toString();
 }
 
 function triggerFollowup(stepNumber) {
