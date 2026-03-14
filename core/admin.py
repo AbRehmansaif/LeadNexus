@@ -23,6 +23,10 @@ class GlobalSettingsAdmin(admin.ModelAdmin):
             'fields': ('contact_email', 'whatsapp_number'),
             'description': 'Contact info displayed publicly to visitors.'
         }),
+        ('Dashboard Monthly Targets', {
+            'fields': ('mrr_target', 'registrations_target'),
+            'description': 'Target goals for the Admin Dashboard metrics.'
+        }),
     )
     
     def has_add_permission(self, request):
@@ -77,6 +81,23 @@ class UserAdmin(BaseUserAdmin):
     def deactivate_users(self, request, queryset):
         queryset.update(is_active=False)
     deactivate_users.short_description = "Lock selected identities (Ban)"
+
+    def changelist_view(self, request, extra_context=None):
+        from core.models import UserProfile
+        
+        total_users = User.objects.count()
+        free_users = UserProfile.objects.filter(membership_status='free').count()
+        pro_users = UserProfile.objects.filter(membership_status='pro').count()
+        enterprise_users = UserProfile.objects.filter(membership_status='enterprise').count()
+        
+        extra_context = extra_context or {}
+        extra_context.update({
+            'total_users': total_users,
+            'free_users': free_users,
+            'pro_users': pro_users,
+            'enterprise_users': enterprise_users,
+        })
+        return super().changelist_view(request, extra_context=extra_context)
 
 # Re-register UserAdmin
 admin.site.unregister(User)

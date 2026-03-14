@@ -1,0 +1,90 @@
+{% extends "admin/base.html" %}
+{% load i18n static %}
+
+{% block title %}{{ title }} | LeadNexus Admin{% endblock %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* Navbar Theme Overrides */
+    
+    :root {
+        --navbar-bg: #ffffff;
+        --navbar-text: #0f172a;
+        --navbar-border: #e2e8f0;
+        --navbar-hover: #6366f1;
+    }
+
+    [data-theme="dark"] {
+        --navbar-bg: #10121b;
+        --navbar-text: #e2e8f0;
+        --navbar-border: #1f2334;
+        --navbar-hover: #a855f7;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --navbar-bg: #10121b;
+            --navbar-text: #e2e8f0;
+            --navbar-border: #1f2334;
+            --navbar-hover: #a855f7;
+        }
+    }
+
+    /* Force new navbar styling */
+    #header {
+        background-color: var(--navbar-bg) !important;
+        border-bottom: 1px solid var(--navbar-border) !important;
+        color: var(--navbar-text) !important;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    #branding h1 {
+        margin: 0;
+        padding: 0;
+    }
+
+    #branding a:link, #branding a:visited, #header a:link, #header a:visited {
+        color: var(--navbar-text) !important;
+        text-decoration: none;
+        transition: color 0.15s ease;
+    }
+    
+    #branding a:hover, #header a:hover {
+        color: var(--navbar-hover) !important;
+    }
+
+    /* Modern logo alignment */
+    .nexus-brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .nexus-brand img {
+        height: 80px;
+        width: auto;
+    }
+
+    .nexus-brand span {
+        font-weight: 800;
+        font-size: 1.35rem;
+        letter-spacing: -0.02em;
+        background: linear-gradient(90deg, #a855f7, #6366f1);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+</style>
+{% endblock %}
+
+{% block branding %}
+<h1 id="site-name">
+    <a href="{% url 'admin:index' %}" class="nexus-brand">
+        <!-- Adjust if the svg is named differently -->
+        <img src="{% static 'logo.png' %}" alt="LeadNexus Logo">
+    </a>
+</h1>
+{% endblock %}

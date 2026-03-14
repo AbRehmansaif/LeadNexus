@@ -1,0 +1,744 @@
+{% extends "admin/index.html" %}
+{% load i18n static admin_metrics %}
+
+{% block extrastyle %}
+{{ block.super }}
+<style>
+    /* SaaS Colors logic for Light/Dark Mode compatibility */
+    :root {
+        --cc-bg: #f8fafc;
+        --cc-card-bg: #ffffff;
+        --cc-border: #e2e8f0;
+        --cc-text: #0f172a;
+        --cc-text-muted: #64748b;
+        --cc-text-hover: #1e293b;
+        --cc-caption-bg: #f1f5f9;
+        --cc-row-hover: #f8fafc;
+        --cc-shadow: rgba(0, 0, 0, 0.05);
+
+        --cc-glow-purple: rgba(168, 85, 247, 0.15);
+        --cc-glow-emerald: rgba(16, 185, 129, 0.15);
+        --cc-glow-blue: rgba(59, 130, 246, 0.15);
+        --cc-glow-amber: rgba(245, 158, 11, 0.15);
+    }
+
+    [data-theme="dark"] {
+        --cc-bg: #10121b;
+        --cc-card-bg: #191c28;
+        --cc-border: #2a2e40;
+        --cc-text: #e2e8f0;
+        --cc-text-muted: #94a3b8;
+        --cc-text-hover: #ffffff;
+        --cc-caption-bg: #191c28;
+        --cc-row-hover: #191c28;
+        --cc-shadow: rgba(0, 0, 0, 0.5);
+
+        --cc-glow-purple: #a855f7;
+        --cc-glow-emerald: #10b981;
+        --cc-glow-blue: #3b82f6;
+        --cc-glow-amber: #f59e0b;
+    }
+
+    @media (prefers-color-scheme: dark) {
+        :root:not([data-theme="light"]) {
+            --cc-bg: #10121b;
+            --cc-card-bg: #191c28;
+            --cc-border: #2a2e40;
+            --cc-text: #e2e8f0;
+            --cc-text-muted: #94a3b8;
+            --cc-text-hover: #ffffff;
+            --cc-caption-bg: #191c28;
+            --cc-row-hover: #191c28;
+            --cc-shadow: rgba(0, 0, 0, 0.5);
+
+            --cc-glow-purple: #a855f7;
+            --cc-glow-emerald: #10b981;
+            --cc-glow-blue: #3b82f6;
+            --cc-glow-amber: #f59e0b;
+        }
+    }
+
+    /* Hide Django's native titles to look less like Django */
+    #content > h1, .content-title, .breadcrumbs {
+        display: none !important;
+    }
+
+    #content {
+        width: 100% !important;
+        max-width: 100% !important;
+        background-color: transparent !important;
+        padding-top: 10px !important;
+    }
+
+    /* Admin Command Center Base */
+    .command-center {
+        background-color: var(--cc-bg);
+        color: var(--cc-text);
+        padding: 40px;
+        border-radius: 12px;
+        margin-bottom: 40px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen-Sans, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+        border: 1px solid var(--cc-border);
+        box-shadow: 0 10px 30px -10px var(--cc-shadow);
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+
+    .cc-header {
+        margin-bottom: 35px;
+    }
+
+    .cc-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin: 0 0 10px 0;
+        color: #9f7aea; /* Nice purple */
+        background: linear-gradient(90deg, #a855f7, #6366f1);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+        letter-spacing: -0.02em;
+    }
+
+    .cc-subtitle {
+        color: var(--cc-text-muted);
+        font-size: 0.95rem;
+        font-weight: 400;
+        margin: 0;
+    }
+
+    /* Admin specific grid for cards */
+    .admin-metrics-dashboard {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        gap: 20px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    @media (max-width: 1200px) {
+        .admin-metrics-dashboard {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+    @media (max-width: 768px) {
+        .admin-metrics-dashboard {
+            grid-template-columns: 1fr;
+        }
+    }
+
+    .admin-metric-card {
+        background-color: var(--cc-card-bg);
+        border: 1px solid var(--cc-border);
+        border-radius: 12px;
+        padding: 24px;
+        position: relative;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        min-height: 120px;
+        box-shadow: 0 4px 6px -1px var(--cc-shadow), 0 2px 4px -1px var(--cc-shadow);
+        transition: transform 0.2s ease, background-color 0.3s ease;
+    }
+    .admin-metric-card:hover {
+        transform: translateY(-2px);
+    }
+
+    /* Glows in Top Right */
+    .card-glow {
+        position: absolute;
+        top: -40px;
+        right: -40px;
+        width: 100px;
+        height: 100px;
+        border-radius: 50%;
+        filter: blur(20px);
+        opacity: 0.3;
+        z-index: 0;
+        transition: background-color 0.3s ease;
+    }
+    .cg-purple { background-color: var(--cc-glow-purple); }
+    .cg-emerald { background-color: var(--cc-glow-emerald); }
+    .cg-blue { background-color: var(--cc-glow-blue); }
+    .cg-amber { background-color: var(--cc-glow-amber); }
+
+    /* Card Contents */
+    .metric-content {
+        position: relative;
+        z-index: 1;
+    }
+
+    .admin-metric-header {
+        margin-bottom: 8px;
+    }
+
+    .admin-metric-title {
+        color: var(--cc-text-muted);
+        font-size: 0.75rem;
+        font-weight: 700;
+        letter-spacing: 0.1em;
+        text-transform: uppercase;
+    }
+
+    .admin-metric-value {
+        font-size: 2.5rem;
+        font-weight: 800;
+        line-height: 1.1;
+        letter-spacing: -0.025em;
+        margin-bottom: 12px;
+    }
+    
+    .v-purple { color: #a855f7; }
+    .v-emerald { color: #10b981; }
+    .v-blue { color: #3b82f6; }
+    .v-amber { color: #f59e0b; }
+
+    .admin-metric-footer {
+        color: var(--cc-text-muted);
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+
+    /* Full Grid utilization */
+    #content-main, .colM, .colMS {
+        width: 100% !important;
+        float: none !important;
+        max-width: 100% !important;
+        display: block !important;
+        box-sizing: border-box;
+    }
+
+    /* Wrap standard Django modules into a responsive SaaS-like Masonry layout */
+    .app-list-wrapper {
+        margin-top: 30px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(550px, 1fr));
+        gap: 24px;
+        align-items: start;
+    }
+    @media (max-width: 1024px) {
+        .app-list-wrapper {
+            /* column-count: 1; -- Removed as grid is used */
+        }
+    }
+
+    .app-list-wrapper .module {
+        width: 100% !important;
+        box-sizing: border-box;
+        margin-bottom: 30px; /* Instead of grid gap */
+        border-radius: 12px;
+        border: 1px solid var(--cc-border) !important;
+        overflow: hidden;
+        box-shadow: 0 4px 10px var(--cc-shadow) !important;
+        background-color: var(--cc-bg) !important;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+        /* Prevent break inside masonry columns */
+        break-inside: avoid;
+        page-break-inside: avoid;
+        display: inline-block;
+    }
+    
+    .app-list-wrapper table {
+        width: 100% !important;
+        table-layout: auto;
+        margin-bottom: 0;
+        background-color: transparent !important;
+    }
+    .app-list-wrapper caption {
+        background-color: var(--cc-caption-bg) !important;
+        padding: 18px 20px;
+        font-size: 0.9rem;
+        font-weight: 800;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: var(--cc-text) !important;
+        border-bottom: 1px solid var(--cc-border) !important;
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .app-list-wrapper caption a {
+        color: var(--cc-text) !important;
+    }
+    .app-list-wrapper tr, .app-list-wrapper th, .app-list-wrapper td {
+        background-color: transparent !important;
+        padding: 16px 20px !important;
+        border-bottom: 1px solid var(--cc-border) !important;
+        font-size: 0.9rem;
+        transition: background-color 0.2s ease, border-color 0.3s ease;
+    }
+    .app-list-wrapper tr:last-child th, .app-list-wrapper tr:last-child td {
+        border-bottom: none !important;
+    }
+    .app-list-wrapper th a {
+        font-weight: 600;
+        color: var(--cc-text) !important;
+        display: block;
+        transition: color 0.1s ease;
+    }
+    .app-list-wrapper th a:hover {
+        color: #a855f7 !important;
+    }
+    .app-list-wrapper a.addlink {
+        color: #10b981 !important;
+    }
+    
+    /* Hover effects for rows */
+    .app-list-wrapper tr:hover td, .app-list-wrapper tr:hover th {
+        background-color: var(--cc-row-hover) !important;
+    }
+
+    /* Charts Layout */
+    .cc-charts-dashboard {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        margin-top: 40px;
+        margin-bottom: 40px;
+        width: 100%;
+        box-sizing: border-box;
+    }
+    @media (max-width: 1200px) {
+        .cc-charts-dashboard {
+            grid-template-columns: 1fr;
+        }
+    }
+    .cc-chart-card {
+        background-color: var(--cc-card-bg);
+        border: 1px solid var(--cc-border);
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 4px 6px -1px var(--cc-shadow), 0 2px 4px -1px var(--cc-shadow);
+        transition: background-color 0.3s ease, border-color 0.3s ease;
+    }
+    .cc-chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: flex-start;
+        margin-bottom: 24px;
+    }
+    .cc-chart-title {
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: var(--cc-text);
+        letter-spacing: -0.01em;
+    }
+    .cc-chart-subtitle {
+        font-size: 0.85rem;
+        color: var(--cc-text-muted);
+        margin-top: 4px;
+    }
+    .cc-chart-pills {
+        display: flex;
+        background-color: var(--cc-bg);
+        border-radius: 8px;
+        padding: 4px;
+        border: 1px solid var(--cc-border);
+    }
+    .cc-chart-pill {
+        padding: 6px 12px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        color: var(--cc-text-muted);
+        border-radius: 6px;
+        cursor: pointer;
+    }
+    .cc-chart-pill.active {
+        background-color: var(--cc-card-bg);
+        color: var(--cc-text);
+        box-shadow: 0 1px 2px var(--cc-shadow);
+    }
+    
+    .cc-chart-right-col {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+
+    /* Goals Bars */
+    .goal-row {
+        margin-bottom: 20px;
+    }
+    .goal-row:last-child {
+        margin-bottom: 0;
+    }
+    .goal-header {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        color: var(--cc-text);
+    }
+    .goal-percent {
+        color: var(--cc-text-muted);
+        font-weight: 500;
+    }
+    .goal-bar-bg {
+        height: 6px;
+        background-color: var(--cc-caption-bg);
+        border-radius: 3px;
+        overflow: hidden;
+    }
+    .goal-bar-fill {
+        height: 100%;
+        border-radius: 3px;
+    }
+    .goal-subtext {
+        display: flex;
+        justify-content: space-between;
+        font-size: 0.75rem;
+        color: var(--cc-text-muted);
+        margin-top: 6px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div id="content-main">
+    {% get_nexus_metrics as stats %}
+    
+    <!-- Nexus Command Center (Dark Mode Section) -->
+    <div class="command-center">
+        <div class="cc-header">
+            <h1 class="cc-title">Nexus Command Center</h1>
+            <p class="cc-subtitle">Unified operational intelligence and revenue oversight.</p>
+        </div>
+
+        <div class="admin-metrics-dashboard">
+            <!-- Card 1: Total Users -->
+            <div class="admin-metric-card">
+                <div class="card-glow cg-purple"></div>
+                <div class="metric-content">
+                    <div class="admin-metric-header">
+                        <div class="admin-metric-title">TOTAL USERS</div>
+                    </div>
+                    <div class="admin-metric-value v-purple">{{ stats.total_users|default:"0" }}</div>
+                    <div class="admin-metric-footer">Total Registered Operators</div>
+                </div>
+            </div>
+            
+            <!-- Card 2: Free Users -->
+            <div class="admin-metric-card">
+                <div class="card-glow cg-blue"></div>
+                <div class="metric-content">
+                    <div class="admin-metric-header">
+                        <div class="admin-metric-title">FREE USERS</div>
+                    </div>
+                    <div class="admin-metric-value v-blue">{{ stats.free_users|default:"0" }}</div>
+                    <div class="admin-metric-footer">Basic Tier Members</div>
+                </div>
+            </div>
+
+            <!-- Card 3: Pro Users -->
+            <div class="admin-metric-card">
+                <div class="card-glow cg-emerald"></div>
+                <div class="metric-content">
+                    <div class="admin-metric-header">
+                        <div class="admin-metric-title">PRO USERS</div>
+                    </div>
+                    <div class="admin-metric-value v-emerald">{{ stats.pro_users|default:"0" }}</div>
+                    <div class="admin-metric-footer">Premium Tier Members</div>
+                </div>
+            </div>
+
+            <!-- Card 4: Enterprise Users -->
+            <div class="admin-metric-card">
+                <div class="card-glow cg-amber"></div>
+                <div class="metric-content">
+                    <div class="admin-metric-header">
+                        <div class="admin-metric-title">ENT USERS</div>
+                    </div>
+                    <div class="admin-metric-value v-amber">{{ stats.enterprise_users|default:"0" }}</div>
+                    <div class="admin-metric-footer">Enterprise Tier Members</div>
+                </div>
+            </div>
+            
+            <!-- Card 5: Estimated MRR -->
+            <div class="admin-metric-card">
+                <div class="card-glow cg-emerald"></div>
+                <div class="metric-content">
+                    <div class="admin-metric-header">
+                        <div class="admin-metric-title">ESTIMATED MRR</div>
+                    </div>
+                    <div class="admin-metric-value v-emerald">${{ stats.mrr|floatformat:0 }}</div>
+                    <div class="admin-metric-footer">Projected Monthly Revenue</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Beautiful Chart Section (SaaS Overviews and Traffic) -->
+        <div class="cc-charts-dashboard">
+            <!-- Overview Area -->
+            <div class="cc-chart-card">
+                <div class="cc-chart-header">
+                    <div>
+                        <div class="cc-chart-title">Overview</div>
+                        <div class="cc-chart-subtitle">Monthly performance for the current year</div>
+                    </div>
+                    <div class="cc-chart-pills">
+                        <span class="cc-chart-pill active" id="pillRevenue">Revenue</span>
+                        <span class="cc-chart-pill" id="pillNewUsers">New Users</span>
+                        <span class="cc-chart-pill" id="pillOrders">Orders</span>
+                    </div>
+                </div>
+                <div style="position: relative; height: 350px; width: 100%;">
+                    <canvas id="overviewChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Right Insights Column -->
+            <div class="cc-chart-right-col">
+                <!-- Traffic Sources / System Actions Donut -->
+                <div class="cc-chart-card" style="flex: 1;">
+                    <div class="cc-chart-header" style="margin-bottom: 10px;">
+                        <div>
+                            <div class="cc-chart-title">System Actions</div>
+                            <div class="cc-chart-subtitle">Utilization across tools</div>
+                        </div>
+                    </div>
+                    <!-- Absolute centring for donut middle text -->
+                    <div style="position: relative; display: flex; align-items: center; justify-content: center; height: 160px; margin-top: 10px;">
+                        <div style="position: absolute; text-align: center; pointer-events: none; margin-right: 80px;">
+                            <div id="centerTotalLabel" style="font-size: 1.5rem; font-weight: 800; color: var(--cc-text); line-height: 1;">0</div>
+                            <div style="font-size: 0.65rem; font-weight: 600; color: var(--cc-text-muted); text-transform: uppercase; margin-top: 2px;">Total</div>
+                        </div>
+                        <canvas id="trafficChart" style="max-height: 100%; max-width: 100%;"></canvas>
+                    </div>
+                </div>
+
+                <!-- Monthly Goals -->
+                <div class="cc-chart-card" style="flex: 1;">
+                    <div class="cc-chart-header" style="margin-bottom: 20px;">
+                        <div>
+                            <div class="cc-chart-title">Monthly Goals</div>
+                            <div class="cc-chart-subtitle">Track progress toward targets</div>
+                        </div>
+                    </div>
+                    
+                    <div class="goal-row">
+                        <div class="goal-header">
+                            <span class="goal-title">Monthly Revenue</span>
+                            <span class="goal-percent">{{ stats.mrr_progress }}%</span>
+                        </div>
+                        <div class="goal-bar-bg">
+                            <div class="goal-bar-fill" style="width: {{ stats.mrr_progress }}%; background-color: #10b981;"></div>
+                        </div>
+                        <div class="goal-subtext">
+                            <span style="color: var(--cc-text); font-weight: 600;">${{ stats.mrr|floatformat:0 }}</span>
+                            <span>Target: ${{ stats.mrr_target|floatformat:0 }}</span>
+                        </div>
+                    </div>
+
+                    <div class="goal-row">
+                        <div class="goal-header">
+                            <span class="goal-title">New Registrations</span>
+                            <span class="goal-percent">{{ stats.registrations_progress }}%</span>
+                        </div>
+                        <div class="goal-bar-bg">
+                            <div class="goal-bar-fill" style="width: {{ stats.registrations_progress }}%; background-color: #0d9488;"></div>
+                        </div>
+                        <div class="goal-subtext">
+                            <span style="color: var(--cc-text); font-weight: 600;">{{ stats.total_users|default:"0" }}</span>
+                            <span>Target: {{ stats.registrations_target }}</span>
+                        </div>
+                    </div>
+
+                    <div class="goal-row" style="margin-bottom: 0;">
+                        <div class="goal-header">
+                            <span class="goal-title">Conversion Rate</span>
+                            <span class="goal-percent">{{ stats.conversion_rate }}%</span>
+                        </div>
+                        <div class="goal-bar-bg" style="margin-bottom: 6px;">
+                            <div class="goal-bar-fill" style="width: {{ stats.conversion_rate }}%; background-color: #3b82f6;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Setup dynamic theming logic for charts so they match native Django transitions
+            const getThemeFlag = () => {
+                const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+                const hasDarkAttr = document.documentElement.getAttribute('data-theme') === 'dark';
+                const bodyBg = getComputedStyle(document.body).backgroundColor;
+                return hasDarkAttr || bodyBg === 'rgb(10, 12, 21)' || bodyBg.includes('11, 13, 20'); // Light proxy check
+            };
+            
+            // Reusable scale/tick updating
+            const textColor = document.documentElement.getAttribute('data-theme') === 'dark' ? '#94a3b8' : '#64748b';
+            const gridColor = document.documentElement.getAttribute('data-theme') === 'dark' ? '#2a2e40' : '#e2e8f0';
+
+            // 1. Initialize Line Chart (Overview - Toggles between Revenue & New Users)
+            const ctxOverview = document.getElementById('overviewChart').getContext('2d');
+            let gradientRev = ctxOverview.createLinearGradient(0, 0, 0, 350);
+            gradientRev.addColorStop(0, 'rgba(16, 185, 129, 0.4)');
+            gradientRev.addColorStop(1, 'rgba(16, 185, 129, 0.0)');
+
+            let gradientReg = ctxOverview.createLinearGradient(0, 0, 0, 350);
+            gradientReg.addColorStop(0, 'rgba(59, 130, 246, 0.4)'); // Blue
+            gradientReg.addColorStop(1, 'rgba(59, 130, 246, 0.0)');
+            
+            // Data parsed directly from backend tag
+            const chartLabels = {{ stats.chart_labels|safe }};
+            const chartDataRevenue = {{ stats.chart_data_revenue|safe }};
+            const chartDataRegistrations = {{ stats.chart_data_registrations|safe }};
+
+            let overviewChart = new Chart(ctxOverview, {
+                type: 'line',
+                data: {
+                    labels: chartLabels,
+                    datasets: [{
+                        label: 'MRR Revenue',
+                        data: chartDataRevenue,
+                        borderColor: '#10b981', // Emerald
+                        backgroundColor: gradientRev,
+                        borderWidth: 2,
+                        tension: 0.4,
+                        fill: true,
+                        pointRadius: 0,
+                        pointHoverRadius: 6,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: {
+                            grid: { display: false, drawBorder: false },
+                            ticks: { color: textColor, font: {family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'} }
+                        },
+                        y: {
+                            beginAtZero: true,
+                            ticks: { 
+                                color: textColor,
+                                font: {family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif'},
+                                callback: function(value) { return '$' + value; }
+                            },
+                            grid: { color: gridColor, drawBorder: false, borderDash: [5, 5] },
+                            border: { display: false }
+                        }
+                    }
+                }
+            });
+
+            // Make the Pills Interactive
+            const pillRev = document.getElementById('pillRevenue');
+            const pillUsr = document.getElementById('pillNewUsers');
+            const pillOrd = document.getElementById('pillOrders');
+
+            pillRev.addEventListener('click', () => {
+                pillRev.classList.add('active');
+                if(pillUsr) pillUsr.classList.remove('active');
+                if(pillOrd) pillOrd.classList.remove('active');
+
+                overviewChart.data.datasets[0].data = chartDataRevenue;
+                overviewChart.data.datasets[0].label = 'MRR Revenue';
+                overviewChart.data.datasets[0].borderColor = '#10b981';
+                overviewChart.data.datasets[0].backgroundColor = gradientRev;
+                overviewChart.options.scales.y.ticks.callback = function(value) { return '$' + value; };
+                overviewChart.update();
+            });
+
+            pillUsr.addEventListener('click', () => {
+                pillUsr.classList.add('active');
+                if(pillRev) pillRev.classList.remove('active');
+                if(pillOrd) pillOrd.classList.remove('active');
+
+                overviewChart.data.datasets[0].data = chartDataRegistrations;
+                overviewChart.data.datasets[0].label = 'New Users';
+                overviewChart.data.datasets[0].borderColor = '#3b82f6';
+                overviewChart.data.datasets[0].backgroundColor = gradientReg;
+                overviewChart.options.scales.y.ticks.callback = function(value) { return value; };
+                overviewChart.update();
+            });
+
+            // 2. Initialize Donut Chart
+            const donutData = [
+                {{ stats.total_websites|default:"0" }}, 
+                {{ stats.total_linkedin|default:"0" }}, 
+                {{ stats.total_emails|default:"0" }}, 
+                {{ stats.total_campaigns|default:"0" }}
+            ];
+            const ctxTraffic = document.getElementById('trafficChart').getContext('2d');
+            new Chart(ctxTraffic, {
+                type: 'doughnut',
+                data: {
+                    labels: ['Website Jobs', 'LinkedIn Scrapes', 'Emails Sent', 'Campaigns'],
+                    datasets: [{
+                        data: donutData,
+                        backgroundColor: ['#10b981', '#0d9488', '#3b82f6', '#a855f7'],
+                        borderWidth: 0,
+                        hoverOffset: 4
+                    }]
+                },
+                options: {
+                    cutout: '80%',
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'right',
+                            labels: {
+                                color: getThemeFlag() ? '#e2e8f0' : '#0f172a',
+                                usePointStyle: true,
+                                pointStyle: 'circle',
+                                padding: 20,
+                                font: { weight: '600', family: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif' }
+                            }
+                        }
+                    }
+                }
+            });
+            document.getElementById('centerTotalLabel').innerText = "{{ stats.total_system_actions }}";
+        });
+    </script>
+
+    <!-- Render Default Django App List Modules -->
+    <div class="app-list-wrapper">
+        {% for app in app_list %}
+            {% if app.name != 'Core' and app.name != 'Mail' %}
+                <div class="app-{{ app.app_label }} module">
+                    <table>
+                        <caption>
+                            <a href="{{ app.app_url }}" class="section" title="{% blocktranslate with name=app.name %}Models in the {{ name }} application{% endblocktranslate %}">{{ app.name }}</a>
+                        </caption>
+                        {% for model in app.models %}
+                            <tr class="model-{{ model.object_name|lower }}">
+                                {% if model.admin_url %}
+                                    <th scope="row"><a href="{{ model.admin_url }}">{{ model.name }}</a></th>
+                                {% else %}
+                                    <th scope="row">{{ model.name }}</th>
+                                {% endif %}
+
+                                {% if model.add_url %}
+                                    <td><a href="{{ model.add_url }}" class="addlink">{% translate 'Add' %}</a></td>
+                                {% else %}
+                                    <td>&nbsp;</td>
+                                {% endif %}
+
+                                {% if model.admin_url %}
+                                    {% if model.view_only %}
+                                        <td><a href="{{ model.admin_url }}" class="viewlink">{% translate 'View' %}</a></td>
+                                    {% else %}
+                                        <td><a href="{{ model.admin_url }}" class="changelink">{% translate 'Change' %}</a></td>
+                                    {% endif %}
+                                {% else %}
+                                    <td>&nbsp;</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </table>
+                </div>
+            {% endif %}
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}
+
+{% block sidebar %}
+<!-- Removed recent actions by overriding with an empty block -->
+{% endblock %}
