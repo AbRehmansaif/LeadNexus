@@ -139,7 +139,7 @@ async function pollWebsiteJob(jobId) {
         await sleep(2000);
     }
     hideLoading();
-    showNotification('Scrape timed out. Check the jobs list for status.', 'warning');
+    showNotification('Scrape timed out. Check the data hub for status.', 'warning');
 }
 
 function initBulkWebsiteScraper() {

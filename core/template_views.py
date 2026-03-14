@@ -172,7 +172,7 @@ def dashboard(request):
 def website_scraper_page(request):
     """Website scraper form page."""
     return render(request, 'website_scraper.html', {
-        'active_page': 'website-scraper',
+        'active_page': 'webintelligence',
     })
 
 
@@ -207,7 +207,7 @@ def linkedin_scraper_page(request):
 
     accounts = LinkedInAccount.objects.filter(user=request.user, is_active=True)
     return render(request, 'linkedin_scraper.html', {
-        'active_page': 'linkedin-scraper',
+        'active_page': 'profinder',
         'accounts': accounts
     })
 
