@@ -25,100 +25,97 @@
     </div>
 
     <div id="addAccountTab" class="tab-content">
-    <!-- Add New SMTP Account -->
-    <div class="card" style="max-width: 600px; margin: 0 auto;">
-        <div class="card-header" style="display: flex; flex-direction: column; align-items: flex-start; gap: 4px;">
-            <h2 class="card-title" style="margin: 0;">Add Delivery Account</h2>
-            <p class="text-muted" style="margin: 0; font-size: 0.8rem; line-height: 1.4;">Connect your email service provider securely. We recommend using App Passwords for enhanced security.</p>
-        </div>
-        <form id="smtpForm" class="scraper-form" novalidate>
-            <div class="form-group">
-                <label class="form-label">Account Provider</label>
-                <select id="provider" class="form-input" required>
-                    <option value="gmail">Gmail</option>
-                    <option value="google_workspace">Google Workspace</option>
-                    <option value="outlook">Outlook / Hotmail</option>
-                    <option value="microsoft_365">Microsoft 365</option>
-                    <option value="custom">Custom SMTP</option>
-                </select>
+        <!-- Add New SMTP Account -->
+        <div class="card" style="max-width: 600px; margin: 0 auto; width: 100%;">
+            <div class="card-header" style="flex-direction: column; align-items: flex-start; gap: 4px;">
+                <h2 class="card-title">Add Delivery Account</h2>
+                <p class="switch-subtitle">Connect your email service provider securely. We recommend using App Passwords for enhanced security.</p>
             </div>
+            <form id="smtpForm" class="scraper-form" novalidate style="margin-top: 20px;">
+                <div class="form-group">
+                    <label class="form-label">Account Provider</label>
+                    <select id="provider" class="form-control" required>
+                        <option value="gmail">Gmail</option>
+                        <option value="google_workspace">Google Workspace</option>
+                        <option value="outlook">Outlook / Hotmail</option>
+                        <option value="microsoft_365">Microsoft 365</option>
+                        <option value="custom">Custom SMTP</option>
+                    </select>
+                </div>
 
-            <div class="form-group">
-                <label class="form-label">Account Label</label>
-                <input type="text" id="name" class="form-input" placeholder="e.g. Sales Outreach - Gmail" required>
-            </div>
+                <div class="form-group">
+                    <label class="form-label">Account Label</label>
+                    <input type="text" id="name" class="form-control" placeholder="e.g. Sales Outreach - Gmail" required>
+                </div>
 
-            <div id="smtp-details" style="display: none;">
+                <div id="smtp-details" style="display: none;">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">SMTP Host</label>
+                            <input type="text" id="host" class="form-control" placeholder="smtp.gmail.com">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">SMTP Port</label>
+                            <input type="number" id="port" class="form-control" value="587">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Sender Email Address</label>
+                    <input type="email" id="username" class="form-control" placeholder="user@domain.com" required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">Password / App Password</label>
+                    <div class="password-toggle-group">
+                        <input type="password" id="password" class="form-control" placeholder="••••••••••••" required>
+                        <button type="button" id="togglePassword" class="toggle-password">
+                            <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    <small class="switch-subtitle" id="password-hint">For Gmail/Outlook, please use an <strong>App Password</strong>.</small>
+                </div>
+
                 <div class="form-row">
                     <div class="form-group">
-                        <label class="form-label">SMTP Host</label>
-                        <input type="text" id="host" class="form-input" placeholder="smtp.gmail.com">
+                        <label class="form-label">From Name (Display)</label>
+                        <input type="text" id="from_name" class="form-control" placeholder="Sender Name">
                     </div>
                     <div class="form-group">
-                        <label class="form-label">SMTP Port</label>
-                        <input type="number" id="port" class="form-input" value="587">
+                        <label class="form-label">Daily Limit</label>
+                        <input type="number" id="daily_limit" class="form-control" value="50" min="1" required>
                     </div>
                 </div>
-            </div>
 
-            <div class="form-group">
-                <label class="form-label">Sender Email Address</label>
-                <input type="email" id="username" class="form-input" placeholder="user@domain.com" required>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">Password / App Password</label>
-                <div style="position: relative;">
-                    <input type="password" id="password" class="form-input" placeholder="••••••••••••" required style="padding-right: 40px;">
-                    <button type="button" id="togglePassword" style="position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; cursor: pointer; color: var(--text-muted); display: flex; align-items: center; justify-content: center; padding: 0;">
-                        <svg id="eyeIcon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-                            <circle cx="12" cy="12" r="3"></circle>
-                        </svg>
-                    </button>
-                </div>
-                <small class="text-muted" id="password-hint">For Gmail/Outlook, please use an <strong>App Password</strong>.</small>
-            </div>
-
-            <div class="form-group">
-                <label class="form-label">From Name (Display)</label>
-                <input type="text" id="from_name" class="form-input" placeholder="e.g. Cristina from LeadNexus">
-            </div>
-
-            <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">From Email (Display)</label>
-                    <input type="email" id="from_email" class="form-input" placeholder="user@domain.com" required>
+                    <input type="email" id="from_email" class="form-control" placeholder="user@domain.com" required>
                 </div>
-                <div class="form-group">
-                    <label class="form-label">Daily Limit</label>
-                    <input type="number" id="daily_limit" class="form-input" value="50" min="1" required>
-                </div>
-            </div>
 
-            <div class="form-row" id="security-settings" style="display: none;">
-                <label class="form-check">
-                    <input type="checkbox" id="use_tls" checked> 
-                    <span class="form-check-label">Use TLS</span>
-                </label>
-                <label class="form-check">
-                    <input type="checkbox" id="use_ssl"> 
-                    <span class="form-check-label">Use SSL</span>
-                </label>
-            </div>
-            
-            <div id="form-error" style="display: none; margin-top: 16px; padding: 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-left: 4px solid #ef4444; border-radius: 8px; color: #fca5a5; font-size: 0.85rem; line-height: 1.5; margin-bottom: 12px;">
-                <div style="display: flex; gap: 8px; align-items: flex-start;">
-                    <span style="flex-shrink: 0; margin-top: 2px;">⚠️</span>
+                <div class="form-row" id="security-settings" style="display: none; padding: 12px 0;">
+                    <label class="form-check">
+                        <input type="checkbox" id="use_tls" checked> 
+                        <span class="form-check-label">Use TLS</span>
+                    </label>
+                    <label class="form-check">
+                        <input type="checkbox" id="use_ssl"> 
+                        <span class="form-check-label">Use SSL</span>
+                    </label>
+                </div>
+                
+                <div id="form-error" class="error-feedback" style="margin-bottom: 20px;">
                     <span id="form-error-text"></span>
                 </div>
-            </div>
 
-            <button type="submit" id="saveBtn" class="btn btn-primary" style="width: 100%; margin-top: 12px; height: 45px; font-weight: 600;">
-                <span id="btnText">Connect Account</span>
-            </button>
-        </form>
-    </div>
+                <button type="submit" id="saveBtn" class="btn btn-primary" style="width: 100%; margin-top: 12px; height: 48px;">
+                    <span id="btnText">Connect Account</span>
+                </button>
+            </form>
+        </div>
     </div> <!-- End addAccountTab -->
 
     <div id="accountsTab" class="tab-content active">
@@ -241,89 +238,75 @@
 
 <!-- Details/Edit Modal -->
 <div id="editModal" class="modal-overlay">
-    <div class="modal-card" style="max-width: 500px;">
-        <div class="modal-header" style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 20px;">
-            <div>
-                <h3 id="editModalTitle" style="margin: 0; color: #fff;">Account Details</h3>
-                <p class="text-muted" style="margin: 4px 0 0 0;">Manage your connection settings and status.</p>
-            </div>
-            <button type="button" onclick="closeManageAccountModal()" class="btn-icon-delete" style="padding: 4px; color: #94a3b8;">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 6L6 18M6 6l12 12"></path></svg>
-            </button>
+    <div class="modal-card">
+        <button type="button" onclick="closeManageAccountModal()" class="modal-close-icon">×</button>
+        <div class="modal-header">
+            <h3 class="modal-title" style="text-align: left; margin-bottom: 4px;">Account Details</h3>
+            <p class="switch-subtitle">Manage your connection settings and status.</p>
         </div>
-        <form id="editForm" novalidate>
+        
+        <form id="editForm" novalidate style="margin-top: 20px;">
             <input type="hidden" id="edit-id">
+            
             <div class="form-group">
                 <label class="form-label">Account Label</label>
-                <input type="text" id="edit-name" class="form-input" required>
+                <input type="text" id="edit-name" class="form-control" placeholder="e.g. Sales Outreach - Gmail" required>
             </div>
+
             <div class="form-row">
                 <div class="form-group">
                     <label class="form-label">From Name</label>
-                    <input type="text" id="edit-from-name" class="form-input">
-                </div>
-                <div class="form-group">
-                    <label class="form-label">From Email</label>
-                    <input type="email" id="edit-from-email" class="form-input" required>
+                    <input type="text" id="edit-from-name" class="form-control" placeholder="Sender Name">
                 </div>
                 <div class="form-group">
                     <label class="form-label">Daily Limit</label>
-                    <input type="number" id="edit-daily-limit" class="form-input" min="1" required>
+                    <input type="number" id="edit-daily-limit" class="form-control" min="1" required>
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">From Email Address</label>
+                <input type="email" id="edit-from-email" class="form-control" placeholder="user@domain.com" required>
             </div>
             
-            <div id="edit-advanced-fields" style="border-top: 1px solid #1e293b; margin-top: 16px; padding-top: 16px;">
-                <div class="form-row">
+            <div id="edit-advanced-fields" style="display: none; border-top: 1px solid var(--border); margin-top: 20px; padding-top: 20px;">
+                <div class="form-row" style="grid-template-columns: 2fr 1fr;">
                     <div class="form-group">
                         <label class="form-label">SMTP Host</label>
-                        <input type="text" id="edit-host" class="form-input">
+                        <input type="text" id="edit-host" class="form-control">
                     </div>
-                    <div class="form-group" style="max-width: 100px;">
+                    <div class="form-group">
                         <label class="form-label">Port</label>
-                        <input type="number" id="edit-port" class="form-input">
+                        <input type="number" id="edit-port" class="form-control">
                     </div>
                 </div>
             </div>
 
-            <div id="edit-error" style="display: none; margin-top: 16px; padding: 12px; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.2); border-left: 4px solid #ef4444; border-radius: 8px; color: #fca5a5; font-size: 0.85rem; line-height: 1.5; margin-bottom: 12px;">
-                <div style="display: flex; gap: 8px; align-items: flex-start;">
-                    <span style="flex-shrink: 0; margin-top: 2px;">⚠️</span>
-                    <span id="edit-error-text"></span>
-                </div>
+            <div id="edit-error" class="error-feedback" style="margin-bottom: 20px;">
+                <span id="edit-error-text"></span>
             </div>
 
-            <div style="display: flex; align-items: center; justify-content: space-between; background: #1e293b44; padding: 12px; border-radius: 12px; margin: 16px 0;">
-                <div>
-                    <div style="color: #fff; font-size: 0.9rem; font-weight: 500;">Connection Status</div>
-                    <div id="status-label" class="text-muted" style="font-size: 0.8rem;">Account is currently active</div>
+            <div class="switch-group">
+                <div class="switch-label-group">
+                    <div class="switch-title">Connection Status</div>
+                    <div id="status-label" class="switch-subtitle">Account is currently active</div>
                 </div>
-                <label class="switch" style="position: relative; display: inline-block; width: 44px; height: 24px;">
-                    <input type="checkbox" id="edit-is-active" style="opacity: 0; width: 0; height: 0;">
-                    <span class="slider" style="position: absolute; cursor: pointer; inset: 0; background-color: #334155; transition: .4s; border-radius: 24px;"></span>
+                <label class="switch">
+                    <input type="checkbox" id="edit-is-active">
+                    <span class="slider"></span>
                 </label>
             </div>
 
-            <div class="modal-footer" style="padding-top: 10px;">
-                <button type="button" onclick="deleteAccountFromEdit()" class="btn btn-danger btn-sm" style="margin-right: auto;">Delete</button>
-                <button type="button" onclick="closeManageAccountModal()" class="btn btn-secondary btn-sm">Cancel</button>
-                <button type="submit" class="btn btn-primary btn-sm" style="min-width: 100px;">Save Changes</button>
+            <div class="modal-actions" style="justify-content: space-between; margin-top: 32px;">
+                <button type="button" onclick="deleteAccountFromEdit()" class="btn btn-danger btn-sm">Delete</button>
+                <div style="display: flex; gap: 12px;">
+                    <button type="button" onclick="closeManageAccountModal()" class="btn btn-secondary btn-sm">Cancel</button>
+                    <button type="submit" class="btn btn-primary btn-sm">Save Changes</button>
+                </div>
             </div>
         </form>
     </div>
 </div>
-
-<style>
-    .btn-icon-edit { background: none; border: none; color: #94a3b8; cursor: pointer; padding: 8px; border-radius: 6px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-    .btn-icon-edit:hover { background: #1e293b; color: #fff; }
-    
-    /* Toggle Switch Styles */
-    .switch input:checked + .slider { background-color: #10b981; }
-    .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .4s; border-radius: 50%; }
-    .switch input:checked + .slider:before { transform: translateX(20px); }
-
-    .modal-card { animation: slideIn 0.3s ease; }
-    @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-</style>
 
 <div id="toast" class="toast-notification"></div>
 
@@ -335,31 +318,12 @@
 </div>
 
 <style>
-    .status-dot { height: 8px; width: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
-    .status-dot.online { background-color: #10b981; box-shadow: 0 0 8px #10b98188; }
-    .status-dot.offline { background-color: #ef4444; }
-    .btn-icon-delete { background: none; border: none; color: #ef4444; cursor: pointer; padding: 8px; border-radius: 6px; transition: all 0.2s; }
-    .btn-icon-delete:hover { background: #fee2e2; color: #dc2626; }
-    .text-muted { color: #94a3b8; font-size: 0.875rem; }
-    .form-label { color: #94a3b8 !important; font-weight: 500; font-size: 0.85rem; margin-bottom: 6px; display: block; }
-    .error-text { color: #ef4444; font-size: 0.75rem; margin-top: 4px; display: none; }
-    .form-input.is-invalid { border-color: #ef4444 !important; background-color: #fef2f211 !important; }
-    select.form-input { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2394a3b8'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; background-size: 16px; }
-
-    /* Modal Styles */
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.75); backdrop-filter: blur(8px); display: none; align-items: center; justify-content: center; z-index: 10000; animation: fadeIn 0.3s ease; }
-    .modal-overlay.active { display: flex !important; opacity: 1 !important; visibility: visible !important; }
-    .modal-card { background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 24px; width: 100%; max-width: 480px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5); position: relative; }
-    #modalTitle { margin: 0 0 8px 0; color: #fff; font-size: 1.25rem; font-weight: 600; }
-    #modalMessage { margin: 0 0 24px 0; color: #94a3b8; line-height: 1.5; font-size: 0.95rem; }
-    .modal-footer { display: flex; gap: 12px; justify-content: flex-end; }
+    .modal-card { animation: slideIn 0.3s ease; }
+    @keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     
-    /* Toast Styles */
     .toast-notification { position: fixed; bottom: 24px; right: 24px; background: #10b981; color: white; padding: 12px 24px; border-radius: 12px; font-weight: 500; transform: translateY(100px); transition: transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28); z-index: 10000; box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.3); }
     .toast-notification.error { background: #ef4444; box-shadow: 0 10px 15px -3px rgba(239, 68, 68, 0.3); }
     .toast-notification.show { transform: translateY(0); }
-
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 </style>
 
 <script>
@@ -450,7 +414,7 @@ document.getElementById('smtpForm').addEventListener('submit', async (e) => {
     const formError = document.getElementById('form-error');
     formError.style.display = 'none';
     form.querySelectorAll('.error-text').forEach(el => el.remove());
-    form.querySelectorAll('.form-input').forEach(el => el.classList.remove('is-invalid'));
+    form.querySelectorAll('.form-control').forEach(el => el.classList.remove('is-invalid'));
 
     const requiredFields = form.querySelectorAll('[required]');
     requiredFields.forEach(field => {
