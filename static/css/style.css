@@ -117,8 +117,10 @@ a:hover {
     position: -webkit-sticky;
     position: sticky;
     top: 0;
-    z-index: 100;
+    z-index: 1000;
     padding: 0;
+    width: 100%;
+    align-self: stretch;
 }
 
 .navbar-inner {
@@ -2776,13 +2778,11 @@ form.logout-form button {
 /* Global scrollbar fix */
 html, body { 
     max-width: 100%;
-    overflow-x: hidden !important; 
     margin: 0;
     padding: 0;
     width: 100%;
 }
 .app-wrapper { 
-    overflow-x: hidden !important; 
     width: 100%;
     position: relative;
 }
