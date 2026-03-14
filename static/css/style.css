@@ -2046,42 +2046,44 @@ form.logout-form button {
     border-left: 4px solid var(--accent-blue);
 }
 
-/* ── Modern Neural Modal System ────────────────────────── */
+/* ── Premium Neural Modal System ────────────────────────── */
 .modal-overlay {
     position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
+    inset: 0;
     background: rgba(4, 6, 12, 0.85);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    display: flex;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    display: none;
     align-items: center;
     justify-content: center;
-    z-index: 11000;
+    z-index: 10000;
     opacity: 0;
-    visibility: hidden;
-    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .modal-overlay.active {
-    opacity: 1;
-    visibility: visible;
+    display: flex !important;
+    opacity: 1 !important;
 }
 
 .modal-card {
-    background: var(--bg-secondary);
+    background: #0f172a; /* Solid deep shade */
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    width: 90%;
+    width: 95%;
     max-width: 480px;
     padding: 32px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 40px rgba(139, 92, 246, 0.1);
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.8), 0 0 60px rgba(139, 92, 246, 0.15);
     transform: scale(0.9) translateY(20px);
     transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
     position: relative;
     overflow: hidden;
+    animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes modalSlideUp {
+    from { transform: scale(0.9) translateY(20px); opacity: 0; }
+    to { transform: scale(1) translateY(0); opacity: 1; }
 }
 
 .modal-overlay.active .modal-card {
@@ -2094,131 +2096,72 @@ form.logout-form button {
     top: 0;
     left: 0;
     right: 0;
-    height: 2px;
-    background: var(--gradient-primary);
+    height: 4px;
+    background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue), var(--accent-cyan));
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.5);
 }
 
 .modal-icon {
-    width: 64px;
-    height: 64px;
-    border-radius: 16px;
+    width: 72px;
+    height: 72px;
+    border-radius: 20px;
     background: rgba(139, 92, 246, 0.1);
     border: 1px solid rgba(139, 92, 246, 0.2);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 2rem;
-    margin: 0 auto 24px auto;
+    font-size: 2.2rem;
+    margin: 8px auto 24px auto;
     color: var(--accent-purple);
-    box-shadow: 0 0 20px rgba(139, 92, 246, 0.1);
+    box-shadow: 0 0 30px rgba(139, 92, 246, 0.2);
+    position: relative;
 }
 
 .modal-title {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
     font-weight: 800;
     text-align: center;
     margin-bottom: 12px;
-    color: var(--text-primary);
-    letter-spacing: -0.02em;
+    color: #fff;
+    letter-spacing: -0.03em;
 }
 
 .modal-desc {
-    font-size: 1rem;
+    font-size: 1.05rem;
     color: var(--text-secondary);
     text-align: center;
     margin-bottom: 32px;
     line-height: 1.6;
 }
 
-.modal-actions .btn {
-    min-width: 100px;
-}
-
-/* ── Modal Enhancements ────────────────────────────────── */
-.modal-overlay {
-    position: fixed;
-    inset: 0;
-    background: rgba(0, 0, 0, 0.75);
-    backdrop-filter: blur(8px);
-    display: none;
-    align-items: center;
-    justify-content: center;
-    z-index: 10000;
-    animation: fadeIn 0.3s ease;
-}
-
-.modal-overlay.active {
-    display: flex !important;
-    opacity: 1 !important;
-    visibility: visible !important;
-}
-
-.modal-card {
-    background: #0f172a;
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 24px;
-    width: 95%;
-    max-width: 480px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    position: relative;
-    overflow: hidden;
-    animation: slideIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.modal-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 3px;
-    background: linear-gradient(90deg, var(--accent-purple), var(--accent-blue));
-}
-
-.modal-header {
-    margin-bottom: 20px;
-}
-
 .modal-actions {
     display: flex;
     gap: 12px;
-    justify-content: flex-end;
-    margin-top: 24px;
+    justify-content: center;
 }
 
-@media (max-width: 480px) {
-    .modal-card {
-        padding: 20px 16px;
-        border-radius: 12px;
-    }
-    
-    .modal-actions {
-        flex-wrap: wrap;
-    }
-    
-    .modal-actions .btn {
-        flex: 1;
-    }
+.modal-actions .btn {
+    min-width: 140px;
+    padding: 14px 24px;
 }
-
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-@keyframes slideIn { from { transform: translateY(-20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
 .modal-close-icon {
     position: absolute;
-    top: 16px;
-    right: 16px;
+    top: 20px;
+    right: 20px;
     background: none;
     border: none;
     color: var(--text-muted);
-    font-size: 1.2rem;
+    font-size: 1.8rem;
     cursor: pointer;
-    transition: color 0.2s;
+    transition: all 0.2s;
+    line-height: 1;
+    z-index: 10;
 }
 
 .modal-close-icon:hover {
     color: #fff;
+    transform: rotate(90deg);
 }
 
 /* ── Status Indicators ─────────────────────────────────── */

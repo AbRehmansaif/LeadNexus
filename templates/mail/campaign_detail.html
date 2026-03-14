@@ -64,12 +64,12 @@
                         {% if step.step_number == 1 %}
                         Initial Transmission
                         {% else %}
-                        Follow-up (Wait: {{ step.wait_days }} days)
+                        Follow up (Wait: {{ step.wait_days }} days)
                         {% endif %}
                     </div>
                     {% if step.step_number > 1 %}
                     <button onclick="triggerFollowup({{ step.step_number }})" class="btn btn-secondary btn-sm w-100" style="background: rgba(var(--accent-purple-rgb), 0.1); border-color: var(--accent-purple); color: var(--accent-purple);">
-                        <i data-lucide="send" style="width:14px; height:14px; margin-right:6px;"></i> Send Follow-up #{{ step.step_number }}
+                        <i data-lucide="send" style="width:14px; height:14px; margin-right:6px;"></i> Send Follow up #{{ step.step_number }}
                     </button>
                     {% else %}
                     <div style="font-size: 0.75rem; color: var(--accent-green); display: flex; align-items: center;">
@@ -207,22 +207,37 @@ async function controlCampaign(action) {
     if (res.ok) window.location.reload();
 }
 
-async function triggerFollowup(stepNumber) {
-    if (!confirm(`Are you sure you want to trigger Follow-up Step #${stepNumber} for all eligible leads?`)) return;
-    
-    showNotification(`Triggering Follow-up #${stepNumber}...`, 'info');
-    const res = await fetch(`/mail/api/campaigns/{{ campaign.id }}/trigger_step/`, {
-        method: 'POST',
-        body: JSON.stringify({ step_number: stepNumber }),
-        headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' }
+function triggerFollowup(stepNumber) {
+    openModal({
+        title: 'Follow UP',
+        desc: `Confirm activation of Follow up Step #${stepNumber} for all eligible leads in this Campaign.`,
+        icon: '🚀',
+        confirmText: 'Send',
+        confirmClass: 'btn-primary',
+        onConfirm: async () => {
+            showNotification(`Activating Step #${stepNumber}...`, 'info');
+            try {
+                const res = await fetch(`/mail/api/campaigns/{{ campaign.id }}/trigger_step/`, {
+                    method: 'POST',
+                    body: JSON.stringify({ step_number: stepNumber }),
+                    headers: { 
+                        'Content-Type': 'application/json', 
+                        'X-CSRFToken': '{{ csrf_token }}' 
+                    }
+                });
+                
+                if (res.ok) {
+                    showNotification(`Step #${stepNumber} successfully dispatched.`, 'success');
+                    setTimeout(() => window.location.reload(), 1500);
+                } else {
+                    const data = await res.json();
+                    showNotification(data.error || 'Failed to trigger protocol.', 'error');
+                }
+            } catch (err) {
+                showNotification('Network transmission failed.', 'error');
+            }
+        }
     });
-    
-    if (res.ok) {
-        showNotification(`Follow-up protocol #${stepNumber} initiated.`, 'success');
-        setTimeout(() => window.location.reload(), 2000);
-    } else {
-        showNotification('Failed to trigger follow-up.', 'error');
-    }
 }
 
 // Simple auto-refresh for progress
