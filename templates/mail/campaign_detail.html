@@ -152,6 +152,7 @@
                     <th>Lead</th>
                     <th>Status</th>
                     <th>Last Step</th>
+                    <th>Sent Via</th>
                     <th>Opened</th>
                     <th>Replied</th>
                     <th>Last Activity</th>
@@ -160,9 +161,21 @@
             <tbody id="recipientsTable">
                 {% for r in recipients %}
                 <tr>
-                    <td style="font-weight: 500;">{{ r.email }}</td>
+                    <td style="font-weight: 500;">
+                        <div>{{ r.email }}</div>
+                        {% if r.name %}<div style="font-size:0.75rem;color:var(--text-muted);">{{ r.name }}</div>{% endif %}
+                    </td>
                     <td><span class="badge badge-{{ r.status }}">{{ r.get_status_display }}</span></td>
                     <td style="text-align: center; font-weight: 700;">{{ r.current_step_index }}</td>
+                    <td style="font-size:0.8rem;">
+                        {% if r.smtp_email %}
+                            <span title="{{ r.smtp_email }}" style="color: var(--accent-blue);">
+                                {{ r.smtp_email|truncatechars:22 }}
+                            </span>
+                        {% else %}
+                            <span class="text-muted">-</span>
+                        {% endif %}
+                    </td>
                     <td>
                         {% if r.is_opened %}
                             <span class="badge badge-sent" title="Opened {{ r.open_count }} times">

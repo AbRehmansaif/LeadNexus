@@ -150,6 +150,7 @@ def send_campaign_emails(campaign_id, step_number=1):
                 recipient.current_step_index = step_number
                 recipient.last_sent_at = timezone.now()
                 recipient.status = 'active'
+                recipient.smtp_email = creds.from_email  # track which account sent
                 recipient.save()
 
                 campaign.sent_count += 1

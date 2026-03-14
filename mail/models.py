@@ -136,6 +136,7 @@ class Recipient(models.Model):
     # Sequence Tracking
     current_step_index = models.IntegerField(default=0, help_text="Last successfully sent step number")
     last_sent_at = models.DateTimeField(blank=True, null=True)
+    smtp_email = models.EmailField(blank=True, null=True, help_text="SMTP email used for last send")
     
     # Interaction Tracking
     is_opened = models.BooleanField(default=False)

@@ -340,7 +340,9 @@ def download_campaign_csv(request, pk):
     Export campaign recipients and tracking data as CSV.
     """
     campaign = get_object_or_404(EmailCampaign, pk=pk)
-    recipients = campaign.recipients.all().order_by('id')
+    recipients = campaign.recipients.prefetch_related(
+        'delivery_logs__smtp_used'
+    ).order_by('id')
     
     response = HttpResponse(content_type='text/csv')
     filename = f"campaign_{campaign.id}_{campaign.name.replace(' ', '_')}_report.csv"
@@ -348,7 +350,7 @@ def download_campaign_csv(request, pk):
     
     writer = csv.writer(response)
     # Header
-    header = ['Email', 'Name', 'Status', 'Last Sent At', 'Step', 'Opened', 'Opened At', 'Replied', 'Replied At', 'Error']
+    header = ['Email', 'Name', 'Status', 'Last Sent At', 'Step', 'Sent Via (Email)', 'Opened', 'Opened At', 'Replied', 'Replied At', 'Error']
     
     # Add custom data keys to header if they exist
     custom_keys = set()
@@ -362,12 +364,15 @@ def download_campaign_csv(request, pk):
     
     # Rows
     for r in recipients:
+        last_log = r.delivery_logs.last()
+        sent_via = last_log.smtp_used.email if (last_log and last_log.smtp_used) else 'N/A'
         row = [
             r.email,
             r.name or '',
             r.get_status_display(),
             r.last_sent_at.strftime('%Y-%m-%d %H:%M:%S') if r.last_sent_at else 'N/A',
             r.current_step_index,
+            sent_via,
             'YES' if r.is_opened else 'NO',
             r.opened_at.strftime('%m-%d %H:%M') if r.opened_at else '-',
             'YES' if r.is_replied else 'NO',
