@@ -46,7 +46,7 @@ class UserProfile(models.Model):
     
     # SaaS Quotas (Credit System)
     job_limit_monthly = models.PositiveIntegerField(default=100, help_text="Max domains scanned per month")
-    linkedin_limit_monthly = models.PositiveIntegerField(default=50, help_text="Max LinkedIn profiles scraped per month")
+    linkedin_limit_monthly = models.PositiveIntegerField(default=0, help_text="Max LinkedIn profiles scraped per month")
     smtp_limit = models.PositiveIntegerField(default=1, help_text="Max SMTP accounts allowed")
     email_outreach_limit_monthly = models.PositiveIntegerField(default=100, help_text="Max individual emails sent per month")
     
@@ -66,6 +66,53 @@ class UserProfile(models.Model):
     is_paid = models.BooleanField(default=False, help_text="True if user has an active paid subscription")
     last_payment_date = models.DateTimeField(null=True, blank=True)
     subscription_end_date = models.DateTimeField(null=True, blank=True)
+
+    # Plan Configuration Definitions
+    PLAN_CONFIG = {
+        'free': {
+            'job_limit': 100,
+            'linkedin_limit': 0,
+            'smtp_limit': 1,
+            'outreach_limit': 100,
+        },
+        'pro': {
+            'job_limit': 1000,
+            'linkedin_limit': 500,
+            'smtp_limit': 10,
+            'outreach_limit': 10000,
+        },
+        'enterprise': {
+            'job_limit': 99999,
+            'linkedin_limit': 99999,
+            'smtp_limit': 100,
+            'outreach_limit': 1000000,
+        }
+    }
+
+    def apply_plan_limits(self):
+        """Sets the quota fields according to the current membership_status."""
+        config = self.PLAN_CONFIG.get(self.membership_status)
+        if config:
+            self.job_limit_monthly = config['job_limit']
+            self.linkedin_limit_monthly = config['linkedin_limit']
+            self.smtp_limit = config['smtp_limit']
+            self.email_outreach_limit_monthly = config['outreach_limit']
+            # Also sync is_paid flag for convenience
+            if self.membership_status in ['pro', 'enterprise']:
+                self.is_paid = True
+            else:
+                self.is_paid = False
+
+    def save(self, *args, **kwargs):
+        # If this is a new profile OR the status has changed compared to DB
+        if not self.pk:
+            self.apply_plan_limits()
+        else:
+            old_instance = UserProfile.objects.filter(pk=self.pk).first()
+            if old_instance and old_instance.membership_status != self.membership_status:
+                self.apply_plan_limits()
+        
+        super().save(*args, **kwargs)
     
     admin_notes = models.TextField(blank=True, help_text="Internal notes regarding this user (billing, support, etc)")
     
