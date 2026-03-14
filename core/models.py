@@ -122,12 +122,26 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"Profile for {self.user.username} ({self.get_membership_status_display()})"
 
+    def check_subscription_expiry(self):
+        """Checks if the paid subscription has expired and reverts to free plan if so."""
+        if self.membership_status != 'free' and self.subscription_end_date:
+            if timezone.now() > self.subscription_end_date:
+                self.membership_status = 'free'
+                self.is_paid = False
+                self.apply_plan_limits()
+                self.save(update_fields=['membership_status', 'is_paid', 'job_limit_monthly', 'linkedin_limit_monthly', 'smtp_limit', 'email_outreach_limit_monthly'])
+                return True
+        return False
+
     def check_and_reset_quotas(self):
-        """Reset all usage counters if a new month has started."""
+        """Reset all usage counters if a new month has started and handle base expiration."""
         today = timezone.localdate()
         needs_save = False
 
-        # Check if we switched to a new month or year
+        # 1. First check if the subscription itself has expired
+        self.check_subscription_expiry()
+
+        # 2. Check if we switched to a new month or year for usage reset
         if self.last_action_date.month != today.month or self.last_action_date.year != today.year:
             self.jobs_this_month_count = 0
             self.linkedin_this_month_count = 0
