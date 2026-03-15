@@ -32,6 +32,13 @@ urlpatterns = [
     path('linkedin/jobs/<int:pk>/status/',   views.linkedin_job_status,                 name='linkedin-job-status'),
     path('linkedin/jobs/<int:pk>/profiles/', views.linkedin_job_profiles,               name='linkedin-job-profiles'),
 
+    # ── Keyword Scrape Jobs ─────────────────────────────────────
+    path('keyword/jobs/',                 views.KeywordJobListCreateView.as_view(), name='keyword-job-list-create'),
+    path('keyword/jobs/<int:pk>/',        views.KeywordJobDetailView.as_view(),     name='keyword-job-detail'),
+    path('keyword/jobs/<int:pk>/delete/', views.KeywordJobDeleteView.as_view(),     name='keyword-job-delete'),
+    path('keyword/jobs/<int:pk>/status/', views.keyword_job_status,                 name='keyword-job-status'),
+    path('keyword/jobs/<int:pk>/result/', views.keyword_job_result,                 name='keyword-job-result'),
+
     # ── Exports (Website) ──────────────────────────────────────
     path('export/csv/',  views.export_results_csv,  name='export-csv'),
     path('export/json/', views.export_results_json, name='export-json'),

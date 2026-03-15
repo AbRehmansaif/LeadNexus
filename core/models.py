@@ -421,6 +421,87 @@ class ScrapedLinkedInProfile(models.Model):
         return f"{self.name} — {self.profile_url}"
 
 
+
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+#  3.  Keyword Scrape Job  (niche search → websites → contacts)
+# ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+class KeywordScrapeJob(models.Model):
+    """
+    A Keyword-based scraping job.
+    - Searches various search engines for a niche/keyword
+    - Extracts a list of matching website domains
+    - Scrapes each domain for contact data
+    - Saves results
+    """
+
+    STATUS_CHOICES = [
+        ('pending',   'Pending'),
+        ('running',   'Running'),
+        ('paused',    'Paused'),
+        ('completed', 'Completed'),
+        ('failed',    'Failed'),
+        ('cancelled', 'Cancelled'),
+    ]
+
+    # Owner
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='keyword_jobs', null=True, blank=True)
+
+    # Config
+    niche               = models.CharField(max_length=500, help_text="Search niche / keywords")
+    max_results         = models.PositiveIntegerField(default=50, help_text="Max websites to find and scrape")
+    scrape_contact      = models.BooleanField(default=True, help_text="Also scrape contact/about pages")
+    max_contact_pages   = models.PositiveSmallIntegerField(default=3)
+
+    # Status
+    status        = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', db_index=True)
+    error_message = models.TextField(blank=True, default='')
+    progress      = models.PositiveIntegerField(default=0, help_text="Websites scraped so far")
+
+    # Timestamps
+    created_at   = models.DateTimeField(auto_now_add=True)
+    started_at   = models.DateTimeField(null=True, blank=True)
+    completed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        ordering = ['-created_at']
+        verbose_name = 'Keyword Scrape Job'
+
+    def __str__(self):
+        return f"KeywordJob #{self.pk} - \"{self.niche}\" [{self.status}] ({self.progress}/{self.max_results})"
+
+    @property
+    def duration_seconds(self):
+        if self.started_at and self.completed_at:
+            return (self.completed_at - self.started_at).total_seconds()
+        return None
+
+
+class ScrapedKeywordWebsite(models.Model):
+    """Data extracted from a website found via KeywordScrapeJob."""
+
+    job = models.ForeignKey(KeywordScrapeJob, on_delete=models.CASCADE, related_name='results')
+
+    website_url = models.URLField(max_length=2000)
+    email       = models.EmailField(blank=True, null=True)
+    phone       = models.CharField(max_length=50, blank=True, null=True)
+    address     = models.TextField(blank=True, null=True)
+
+    facebook  = models.URLField(blank=True, null=True)
+    twitter   = models.URLField(blank=True, null=True)
+    instagram = models.URLField(blank=True, null=True)
+    linkedin  = models.URLField(blank=True, null=True)
+
+    pages_scraped = models.JSONField(default=list, blank=True)
+    scraped_at    = models.DateTimeField(default=timezone.now)
+
+    class Meta:
+        verbose_name = 'Scraped Keyword Website'
+
+    def __str__(self):
+        return f"Result for KeywordJob #{self.job_id} — {self.website_url}"
+
+
 # ── Signals ───────────────────────────────────────────
 
 @receiver(post_save, sender=User)

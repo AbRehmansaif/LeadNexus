@@ -18,15 +18,18 @@ function getCookie(name) {
     return cookieValue;
 }
 
-const csrfToken = getCookie('csrftoken');
+// Set correctly in apiCall
+let csrfToken = null;
 
 // ── API helper ────────────────────────────────────────────
 async function apiCall(url, method = 'GET', body = null) {
+    // Try to get token from hidden input (Django standard) or cookie
+    const token = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
     const opts = {
         method,
         headers: {
             'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
+            'X-CSRFToken': token,
         },
     };
     if (body) opts.body = JSON.stringify(body);
@@ -199,6 +202,73 @@ function initBulkWebsiteScraper() {
             }
         }
     });
+}
+
+// ── Keyword Scraper Form ──────────────────────────────────
+function initKeywordScraper() {
+    const form = document.getElementById('keywordScraperForm');
+    if (!form) return;
+
+    form.addEventListener('submit', async (e) => {
+        if (!form.checkValidity()) return;
+        e.preventDefault();
+
+        const nicheValue = document.getElementById('keywordNiche').value.trim();
+        const locationValue = document.getElementById('keywordLocation').value.trim();
+        const fullNiche = locationValue ? `${nicheValue} in ${locationValue}` : nicheValue;
+        
+        const maxResults = parseInt(document.getElementById('keywordMaxResults').value) || 20;
+        const scrapeContact = document.getElementById('keywordScrapeContact').checked;
+        const maxPages = parseInt(document.getElementById('keywordMaxPages').value) || 3;
+
+        showLoading('Searching for niche websites...');
+
+        try {
+            const job = await apiCall('/api/keyword/jobs/', 'POST', {
+                niche: fullNiche,
+                max_results: maxResults,
+                scrape_contact: scrapeContact,
+                max_contact_pages: maxPages,
+            });
+
+            // Redirect immediately to the results page where progress is shown
+            hideLoading();
+            window.location.href = `/keyword-job/${job.id}/`;
+        } catch (err) {
+            hideLoading();
+            showNotification('Error: ' + err.message, 'error');
+
+            const submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = `🚀 Search For Niche`;
+            }
+        }
+    });
+}
+
+async function pollKeywordJob(jobId) {
+    const maxAttempts = 180;
+    for (let i = 0; i < maxAttempts; i++) {
+        try {
+            const status = await apiCall(`/api/keyword/jobs/${jobId}/status/`);
+
+            if (status.status === 'completed') {
+                hideLoading();
+                window.location.href = `/keyword-job/${jobId}/`;
+                return;
+            } else if (status.status === 'failed') {
+                hideLoading();
+                showNotification('Search failed: ' + (status.error_message || 'Unknown error'), 'error');
+                return;
+            }
+        } catch (err) {
+            // continue
+        }
+        await sleep(3000);
+    }
+    hideLoading();
+    showNotification('Job timeout. Check Outreach Center later.', 'warning');
 }
 
 
@@ -531,6 +601,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initBulkWebsiteScraper();
     initLinkedInScraper();
     initLinkedInJobPolling();
+    initKeywordScraper();
 
     // Animate cards on scroll
     const observer = new IntersectionObserver((entries) => {

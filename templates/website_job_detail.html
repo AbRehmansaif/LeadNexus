@@ -38,6 +38,7 @@
 {% endblock %}
 
 {% block content %}
+{% csrf_token %}
 <div class="page-header">
     <h1 class="page-title"><i data-lucide="globe" style="width:25px; height:25px; color: var(--accent-purple);"></i> Web Intelligence — "{% if job.name %}{{ job.name }}{% else %}{{ job.url|truncatechars:80 }}{% endif %}"</h1>
     <p class="page-subtitle">Job #{{ job.id }} — {{ total_domains }} domains requested</p>

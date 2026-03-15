@@ -52,6 +52,7 @@ urlpatterns = [
     path('jobs/',                  template_views.all_jobs_page,        name='all-jobs'),
     path('website-job/<int:pk>/',  template_views.website_job_detail,   name='website-job-detail'),
     path('linkedin-job/<int:pk>/', template_views.linkedin_job_detail,  name='linkedin-job-detail'),
+    path('keyword-job/<int:pk>/',  template_views.keyword_job_detail,   name='keyword-job-detail'),
 ]
 
 from django.conf import settings

@@ -6,6 +6,7 @@ from rest_framework import serializers
 from .models import (
     ScrapeJob, ScrapedWebsite,
     LinkedInScrapeJob, ScrapedLinkedInProfile,
+    KeywordScrapeJob, ScrapedKeywordWebsite,
     LinkedInAccount,
 )
 
@@ -129,3 +130,41 @@ class LinkedInScrapeJobListSerializer(serializers.ModelSerializer):
 
     def get_profiles_count(self, obj):
         return obj.profiles.count()
+
+# ━━━━━━━━━━━━━━  Keyword Scraping  ━━━━━━━━━━━━━━━━━━━━
+
+class ScrapedKeywordWebsiteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model  = ScrapedKeywordWebsite
+        fields = [
+            'id', 'website_url',
+            'email', 'phone', 'address',
+            'facebook', 'twitter', 'instagram', 'linkedin',
+            'pages_scraped', 'scraped_at',
+        ]
+
+
+class KeywordScrapeJobSerializer(serializers.ModelSerializer):
+    results          = ScrapedKeywordWebsiteSerializer(many=True, read_only=True)
+    duration_seconds = serializers.FloatField(read_only=True)
+
+    class Meta:
+        model  = KeywordScrapeJob
+        fields = [
+            'id', 'niche', 'max_results', 'scrape_contact', 'max_contact_pages',
+            'status', 'error_message', 'progress',
+            'created_at', 'started_at', 'completed_at', 'duration_seconds',
+            'results',
+        ]
+        read_only_fields = [
+            'status', 'error_message', 'progress',
+            'created_at', 'started_at', 'completed_at',
+        ]
+
+
+class KeywordScrapeJobCreateSerializer(serializers.ModelSerializer):
+    """POST /api/keyword/jobs/ — create a keyword scrape job."""
+
+    class Meta:
+        model  = KeywordScrapeJob
+        fields = ['niche', 'max_results', 'scrape_contact', 'max_contact_pages']

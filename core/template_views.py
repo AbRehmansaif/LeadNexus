@@ -8,6 +8,7 @@ from django.contrib import messages
 from .models import (
     ScrapeJob, ScrapedWebsite,
     LinkedInScrapeJob, ScrapedLinkedInProfile,
+    KeywordScrapeJob, ScrapedKeywordWebsite,
     UserProfile, LinkedInAccount
 )
 from mail.models import EmailCampaign, SMTPCredential
@@ -108,18 +109,21 @@ def dashboard(request):
     user_campaigns = EmailCampaign.objects.filter(user=request.user)
     user_smtp = SMTPCredential.objects.filter(user=request.user)
 
-    total_jobs = website_jobs.count() + linkedin_jobs.count()
+    total_jobs = website_jobs.count() + linkedin_jobs.count() + KeywordScrapeJob.objects.filter(user=request.user).count()
     completed_jobs = (
         website_jobs.filter(status='completed').count()
         + linkedin_jobs.filter(status='completed').count()
+        + KeywordScrapeJob.objects.filter(user=request.user, status='completed').count()
     )
     running_jobs = (
         website_jobs.filter(status='running').count()
         + linkedin_jobs.filter(status='running').count()
+        + KeywordScrapeJob.objects.filter(user=request.user, status='running').count()
     )
     failed_jobs = (
         website_jobs.filter(status='failed').count()
         + linkedin_jobs.filter(status='failed').count()
+        + KeywordScrapeJob.objects.filter(user=request.user, status='failed').count()
     )
     
     # Filter results by the user's jobs
@@ -127,6 +131,7 @@ def dashboard(request):
     emails_found = (
         ScrapedWebsite.objects.filter(job__user=request.user).exclude(email__isnull=True).exclude(email='').count()
         + ScrapedLinkedInProfile.objects.filter(job__user=request.user).exclude(website_email__isnull=True).exclude(website_email='').count()
+        + ScrapedKeywordWebsite.objects.filter(job__user=request.user).exclude(email__isnull=True).exclude(email='').count()
     )
 
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -164,6 +169,7 @@ def dashboard(request):
         'smtp_accounts': user_smtp,
         'recent_website_jobs':  website_jobs.order_by('-created_at')[:5],
         'recent_linkedin_jobs': linkedin_jobs.order_by('-created_at')[:5],
+        'recent_keyword_jobs':  KeywordScrapeJob.objects.filter(user=request.user).order_by('-created_at')[:5],
         'recent_campaigns': user_campaigns.order_by('-created_at')[:5],
     })
 
@@ -261,6 +267,26 @@ def linkedin_job_detail(request, pk):
 
 
 @login_required
+def keyword_job_detail(request, pk):
+    """Detail page for a keyword-based scrape job."""
+    job = get_object_or_404(KeywordScrapeJob, pk=pk, user=request.user)
+    results = job.results.all().order_by('-scraped_at')
+
+    emails_found = results.exclude(email__isnull=True).exclude(email='').count()
+    phones_found = results.exclude(phone__isnull=True).exclude(phone='').count()
+    socials_found = sum(1 for r in results if r.facebook or r.linkedin or r.twitter or r.instagram)
+    
+    return render(request, 'keyword_job_detail.html', {
+        'active_page': 'jobs',
+        'job':         job,
+        'results':     results,
+        'emails_found': emails_found,
+        'phones_found': phones_found,
+        'socials_found': socials_found,
+    })
+
+
+@login_required
 def subscription_page(request):
     """View to show membership details and quotas."""
     profile, _ = UserProfile.objects.get_or_create(user=request.user)
@@ -327,6 +353,7 @@ def all_jobs_page(request):
     from django.core.paginator import Paginator
     website_jobs_list  = ScrapeJob.objects.filter(user=request.user).order_by('-created_at')
     linkedin_jobs_list = LinkedInScrapeJob.objects.filter(user=request.user).order_by('-created_at')
+    keyword_jobs_list  = KeywordScrapeJob.objects.filter(user=request.user).order_by('-created_at')
 
     paginator_linkedin = Paginator(linkedin_jobs_list, 10)
     page_li = request.GET.get('page_li')
@@ -336,12 +363,18 @@ def all_jobs_page(request):
     page_web = request.GET.get('page_web')
     website_jobs = paginator_web.get_page(page_web)
 
+    paginator_kw = Paginator(keyword_jobs_list, 10)
+    page_kw = request.GET.get('page_kw')
+    keyword_jobs = paginator_kw.get_page(page_kw)
+
     return render(request, 'all_jobs.html', {
         'active_page':    'jobs',
         'website_jobs':   website_jobs,
         'linkedin_jobs':  linkedin_jobs,
+        'keyword_jobs':   keyword_jobs,
         'total_web_jobs': website_jobs_list.count(),
-        'total_li_jobs': linkedin_jobs_list.count(),
+        'total_li_jobs':  linkedin_jobs_list.count(),
+        'total_kw_jobs':  keyword_jobs_list.count(),
     })
 
 # ── Custom Error Handlers ───────────────────────────────────────────

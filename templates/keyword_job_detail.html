@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+{% block title %}Keyword Search Job #{{ job.id }} — LeadNexus{% endblock %}
+
+{% block extra_css %}
+<style>
+    .copy-btn {
+        background: none;
+        border: none;
+        color: var(--text-muted);
+        cursor: pointer;
+        padding: 2px 4px;
+        border-radius: 4px;
+        transition: all 0.2s;
+        font-size: 0.8rem;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .copy-btn:hover {
+        color: var(--accent-purple);
+        background: rgba(139, 92, 246, 0.1);
+    }
+    .copy-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+    .data-with-copy {
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+    .cell-url-container {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% csrf_token %}
+<div class="page-header">
+    <h1 class="page-title"><i data-lucide="search" style="width:25px; height:25px; color: var(--accent-purple);"></i> Web Intelligence — "{{ job.niche }}"</h1>
+    <p class="page-subtitle">Keyword Job #{{ job.id }} — Searching for up to {{ job.max_results }} websites</p>
+</div>
+
+<!-- Job Status & Progress -->
+<div class="card" style="margin-bottom: 24px;"
+     id="jobProgress" data-job-id="{{ job.id }}" data-job-status="{{ job.status }}">
+    <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; margin-bottom: 16px;">
+        <div style="display: flex; align-items: center; gap: 16px;">
+            <span class="badge badge-{{ job.status }}" id="statusBadge">
+                <span class="badge-dot"></span> {{ job.status|upper }}
+            </span>
+            <span style="color: var(--text-muted); font-size: 0.85rem;">
+                Created {{ job.created_at|date:"M d, Y H:i" }}
+                {% if job.duration_seconds %}
+                    &nbsp;·&nbsp; Duration: {{ job.duration_seconds|floatformat:1 }}s
+                {% endif %}
+            </span>
+        </div>
+        <div class="btn-group">
+            {% if results %}
+            <button onclick="startCampaignFromWebsite()" class="btn btn-primary btn-sm"><i data-lucide="rocket" style="width:15px; height:15px; "></i> Start Campaign</button>
+            {% endif %}
+            <button onclick="deleteKeywordJob('{{ job.id }}')" class="btn btn-danger btn-sm">🗑 Delete</button>
+        </div>
+    </div>
+
+    <script id="leads-data" type="application/json">
+    [
+        {% for r in results %}
+            {% if r.email %}
+            {
+                "email": "{{ r.email|escapejs }}",
+                "name": "{{ r.website_url|escapejs }}",
+                "industry": "{{ job.niche|escapejs }}"
+            }{% if not forloop.last %},{% endif %}
+            {% endif %}
+        {% endfor %}
+    ]
+    </script>
+
+    <script>
+    function startCampaignFromWebsite() {
+        const leadsData = document.getElementById('leads-data').textContent;
+        const leads = JSON.parse(leadsData);
+
+        if (leads.length === 0) {
+            alert("No leads with emails found in this job.");
+            return;
+        }
+
+        const leadString = leads.map(l => `${l.email}, ${l.name}, ${l.industry}`).join('\n');
+        sessionStorage.setItem('pending_campaign_leads', leadString);
+        window.location.href = "{% url 'mail-campaign-create' %}";
+    }
+
+    async function deleteKeywordJob(jobId) {
+        if (!confirm('Are you sure you want to delete this search result?')) return;
+        try {
+            const res = await fetch(`/api/keyword/jobs/${jobId}/delete/`, {
+                method: 'DELETE',
+                headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+            });
+            if (res.ok) window.location.href = '/jobs/';
+            else alert('Failed to delete job');
+        } catch (err) { console.error(err); }
+    }
+    </script>
+
+    <!-- Progress Bar (Keywords use simple results count) -->
+    <div class="progress-text">
+        {{ results|length }} / {{ job.max_results }} websites found & processed
+    </div>
+    <div class="progress-bar-wrapper">
+        <div class="progress-bar-fill" style="width: {% if job.max_results > 0 %}{% widthratio results|length job.max_results 100 %}{% else %}0{% endif %}%;"></div>
+    </div>
+</div>
+
+{% if job.status == 'failed' %}
+<div class="alert alert-error">
+    <span>❌</span> <strong>Error:</strong> {{ job.error_message }}
+</div>
+{% endif %}
+
+{% if job.status == 'running' or job.status == 'pending' %}
+<div class="alert alert-info" style="margin-bottom: 24px;">
+    <span>🔄</span>
+    <div>
+        <strong>Search in progress...</strong><br>
+        Web intelligence is being gathered for "{{ job.niche }}". This page will auto-update.
+    </div>
+</div>
+<script>
+    setTimeout(() => window.location.reload(), 6000);
+</script>
+{% endif %}
+
+<!-- Stats Row -->
+{% if results %}
+<div class="stats-grid" style="margin-bottom: 24px;">
+    <div class="stat-card purple">
+        <div class="stat-label">Websites Found</div>
+        <div class="stat-value">{{ results|length }}</div>
+    </div>
+    <div class="stat-card cyan">
+        <div class="stat-label">Socials Detected</div>
+        <div class="stat-value">{{ socials_found }}</div>
+    </div>
+    <div class="stat-card green">
+        <div class="stat-label">Emails Extracted</div>
+        <div class="stat-value">{{ emails_found }}</div>
+    </div>
+    <div class="stat-card amber">
+        <div class="stat-label">Phones Found</div>
+        <div class="stat-value">{{ phones_found }}</div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Results Table -->
+{% if results %}
+<div class="card">
+    <div class="card-header">
+        <h2 class="card-title"><span class="card-icon"><i data-lucide="chart-bar" style="width:25px; height:25px; "></i></span> Generated Leads ({{ results|length }})</h2>
+    </div>
+
+    <div class="tabs-container">
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="tableView"><i data-lucide="list" style="width:15px; height:15px; "></i> Table View</button>
+            <button class="tab-btn" data-tab="cardView"><i data-lucide="grid" style="width:15px; height:15px; "></i> Card View</button>
+        </div>
+
+        <!-- Table View -->
+        <div class="tab-content active" id="tableView">
+            <div class="table-wrapper">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>#</th>
+                            <th>Website</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Socials</th>
+                            <th>Scraped Pages</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for r in results %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>
+                                <div class="cell-url-container">
+                                    <a href="{{ r.website_url }}" target="_blank" class="cell-url">{{ r.website_url|truncatechars:35 }}</a>
+                                </div>
+                            </td>
+                            <td>
+                                {% if r.email %}
+                                    <div class="data-with-copy">
+                                        <a href="mailto:{{ r.email }}">{{ r.email }}</a>
+                                    </div>
+                                {% else %}
+                                    <span style="color: var(--text-muted);">—</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ r.phone|default:"—" }}</td>
+                            <td>
+                                <div style="display: flex; gap: 8px;">
+                                    {% if r.linkedin %}<a href="{{ r.linkedin }}" target="_blank" title="LinkedIn"><i data-lucide="linkedin" style="width:14px; height:14px;"></i></a>{% endif %}
+                                    {% if r.facebook %}<a href="{{ r.facebook }}" target="_blank" title="Facebook"><i data-lucide="facebook" style="width:14px; height:14px;"></i></a>{% endif %}
+                                    {% if r.twitter %}<a href="{{ r.twitter }}" target="_blank" title="Twitter"><i data-lucide="twitter" style="width:14px; height:14px;"></i></a>{% endif %}
+                                    {% if r.instagram %}<a href="{{ r.instagram }}" target="_blank" title="Instagram"><i data-lucide="instagram" style="width:14px; height:14px;"></i></a>{% endif %}
+                                </div>
+                            </td>
+                            <td>{{ r.pages_scraped|length }} pages</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Card View -->
+        <div class="tab-content" id="cardView">
+            <div class="profile-cards">
+                {% for r in results %}
+                <div class="profile-card">
+                    <div class="profile-card-header" style="display: flex; justify-content: space-between; margin-bottom: 15px;">
+                        <div class="profile-name">{{ r.website_url|cut:"https://"|cut:"http://"|cut:"www."|truncatechars:30 }}</div>
+                        <a href="{{ r.website_url }}" target="_blank" class="btn btn-secondary btn-sm">Visit →</a>
+                    </div>
+                    <div style="font-size: 0.9rem; color: var(--text-secondary); margin-bottom: 10px;">
+                        <strong>Email:</strong> {{ r.email|default:"N/A" }}<br>
+                        <strong>Phone:</strong> {{ r.phone|default:"N/A" }}
+                    </div>
+                    <div style="display: flex; gap: 10px;">
+                        {% if r.linkedin %}<a href="{{ r.linkedin }}" target="_blank"><i data-lucide="linkedin"></i></a>{% endif %}
+                        {% if r.facebook %}<a href="{{ r.facebook }}" target="_blank"><i data-lucide="facebook"></i></a>{% endif %}
+                        {% if r.twitter %}<a href="{{ r.twitter }}" target="_blank"><i data-lucide="twitter"></i></a>{% endif %}
+                        {% if r.instagram %}<a href="{{ r.instagram }}" target="_blank"><i data-lucide="instagram"></i></a>{% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% elif job.status == 'completed' %}
+<div class="card">
+    <div class="empty-state">
+        <div class="empty-icon">🔍</div>
+        <h3>No usable data found</h3>
+        <p>Search completed but no websites or contact info extracted.</p>
+    </div>
+</div>
+{% endif %}
+
+<div style="margin-top: 24px;">
+    <a href="/jobs/" class="btn btn-secondary">← Back to All Jobs</a>
+    <a href="/webintelligence/" class="btn btn-secondary"> New Niche Search</a>
+</div>
+{% endblock %}

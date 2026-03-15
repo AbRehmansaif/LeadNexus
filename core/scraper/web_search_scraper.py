@@ -1,0 +1,186 @@
+"""
+Web search scraper - finds website domains for a given niche/keyword.
+Uses Selenium for search engine interaction to avoid easy blocks.
+"""
+import time
+import random
+import logging
+import urllib.parse
+from typing import List, Set
+from bs4 import BeautifulSoup
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from fake_useragent import UserAgent
+
+from .validators import is_valid_url
+
+logger = logging.getLogger(__name__)
+
+class WebSearchScraper:
+    def __init__(self, driver_factory=None):
+        """
+        Args:
+            driver_factory: A callable that returns a configured Selenium driver.
+        """
+        self.driver_factory = driver_factory
+        self.driver = None
+
+    def search(self, keywords: str, max_results: int = 50) -> List[str]:
+        """
+        Search for websites using multiple engines (DuckDuckGo, Bing, Google)
+        to ensure high reliability and avoid CAPTCHA blocks.
+        """
+        if not self.driver_factory:
+            from .linkedin_scraper import LinkedInScraper
+            temp_scraper = LinkedInScraper({'scraping': {'headless': True}})
+            temp_scraper.setup_driver()
+            self.driver = temp_scraper.driver
+        else:
+            self.driver = self.driver_factory()
+
+        unique_domains: Set[str] = set()
+        
+        # Request higher counts where supported (&count=50, &num=100)
+        engines = [
+            {"name": "DuckDuckGo", "url": "https://html.duckduckgo.com/html/?q={query}"},
+            {"name": "Bing", "url": "https://www.bing.com/search?q={query}&count=50"},
+            {"name": "Google", "url": "https://www.google.com/search?q={query}&num=100"}
+        ]
+
+        try:
+            for engine in engines:
+                if len(unique_domains) >= max_results:
+                    break
+                    
+                logger.info(f"Attempting search via {engine['name']}...")
+                query = urllib.parse.quote(keywords)
+                search_url = engine['url'].format(query=query)
+                
+                try:
+                    if self.driver is None: continue
+                    self.driver.get(search_url)
+                    time.sleep(random.uniform(4, 6))
+
+                    content = self.driver.page_source
+                    if "g-recaptcha" in content or "system details from your computer" in content:
+                        logger.warning(f"{engine['name']} blocked (CAPTCHA).")
+                        continue
+
+                    page = 0
+                    consecutive_empty_pages = 0
+                    while len(unique_domains) < max_results and page < 10: # Increased page limit
+                        if self.driver is None: break
+                            
+                        soup = BeautifulSoup(self.driver.page_source, 'html.parser')
+                        links_on_this_page = 0
+                        
+                        for a in soup.find_all('a', href=True):
+                            url = a['href']
+                            if '/url?q=' in url: url = url.split('/url?q=')[1].split('&')[0]
+                            elif '/l?kh=' in url: continue
+                                
+                            if not url.startswith('http'): continue
+                                
+                            if self._is_target_website(url):
+                                domain = self._extract_domain(url)
+                                if domain and domain not in unique_domains:
+                                    unique_domains.add(domain)
+                                    links_on_this_page += 1
+                                    if len(unique_domains) >= max_results:
+                                        break
+                        
+                        logger.info(f"{engine['name']} (Page {page+1}): Found {links_on_this_page} new domains. Total: {len(unique_domains)}")
+                        
+                        if len(unique_domains) >= max_results:
+                            break
+
+                        if links_on_this_page == 0:
+                            consecutive_empty_pages += 1
+                            if consecutive_empty_pages >= 2: # Stop after 2 truly empty pages
+                                break
+                        else:
+                            consecutive_empty_pages = 0
+                            
+                        # Try to find Next button
+                        try:
+                            next_clicked = False
+                            # Specific engine next-selectors
+                            next_selectors = ['#pnnext', 'a.sb_pagN', 'a.next', 'a[aria-label="Next page"]']
+                            for sel in next_selectors:
+                                try:
+                                    btns = self.driver.find_elements(By.CSS_SELECTOR, sel)
+                                    if btns:
+                                        btns[0].click()
+                                        next_clicked = True
+                                        break
+                                except: continue
+                                
+                            if not next_clicked:
+                                # Fallback text-based search
+                                all_links = self.driver.find_elements(By.TAG_NAME, 'a')
+                                for link in all_links:
+                                    txt = link.text.strip().lower()
+                                    if txt in ['next', 'next >', '>', 'siguiente']:
+                                        link.click()
+                                        next_clicked = True
+                                        break
+                            
+                            if next_clicked:
+                                time.sleep(random.uniform(3, 5))
+                                page += 1
+                            else:
+                                break
+                        except:
+                            break
+                            
+                except Exception as engine_err:
+                    logger.error(f"Error during {engine['name']} search: {engine_err}")
+                    continue
+
+        except Exception as e:
+            logger.error(f"Global web search error: {e}")
+        finally:
+            if self.driver is not None:
+                try:
+                    self.driver.quit()
+                    self.driver = None
+                except: pass
+
+        return list(unique_domains)
+
+    def _is_target_website(self, url: str) -> bool:
+        """Filter out search engines, social media platforms, and noise."""
+        blacklist = [
+            'google.', 'bing.', 'yahoo.', 'duckduckgo.',
+            'facebook.', 'twitter.', 'linkedin.', 'instagram.',
+            'youtube.', 'pinterest.', 'wikipedia.', 'amazon.',
+            'yelp.', 'yellowpages.', 'tripadvisor.', 'wix.com',
+            'wordpress.com', 'blogspot.', 'medium.com'
+        ]
+        
+        # Also clean common tracking params
+        if 'utm_' in url or 'gclid' in url:
+            url = url.split('?')[0]
+            
+        if not is_valid_url(url):
+            return False
+            
+        domain = self._extract_domain(url).lower()
+        if not domain:
+            return False
+            
+        for b in blacklist:
+            if b in domain:
+                return False
+        return True
+
+    def _extract_domain(self, url: str) -> str:
+        """Extract clean 'https://domain.com' from a full URL."""
+        try:
+            parsed = urllib.parse.urlparse(url)
+            if not parsed.netloc:
+                return ""
+            return f"{parsed.scheme}://{parsed.netloc}"
+        except:
+            return ""

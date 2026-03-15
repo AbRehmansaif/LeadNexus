@@ -3,6 +3,7 @@
 
 {% block content %}
 <!-- Page Header -->
+{% csrf_token %}
 <div class="page-header">
     <h1 class="page-title"><i data-lucide="globe" style="width:27px; height:27px; color: var(--accent-cyan);"></i> Web Intelligence Engine</h1>
     <p class="page-subtitle">Transform any business website into structured, actionable lead intelligence. <br>
@@ -41,6 +42,9 @@ Deploy multi-threaded data extraction to instantly harvest verified emails, soci
         </button>
         <button type="button" class="tab-btn" data-tab="bulkDomain">
             <i data-lucide="file-spreadsheet" style="width:18px; height:18px;"></i> Bulk Upload (CSV)
+        </button>
+        <button type="button" class="tab-btn" data-tab="nicheSearch">
+            <i data-lucide="search" style="width:18px; height:18px;"></i> Niche Search
         </button>
     </div>
 
@@ -173,6 +177,85 @@ Deploy multi-threaded data extraction to instantly harvest verified emails, soci
                 <div class="btn-group">
                     <button type="submit" class="btn btn-primary btn-lg">
                         <i data-lucide="rocket" style="width:20px; height:20px;"></i> Start Bulk Analysis
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 3. Niche Search Tab -->
+    <div class="tab-content" id="nicheSearch">
+        <div class="card" style="padding: 32px;">
+            <!-- Card Header -->
+            <div style="display: flex; align-items: center; gap: 14px; margin-bottom: 28px; padding-bottom: 20px; border-bottom: 1px solid var(--border);">
+                <div style="width: 42px; height: 42px; background: rgba(139,92,246,0.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border: 1px solid rgba(139,92,246,0.2);">
+                    <i data-lucide="search" style="width:20px; height:20px; color: var(--accent-purple);"></i>
+                </div>
+                <div>
+                    <h2 style="margin: 0; font-size: 1.1rem; font-weight: 700;">Niche Intelligence Activation</h2>
+                    <p style="margin: 3px 0 0; font-size: 0.78rem; color: var(--text-muted);">Enter a niche or keyword to discover websites and extract their intelligence.</p>
+                </div>
+            </div>
+
+            <form id="keywordScraperForm" novalidate>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label class="form-label" for="keywordNiche">
+                            <i data-lucide="search" style="width:13px; height:13px; vertical-align: middle;"></i>
+                            Niche / Keyword *
+                        </label>
+                        <input type="text" id="keywordNiche" class="form-control" placeholder="e.g. Digital Marketing Agency" required>
+                        <div class="error-feedback">Please enter a keyword.</div>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" for="keywordLocation">
+                            <i data-lucide="map-pin" style="width:13px; height:13px; vertical-align: middle;"></i>
+                            Location (Optional)
+                        </label>
+                        <input type="text" id="keywordLocation" class="form-control" placeholder="e.g. London, UK">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="keywordMaxResults">Maximum Websites to Find</label>
+                    <select id="keywordMaxResults" class="form-control">
+                        <option value="10">10 websites</option>
+                        <option value="20" selected>20 websites</option>
+                        <option value="50">50 websites</option>
+                        <option value="100">100 websites</option>
+                    </select>
+                </div>
+
+                <!-- Deep Scan Settings -->
+                <div style="background: rgba(255,255,255,0.02); border: 1px solid var(--border); border-radius: var(--radius-md); padding: 20px; margin-bottom: 24px;">
+                    <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 16px;">
+                        <i data-lucide="settings-2" style="width:15px; height:15px; color: var(--accent-purple);"></i>
+                        <span style="font-size: 0.82rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted);">Deep Scan Settings</span>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <div class="form-check">
+                                <input type="checkbox" id="keywordScrapeContact" checked>
+                                <label class="form-check-label" for="keywordScrapeContact">
+                                    Extract Contact Intelligence
+                                </label>
+                            </div>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="keywordMaxPages">Pages to Scan / Domain</label>
+                            <select id="keywordMaxPages" class="form-control">
+                                <option value="1">1 page</option>
+                                <option value="2">2 pages</option>
+                                <option value="3" selected>3 pages</option>
+                                <option value="5">5 pages</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="btn-group">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i data-lucide="search" style="width:20px; height:20px;"></i> Search For Niche
                     </button>
                 </div>
             </form>

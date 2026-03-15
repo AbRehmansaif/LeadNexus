@@ -29,15 +29,17 @@ from rest_framework.permissions import IsAuthenticated
 from .models import (
     ScrapeJob, ScrapedWebsite,
     LinkedInScrapeJob, ScrapedLinkedInProfile,
+    KeywordScrapeJob, ScrapedKeywordWebsite,
     LinkedInAccount,
 )
 from .serializers import (
     ScrapeJobSerializer, ScrapeJobCreateSerializer, ScrapedWebsiteSerializer,
     LinkedInScrapeJobSerializer, LinkedInScrapeJobCreateSerializer,
     LinkedInScrapeJobListSerializer, ScrapedLinkedInProfileSerializer,
+    KeywordScrapeJobSerializer, KeywordScrapeJobCreateSerializer, ScrapedKeywordWebsiteSerializer,
     LinkedInAccountSerializer,
 )
-from .tasks import run_scrape_job_async, run_linkedin_job_async
+from .tasks import run_scrape_job_async, run_linkedin_job_async, run_keyword_job_async
 
 logger = logging.getLogger(__name__)
 
@@ -330,6 +332,89 @@ def linkedin_job_profiles(request, pk):
 
 
 # ═══════════════════════════════════════════════════════════════════
+#  KEYWORD SCRAPING  — Give a niche → search engine → websites → contacts
+# ═══════════════════════════════════════════════════════════════════
+
+class KeywordJobListCreateView(ListCreateAPIView):
+    """
+    GET  /api/keyword/jobs/   → list all keyword-scrape jobs
+    POST /api/keyword/jobs/   → create & start a new keyword-scrape job
+    """
+    def get_queryset(self):
+        return KeywordScrapeJob.objects.filter(user=self.request.user).prefetch_related('results').all()
+
+    def get_serializer_class(self):
+        if self.request.method == 'POST':
+            return KeywordScrapeJobCreateSerializer
+        return KeywordScrapeJobSerializer
+
+    def create(self, request, *args, **kwargs):
+        # Check Quota (Keywords consume website credits for now)
+        if not request.user.profile.can_scrape_website():
+            return Response(
+                {'error': 'Monthly website scraping quota reached. Upgrade your plan for more searches.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
+        serializer = KeywordScrapeJobCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        job = serializer.save(status='pending', user=request.user)
+        
+        # Launch background thread
+        run_keyword_job_async(job.id)
+
+        return Response(KeywordScrapeJobSerializer(job).data, status=status.HTTP_201_CREATED)
+
+
+class KeywordJobDetailView(RetrieveAPIView):
+    """GET /api/keyword/jobs/<id>/"""
+    def get_queryset(self):
+        return KeywordScrapeJob.objects.filter(user=self.request.user).prefetch_related('results').all()
+    serializer_class = KeywordScrapeJobSerializer
+
+
+class KeywordJobDeleteView(DestroyAPIView):
+    """DELETE /api/keyword/jobs/<id>/delete/"""
+    def get_queryset(self):
+        return KeywordScrapeJob.objects.filter(user=self.request.user)
+    serializer_class = KeywordScrapeJobSerializer
+
+
+@api_view(['GET'])
+def keyword_job_status(request, pk):
+    """GET /api/keyword/jobs/<id>/status/"""
+    try:
+        job = KeywordScrapeJob.objects.get(pk=pk, user=request.user)
+    except KeywordScrapeJob.DoesNotExist:
+        return Response({'error': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    return Response({
+        'id':               job.id,
+        'niche':            job.niche,
+        'status':           job.status,
+        'progress':         job.progress,
+        'max_results':      job.max_results,
+        'created_at':       job.created_at,
+        'started_at':       job.started_at,
+        'completed_at':     job.completed_at,
+        'duration_seconds': job.duration_seconds,
+        'error_message':    job.error_message or None,
+    })
+
+
+@api_view(['GET'])
+def keyword_job_result(request, pk):
+    """GET /api/keyword/jobs/<id>/result/"""
+    try:
+        job = KeywordScrapeJob.objects.prefetch_related('results').get(pk=pk, user=request.user)
+    except KeywordScrapeJob.DoesNotExist:
+        return Response({'error': 'Job not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    results = job.results.all()
+    return Response(ScrapedKeywordWebsiteSerializer(results, many=True).data)
+
+
+# ═══════════════════════════════════════════════════════════════════
 #  LINKEDIN CREDENTIALS — CRUD for accounts
 # ═══════════════════════════════════════════════════════════════════
 
@@ -483,6 +568,13 @@ def dashboard_stats(request):
     li_failed    = LinkedInScrapeJob.objects.filter(user=user, status='failed').count()
     li_profiles  = ScrapedLinkedInProfile.objects.filter(job__user=user).count()
 
+    # Keyword jobs
+    kw_total     = KeywordScrapeJob.objects.filter(user=user).count()
+    kw_pending   = KeywordScrapeJob.objects.filter(user=user, status='pending').count()
+    kw_running   = KeywordScrapeJob.objects.filter(user=user, status='running').count()
+    kw_completed = KeywordScrapeJob.objects.filter(user=user, status='completed').count()
+    kw_failed    = KeywordScrapeJob.objects.filter(user=user, status='failed').count()
+
     return Response({
         'website_jobs': {
             'total':     web_total,
@@ -503,5 +595,12 @@ def dashboard_stats(request):
             'completed': li_completed,
             'failed':    li_failed,
             'total_profiles_scraped': li_profiles,
+        },
+        'keyword_jobs': {
+            'total':     kw_total,
+            'pending':   kw_pending,
+            'running':   kw_running,
+            'completed': kw_completed,
+            'failed':    kw_failed,
         },
     })

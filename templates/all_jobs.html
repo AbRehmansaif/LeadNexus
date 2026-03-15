@@ -24,6 +24,9 @@
         <button class="tab-btn" data-tab="websiteJobs">
             <i data-lucide="globe" style="width:18px; height:18px; "></i> Web Intelligence outreach ({{ total_web_jobs }})
         </button>
+        <button class="tab-btn" data-tab="keywordJobs">
+            <i data-lucide="search" style="width:18px; height:18px; "></i> Keyword Intelligence outreach ({{ total_kw_jobs }})
+        </button>
     </div>
 
     <!-- LinkedIn Jobs Tab -->
@@ -189,11 +192,84 @@
         </div>
         {% endif %}
 
+        {% endif %}
+    </div>
+
+    <!-- Keyword Jobs Tab -->
+    <div class="tab-content" id="keywordJobs">
+        {% if keyword_jobs %}
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Outreach ID</th>
+                        <th>Niche/Keyword</th>
+                        <th>Websites Found</th>
+                        <th>Status</th>
+                        <th>Processing Time</th>
+                        <th>Created</th>
+                        <th>Manage</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for job in keyword_jobs %}
+                    <tr>
+                        <td>#{{ job.id }}</td>
+                        <td class="cell-name">{{ job.niche|truncatechars:40 }}</td>
+                        <td>{{ job.progress }} / {{ job.max_results }}</td>
+                        <td>
+                            <span class="badge badge-{{ job.status }}">
+                                <span class="badge-dot"></span> {{ job.status }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if job.duration_seconds %}
+                                {{ job.duration_seconds|floatformat:1 }}s
+                            {% else %}
+                                —
+                            {% endif %}
+                        </td>
+                        <td>{{ job.created_at|date:"M d, H:i" }}</td>
+                        <td>
+                            <a href="/keyword-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination Controls -->
+        {% if keyword_jobs.has_other_pages %}
+        <div style="padding: 16px 20px; border-top: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; background: #0f172a;">
+            <span class="text-muted" style="font-size: 0.85rem;">
+                Showing <strong>{{ keyword_jobs.start_index }}</strong> to <strong>{{ keyword_jobs.end_index }}</strong> of <strong>{{ total_kw_jobs }}</strong> jobs
+            </span>
+            <div style="display: flex; gap: 8px;">
+                {% if keyword_jobs.has_previous %}
+                <a href="?page_kw={{ keyword_jobs.previous_page_number }}{% if request.GET.page_li %}&page_li={{ request.GET.page_li }}{% endif %}{% if request.GET.page_web %}&page_web={{ request.GET.page_web }}{% endif %}" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem;">← Prev</a>
+                {% else %}
+                <button class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem; opacity: 0.5; cursor: not-allowed;" disabled>← Prev</button>
+                {% endif %}
+                
+                <span style="display: inline-flex; align-items: center; padding: 0 12px; font-size: 0.85rem; color: #fff; background: #1e293b; border-radius: 6px;">
+                    Page {{ keyword_jobs.number }} of {{ keyword_jobs.paginator.num_pages }}
+                </span>
+
+                {% if keyword_jobs.has_next %}
+                <a href="?page_kw={{ keyword_jobs.next_page_number }}{% if request.GET.page_li %}&page_li={{ request.GET.page_li }}{% endif %}{% if request.GET.page_web %}&page_web={{ request.GET.page_web }}{% endif %}" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem;">Next →</a>
+                {% else %}
+                <button class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem; opacity: 0.5; cursor: not-allowed;" disabled>Next →</button>
+                {% endif %}
+            </div>
+        </div>
+        {% endif %}
+
         {% else %}
         <div class="empty-state">
-            <div class="empty-icon">🌐</div>
-            <h3>No website jobs yet</h3>
-            <p>Start scraping from the <a href="/webintelligence/">Web Intelligence</a> page.</p>
+            <div class="empty-icon">🔍</div>
+            <h3>No keyword searches yet</h3>
+            <p>Start searching for niches from the <a href="/webintelligence/">Web Intelligence</a> page.</p>
         </div>
         {% endif %}
     </div>
