@@ -134,31 +134,49 @@ class WebSearchScraper:
                         # Pagination
                         try:
                             next_clicked = False
-                            next_selectors = ['#pnnext', 'a.sb_pagN', 'a.next', 'a[aria-label="Next page"]']
+                            # Broad set of selectors for "Next" across engines
+                            next_selectors = [
+                                'input[value="Next"]',     # DuckDuckGo HTML
+                                '.nav-link[value="Next"]', # DuckDuckGo alternative
+                                '#pnnext',                 # Google
+                                'a.sb_pagN',               # Bing
+                                'a.next',                  # Generic
+                                'a[aria-label="Next page"]',
+                                'a.pagination__next'
+                            ]
+                            
                             for sel in next_selectors:
                                 try:
                                     btns = self.driver.find_elements(By.CSS_SELECTOR, sel)
                                     if btns:
-                                        btns[0].click()
+                                        # Use JavaScript click to bypass overlay issues
+                                        self.driver.execute_script("arguments[0].click();", btns[0])
                                         next_clicked = True
                                         break
                                 except: continue
                                 
                             if not next_clicked:
-                                all_links = self.driver.find_elements(By.TAG_NAME, 'a')
-                                for link in all_links:
-                                    txt = link.text.strip().lower()
-                                    if txt in ['next', 'next >', '>', 'siguiente']:
-                                        link.click()
-                                        next_clicked = True
-                                        break
+                                # Fallback: search by text content
+                                all_elements = self.driver.find_elements(By.TAG_NAME, 'a') + \
+                                              self.driver.find_elements(By.TAG_NAME, 'input')
+                                for el in all_elements:
+                                    try:
+                                        txt = (el.text or el.get_attribute('value') or '').strip().lower()
+                                        if txt in ['next', 'next >', '>', 'siguiente', 'more results']:
+                                            self.driver.execute_script("arguments[0].click();", el)
+                                            next_clicked = True
+                                            break
+                                    except: continue
                             
                             if next_clicked:
-                                time.sleep(random.uniform(3, 5))
+                                logger.info(f"Moving to {engine['name']} Page {page + 2}...")
+                                time.sleep(random.uniform(4, 7))
                                 page += 1
                             else:
+                                logger.debug(f"No 'Next' button found for {engine['name']} on page {page+1}")
                                 break
-                        except:
+                        except Exception as pag_err:
+                            logger.debug(f"Pagination error for {engine['name']}: {pag_err}")
                             break
                             
                 except Exception as engine_err:
