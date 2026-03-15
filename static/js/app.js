@@ -537,7 +537,13 @@ function initCustomCursor() {
     const dot = document.querySelector('.cursor-dot');
     const outline = document.querySelector('.cursor-outline');
 
-    if (!dot || !outline) return;
+    if (!dot || !outline) {
+        console.warn("Custom cursor elements not found.");
+        return;
+    }
+    
+    console.log("Neural Cursor Initialized");
+    document.body.classList.add('custom-cursor-active');
 
     let mouseX = 0, mouseY = 0;
     let outlineX = 0, outlineY = 0;
@@ -594,9 +600,7 @@ function initCustomCursor() {
 // ── Init ──────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
     initSaaSFeatures();
-    if (window.matchMedia("(pointer: fine)").matches) {
-        initCustomCursor();
-    }
+    initCustomCursor();
     initWebsiteScraper();
     initBulkWebsiteScraper();
     initLinkedInScraper();

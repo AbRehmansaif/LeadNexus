@@ -3105,3 +3105,60 @@ html, body {
     color: var(--text-muted);
     line-height: 1.6;
 }
+
+/* ── Custom Neural Cursor ───────────────────────────────── */
+@media (pointer: fine) {
+    body.custom-cursor-active *:not(.cursor-dot):not(.cursor-outline) {
+        cursor: none !important;
+    }
+
+    .cursor-dot,
+    .cursor-outline {
+        pointer-events: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        border-radius: 50%;
+        opacity: 0;
+        transition: opacity 0.3s ease, transform 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28), background 0.3s ease;
+        z-index: 999999;
+    }
+
+    .cursor-dot {
+        width: 8px;
+        height: 8px;
+        background: var(--accent-purple);
+        box-shadow: 0 0 10px var(--accent-purple);
+        transform: translate(-50%, -50%);
+    }
+
+    .cursor-outline {
+        width: 34px;
+        height: 34px;
+        border: 2px solid rgba(139, 92, 246, 0.4);
+        transform: translate(-50%, -50%);
+    }
+
+    /* Hover State */
+    body.cursor-hover .cursor-dot {
+        transform: translate(-50%, -50%) scale(0.5);
+    }
+
+    body.cursor-hover .cursor-outline {
+        width: 50px;
+        height: 50px;
+        background: rgba(139, 92, 246, 0.1);
+        border-color: var(--accent-purple);
+    }
+
+    /* Click State */
+    body.cursor-click .cursor-dot {
+        transform: translate(-50%, -50%) scale(1.5);
+        background: var(--accent-blue);
+    }
+
+    body.cursor-click .cursor-outline {
+        transform: translate(-50%, -50%) scale(0.9);
+        border-color: var(--accent-blue);
+    }
+}
