@@ -16,8 +16,19 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 DEBUG = os.getenv("DEBUG", "False") == "True"
 
-ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "").split(",")
-SITE_URL = os.getenv("SITE_URL", "http://localhost:8000")
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
+SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000")
+
+# Use a dynamic list for CSRF Trusted Origins (Crucial for Django 4.0+)
+CSRF_TRUSTED_ORIGINS = [SITE_URL]
+for host in ALLOWED_HOSTS:
+    if host:
+        # Add both http and https protocols for the host
+        if not host.startswith(('http://', 'https://')):
+            CSRF_TRUSTED_ORIGINS.append(f"http://{host}")
+            CSRF_TRUSTED_ORIGINS.append(f"https://{host}")
+        else:
+            CSRF_TRUSTED_ORIGINS.append(host)
 
 
 # ==========================================================
@@ -233,3 +244,11 @@ if not DEBUG:
     SECURE_HSTS_SECONDS = 31536000
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+    # Important for VPS behind Nginx/Proxy
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+
+# Performance and Security Cookies
+SESSION_COOKIE_HTTPONLY = True
+CSRF_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'
+CSRF_COOKIE_SAMESITE = 'Lax'
