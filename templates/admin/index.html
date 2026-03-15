@@ -389,6 +389,66 @@
         color: var(--cc-text-muted);
         margin-top: 6px;
     }
+    /* Server Mini Stats */
+    .server-health-row {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 25px;
+        flex-wrap: wrap;
+    }
+    .server-mini-card {
+        background: var(--cc-card-bg);
+        border: 1px solid var(--cc-card-border);
+        border-radius: 12px;
+        padding: 12px 18px;
+        flex: 1;
+        min-width: 140px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        position: relative;
+        overflow: hidden;
+    }
+    .server-mini-label {
+        font-size: 0.65rem;
+        color: var(--cc-text-muted);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 700;
+        margin-bottom: 4px;
+    }
+    .server-mini-value {
+        font-size: 1.1rem;
+        font-weight: 800;
+        color: var(--cc-text);
+        font-family: 'JetBrains Mono', monospace;
+    }
+    .health-bar-container {
+        height: 4px;
+        background: rgba(255,255,255,0.05);
+        border-radius: 2px;
+        margin-top: 8px;
+        overflow: hidden;
+    }
+    .health-bar-fill {
+        height: 100%;
+        transition: width 0.5s ease;
+    }
+    .status-pulse {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #10b981;
+        display: inline-block;
+        margin-left: 6px;
+        box-shadow: 0 0 8px #10b981;
+        animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+        0% { opacity: 1; transform: scale(1); }
+        50% { opacity: 0.5; transform: scale(0.8); }
+        100% { opacity: 1; transform: scale(1); }
+    }
 </style>
 {% endblock %}
 
@@ -399,8 +459,41 @@
     <!-- Nexus Command Center (Dark Mode Section) -->
     <div class="command-center">
         <div class="cc-header">
-            <h1 class="cc-title">Nexus Command Center</h1>
-            <p class="cc-subtitle">Unified operational intelligence and revenue oversight.</p>
+            <h1 class="cc-title">Admin Dashboard <span class="status-pulse"></span></h1>
+            <p class="cc-subtitle">Unified operational intelligence and server health monitoring.</p>
+        </div>
+
+        <!-- Server Health Matrix -->
+        <div class="server-health-row">
+            <div class="server-mini-card">
+                <div class="server-mini-label">CPU LOAD ({{ stats.server.cpu_count }} Cores)</div>
+                <div class="server-mini-value">{{ stats.server.cpu }}%</div>
+                <div class="health-bar-container">
+                    <div class="health-bar-fill" style="width: {{ stats.server.cpu }}%; background: #a855f7;"></div>
+                </div>
+            </div>
+            <div class="server-mini-card">
+                <div class="server-mini-label">RAM (Total: {{ stats.server.ram_total }})</div>
+                <div class="server-mini-value">{{ stats.server.ram }}%</div>
+                <div class="health-bar-container">
+                    <div class="health-bar-fill" style="width: {{ stats.server.ram }}%; background: #3b82f6;"></div>
+                </div>
+            </div>
+            <div class="server-mini-card">
+                <div class="server-mini-label">DISK (Total: {{ stats.server.disk_total }})</div>
+                <div class="server-mini-value">{{ stats.server.disk }}%</div>
+                <div class="health-bar-container">
+                    <div class="health-bar-fill" style="width: {{ stats.server.disk }}%; background: #10b981;"></div>
+                </div>
+            </div>
+            <div class="server-mini-card">
+                <div class="server-mini-label">BANDWIDTH (SENT/RECV)</div>
+                <div class="server-mini-value" style="font-size: 0.85rem;">{{ stats.server.net_sent }} / {{ stats.server.net_recv }}</div>
+            </div>
+            <div class="server-mini-card">
+                <div class="server-mini-label">SYSTEM UPTIME</div>
+                <div class="server-mini-value">{{ stats.server.uptime }}</div>
+            </div>
         </div>
 
         <div class="admin-metrics-dashboard">
@@ -477,7 +570,7 @@
                     <div class="cc-chart-pills">
                         <span class="cc-chart-pill active" id="pillRevenue">Revenue</span>
                         <span class="cc-chart-pill" id="pillNewUsers">New Users</span>
-                        <span class="cc-chart-pill" id="pillOrders">Orders</span>
+                        <span class="cc-chart-pill" id="pillConversion">Conversion</span>
                     </div>
                 </div>
                 <div style="position: relative; height: 350px; width: 100%;">
@@ -585,6 +678,7 @@
             const chartLabels = {{ stats.chart_labels|safe }};
             const chartDataRevenue = {{ stats.chart_data_revenue|safe }};
             const chartDataRegistrations = {{ stats.chart_data_registrations|safe }};
+            const chartDataConversion = {{ stats.chart_data_conversion|safe }};
 
             let overviewChart = new Chart(ctxOverview, {
                 type: 'line',
@@ -628,12 +722,12 @@
             // Make the Pills Interactive
             const pillRev = document.getElementById('pillRevenue');
             const pillUsr = document.getElementById('pillNewUsers');
-            const pillOrd = document.getElementById('pillOrders');
+            const pillCnv = document.getElementById('pillConversion');
 
             pillRev.addEventListener('click', () => {
                 pillRev.classList.add('active');
                 if(pillUsr) pillUsr.classList.remove('active');
-                if(pillOrd) pillOrd.classList.remove('active');
+                if(pillCnv) pillCnv.classList.remove('active');
 
                 overviewChart.data.datasets[0].data = chartDataRevenue;
                 overviewChart.data.datasets[0].label = 'MRR Revenue';
@@ -646,13 +740,30 @@
             pillUsr.addEventListener('click', () => {
                 pillUsr.classList.add('active');
                 if(pillRev) pillRev.classList.remove('active');
-                if(pillOrd) pillOrd.classList.remove('active');
+                if(pillCnv) pillCnv.classList.remove('active');
 
                 overviewChart.data.datasets[0].data = chartDataRegistrations;
                 overviewChart.data.datasets[0].label = 'New Users';
                 overviewChart.data.datasets[0].borderColor = '#3b82f6';
                 overviewChart.data.datasets[0].backgroundColor = gradientReg;
                 overviewChart.options.scales.y.ticks.callback = function(value) { return value; };
+                overviewChart.update();
+            });
+
+            pillCnv.addEventListener('click', () => {
+                pillCnv.classList.add('active');
+                if(pillRev) pillRev.classList.remove('active');
+                if(pillUsr) pillUsr.classList.remove('active');
+
+                let gradientConv = ctxOverview.createLinearGradient(0, 0, 0, 350);
+                gradientConv.addColorStop(0, 'rgba(245, 158, 11, 0.4)'); // Amber
+                gradientConv.addColorStop(1, 'rgba(245, 158, 11, 0.0)');
+
+                overviewChart.data.datasets[0].data = chartDataConversion;
+                overviewChart.data.datasets[0].label = 'Conversion Rate';
+                overviewChart.data.datasets[0].borderColor = '#f59e0b';
+                overviewChart.data.datasets[0].backgroundColor = gradientConv;
+                overviewChart.options.scales.y.ticks.callback = function(value) { return value + '%'; };
                 overviewChart.update();
             });
 

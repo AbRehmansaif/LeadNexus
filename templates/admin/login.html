@@ -1,10 +1,10 @@
-{% load static %}
+{% load i18n static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Operator Access — LeadNexus Portal</title>
+    <title>{% trans 'Log in' %} — LeadNexus Admin</title>
     <link rel="icon" href="{% static 'logo_svg.png' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -78,7 +78,7 @@
             background: rgba(139, 92, 246, 0.2);
         }
 
-        /* ── Split Layout ──────────────────────────────────── */
+        /* ── Layout ──────────────────────────────────── */
         .auth-container {
             display: flex;
             width: 100%;
@@ -86,7 +86,7 @@
             overflow: hidden;
         }
 
-        /* ── Left Side (Brand Hero) ────────────────────────── */
+        /* ── Split Layout ──────────────────────────────────── */
         .auth-hero {
             flex: 1.2;
             position: relative;
@@ -165,49 +165,6 @@
             letter-spacing: -0.01em;
         }
 
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 32px;
-            animation: slideDown 0.8s 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
-        }
-
-        .feature-item {
-            display: flex;
-            align-items: center;
-            gap: 16px;
-            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        .feature-item:hover {
-            transform: translateX(10px);
-        }
-
-        .feature-icon {
-            width: 48px;
-            height: 48px;
-            background: rgba(var(--p-rgb), 0.1);
-            border: 1px solid rgba(var(--p-rgb), 0.2);
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--brand-primary);
-            box-shadow: 0 8px 16px -4px rgba(var(--p-rgb), 0.2);
-        }
-
-        .feature-text h4 {
-            font-size: 0.95rem;
-            font-weight: 600;
-            margin: 0 0 2px;
-        }
-
-        .feature-text p {
-            font-size: 0.8rem;
-            color: var(--text-dim);
-            margin: 0;
-        }
-
         /* ── Right Side (Form View) ────────────────────────── */
         .auth-form-side {
             flex: 1;
@@ -232,15 +189,6 @@
             opacity: 0.5;
         }
 
-        .auth-form-side::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: radial-gradient(circle at 100% 0%, rgba(var(--s-rgb), 0.1) 0%, transparent 50%),
-                        radial-gradient(circle at 0% 100%, rgba(var(--p-rgb), 0.05) 0%, transparent 50%);
-            pointer-events: none;
-        }
-
         .auth-card {
             width: 100%;
             max-width: 440px;
@@ -255,12 +203,6 @@
             box-shadow: 0 25px 80px -12px rgba(0, 0, 0, 0.6);
         }
 
-        @keyframes cardIn {
-            from { opacity: 0; transform: translateX(40px); }
-            to { opacity: 1; transform: translateX(0); }
-        }
-
-        .mobile-logo { display: none; margin-bottom: 24px; text-align: center; }
         .form-header { margin-bottom: 24px; text-align: center; }
         .form-header h2 { font-size: 1.75rem; font-weight: 800; margin-bottom: 6px; }
         .form-header p { color: var(--text-dim); font-size: 0.85rem; }
@@ -273,9 +215,7 @@
             padding-left: 2px;
         }
 
-        .input-wrapper {
-            position: relative;
-        }
+        .input-wrapper { position: relative; }
 
         .auth-input {
             width: 100%;
@@ -295,7 +235,6 @@
             border-color: var(--brand-primary);
             background: rgba(var(--p-rgb), 0.05);
             box-shadow: 0 0 0 4px rgba(var(--p-rgb), 0.15);
-            border-width: 1px;
         }
 
         .input-icon {
@@ -304,14 +243,8 @@
             top: 50%;
             transform: translateY(-50%);
             color: var(--text-muted);
-            transition: color 0.3s;
         }
 
-        .auth-input:focus + .input-icon {
-            color: var(--brand-primary);
-        }
-
-        /* ── Submit Button ────────────────────────────────── */
         .submit-btn {
             width: 100%;
             height: 50px;
@@ -322,84 +255,31 @@
             font-size: 1rem;
             font-weight: 700;
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.4s;
             margin-top: 12px;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
             box-shadow: 0 10px 30px -5px rgba(var(--p-rgb), 0.4);
-            position: relative;
-            overflow: hidden;
         }
 
         .submit-btn:hover {
             transform: translateY(-2px);
             filter: brightness(1.1);
-            box-shadow: 0 15px 30px -5px rgba(var(--p-rgb), 0.5);
-        }
-
-        .submit-btn:active {
-            transform: translateY(0);
-        }
-
-        .btn-glow {
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.2), transparent);
-            transform: translateX(-100%);
-            transition: transform 0.6s;
-        }
-
-        .submit-btn:hover .btn-glow {
-            transform: translateX(100%);
-        }
-
-        /* ── Utilities ────────────────────────────────────── */
-        .form-footer {
-            margin-top: 24px;
-            text-align: center;
-            font-size: 0.85rem;
-            color: var(--text-dim);
-        }
-
-        .form-footer a {
-            color: #fff;
-            text-decoration: none;
-            font-weight: 700;
-            transition: color 0.2s;
-        }
-
-        .form-footer a:hover {
-            color: var(--brand-primary);
-        }
-
-        .divider {
-            height: 1px;
-            background: linear-gradient(to right, transparent, rgba(255,255,255,0.05), transparent);
-            margin: 24px 0;
         }
 
         .error-banner {
             background: rgba(239, 68, 68, 0.08);
             border: 1px solid rgba(239, 68, 68, 0.2);
             color: #f87171;
-            padding: 16px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            margin-bottom: 32px;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            margin-bottom: 20px;
             display: flex;
-            align-items: flex-start;
-            gap: 12px;
-            backdrop-filter: blur(5px);
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-        }
-
-        @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+            align-items: center;
+            gap: 10px;
         }
 
         @keyframes slideDown {
@@ -407,32 +287,14 @@
             to { opacity: 1; transform: translateY(0); }
         }
 
-        /* ── Responsive ─────────────────────────────────── */
-        @media (max-width: 1024px) {
-            .auth-hero { display: none; }
-            .auth-form-side {
-                background: var(--auth-bg);
-                border-left: none;
-                border: none;
-                padding: 40px 20px;
-                overflow-y: auto;
-                justify-content: flex-start;
-            }
-            .mobile-logo {
-                display: block;
-                text-align: center;
-            }
-            .cursor-dot, .cursor-outline { display: none !important; }
-            body, a, button, input, label { cursor: auto !important; }
+        @keyframes cardIn {
+            from { opacity: 0; transform: translateX(20px); }
+            to { opacity: 1; transform: translateX(0); }
         }
 
-        @media (max-width: 480px) {
-            .auth-form-side {
-                padding: 24px;
-            }
-            .hero-title {
-                font-size: 2.5rem;
-            }
+        @media (max-width: 1024px) {
+            .auth-hero { display: none; }
+            .auth-form-side { border-left: none; }
         }
     </style>
 </head>
@@ -442,102 +304,83 @@
         <section class="auth-hero">
             <div class="hero-glow"></div>
             <div class="hero-content">
-                <div class="brand-logo" style="display: flex; align-items: center; gap: 16px; margin-bottom: 48px;">
+                <div class="brand-logo" style="margin-bottom: 48px;">
                     <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" style="height: 130px; filter: drop-shadow(0 0 20px rgba(var(--p-rgb), 0.5));">
                 </div>
                 
                 <h1 class="hero-title">
-                    <span>Powering the</span>
-                    <span>Future of Outreach</span>
+                    <span>Nexus Control</span>
+                    <span>Admin Terminal</span>
                 </h1>
                 
                 <p class="hero-description">
-                    The autonomous growth engine that converts intent into market dominance with mathematical precision.
+                    Secure operational interface for LeadNexus administrators. Authorized personnel only.
                 </p>
-
-                <div class="feature-grid">
-                    <div class="feature-item">
-                        <div class="feature-icon"><i data-lucide="zap"></i></div>
-                        <div class="feature-text">
-                            <h4>Neural Discovery</h4>
-                            <p>AI-driven lead identification</p>
-                        </div>
-                    </div>
-                    <div class="feature-item">
-                        <div class="feature-icon"><i data-lucide="globe"></i></div>
-                        <div class="feature-text">
-                            <h4>Global Reach</h4>
-                            <p>Target anywhere, instantly</p>
-                        </div>
-                    </div>
-                </div>
             </div>
         </section>
 
         <!-- ── Right Side: Form ────────────────────────── -->
         <section class="auth-form-side">
             <div class="auth-card">
-                <div class="mobile-logo">
-                    <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" style="height: 48px;">
-                </div>
-
                 <div class="form-header">
-                    <h2>Operator Authentication</h2>
-                    <p>Enter your credentials to access the Dashboard.</p>
+                    <h2>Admin Authentication</h2>
+                    <p>Enter encrypted credentials to proceed.</p>
                 </div>
 
-                {% if form.errors %}
+                {% if form.errors and not form.non_field_errors %}
                 <div class="error-banner">
-                    <i data-lucide="shield-alert" style="width: 20px; height: 20px;"></i>
-                    <span>Authentication failed. Re-verify identity protocols.</span>
+                    <i data-lucide="shield-alert" style="width: 18px; height: 18px;"></i>
+                    <span>Please correct the errors below.</span>
                 </div>
                 {% endif %}
 
-                <form method="POST" id="authForm" novalidate>
+                {% if form.non_field_errors %}
+                {% for error in form.non_field_errors %}
+                <div class="error-banner">
+                    <i data-lucide="shield-alert" style="width: 18px; height: 18px;"></i>
+                    <span>{{ error }}</span>
+                </div>
+                {% endfor %}
+                {% endif %}
+
+                <form action="{{ app_path }}" method="post" id="login-form">
                     {% csrf_token %}
                     
                     <div class="input-group">
-                        <label>Operator Identity</label>
+                        <label>Admin Identity</label>
                         <div class="input-wrapper">
-                            <input type="text" name="username" class="auth-input" placeholder="Username / Email" required autofocus>
-                            <i data-lucide="user" class="input-icon" style="width: 20px; height: 20px;"></i>
+                            <input type="text" name="username" class="auth-input" placeholder="Username" required autofocus>
+                            <i data-lucide="shield-check" class="input-icon" style="width: 20px; height: 20px;"></i>
                         </div>
+                        {% if form.username.errors %}
+                            <p style="color: #f87171; font-size: 0.75rem; margin-top: 4px;">{{ form.username.errors.0 }}</p>
+                        {% endif %}
                     </div>
 
                     <div class="input-group">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
-                            <label>Security Key</label>
-                            <a href="{% url 'password_reset' %}" style="font-size: 0.8rem; color: #64748b; text-decoration: none; margin-bottom: 8px;">Lost Key?</a>
-                        </div>
+                        <label>Security Key</label>
                         <div class="input-wrapper">
                             <input type="password" name="password" id="password" class="auth-input" placeholder="••••••••" required>
                             <i data-lucide="lock" class="input-icon" style="width: 20px; height: 20px;"></i>
-                            <button type="button" id="togglePass" style="position: absolute; right: 16px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; transition: color 0.2s;">
-                                <i data-lucide="eye" style="width: 20px; height: 20px;"></i>
-                            </button>
                         </div>
+                        {% if form.password.errors %}
+                            <p style="color: #f87171; font-size: 0.75rem; margin-top: 4px;">{{ form.password.errors.0 }}</p>
+                        {% endif %}
                     </div>
 
+                    <input type="hidden" name="this_is_the_login_form" value="1" />
+                    <input type="hidden" name="next" value="{{ next }}" />
+
                     <button type="submit" class="submit-btn">
-                        <span class="btn-glow"></span>
-                        <span>Unlock Terminal</span>
+                        <span>Initiate Session</span>
                         <i data-lucide="arrow-right" style="width: 20px; height: 20px;"></i>
                     </button>
                 </form>
 
-                <div class="form-footer">
-                    New operative? <a href="{% url 'register' %}">Initiate Identity</a>
-                </div>
-
-                <div class="divider"></div>
-
-                <div style="display: flex; flex-direction: column; align-items: center; gap: 12px;">
-                    <a href="/" style="color: #475569; text-decoration: none; font-size: 0.8rem; display: flex; align-items: center; gap: 6px; transition: color 0.2s;">
-                        <i data-lucide="home" style="width: 14px; height: 14px;"></i> Return Home
+                <div style="margin-top: 32px; text-align: center;">
+                    <a href="/" style="color: var(--text-muted); text-decoration: none; font-size: 0.8rem; display: flex; align-items: center; justify-content: center; gap: 8px; transition: color 0.2s;">
+                        <i data-lucide="home" style="width: 14px; height: 14px;"></i> Back to Mainframe
                     </a>
-                    <div style="font-size: 0.65rem; color: #475569; letter-spacing: 0.15em; text-transform: uppercase; font-weight: 600;">
-                        Powered by <span style="color: var(--brand-primary); font-weight: 800;">Abdul Rehman</span>
-                    </div>
                 </div>
             </div>
         </section>
@@ -550,32 +393,6 @@
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
 
-            // Password Reveal
-            const toggleBtn = document.getElementById('togglePass');
-            const passInput = document.getElementById('password');
-            
-            if (toggleBtn && passInput) {
-                toggleBtn.addEventListener('click', () => {
-                    const isPass = passInput.type === 'password';
-                    passInput.type = isPass ? 'text' : 'password';
-                    toggleBtn.innerHTML = `<i data-lucide="${isPass ? 'eye-off' : 'eye'}" style="width: 20px; height: 20px;"></i>`;
-                    lucide.createIcons();
-                });
-            }
-
-            // Form Animation State
-            const authForm = document.getElementById('authForm');
-            if (authForm) {
-                authForm.addEventListener('submit', () => {
-                    const btn = authForm.querySelector('.submit-btn');
-                    if (btn) {
-                        btn.innerHTML = '<span class="loading-spinner"></span> <span>Verifying...</span>';
-                        btn.style.opacity = '0.8';
-                        btn.style.pointerEvents = 'none';
-                    }
-                });
-            }
-
             // Neural Cursor Logic
             const dot = document.querySelector('.cursor-dot');
             const outline = document.querySelector('.cursor-outline');
@@ -587,51 +404,32 @@
 
                     requestAnimationFrame(() => {
                         dot.style.transform = `translate3d(${posX}px, ${posY}px, 0) translate(-50%, -50%)`;
-                        
                         outline.animate({
                             transform: `translate3d(${posX}px, ${posY}px, 0) translate(-50%, -50%)`
-                        }, { duration: 100, fill: "forwards", easing: "ease-out" });
+                        }, { duration: 100, fill: "forwards" });
                         
-                        if (dot.style.opacity === '0' || dot.style.opacity === '') {
-                            dot.style.opacity = '1';
-                            outline.style.opacity = '1';
-                        }
+                        dot.style.opacity = '1';
+                        outline.style.opacity = '1';
                     });
                 });
 
-                const hoverables = document.querySelectorAll('a, button, input, .feature-item, label');
-                hoverables.forEach(el => {
-                    el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
-                    el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
+                document.querySelectorAll('a, button, input').forEach(el => {
+                    el.addEventListener('mouseenter', () => {
+                        document.body.classList.add('cursor-hover');
+                    });
+                    el.addEventListener('mouseleave', () => {
+                        document.body.classList.remove('cursor-hover');
+                    });
                 });
-
-                document.addEventListener('mousedown', () => document.body.classList.add('cursor-click'));
-                document.addEventListener('mouseup', () => document.body.classList.remove('cursor-click'));
             }
         });
     </script>
-
     <style>
-        .loading-spinner {
-            width: 20px;
-            height: 20px;
-            border: 2px solid rgba(255,255,255,0.3);
-            border-top-color: #fff;
-            border-radius: 50%;
-            animation: spin 0.8s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-        
-        @keyframes slideDown {
-            from { opacity: 0; transform: translateY(-20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        @keyframes pulse {
-            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(var(--p-rgb), 0.4); }
-            50% { opacity: 0.7; transform: scale(1.1); box-shadow: 0 0 0 10px rgba(var(--p-rgb), 0); }
+        .cursor-hover .cursor-outline {
+            transform: translate(-50%, -50%) scale(1.5);
+            background: rgba(139, 92, 246, 0.1);
+            border-color: var(--brand-primary);
         }
     </style>
-
 </body>
 </html>
