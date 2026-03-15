@@ -251,15 +251,23 @@ async function pollKeywordJob(jobId) {
     const maxAttempts = 180;
     for (let i = 0; i < maxAttempts; i++) {
         try {
-            const status = await apiCall(`/api/keyword/jobs/${jobId}/status/`);
+            const data = await apiCall(`/api/keyword/jobs/${jobId}/status/`);
+            
+            // Update UI elements if they exist
+            const statusEl = document.getElementById('statusBadge');
+            if (statusEl) {
+                statusEl.className = `badge badge-${data.status}`;
+                statusEl.innerHTML = `<span class="badge-dot"></span> ${data.status.toUpperCase()}`;
+            }
 
-            if (status.status === 'completed') {
+            if (data.status === 'completed') {
                 hideLoading();
-                window.location.href = `/keyword-job/${jobId}/`;
+                setTimeout(() => window.location.reload(), 1000);
                 return;
-            } else if (status.status === 'failed') {
+            } else if (data.status === 'failed') {
                 hideLoading();
-                showNotification('Search failed: ' + (status.error_message || 'Unknown error'), 'error');
+                showNotification('Search failed: ' + (data.error_message || 'Unknown error'), 'error');
+                setTimeout(() => window.location.reload(), 2000);
                 return;
             }
         } catch (err) {
@@ -271,6 +279,28 @@ async function pollKeywordJob(jobId) {
     showNotification('Job timeout. Check Outreach Center later.', 'warning');
 }
 
+
+async function pollWebsiteJob(jobId) {
+    const maxAttempts = 180;
+    for (let i = 0; i < maxAttempts; i++) {
+        try {
+            const data = await apiCall(`/api/jobs/${jobId}/status/`);
+            
+            const statusEl = document.getElementById('statusBadge');
+            if (statusEl) {
+                statusEl.className = `badge badge-${data.status}`;
+                statusEl.innerHTML = `<span class="badge-dot"></span> ${data.status.toUpperCase()}`;
+            }
+
+            if (data.status === 'completed' || data.status === 'failed') {
+                hideLoading();
+                setTimeout(() => window.location.reload(), 1500);
+                return;
+            }
+        } catch (err) { }
+        await sleep(4000);
+    }
+}
 
 // ── LinkedIn Scraper Form ─────────────────────────────────
 function initLinkedInScraper() {
@@ -312,16 +342,23 @@ function initLinkedInScraper() {
     });
 }
 
-// ── LinkedIn Job Polling (on detail page) ─────────────────
-function initLinkedInJobPolling() {
+// ── Polling Dispatcher ────────────────────────────────────
+function initJobPolling() {
     const progressEl = document.getElementById('jobProgress');
     if (!progressEl) return;
 
     const jobId = progressEl.dataset.jobId;
     const jobStatus = progressEl.dataset.jobStatus;
+    const jobType = progressEl.dataset.jobType; // We'll add this to templates
 
     if (jobStatus === 'pending' || jobStatus === 'running') {
-        pollLinkedInJob(jobId);
+        if (jobType === 'linkedin') {
+            pollLinkedInJob(jobId);
+        } else if (jobType === 'keyword') {
+            pollKeywordJob(jobId);
+        } else if (jobType === 'website') {
+            pollWebsiteJob(jobId);
+        }
     }
 }
 
@@ -604,7 +641,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initWebsiteScraper();
     initBulkWebsiteScraper();
     initLinkedInScraper();
-    initLinkedInJobPolling();
+    initJobPolling();
     initKeywordScraper();
 
     // Animate cards on scroll

@@ -41,10 +41,10 @@ class WebSearchScraper:
 
         unique_domains: Set[str] = set()
         
-        # Request higher counts where supported (&count=50, &num=100)
+        # Request higher counts where supported
         engines = [
             {"name": "DuckDuckGo", "url": "https://html.duckduckgo.com/html/?q={query}"},
-            {"name": "Bing", "url": "https://www.bing.com/search?q={query}&count=50"},
+            {"name": "Bing", "url": "https://www.bing.com/search?q={query}&count=50&first=1"},
             {"name": "Google", "url": "https://www.google.com/search?q={query}&num=100"}
         ]
 
@@ -69,17 +69,46 @@ class WebSearchScraper:
 
                     page = 0
                     consecutive_empty_pages = 0
-                    while len(unique_domains) < max_results and page < 10: # Increased page limit
+                    while len(unique_domains) < max_results and page < 10:
                         if self.driver is None: break
-                            
+
+                        # Wait for results to load
+                        selector = '.result__a' if engine['name'] == "DuckDuckGo" else '.b_algo' if engine['name'] == "Bing" else '#search'
+                        try:
+                            WebDriverWait(self.driver, 8).until(EC.presence_of_element_located((By.CSS_SELECTOR, selector)))
+                        except:
+                            pass # Fallback to parsing whatever is there
+
+                        # Scroll slightly to look active
+                        self.driver.execute_script(f"window.scrollTo(0, {random.randint(200, 500)});")
+                        time.sleep(random.uniform(1, 2))
+
                         soup = BeautifulSoup(self.driver.page_source, 'html.parser')
-                        links_on_this_page = 0
+                        links_on_this_page: int = 0
                         
-                        for a in soup.find_all('a', href=True):
-                            url = a['href']
-                            if '/url?q=' in url: url = url.split('/url?q=')[1].split('&')[0]
-                            elif '/l?kh=' in url: continue
-                                
+                        # Targeted extraction based on engine
+                        search_results: List = []
+                        if engine['name'] == "DuckDuckGo":
+                            search_results = soup.select('a.result__a')
+                            if not search_results:
+                                search_results = soup.select('.result__title a.result__a')
+                        elif engine['name'] == "Bing":
+                            search_results = [h2.find('a') for h2 in soup.select('.b_algo h2') if h2.find('a')]
+                            if not search_results:
+                                search_results = [h2.find('a') for h2 in soup.find_all('h2') if h2.find('a')]
+                        else:
+                            search_results = soup.find_all('a', href=True)
+
+                        for a in search_results:
+                            if not a or not a.get('href'): continue
+                            url: str = str(a['href'])
+                            
+                            if '/url?q=' in url: 
+                                url = url.split('/url?q=')[1].split('&')[0]
+                            elif 'duckduckgo.com/l/?kh=' in url:
+                                continue
+                            
+                            url = urllib.parse.unquote(url)
                             if not url.startswith('http'): continue
                                 
                             if self._is_target_website(url):
@@ -97,15 +126,14 @@ class WebSearchScraper:
 
                         if links_on_this_page == 0:
                             consecutive_empty_pages += 1
-                            if consecutive_empty_pages >= 2: # Stop after 2 truly empty pages
+                            if consecutive_empty_pages >= 2:
                                 break
                         else:
                             consecutive_empty_pages = 0
                             
-                        # Try to find Next button
+                        # Pagination
                         try:
                             next_clicked = False
-                            # Specific engine next-selectors
                             next_selectors = ['#pnnext', 'a.sb_pagN', 'a.next', 'a[aria-label="Next page"]']
                             for sel in next_selectors:
                                 try:
@@ -117,7 +145,6 @@ class WebSearchScraper:
                                 except: continue
                                 
                             if not next_clicked:
-                                # Fallback text-based search
                                 all_links = self.driver.find_elements(By.TAG_NAME, 'a')
                                 for link in all_links:
                                     txt = link.text.strip().lower()
