@@ -180,9 +180,14 @@ REST_FRAMEWORK = {
 # CORS
 # ==========================================================
 CORS_ALLOW_ALL_ORIGINS = os.getenv("CORS_ALLOW_ALL", "False") == "True"
+CSRF_TRUSTED_ORIGINS = [
+    "https://saqetawasul.store",
+    "https://www.saqetawasul.store",
+]
 
 if not CORS_ALLOW_ALL_ORIGINS:
-    CORS_ALLOWED_ORIGINS = os.getenv("CORS_ALLOWED_ORIGINS", "").split(",")
+    cors_raw = os.getenv("CORS_ALLOWED_ORIGINS", "")
+    CORS_ALLOWED_ORIGINS = [o.strip() for o in cors_raw.split(",") if o.strip()]
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
