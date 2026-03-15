@@ -16,7 +16,39 @@ email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "admin@example.com")
 password = os.environ.get("DJANGO_SUPERUSER_PASSWORD", "adminpass")
 if not User.objects.filter(username=username).exists():
     User.objects.create_superuser(username=username, email=email, password=password)
+END#!/bin/bash
+# entrypoint.sh
+
+# Apply Django migrations
+echo "Applying migrations..."
+python manage.py migrate
+
+# Create superuser if it does not exist
+echo "Creating superuser..."
+export DJANGO_SETTINGS_MODULE=scrapper.settings
+python manage.py shell << END
+from django.contrib.auth import get_user_model
+import os
+User = get_user_model()
+username = os.environ.get("DJANGO_SUPERUSER_USERNAME", "admin")
+email = os.environ.get("DJANGO_SUPERUSER_EMAIL", "admin@example.com")
+password = os.environ.get("DJANGO_SUPERUSER_PASSWORD", "adminpass")
+if not User.objects.filter(username=username).exists():
+    User.objects.create_superuser(username=username, email=email, password=password)
+    print("Superuser created successfully!")
+else:
+    print("Superuser already exists.")
 END
+
+
+# Collect static files
+echo "Collecting static files..."
+python manage.py collectstatic --noinput
+
+# Start Gunicorn
+echo "Starting Gunicorn..."
+exec gunicorn scrapper.wsgi:application --bind 0.0.0.0:8000 --workers 3 --timeout 120
+
 
 # Collect static files
 echo "Collecting static files..."
