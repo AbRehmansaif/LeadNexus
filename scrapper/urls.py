@@ -53,6 +53,9 @@ urlpatterns = [
     path('website-job/<int:pk>/',  template_views.website_job_detail,   name='website-job-detail'),
     path('linkedin-job/<int:pk>/', template_views.linkedin_job_detail,  name='linkedin-job-detail'),
     path('keyword-job/<int:pk>/',  template_views.keyword_job_detail,   name='keyword-job-detail'),
+
+    # ── SEO Marketing Pages ──────────────────────────────
+    path('', include('seo.urls')),
 ]
 
 from django.conf import settings

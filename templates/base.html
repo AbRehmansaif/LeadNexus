@@ -236,10 +236,55 @@
         <!-- ── Footer ──────────────────────────────────────── -->
         <footer class="footer">
             <div class="container">
-                <p>
-                    &copy; 2025 –{% now "Y" %} LeadNexus &mdash; Powered by
-                    <span class="powered-by">Abdul Rehman</span>
-                </p>
+                <div class="footer-grid">
+                    <div class="footer-brand">
+                        <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" style="height: 32px; filter: brightness(1.2);">
+                        <p>The ultimate autonomous growth engine for B2B lead generation and high-precision outreach. Scale your revenue with mathematical certainty.</p>
+                        <div class="footer-social" style="margin-top: 24px;">
+                            <a href="#" aria-label="LinkedIn"><i data-lucide="linkedin" style="width:18px; height:18px;"></i></a>
+                            <a href="#" aria-label="Twitter"><i data-lucide="twitter" style="width:18px; height:18px;"></i></a>
+                            <a href="#" aria-label="GitHub"><i data-lucide="github" style="width:18px; height:18px;"></i></a>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <h4 class="footer-heading">Platform</h4>
+                        <ul class="footer-links">
+                            <li><a href="/#features">Capabilities</a></li>
+                            <li><a href="/#pricing">Pricing Plans</a></li>
+                            <li><a href="{% url 'register' %}">Get Started</a></li>
+                            <li><a href="{% url 'login' %}">Member Login</a></li>
+                        </ul>
+                    </div>
+                    
+                    <div>
+                        <h4 class="footer-heading">Solutions</h4>
+                        <ul class="footer-links">
+                            <li><a href="{% url 'seo:seo-email-automation-tool' %}">Email Automation Tool</a></li>
+                            <li><a href="{% url 'seo:seo-cold-email-automation' %}">Cold Email Automation</a></li>
+                            <li><a href="{% url 'seo:seo-outreach-automation' %}">Outreach Automation</a></li>
+                            <li><a href="{% url 'seo:seo-lead-generation-email-tool' %}">Lead Gen Tool</a></li>
+                            <li><a href="{% url 'seo:seo-email-automation-for-sales' %}">For Sales Teams</a></li>
+                            <li><a href="{% url 'seo:seo-email-automation-for-saas' %}">For SaaS Teams</a></li>
+                        </ul>
+                    </div>
+
+                    <div>
+                        <h4 class="footer-heading">Resources</h4>
+                        <ul class="footer-links">
+                            <li><a href="{% url 'seo:seo-email-automation-for-agencies' %}">For Agencies</a></li>
+                            <li><a href="{% url 'seo:seo-email-automation-for-startups' %}">For Startups</a></li>
+                            <li><a href="{% url 'seo:seo-email-automation-for-recruiters' %}">For Recruiters</a></li>
+                            <li><a href="{% url 'seo:seo-email-automation-for-seo' %}">For SEO Experts</a></li>
+                            <li><a href="{% url 'seo:seo-email-automation-for-marketing' %}">For Marketers</a></li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <p>&copy; 2025 – {% now "Y" %} LeadNexus. All rights reserved.</p>
+                    <p>Powered by <span class="powered-by" style="color:var(--accent-purple); font-weight:700;">Abdul Rehman</span></p>
+                </div>
             </div>
         </footer>
 

@@ -49,6 +49,7 @@ INSTALLED_APPS = [
     'core',
     'mail',
     'subscriptions',
+    'seo',
 ]
 
 MIDDLEWARE = [

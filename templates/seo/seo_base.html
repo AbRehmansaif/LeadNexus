@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/seo_pages.css' %}">
+{% block seo_extra_css %}{% endblock %}
+{% endblock %}
+
+{% block content %}
+<main class="seo-page-wrap">
+    <div class="seo-container">
+        <header class="seo-hero">
+            <h1 class="seo-h1">{% block seo_h1 %}{% endblock %}</h1>
+            <p class="seo-subtitle">{% block seo_subtitle %}{% endblock %}</p>
+            <div class="hero-btns">
+                <a href="{% url 'register' %}" class="seo-cta-btn">Start Your Free Trial</a>
+            </div>
+        </header>
+
+        <article class="seo-content">
+            {% block seo_body %}{% endblock %}
+
+            <section class="seo-cta-section">
+                <h2>Ready to Transform Your Outreach?</h2>
+                <p>Join thousands of high-growth teams using LeadNexus to scale their revenue with autonomous email automation.</p>
+                <div style="margin-top: 32px;">
+                    <a href="{% url 'register' %}" class="seo-cta-btn"> Get Started Now <i data-lucide="arrow-right"></i></a>
+                </div>
+            </section>
+        </article>
+    </div>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    if (window.lucide) { lucide.createIcons(); }
+</script>
+{% endblock %}

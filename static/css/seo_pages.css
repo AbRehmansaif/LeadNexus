@@ -1,0 +1,159 @@
+/* ──────────────────────────────────────────────────────────
+   SEO PAGES ARCHITECTURE - Premium SaaS Aesthetic
+   ────────────────────────────────────────────────────────── */
+:root {
+    --p-rgb: 139, 92, 246; /* Purple */
+    --b-rgb: 59, 130, 246; /* Blue */
+    --bg-base: #020617;
+    --text-primary: #ffffff;
+    --text-secondary: #94a3b8;
+    --radius-lg: 24px;
+    --radius-md: 16px;
+    --transition: 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.seo-page-wrap {
+    background: var(--bg-base);
+    color: var(--text-primary);
+    line-height: 1.7;
+    font-size: 1.1rem;
+}
+
+.seo-container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 120px 24px 80px;
+}
+
+.seo-hero {
+    text-align: center;
+    margin-bottom: 80px;
+}
+
+.seo-h1 {
+    font-size: clamp(2.5rem, 8vw, 4.5rem);
+    font-weight: 950;
+    line-height: 1.1;
+    letter-spacing: -0.04em;
+    margin-bottom: 24px;
+    background: linear-gradient(135deg, #c4b5fd 0%, #8b5cf6 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.seo-subtitle {
+    font-size: 1.25rem;
+    color: var(--text-secondary);
+    max-width: 700px;
+    margin: 0 auto 40px;
+}
+
+.seo-content {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: var(--radius-lg);
+    padding: 60px;
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.5);
+}
+
+.seo-content h2 {
+    font-size: 2.2rem;
+    font-weight: 800;
+    margin: 60px 0 24px;
+    color: #fff;
+    letter-spacing: -0.02em;
+}
+
+.seo-content h2:first-of-type {
+    margin-top: 0;
+}
+
+.seo-content h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin: 40px 0 16px;
+    color: #c4b5fd;
+}
+
+.seo-content p {
+    margin-bottom: 24px;
+    color: #cbd5e1;
+}
+
+.seo-content ul, .seo-content ol {
+    margin-bottom: 32px;
+    padding-left: 24px;
+}
+
+.seo-content li {
+    margin-bottom: 12px;
+    color: #cbd5e1;
+}
+
+.seo-features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px;
+    margin: 48px 0;
+}
+
+.seo-feature-card {
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: var(--radius-md);
+    padding: 32px;
+    transition: var(--transition);
+}
+
+.seo-feature-card:hover {
+    background: rgba(255, 255, 255, 0.05);
+    border-color: rgba(var(--p-rgb), 0.3);
+    transform: translateY(-4px);
+}
+
+.seo-feature-card i {
+    color: #a78bfa;
+    margin-bottom: 20px;
+    display: block;
+}
+
+.seo-cta-section {
+    text-align: center;
+    margin-top: 80px;
+    padding: 80px 40px;
+    background: linear-gradient(135deg, rgba(var(--p-rgb), 0.1) 0%, rgba(var(--b-rgb), 0.1) 100%);
+    border-radius: var(--radius-lg);
+    border: 1px solid rgba(var(--p-rgb), 0.2);
+}
+
+.seo-cta-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: #8b5cf6;
+    color: #fff;
+    padding: 18px 36px;
+    border-radius: 14px;
+    font-weight: 700;
+    font-size: 1.1rem;
+    text-decoration: none;
+    transition: var(--transition);
+    box-shadow: 0 10px 20px rgba(var(--p-rgb), 0.3);
+}
+
+.seo-cta-btn:hover {
+    background: #7c3aed;
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px rgba(var(--p-rgb), 0.4);
+    color: #fff;
+}
+
+@media (max-width: 768px) {
+    .seo-content {
+        padding: 40px 20px;
+    }
+    .seo-h1 {
+        font-size: 2.8rem;
+    }
+}

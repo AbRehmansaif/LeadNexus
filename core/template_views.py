@@ -398,4 +398,3 @@ def error_400(request, exception=None):
     from .models import GlobalSettings
     settings = GlobalSettings.objects.first()
     return render(request, '400.html', {'global_settings': settings}, status=400)
-
