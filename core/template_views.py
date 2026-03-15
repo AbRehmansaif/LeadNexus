@@ -343,3 +343,26 @@ def all_jobs_page(request):
         'total_web_jobs': website_jobs_list.count(),
         'total_li_jobs': linkedin_jobs_list.count(),
     })
+
+# ── Custom Error Handlers ───────────────────────────────────────────
+
+def error_404(request, exception):
+    from .models import GlobalSettings
+    settings = GlobalSettings.objects.first()
+    return render(request, '404.html', {'global_settings': settings}, status=404)
+
+def error_500(request):
+    from .models import GlobalSettings
+    settings = GlobalSettings.objects.first()
+    return render(request, '500.html', {'global_settings': settings}, status=500)
+
+def error_403(request, exception=None):
+    from .models import GlobalSettings
+    settings = GlobalSettings.objects.first()
+    return render(request, '403.html', {'global_settings': settings}, status=403)
+
+def error_400(request, exception=None):
+    from .models import GlobalSettings
+    settings = GlobalSettings.objects.first()
+    return render(request, '400.html', {'global_settings': settings}, status=400)
+

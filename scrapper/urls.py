@@ -59,3 +59,10 @@ from django.conf.urls.static import static
 
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+
+# ── Custom Error Handlers ───────────────────────────────────────────
+handler404 = 'core.template_views.error_404'
+handler500 = 'core.template_views.error_500'
+handler403 = 'core.template_views.error_403'
+handler400 = 'core.template_views.error_400'
+
