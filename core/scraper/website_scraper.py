@@ -17,6 +17,7 @@ from .validators import (
     is_valid_url,
     is_valid_email,
     extract_email_from_text,
+    extract_emails_from_text,
     extract_phone_from_text,
     clean_text,
 )
@@ -38,7 +39,17 @@ class WebsiteScraper:
     Scrapes the homepage + up to `max_contact_pages` contact/about pages.
     """
 
-    CONTACT_KEYWORDS = ['contact', 'about', 'team', 'connect', 'reach', 'get-in-touch']
+    CONTACT_KEYWORDS = [
+        "contact", "contact-us", "get-in-touch", "reach-us",
+        "support", "help", "customer-support", "technical-support",
+        "about", "about-us", "team", "staff", "company",
+        "corporate", "leadership", "management",
+        "careers", "jobs", "join-us",
+        "privacy", "terms", "legal", "impressum",
+        "notice", "gdpr", "compliance",
+        "press", "media", "partners",
+        "investor", "affiliate"
+    ]
 
     SOCIAL_DOMAINS = {
         'facebook':  ['facebook.com', 'fb.com'],
@@ -103,18 +114,41 @@ class WebsiteScraper:
 
         # 2. Optionally scrape contact pages
         if scrape_contact:
+            # Add sitemap pages to potential contact pages
+            sitemap_urls = self._get_sitemap_urls(url)
             contact_urls = self._find_contact_pages(url)
-            logger.info(f"Found {len(contact_urls)} potential contact pages")
+            
+            # Combine and prioritize
+            all_potential_urls = list(dict.fromkeys(contact_urls + sitemap_urls))
+            logger.info(f"Found {len(all_potential_urls)} potential contact pages (incl. sitemap)")
 
-            for contact_url in contact_urls[:max_contact_pages]:
+            for contact_url in all_potential_urls[:max_contact_pages]:
                 logger.info(f"Scraping contact page: {contact_url}")
                 contact_data = self._scrape_page(contact_url)
                 if contact_data:
-                    data['pages_scraped'].append(contact_url)
+                    if contact_url not in data['pages_scraped']:
+                        data['pages_scraped'].append(contact_url)
                     self._merge(data, contact_data)
                 time.sleep(random.uniform(1, 2))
 
         return data
+
+    def _get_sitemap_urls(self, base_url: str) -> List[str]:
+        """Attempt to find and parse sitemap.xml for potential contact pages."""
+        sitemap_url = urljoin(base_url, '/sitemap.xml')
+        potential_urls = []
+        try:
+            response = self.session.get(sitemap_url, timeout=self.timeout)
+            if response.status_code == 200:
+                # Simple regex to find <loc> tags in XML
+                locs = re.findall(r'<loc>(.*?)</loc>', response.text)
+                for loc in locs:
+                    if any(kw in loc.lower() for kw in self.CONTACT_KEYWORDS):
+                        potential_urls.append(loc)
+                logger.info(f"Found {len(potential_urls)} relevant URLs in sitemap.xml")
+        except Exception as e:
+            logger.debug(f"Sitemap.xml not found or error for {base_url}: {e}")
+        return potential_urls
 
     # ------------------------------------------------------------------
     # Private helpers
@@ -170,14 +204,54 @@ class WebsiteScraper:
         return contact_urls
 
     def _extract_email(self, soup: BeautifulSoup) -> Optional[str]:
-        email = extract_email_from_text(soup.get_text())
-        if email:
-            return email
-        for link in soup.find_all('a', href=lambda x: x and 'mailto:' in x):
-            candidate = link['href'].replace('mailto:', '').split('?')[0]
-            if is_valid_email(candidate):
-                return candidate
-        return None
+        # Collect all unique emails from the page
+        emails = set()
+        
+        # 1. From text (includes obfuscation handling)
+        text_emails = extract_emails_from_text(soup.get_text())
+        if text_emails:
+            emails.update(text_emails)
+            
+        # 2. From mailto: links
+        for link in soup.find_all('a', href=lambda x: x and 'mailto:' in x.lower()):
+            candidate = link['href'].lower().replace('mailto:', '').split('?')[0].strip()
+            if candidate and is_valid_email(candidate):
+                emails.add(candidate)
+        
+        if not emails:
+            return None
+            
+        # 3. Rank emails to find the best contact address
+        return self._rank_email(list(emails))
+
+    def _rank_email(self, emails: List[str]) -> Optional[str]:
+        if not emails:
+            return None
+            
+        # Scoring system: higher is better
+        priority_prefixes = ['info', 'contact', 'hello', 'admin', 'sales', 'hi', 'office', 'support']
+        low_priority_prefixes = ['privacy', 'noreply', 'jobs', 'careers', 'billing', 'legal', 'compliance']
+        
+        scored_emails = []
+        for email in emails:
+            prefix = email.split('@')[0].lower()
+            score = 10  # Base score
+            
+            if any(p == prefix for p in priority_prefixes):
+                score += 20
+            elif any(p in prefix for p in priority_prefixes):
+                score += 10
+                
+            if any(p == prefix for p in low_priority_prefixes):
+                score -= 30
+            elif any(p in prefix for p in low_priority_prefixes):
+                score -= 15
+                
+            scored_emails.append((score, email))
+            
+        # Sort by score descending
+        scored_emails.sort(key=lambda x: x[0], reverse=True)
+        return scored_emails[0][1]
 
     def _extract_phone(self, soup: BeautifulSoup) -> Optional[str]:
         phone = extract_phone_from_text(soup.get_text())

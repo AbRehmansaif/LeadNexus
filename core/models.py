@@ -260,7 +260,7 @@ class ScrapeJob(models.Model):
     url               = models.URLField(max_length=2000, blank=True, null=True, help_text="Target website URL")
     urls_to_scrape    = models.JSONField(default=list, blank=True, help_text="List of URLs for bulk scraping")
     scrape_contact    = models.BooleanField(default=True, help_text="Also scrape contact/about pages")
-    max_contact_pages = models.PositiveSmallIntegerField(default=3)
+    max_contact_pages = models.PositiveSmallIntegerField(default=8)
 
     # Status
     status        = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', db_index=True)
@@ -451,7 +451,7 @@ class KeywordScrapeJob(models.Model):
     niche               = models.CharField(max_length=500, help_text="Search niche / keywords")
     max_results         = models.PositiveIntegerField(default=50, help_text="Max websites to find and scrape")
     scrape_contact      = models.BooleanField(default=True, help_text="Also scrape contact/about pages")
-    max_contact_pages   = models.PositiveSmallIntegerField(default=3)
+    max_contact_pages   = models.PositiveSmallIntegerField(default=8)
 
     # Status
     status        = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', db_index=True)

@@ -2,7 +2,7 @@
 Data validation utilities (ported from the standalone scraper)
 """
 import re
-from typing import Optional
+from typing import Optional, List
 
 
 def is_valid_email(email: str) -> bool:
@@ -33,14 +33,33 @@ def is_valid_phone(phone: str) -> bool:
 
 
 def extract_email_from_text(text: str) -> Optional[str]:
+    """Single email extraction - returns the first valid one."""
+    emails = extract_emails_from_text(text)
+    return emails[0] if emails else None
+
+
+def extract_emails_from_text(text: str) -> List[str]:
+    """
+    Enhanced extraction to catch standard and obfuscated emails.
+    Catches: user@domain.com, user[at]domain.com, user(at)domain.com
+    """
     if not text:
-        return None
+        return []
+
+    # 1. Obfuscation mapping
+    text = text.replace("[at]", "@").replace("(at)", "@").replace("[dot]", ".").replace("(dot)", ".")
+    
+    # 2. Standard regex
     email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
     matches = re.findall(email_pattern, text)
+    
+    unique_emails = []
     for match in matches:
-        if is_valid_email(match):
-            return match
-    return None
+        match = match.strip()
+        if is_valid_email(match) and match not in unique_emails:
+            unique_emails.append(match)
+            
+    return unique_emails
 
 
 def extract_phone_from_text(text: str) -> Optional[str]:
