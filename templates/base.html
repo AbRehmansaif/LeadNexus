@@ -4,8 +4,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="LeadNexus — is a powerful data automation platform for lead generation, automation, email outreach, and business growth. Collect. Connect. Convert.">
+    
+    <!-- SEO & Meta Metadata -->
+    <meta name="description" content="{% block meta_description %}LeadNexus — Enterprise-grade B2B lead generation and outreach automation. Extract high-intent data, verify emails, and scale your growth with high precision.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}lead generation, B2B sales automation, email outreach, business intelligence, growth hacking, sales intelligence, email verification, LeadNexus{% endblock %}">
+    <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:title" content="{% block og_title %}{% block title %}{% endblock %}{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}{% block meta_description %}{% endblock %}{% endblock %}">
+    <meta property="og:image" content="{% static 'logo.png' %}">
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="{{ request.build_absolute_uri }}">
+    <meta property="twitter:title" content="{% block twitter_title %}{% block title %}{% endblock %}{% endblock %}">
+    <meta property="twitter:description" content="{% block twitter_description %}{% block meta_description %}{% endblock %}{% endblock %}">
+    <meta property="twitter:image" content="{% static 'logo.png' %}">
+
     <title>{% block title %}LeadNexus{% endblock %}</title>
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
     <link rel="icon" href="{% static 'logo_svg.png' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <!-- Lucide Icons -->
@@ -20,7 +40,7 @@
             <div class="container navbar-inner">
                 <div class="navbar-header">
                     <a href="{% if user.is_authenticated %}{% url 'dashboard' %}{% else %}{% url 'landing' %}{% endif %}" class="navbar-brand">
-                        <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" class="brand-logo-img">
+                        <img src="{% static 'logo.png' %}" alt="LeadNexus — Enterprise B2B Lead Generation and Outreach Platform" class="brand-logo-img">
                     </a>
                     <button class="mobile-menu-toggle" aria-label="Toggle navigation" onclick="document.body.classList.toggle('menu-open')">
                         <i data-lucide="menu" class="menu-icon" style="width:28px; height:28px; color: var(--text-primary);"></i>
