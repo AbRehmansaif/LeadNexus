@@ -78,6 +78,30 @@ def extract_phone_from_text(text: str) -> Optional[str]:
     return None
 
 
+def decode_cloudflare_email(encoded_string: str) -> Optional[str]:
+    """
+    Decodes a Cloudflare protected email string.
+    Cloudflare uses a simple XOR cipher. The first two characters are the XOR key.
+    """
+    try:
+        if not encoded_string or len(encoded_string) < 4:
+            return None
+            
+        # Extract the key (first 2 hex characters)
+        key = int(encoded_string[:2], 16)
+        
+        # Decode the rest of the string
+        email = ""
+        for i in range(2, len(encoded_string), 2):
+            char_hex = encoded_string[i:i+2]
+            char_val = int(char_hex, 16)
+            email += chr(char_val ^ key)
+            
+        return email if is_valid_email(email) else None
+    except Exception:
+        return None
+
+
 def clean_text(text: str) -> str:
     if not text:
         return ""

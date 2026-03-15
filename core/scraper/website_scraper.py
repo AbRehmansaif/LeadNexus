@@ -20,6 +20,7 @@ from .validators import (
     extract_emails_from_text,
     extract_phone_from_text,
     clean_text,
+    decode_cloudflare_email,
 )
 
 logger = logging.getLogger(__name__)
@@ -40,15 +41,16 @@ class WebsiteScraper:
     """
 
     CONTACT_KEYWORDS = [
-        "contact", "contact-us", "get-in-touch", "reach-us",
-        "support", "help", "customer-support", "technical-support",
-        "about", "about-us", "team", "staff", "company",
-        "corporate", "leadership", "management",
-        "careers", "jobs", "join-us",
-        "privacy", "terms", "legal", "impressum",
-        "notice", "gdpr", "compliance",
-        "press", "media", "partners",
-        "investor", "affiliate"
+        "contact","contact-us","contactus","get-in-touch","reach-us","reach-out","connect",
+        "support","customer-support","technical-support","help","help-center","helpdesk",
+        "about","about-us","company","our-company","team","our-team","people","staff",
+        "leadership","management","board","executives","founders",
+        "sales","enterprise","demo","request-demo","book-demo","schedule-demo","quote","request-quote",
+        "partners","partnership","resellers","distributors","affiliate",
+        "careers","jobs","join-us","join-our-team","work-with-us","hiring","recruitment","vacancies",
+        "privacy","privacy-policy","terms","terms-of-service","legal","gdpr","compliance","impressum","disclaimer",
+        "press","media","newsroom","press-kit","media-relations",
+        "investor","investors","investor-relations","corporate-governance", "affiliate", "partners",
     ]
 
     SOCIAL_DOMAINS = {
@@ -126,8 +128,10 @@ class WebsiteScraper:
                 logger.info(f"Scraping contact page: {contact_url}")
                 contact_data = self._scrape_page(contact_url)
                 if contact_data:
-                    if contact_url not in data['pages_scraped']:
-                        data['pages_scraped'].append(contact_url)
+                    pages_scraped = data.get('pages_scraped', [])
+                    if isinstance(pages_scraped, list) and contact_url not in pages_scraped:
+                        pages_scraped.append(contact_url)
+                        data['pages_scraped'] = pages_scraped
                     self._merge(data, contact_data)
                 time.sleep(random.uniform(1, 2))
 
@@ -217,6 +221,21 @@ class WebsiteScraper:
             candidate = link['href'].lower().replace('mailto:', '').split('?')[0].strip()
             if candidate and is_valid_email(candidate):
                 emails.add(candidate)
+        
+        # 3. From Cloudflare Email Protection
+        # Case A: <a href="/cdn-cgi/l/email-protection#...">
+        for link in soup.find_all('a', href=re.compile(r'/cdn-cgi/l/email-protection#')):
+            encoded = link['href'].split('#')[-1]
+            decoded = decode_cloudflare_email(encoded)
+            if decoded:
+                emails.add(decoded)
+        
+        # Case B: <span class="__cf_email__" data-cfemail="...">
+        for span in soup.find_all(attrs={"data-cfemail": True}):
+            encoded = span['data-cfemail']
+            decoded = decode_cloudflare_email(encoded)
+            if decoded:
+                emails.add(decoded)
         
         if not emails:
             return None

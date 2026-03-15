@@ -69,7 +69,7 @@ class WebSearchScraper:
 
                     page = 0
                     consecutive_empty_pages = 0
-                    while len(unique_domains) < max_results and page < 10:
+                    while len(unique_domains) < max_results and page < 50:
                         if self.driver is None: break
 
                         # Wait for results to load
