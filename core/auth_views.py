@@ -31,8 +31,23 @@ class RegisterView(CreateView):
         
         # Send Welcome Email
         try:
-            subject = "Neural Identity Verified — Welcome to LeadNexus"
-            message = f"Hello {user.username},\n\nYour operator identity has been successfully registered in the LeadNexus network.\n\nOperator ID: {user.username}\nRegistered Email: {user.email}\n\nYou can now access your dashboard and initiate lead discovery protocols.\n\nWelcome back, Operator.\n— The LeadNexus Team"
+            subject = "Welcome to LeadNexus - Your B2B Growth Engine"
+            message = (
+                f"Hi {user.username},\n\n"
+                "Welcome to LeadNexus! We are thrilled to have you onboard.\n\n"
+                "LeadNexus is your ultimate autonomous growth engine for B2B lead generation and high precision outreach. "
+                "With your account now active, you have full access to our powerful tools designed to scale your revenue.\n\n"
+                "Here is what you can do right now:\n"
+                "- Extract verified B2B contacts instantly.\n"
+                "- Automate your personalized cold email outreach.\n"
+                "- Track your campaign success securely from your dashboard.\n\n"
+                f"Your Registered Email: {user.email}\n\n"
+                "Login to your Operator Dashboard to get started: https://saqetawasul.store/login/\n\n"
+                "If you need any assistance setting up your first campaign, feel free to reply directly to this email.\n\n"
+                "To your incredible growth,\n"
+                "- The LeadNexus Team"
+            )
+            
             send_mail(
                 subject,
                 message,
@@ -40,7 +55,8 @@ class RegisterView(CreateView):
                 [user.email],
                 fail_silently=True,
             )
-        except:
+        except Exception as e:
+            # Silently fail but log internally if needed
             pass
             
         messages.success(self.request, "Account created successfully! You can now log in.")
