@@ -1,0 +1,32 @@
+User-agent: *
+Allow: /
+Allow: /email-automation-tool/
+Allow: /cold-email-automation/
+Allow: /email-automation-for-sales/
+Allow: /email-automation-for-marketing/
+Allow: /email-automation-for-seo/
+Allow: /email-automation-for-agencies/
+Allow: /email-automation-for-recruiters/
+Allow: /email-automation-for-saas/
+Allow: /email-automation-for-startups/
+Allow: /lead-generation-email-tool/
+Allow: /outreach-automation/
+Allow: /login/
+Allow: /register/
+
+Disallow: /admin/
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /api/
+Disallow: /mail/api/
+Disallow: /mail/track/
+Disallow: /jobs/
+Disallow: /website-job/
+Disallow: /linkedin-job/
+Disallow: /keyword-job/
+Disallow: /webintelligence/
+Disallow: /profinder/
+Disallow: /subscription/
+Disallow: /password_reset/
+
+Sitemap: https://leadnexus.difusionseo.com/sitemap.xml

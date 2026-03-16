@@ -5,7 +5,9 @@ Two sections:
   /api/...    → REST API endpoints (JSON responses)
   /...        → Template-based web pages (HTML)
 """
+import os
 from django.contrib import admin
+from django.http import HttpResponse
 from django.urls import path, include, reverse_lazy
 from django.contrib.auth import views as auth_views
 from core.auth_views import (
@@ -13,6 +15,19 @@ from core.auth_views import (
     VerifyResetCodeView, CustomPasswordResetConfirmView
 )
 from core import template_views
+from django.contrib.sitemaps.views import sitemap
+from scrapper.sitemaps import StaticViewSitemap, SeoViewSitemap
+
+sitemaps = {
+    'static': StaticViewSitemap,
+    'seo': SeoViewSitemap,
+}
+
+def robots_txt_view(request):
+    robots_path = os.path.join(os.path.dirname(__file__), '..', 'templates', 'robots.txt')
+    with open(robots_path) as f:
+        content = f.read()
+    return HttpResponse(content, content_type='text/plain')
 
 urlpatterns = [
     # ── Authentication ─────────────────────────────────────
@@ -56,6 +71,12 @@ urlpatterns = [
 
     # ── SEO Marketing Pages ──────────────────────────────
     path('', include('seo.urls')),
+    
+    # ── Sitemaps ──────────────────────────────────────────────
+    path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+    
+    # ── Robots.txt ──────────────────────────────────────────
+    path('robots.txt', robots_txt_view, name='robots-txt'),
 ]
 
 from django.conf import settings
