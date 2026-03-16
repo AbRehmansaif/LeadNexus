@@ -181,8 +181,8 @@ REST_FRAMEWORK = {
 # ==========================================================
 CORS_ALLOW_ALL_ORIGINS = os.getenv("CORS_ALLOW_ALL", "False") == "True"
 CSRF_TRUSTED_ORIGINS = [
-    "https://saqetawasul.store",
-    "https://www.saqetawasul.store",
+    "http://leadnexus.difusionseo.com",
+    "https://www.leadnexus.difusionseo.com",
 ]
 
 if not CORS_ALLOW_ALL_ORIGINS:
