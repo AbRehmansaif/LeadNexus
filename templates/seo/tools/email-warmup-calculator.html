@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Free Email Warm-Up Schedule Calculator — LeadNexus{% endblock %}
+{% block meta_description %}Free online email warm-up schedule calculator. Determine the exact day-by-day sending volume to properly warm up your B2B cold email domain and avoid spam folders.{% endblock %}
+{% block meta_keywords %}email warmup schedule, cold email warmup calculator, domain warmup, b2b email deliverability, scale cold email volume, outreach sending schedule, prevent spam folder{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tool-email-warmup-calculator.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="tool-page">
+  <div class="container">
+
+    <!-- Hero -->
+    <div class="tool-hero">
+      <div class="tool-badge">
+        <i data-lucide="flame" style="width:13px;height:13px;"></i>
+        Email Warm-Up Calculator
+      </div>
+      <h1>Email Warm-Up Schedule Calculator</h1>
+      <p>Calculate the exact day-by-day sending volume to properly warm up your domain. Safely scale your cold outreach without destroying your sender reputation or landing in spam.</p>
+    </div>
+
+    <!-- Interface -->
+    <div class="warmup-container">
+      
+      <!-- Settings Panel -->
+      <div class="panel settings-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="dot"></span>
+            Configuration
+          </div>
+        </div>
+        <div class="panel-body">
+          
+          <div class="input-group">
+            <label class="input-label">Target Daily Volume
+              <div class="custom-tooltip">
+                <i data-lucide="help-circle" class="help-icon"></i>
+                <div class="tooltip-content">Maximum number of emails you want to send per day when fully ramped up (typically 30-50 per inbox).</div>
+              </div>
+            </label>
+            <div class="slider-wrapper">
+              <input type="range" id="targetVolume" min="10" max="250" value="50" class="range-slider">
+              <span id="targetVolumeVal" class="slider-val">50 emails/day</span>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Domain Reputation</label>
+            <div class="custom-select-wrapper">
+              <select id="domainReputation" class="theme-select">
+                <option value="new">Brand New Domain (< 30 days old)</option>
+                <option value="aged">Aged Domain (Never used for outreach)</option>
+                <option value="recovering">Recovering from Spam Issues</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Warm-Up Strategy</label>
+            <div class="strategy-selector" id="strategySelector">
+              <div class="strategy-btn active" data-strategy="recommended">
+                Recommended
+                <small>Safest standard approach (14-21 days)</small>
+              </div>
+              <div class="strategy-btn" data-strategy="conservative">
+                Conservative
+                <small>Slowest, best for recovering domains</small>
+              </div>
+              <div class="strategy-btn" data-strategy="aggressive">
+                Aggressive
+                <small>Risky, only for aged, healthy domains</small>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+        <div class="panel-footer">
+          <button class="btn-calculate" id="calculateBtn">
+            <i data-lucide="calculator" style="width:16px;height:16px;"></i>
+            Generate Schedule
+          </button>
+        </div>
+      </div>
+
+      <!-- Results Panel -->
+      <div class="panel results-panel">
+        <div class="panel-header" style="justify-content:space-between;">
+          <div class="panel-title">
+            <i data-lucide="calendar" style="width:14px;height:14px; color:#a78bfa; margin-right:6px;"></i> Ramp-up Schedule
+          </div>
+          <button class="btn-action" id="downloadCsvBtn" style="display: none;">
+            <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
+          </button>
+        </div>
+        
+        <div class="panel-body schedule-body">
+          <div id="emptyState" class="empty-state">
+            <i data-lucide="trending-up" class="empty-icon"></i>
+            <h3>No Schedule Generated</h3>
+            <p>Configure your settings on the left and click "Generate Schedule" to compute your custom day-by-day ramp-up plan.</p>
+          </div>
+
+          <div id="scheduleResults" class="schedule-results" style="display: none;">
+            <div class="summary-grid">
+              <div class="summary-box">
+                <div class="summary-label">Days to Target</div>
+                <div class="summary-value" id="daysToTarget">0</div>
+              </div>
+              <div class="summary-box">
+                <div class="summary-label">Starting Volume</div>
+                <div class="summary-value" id="startingVol">0</div>
+              </div>
+              <div class="summary-box">
+                <div class="summary-label">Daily Increment</div>
+                <div class="summary-value" id="dailyInc">0</div>
+              </div>
+            </div>
+
+            <div class="table-container">
+              <table class="schedule-table">
+                <thead>
+                  <tr>
+                    <th>Day</th>
+                    <th>Warm-up Emails</th>
+                    <th>Total Emails</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="scheduleTableBody">
+                  <!-- Rows injected via JS -->
+                </tbody>
+              </table>
+            </div>
+
+            <div class="tips-box" style="margin-top:20px;">
+              <div class="tips-title"><i data-lucide="lightbulb" style="width:14px;height:14px;"></i> Pro Deliverability Tips</div>
+              <ul class="tips-list">
+                <li>Never stop your automated warm-up tool, even when sending outreach. Keep it at 20-30% of total volume permanently.</li>
+                <li>Ensure DKIM, SPF, and DMARC are fully authenticated before Day 1.</li>
+                <li>If your open rates drop below 40%, pause outreach and fall back to 100% warm-up for 5 days.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SEO Content Block -->
+    <div class="seo-content-block">
+      <h2>Why is an Email Warm-Up Schedule Important?</h2>
+      <p>When you register a new domain or set up a new email inbox for cold outreach, mail service providers (ISPs) like Google Workspace and Microsoft 365 treat you with extreme suspicion. Because you have no "sender reputation" (a track record of sending good emails that get replies), any sudden spike in volume will automatically trigger their spam filters.</p>
+      
+      <p>An <strong>email warm-up schedule</strong> is a mathematical, day-by-day process of systematically increasing your sending volume. You start by sending only a few emails to highly engaged accounts (warm-up tools automatically reply and mark your emails as important), and slowly increment that number over 2 to 4 weeks. This proves to Google and Microsoft that you are a legitimate human sender, permanently protecting your domain's deliverability.</p>
+
+      <h2>How Fast Should You Scale Cold Email Volume?</h2>
+      <p>The speed at which you reach your target volume depends entirely on your domain and IP health:</p>
+      <ul>
+        <li><strong>Brand New Domains:</strong> Start extremely low (1-2 emails per day). An aggressive ramp-up on a domain less than 30 days old will instantly burn the domain. It takes approximately 14-21 days to safely reach 50 emails/day.</li>
+        <li><strong>Aged Domains:</strong> If a domain is over six months old and has been collecting passive traffic or forwarding emails, you can start at a conservatively higher baseline (3-5 emails) and scale slightly faster.</li>
+        <li><strong>Recovering Domains:</strong> If your emails are currently landing in spam, immediately halt all cold outreach. Revert to a <strong>Conservative</strong> warm-up schedule, starting at 1-2 emails per day minimum, and rely entirely on automated warm-up replies to repair the reputation over 3-4 weeks.</li>
+      </ul>
+
+      <h2>The "Golden Rule" of Cold Email Capacity</h2>
+      <p>Never send more than <strong>30 to 50 cold emails per day, per inbox.</strong> Modern spam filters are highly sensitive to velocity. If your goal is to send 500 cold emails per day, you should not force them all through one email address. Instead, you need horizontally scaled infrastructure: 10 separate inboxes, each sending 50 emails per day.</p>
+      <p>Using our Email Warm-Up Schedule Calculator allows you to project exactly how long it will take to prepare these inboxes for full-scale production outreach.</p>
+    </div>
+
+    <!-- Final CTA -->
+    <div class="tool-cta">
+      <h2>Automate your entire cold email workflow safely</h2>
+      <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:24px;">✅ Automated deliverability &nbsp;·&nbsp; ✅ Inbox rotation &nbsp;·&nbsp; ✅ Built-in warm-up &nbsp;·&nbsp; ✅ Verified B2B leads</p>
+      <a href="{% url 'register' %}" class="btn-convert" style="display:inline-flex; text-decoration:none;">
+        <i data-lucide="rocket" style="width:18px;height:18px;"></i>
+        Start Free — No Credit Card Needed
+      </a>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/tool-email-warmup-calculator.js' %}"></script>
+{% endblock %}

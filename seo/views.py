@@ -59,3 +59,7 @@ def excel_to_csv_converter(request):
 def email_spam_word_checker(request):
     """Target keywords: email spam word checker, cold email spam checker, check email for spam words, cold email deliverability tool"""
     return render(request, 'seo/tools/email-spam-checker.html', {'active_page': 'seo'})
+
+def email_warmup_calculator(request):
+    """Target keywords: email warmup schedule, cold email warmup calculator, domain warmup"""
+    return render(request, 'seo/tools/email-warmup-calculator.html', {'active_page': 'seo'})
