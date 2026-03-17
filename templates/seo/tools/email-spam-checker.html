@@ -62,11 +62,13 @@
             </button>
             
             <!-- ESP Target Selection -->
-            <select id="espSelect" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; outline: none; cursor: pointer;">
-              <option value="general">General (Standard)</option>
-              <option value="gmail">Gmail Workspace</option>
-              <option value="outlook">Outlook Enterprise</option>
-            </select>
+            <div class="esp-select-wrapper">
+              <select id="espSelect" class="esp-select-classic">
+                <option value="general">General (Standard)</option>
+                <option value="gmail">Gmail Workspace</option>
+                <option value="outlook">Outlook Enterprise</option>
+              </select>
+            </div>
           </div>
 
           <button class="btn-action" id="pasteExampleBtn">
@@ -127,9 +129,12 @@
 
           <!-- Explainability Breakdown -->
           <div class="breakdown-list" id="breakdownContainer" style="display: none; background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.05); border-radius: 8px; padding: 16px;">
-            <div class="list-title" style="margin-bottom:12px; font-weight:700; display:flex; align-items:center;">
-              <i data-lucide="bar-chart-2" style="width:14px;height:14px; margin-right:6px;"></i> Score Breakdown:
-              <span style="display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.6); font-size:10px; margin-left:6px; cursor:help;" title="Detailed look at which factors lowered or raised your deliverability score.">?</span>
+            <div class="list-title" style="margin-bottom:12px; font-weight:700; display:flex; align-items:center; color:var(--text-primary);">
+              <i data-lucide="bar-chart-2" style="width:14px;height:14px; margin-right:6px; color:#a78bfa;"></i> Score Breakdown:
+              <div class="custom-tooltip" style="margin-left:8px;">
+                <i data-lucide="info" style="width:14px;height:14px; color:var(--text-muted); cursor:help;"></i>
+                <div class="tooltip-content">Detailed look at which factors lowered or raised your deliverability score.</div>
+              </div>
             </div>
             <ul class="breakdown-items" id="breakdownItems" style="list-style:none; padding:0; margin:0; font-size:.85rem; color:var(--text-muted);">
               <!-- Inserted via JS -->
@@ -140,7 +145,10 @@
           <div class="spam-words-list" id="spamWordsContainer" style="display: none;">
             <div class="list-title" style="display:flex; align-items:center;">
                Detected Spam Triggers:
-               <span style="display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; background:rgba(239,68,68,0.2); color:#ef4444; font-size:10px; margin-left:6px; cursor:help;" title="Click a token below to highlight its location in the email editor. The number shows occurrences.">?</span>
+               <div class="custom-tooltip" style="margin-left:8px;">
+                 <i data-lucide="info" style="width:14px;height:14px; color:rgba(239,68,68,0.7); cursor:help;"></i>
+                 <div class="tooltip-content tooltip-left">Click a token below to highlight its location in the email editor. The number shows occurrences.</div>
+               </div>
             </div>
             <div class="chips-container" id="spamChips">
               <!-- Chips inserted via JS -->

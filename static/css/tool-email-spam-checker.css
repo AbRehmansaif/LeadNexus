@@ -129,6 +129,100 @@
 .panel-title .spam-dot.danger { background: #ef4444; }
 
 
+/* Custom Tooltips */
+.custom-tooltip {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+.custom-tooltip .tooltip-content {
+  visibility: hidden;
+  width: 240px;
+  background-color: #1e293b;
+  color: #f8fafc;
+  text-align: left;
+  border-radius: 8px;
+  padding: 10px 14px;
+  position: absolute;
+  z-index: 50;
+  bottom: 135%;
+  left: 50%;
+  transform: translateX(-50%) translateY(10px);
+  opacity: 0;
+  transition: opacity 0.25s, transform 0.25s;
+  font-size: 0.75rem;
+  font-weight: 500;
+  line-height: 1.5;
+  border: 1px solid rgba(255,255,255,0.08);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3), 0 4px 6px -4px rgba(0, 0, 0, 0.2);
+  pointer-events: none;
+}
+.custom-tooltip .tooltip-content.tooltip-left {
+  left: auto;
+  right: -10px;
+  transform: translateX(0) translateY(10px);
+}
+.custom-tooltip .tooltip-content.tooltip-left::after {
+  left: auto;
+  right: 14px;
+  margin-left: 0;
+}
+.custom-tooltip .tooltip-content::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -6px;
+  border-width: 6px;
+  border-style: solid;
+  border-color: #1e293b transparent transparent transparent;
+}
+.custom-tooltip:hover .tooltip-content {
+  visibility: visible;
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+.custom-tooltip:hover .tooltip-content.tooltip-left {
+  transform: translateX(0) translateY(0);
+}
+
+/* ESP Select Styling */
+.esp-select-wrapper {
+  position: relative;
+  display: inline-flex;
+}
+.esp-select-classic {
+  background: rgba(0,0,0,0.2) !important;
+  border: 1px solid var(--border);
+  color: var(--text-primary);
+  padding: 8px 36px 8px 14px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  outline: none;
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+  -moz-appearance: none;
+  transition: all 0.2s;
+  background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23a78bfa' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6 9 12 15 18 9'%3e%3c/polyline%3e%3c/svg%3e");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 14px;
+}
+.esp-select-classic:hover {
+  border-color: rgba(255,255,255,0.2);
+}
+.esp-select-classic:focus {
+  border-color: #a78bfa;
+  box-shadow: 0 0 0 2px rgba(124,58,237,0.2);
+}
+.esp-select-classic option {
+  background-color: #0f172a;
+  color: #f8fafc;
+  padding: 10px;
+}
+
 /* Buttons */
 .btn-action {
   background: rgba(255,255,255,.05);
