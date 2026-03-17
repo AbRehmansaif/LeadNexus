@@ -50,6 +50,17 @@
           </div>
 
           <div class="input-group">
+            <label class="input-label">Email Provider</label>
+            <div class="custom-select-wrapper">
+              <select id="emailProvider" class="theme-select">
+                <option value="gmail">Google Workspace (Max 50/day per inbox)</option>
+                <option value="outlook">Microsoft 365 / Outlook (Max 40/day per inbox)</option>
+                <option value="smtp">Custom SMTP / Other (Max 100/day per inbox)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="input-group">
             <label class="input-label">Domain Reputation</label>
             <div class="custom-select-wrapper">
               <select id="domainReputation" class="theme-select">
@@ -93,9 +104,14 @@
           <div class="panel-title">
             <i data-lucide="calendar" style="width:14px;height:14px; color:#a78bfa; margin-right:6px;"></i> Ramp-up Schedule
           </div>
-          <button class="btn-action" id="downloadCsvBtn" style="display: none;">
-            <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
-          </button>
+          <div style="display:flex; gap:8px;">
+            <button class="btn-action" id="downloadPdfBtn" style="display: none;">
+              <i data-lucide="file-text" style="width:14px;height:14px;"></i> Export PDF
+            </button>
+            <button class="btn-action" id="downloadCsvBtn" style="display: none;">
+              <i data-lucide="download" style="width:14px;height:14px;"></i> Export CSV
+            </button>
+          </div>
         </div>
         
         <div class="panel-body schedule-body">
@@ -127,7 +143,35 @@
 
             <!-- Chart Container -->
             <div class="chart-container" style="margin-bottom: 24px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
-              <canvas id="warmupChart" style="width: 100%; height: 250px;"></canvas>
+              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                <div style="font-weight:600; font-size:0.9rem; color:var(--text-primary);">Ramp-up Trajectory</div>
+                <div class="deliverability-score-pill" style="display:flex; align-items:center; gap:6px; background:rgba(255,255,255,0.05); padding:4px 10px; border-radius:99px; font-size:0.8rem; font-weight:700;">
+                  Score: <span id="delivScoreVal" style="color:#10b981;">100/100</span>
+                </div>
+              </div>
+              <div style="position: relative; height: 250px; width: 100%;">
+                <canvas id="warmupChart"></canvas>
+              </div>
+            </div>
+
+            <!-- Multi-Inbox Distribution -->
+            <div class="multi-inbox-section" style="margin-bottom: 24px;">
+              <div class="tips-title" style="margin-bottom: 12px; color:var(--text-primary);"><i data-lucide="layers" style="width:14px;height:14px; color:#a78bfa;"></i> Multi-Inbox Distribution Strategy</div>
+              <div class="table-container">
+                <table class="schedule-table">
+                  <thead>
+                    <tr>
+                      <th>Inbox Server</th>
+                      <th>Warm-up Emails</th>
+                      <th>Cold Emails</th>
+                      <th>Total Daily Volume</th>
+                    </tr>
+                  </thead>
+                  <tbody id="inboxTableBody">
+                    <!-- Rows injected via JS -->
+                  </tbody>
+                </table>
+              </div>
             </div>
 
             <div class="table-container">
@@ -196,5 +240,6 @@
 
 {% block extra_js %}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <script src="{% static 'js/tool-email-warmup-calculator.js' %}"></script>
 {% endblock %}
