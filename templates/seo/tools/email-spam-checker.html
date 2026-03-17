@@ -1,0 +1,251 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Free Email Spam Word Checker Online — Cold Email Deliverability Tool | LeadNexus{% endblock %}
+{% block meta_description %}Free online email spam word checker — analyzes your cold email copy for spam trigger words to improve your deliverability and open rates. Runs entirely in your browser.{% endblock %}
+{% block meta_keywords %}email spam word checker, cold email spam checker, check email for spam words, cold email deliverability tool, spam trigger words, email copy analyzer, free email checker, improve email open rates, bypass spam filters{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tool-email-spam-checker.css' %}">
+{% endblock %}
+
+{% block content %}
+<section class="tool-page">
+  <div class="container">
+
+    <!-- Hero -->
+    <div class="tool-hero">
+      <div class="tool-badge">
+        <i data-lucide="shield-check" style="width:13px;height:13px;"></i>
+        Email Spam Word Checker
+      </div>
+      <h1>Cold Email Spam Word Checker</h1>
+      <p>Analyze your email copy for <strong>spam trigger words</strong> that hurt your deliverability. Bypass the spam folder, increase open rates, and land in the primary inbox. 100% Free.</p>
+    </div>
+
+    <div class="mini-cta-bar">
+      <div class="mini-cta-text">
+        <i data-lucide="mail" style="width:14px;height:14px;color:#a78bfa;"></i>
+        Want to find verified B2B leads and automate your outreach?
+      </div>
+      <a href="{% url 'register' %}" class="mini-cta-link">
+        Try LeadNexus Free <i data-lucide="chevron-right" style="width:14px;height:14px;"></i>
+      </a>
+    </div>
+
+    <!-- Spam Checker Interface -->
+    <div class="spam-checker-container">
+      
+      <!-- Left Panel: Input -->
+      <div class="panel input-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="dot"></span>
+            Email Copy
+          </div>
+          <button class="btn-action btn-clear" id="clearBtn">
+            <i data-lucide="trash-2" style="width:14px;height:14px;"></i> Clear
+          </button>
+        </div>
+        <div class="panel-body">
+          <label for="subjectInput" class="input-label">Subject Line</label>
+          <input type="text" id="subjectInput" class="subject-input" placeholder="e.g. Quick question regarding your software..." autocomplete="off">
+          
+          <label for="bodyInput" class="input-label" style="margin-top: 16px;">Email Body</label>
+          <textarea id="bodyInput" class="body-input" placeholder="Paste your cold email copy here..."></textarea>
+        </div>
+        <div class="panel-footer" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+          <div style="display:flex; gap:12px; align-items:center;">
+            <button class="btn-check" id="checkBtn">
+              <i data-lucide="search" style="width:16px;height:16px;"></i>
+              Analyze Email
+            </button>
+            
+            <!-- ESP Target Selection -->
+            <select id="espSelect" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); color: var(--text-primary); padding: 8px 12px; border-radius: 6px; font-size: 0.85rem; outline: none; cursor: pointer;">
+              <option value="general">General (Standard)</option>
+              <option value="gmail">Gmail Workspace</option>
+              <option value="outlook">Outlook Enterprise</option>
+            </select>
+          </div>
+
+          <button class="btn-action" id="pasteExampleBtn">
+            <i data-lucide="file-text" style="width:14px;height:14px;"></i> Load Example
+          </button>
+        </div>
+      </div>
+
+      <!-- Right Panel: Results -->
+      <div class="panel results-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="dot spam-dot"></span>
+            Deliverability Score
+          </div>
+        </div>
+        
+        <div class="panel-body results-body">
+          <!-- Score Circular Display -->
+          <div class="score-container">
+            <div class="score-circle" id="scoreCircle">
+              <svg viewBox="0 0 36 36" class="circular-chart">
+                <path class="circle-bg"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <path class="circle-progress" id="scorePath"
+                  stroke-dasharray="100, 100"
+                  d="M18 2.0845
+                    a 15.9155 15.9155 0 0 1 0 31.831
+                    a 15.9155 15.9155 0 0 1 0 -31.831"
+                />
+                <text x="18" y="20.35" class="score-text" id="scoreText">100</text>
+              </svg>
+            </div>
+            <div class="score-meta">
+              <h3 id="scoreStatus">Looks Good!</h3>
+              <p id="scoreDescription">Your email has a very low risk of triggering spam filters.</p>
+            </div>
+          </div>
+
+          <!-- Stats Grid -->
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-label">Word Count</div>
+              <div class="stat-value" id="wordCount">0</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Reading Time</div>
+              <div class="stat-value" id="readingTime">0s</div>
+            </div>
+            <div class="stat-box highlight-spam">
+              <div class="stat-label">Spam Words</div>
+              <div class="stat-value" id="spamCount">0</div>
+            </div>
+          </div>
+
+          <!-- Explainability Breakdown -->
+          <div class="breakdown-list" id="breakdownContainer" style="display: none; background: rgba(255,255,255,.02); border: 1px solid rgba(255,255,255,.05); border-radius: 8px; padding: 16px;">
+            <div class="list-title" style="margin-bottom:12px; font-weight:700; display:flex; align-items:center;">
+              <i data-lucide="bar-chart-2" style="width:14px;height:14px; margin-right:6px;"></i> Score Breakdown:
+              <span style="display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; background:rgba(255,255,255,0.1); color:rgba(255,255,255,0.6); font-size:10px; margin-left:6px; cursor:help;" title="Detailed look at which factors lowered or raised your deliverability score.">?</span>
+            </div>
+            <ul class="breakdown-items" id="breakdownItems" style="list-style:none; padding:0; margin:0; font-size:.85rem; color:var(--text-muted);">
+              <!-- Inserted via JS -->
+            </ul>
+          </div>
+
+          <!-- Spam Words List -->
+          <div class="spam-words-list" id="spamWordsContainer" style="display: none;">
+            <div class="list-title" style="display:flex; align-items:center;">
+               Detected Spam Triggers:
+               <span style="display:inline-flex; align-items:center; justify-content:center; width:16px; height:16px; border-radius:50%; background:rgba(239,68,68,0.2); color:#ef4444; font-size:10px; margin-left:6px; cursor:help;" title="Click a token below to highlight its location in the email editor. The number shows occurrences.">?</span>
+            </div>
+            <div class="chips-container" id="spamChips">
+              <!-- Chips inserted via JS -->
+            </div>
+          </div>
+
+          <!-- Quick Tips -->
+          <div class="tips-box" id="tipsBox">
+            <div class="tips-title"><i data-lucide="lightbulb" style="width:14px;height:14px;"></i> Pro Tips</div>
+            <ul class="tips-list" id="tipsList">
+              <li>Keep your email under 125 words for higher reply rates.</li>
+              <li>Avoid overusing exclamation marks (!!!) and ALL CAPS.</li>
+              <li>Personalize the subject line to prevent algorithmic filtering.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SEO Content Block -->
+    <div class="seo-content-block">
+      <h2>Why Use an Email Spam Word Checker?</h2>
+      <p>When sending cold emails or marketing newsletters, the biggest obstacle is the <strong>spam folder</strong>. Email providers like Gmail, Outlook, and Yahoo use complex algorithms to analyze incoming emails. One of the heaviest weights in their algorithms is the specific vocabulary you use. If your email contains words that are historically associated with scams, aggressive marketing, or deceptive practices, your email's sender reputation drops instantly.</p>
+      
+      <p>Using a <strong>Spam Word Checker</strong> helps you identify these problematic words before you hit send. By removing or replacing "spam trigger words", you significantly increase your chances of landing in the primary inbox, which directly correlates to higher open rates and more replies.</p>
+
+      <h2>Top Spam Trigger Word Categories to Avoid</h2>
+      <ul>
+        <li><strong>Urgency & Pressure:</strong> Words like <code>Act now</code>, <code>Urgent</code>, <code>Do it today</code>, and <code>Limited time</code> trigger filters because they mimic scam tactics.</li>
+        <li><strong>Overpromising:</strong> Phrases such as <code>100% free</code>, <code>No risk</code>, <code>Guarantee</code>, and <code>Risk-free</code> are heavily penalized.</li>
+        <li><strong>Financial & Money:</strong> Using terms like <code>$$$</code>, <code>Earn extra cash</code>, <code>Make money</code>, and <code>Credit card</code> often route emails directly to promotions or spam.</li>
+        <li><strong>Manipulative:</strong> Words like <code>Secret</code>, <code>Hidden</code>, <code>You have been chosen</code>, and <code>Winner</code> are giant red flags to modern email algorithms.</li>
+      </ul>
+
+      <h2>Cold Email Deliverability Best Practices</h2>
+      <p>Beyond checking your copy for spam words, ensuring high deliverability requires a holistic approach:</p>
+      <ul>
+        <li><strong>Authentication:</strong> Ensure your domain has properly configured <strong>SPF, DKIM, and DMARC</strong> records. This cryptographic proof tells receiving servers that you are who you claim to be.</li>
+        <li><strong>Domain Warmup:</strong> Never send 500 cold emails on day one. Gradually increase your sending volume over 2-3 weeks to build a positive sender reputation.</li>
+        <li><strong>Keep it Short:</strong> The best cold emails are concise. Aim for under 125 words, ideally between 50-75 words. Long emails look like marketing blasts.</li>
+        <li><strong>Minimize Links & Images:</strong> New sender domains should avoid including multiple links or HTML heavy images. Stick to plain text formatting with a single call-to-action link.</li>
+      </ul>
+
+      <h2>Frequently Asked Questions</h2>
+      <div class="faq-list">
+        
+        <div class="faq-item" id="faq1" onclick="toggleFaq('faq1')">
+          <div class="faq-question">
+            Does removing spam words guarantee primary inbox placement?
+            <div class="faq-icon">+</div>
+          </div>
+          <div class="faq-answer">
+            <p>No, copy is only one piece of the deliverability puzzle. While removing spam words is essential, you also need technical alignment (SPF/DKIM/DMARC), a warmed-up IP/domain, and good engagement rates (replies and opens) from your previous emails to guarantee primary inbox placement consistently.</p>
+          </div>
+        </div>
+
+        <div class="faq-item" id="faq2" onclick="toggleFaq('faq2')">
+          <div class="faq-question">
+            Are some spam words worse than others?
+            <div class="faq-icon">+</div>
+          </div>
+          <div class="faq-answer">
+            <p>Yes. Words highly associated with phishing or financial scams (e.g., "social security number", "wire transfer", "$$$") are weighted much more heavily than softer marketing terms (e.g., "click here", "free trial"). Our checker flags high-risk words so you can prioritize removing them.</p>
+          </div>
+        </div>
+
+        <div class="faq-item" id="faq3" onclick="toggleFaq('faq3')">
+          <div class="faq-question">
+            Should I use plain text or HTML for cold emails?
+            <div class="faq-icon">+</div>
+          </div>
+          <div class="faq-answer">
+            <p>For cold B2B outreach, plain text (or very minimal HTML that looks like plain text) is always recommended. Highly styled HTML emails with multiple tables and tracking pixels are automatically categorized as "Promotions" by Google Workspace and Office 365.</p>
+          </div>
+        </div>
+
+        <div class="faq-item" id="faq4" onclick="toggleFaq('faq4')">
+          <div class="faq-question">
+            Is this tool safe to use with confidential email copy?
+            <div class="faq-icon">+</div>
+          </div>
+          <div class="faq-answer">
+            <p>Absolutely. This email spam word checker runs 100% inside your web browser using JavaScript. Your email copy is never sent to our servers, stored in a database, or analyzed remotely. Your data never leaves your device.</p>
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- Final CTA -->
+    <div class="tool-cta">
+      <h2>Ready to start a high-converting campaign?</h2>
+      <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:24px;">✅ Build email sequences &nbsp;·&nbsp; ✅ Track replies &nbsp;·&nbsp; ✅ LinkedIn prospecting &nbsp;·&nbsp; ✅ Seamless CRM integration</p>
+      <a href="{% url 'register' %}" class="btn-convert" style="display:inline-flex; text-decoration:none;">
+        <i data-lucide="rocket" style="width:18px;height:18px;"></i>
+        Start Free — No Credit Card Needed
+      </a>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/tool-email-spam-checker.js' %}"></script>
+{% endblock %}

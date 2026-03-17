@@ -55,3 +55,7 @@ def markdown_to_html_converter(request):
 def excel_to_csv_converter(request):
     """Target keywords: excel to csv converter, xlsx to csv, xls to csv, free csv converter"""
     return render(request, 'seo/tools/excel-to-csv-converter.html', {'active_page': 'seo'})
+
+def email_spam_word_checker(request):
+    """Target keywords: email spam word checker, cold email spam checker, check email for spam words, cold email deliverability tool"""
+    return render(request, 'seo/tools/email-spam-checker.html', {'active_page': 'seo'})

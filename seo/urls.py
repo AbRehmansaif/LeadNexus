@@ -19,4 +19,5 @@ urlpatterns = [
     # ── Free Tools ─────────────────────────────────────
     path('tools/markdown-to-html/',          views.markdown_to_html_converter,      name='seo-tool-markdown-to-html'),
     path('tools/excel-to-csv/',              views.excel_to_csv_converter,          name='seo-tool-excel-to-csv'),
+    path('tools/email-spam-word-checker/',   views.email_spam_word_checker,         name='seo-tool-email-spam-word-checker'),
 ]
