@@ -93,12 +93,30 @@
     margin-bottom: 32px;
   }
   .mode-toggle-inner {
-    display: flex;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     background: rgba(255,255,255,.04);
     border: 1px solid var(--border);
     border-radius: 12px;
     padding: 4px;
     gap: 4px;
+    max-width: 520px;
+    width: 100%;
+  }
+  .mode-group-label {
+    grid-column: 1 / -1;
+    font-size: .68rem;
+    font-weight: 700;
+    letter-spacing: .07em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 4px 6px 0;
+  }
+  .mode-group-divider {
+    grid-column: 1 / -1;
+    height: 1px;
+    background: var(--border);
+    margin: 2px 0;
   }
   .mode-btn {
     padding: 10px 28px;
@@ -412,13 +430,24 @@
     <!-- Mode toggle -->
     <div class="mode-toggle">
       <div class="mode-toggle-inner">
+        <span class="mode-group-label">From Markdown</span>
         <button class="mode-btn active" id="modeMarkdownToHtml" onclick="setMode('md2html')">
-          <i data-lucide="arrow-right" style="width:15px;height:15px;"></i>
+          <i data-lucide="arrow-right" style="width:14px;height:14px;"></i>
           Markdown → HTML
         </button>
         <button class="mode-btn" id="modeHtmlToMarkdown" onclick="setMode('html2md')">
-          <i data-lucide="arrow-left" style="width:15px;height:15px;"></i>
+          <i data-lucide="arrow-left" style="width:14px;height:14px;"></i>
           HTML → Markdown
+        </button>
+        <div class="mode-group-divider"></div>
+        <span class="mode-group-label">From Plain Text</span>
+        <button class="mode-btn" id="modeTextToHtml" onclick="setMode('text2html')">
+          <i data-lucide="file-text" style="width:14px;height:14px;"></i>
+          Text → HTML
+        </button>
+        <button class="mode-btn" id="modeTextToMarkdown" onclick="setMode('text2md')">
+          <i data-lucide="hash" style="width:14px;height:14px;"></i>
+          Text → Markdown
         </button>
       </div>
     </div>
@@ -559,7 +588,7 @@
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
 <script>
   // ── State ─────────────────────────────────────────────
-  let currentMode = 'md2html'; // 'md2html' | 'html2md'
+  let currentMode = 'md2html'; // 'md2html' | 'html2md' | 'text2html' | 'text2md'
   let previewVisible = false;
 
   const MARKDOWN_EXAMPLE = `# Welcome to LeadNexus Converter
@@ -607,21 +636,55 @@ console.log(result); // &lt;h1&gt;Hello&lt;/h1&gt;</code></pre>
 </blockquote>
 <p><a href="https://leadnexus.com">Visit LeadNexus →</a></p>`;
 
+  const TEXT_EXAMPLE = `LeadNexus: The B2B Growth Engine
+
+LeadNexus helps sales teams find, engage, and close more deals with less effort. Whether you're sending cold emails or prospecting on LinkedIn, LeadNexus automates the heavy lifting.
+
+KEY FEATURES
+
+- Automated email outreach with smart follow-ups
+- LinkedIn prospecting and lead discovery
+- Real-time lead intelligence and scoring
+- Built-in CRM for pipeline management
+- A/B testing for subject lines and copy
+
+HOW IT WORKS
+
+1. Import or find leads using our prospecting tools
+2. Build your outreach sequence with templates
+3. Launch your campaign and track replies in real time
+4. Close deals faster with AI-powered recommendations
+
+Get started at https://leadnexus.com or email us at hello@leadnexus.com`;
+
   // ── Mode switching ────────────────────────────────────
+  const MODE_CONFIG = {
+    md2html:   { inputLabel: 'Markdown Input',   outputLabel: 'HTML Output',      placeholder: 'Paste your Markdown here...\n\n# Hello World\nThis is **bold** and *italic* text.\n\n- Item one\n- Item two' },
+    html2md:   { inputLabel: 'HTML Input',        outputLabel: 'Markdown Output',  placeholder: 'Paste your HTML here...\n\n<h1>Hello World</h1>\n<p>This is <strong>bold</strong> text.</p>' },
+    text2html: { inputLabel: 'Plain Text Input',  outputLabel: 'HTML Output',      placeholder: 'Paste plain text here...\n\nParagraphs separated by a blank line become <p> tags.\n\nBullet lists, numbered lists, URLs and email addresses are auto-detected.' },
+    text2md:   { inputLabel: 'Plain Text Input',  outputLabel: 'Markdown Output',  placeholder: 'Paste plain text here...\n\nParagraphs, lists, URLs and email addresses will be converted to proper Markdown syntax.' },
+  };
+
   function setMode(mode) {
     currentMode = mode;
-    document.getElementById('modeMarkdownToHtml').classList.toggle('active', mode === 'md2html');
-    document.getElementById('modeHtmlToMarkdown').classList.toggle('active', mode === 'html2md');
-    document.getElementById('inputLabel').textContent = mode === 'md2html' ? 'Markdown Input' : 'HTML Input';
-    document.getElementById('outputLabel').textContent = mode === 'md2html' ? 'HTML Output' : 'Markdown Output';
-    document.getElementById('inputArea').placeholder = mode === 'md2html'
-      ? 'Paste your Markdown here...\n\n# Hello World\nThis is **bold** and *italic* text.'
-      : 'Paste your HTML here...\n\n<h1>Hello World</h1>\n<p>This is <strong>bold</strong> text.</p>';
+    // Clear both panels when switching mode
+    document.getElementById('inputArea').value  = '';
     document.getElementById('outputArea').value = '';
     document.getElementById('previewArea').innerHTML = '';
-    if (previewVisible && mode !== 'md2html') togglePreview();
+    ['modeMarkdownToHtml','modeHtmlToMarkdown','modeTextToHtml','modeTextToMarkdown'].forEach(id => {
+      document.getElementById(id).classList.remove('active');
+    });
+    const idMap = { md2html:'modeMarkdownToHtml', html2md:'modeHtmlToMarkdown', text2html:'modeTextToHtml', text2md:'modeTextToMarkdown' };
+    document.getElementById(idMap[mode]).classList.add('active');
+    const cfg = MODE_CONFIG[mode];
+    document.getElementById('inputLabel').textContent  = cfg.inputLabel;
+    document.getElementById('outputLabel').textContent = cfg.outputLabel;
+    document.getElementById('inputArea').placeholder   = cfg.placeholder;
+    // Preview only makes sense when output is HTML
+    if (previewVisible && mode !== 'md2html' && mode !== 'text2html') togglePreview();
     if (window.lucide) lucide.createIcons();
   }
+
 
   // ── Convert ───────────────────────────────────────────
   function convert() {
@@ -637,8 +700,16 @@ console.log(result); // &lt;h1&gt;Hello&lt;/h1&gt;</code></pre>
         document.getElementById('previewArea').innerHTML = output;
         if (window.lucide) lucide.createIcons();
       }
-    } else {
+    } else if (currentMode === 'html2md') {
       output = htmlToMarkdown(input);
+    } else if (currentMode === 'text2html') {
+      output = plainTextToHtml(input);
+      if (previewVisible) {
+        document.getElementById('previewArea').innerHTML = output;
+        if (window.lucide) lucide.createIcons();
+      }
+    } else if (currentMode === 'text2md') {
+      output = plainTextToMarkdown(input);
     }
     document.getElementById('outputArea').value = output;
   }
@@ -739,14 +810,123 @@ console.log(result); // &lt;h1&gt;Hello&lt;/h1&gt;</code></pre>
     return result;
   }
 
+  // ── Plain Text → HTML ─────────────────────────────────
+  function plainTextToHtml(text) {
+    // Helper: replace URLs and emails with anchor tags
+    function autoLink(s) {
+      s = s.replace(/(https?:\/\/[^\s<>"']+)/g, '<a href="$1">$1</a>');
+      s = s.replace(/\b([A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})\b/g, '<a href="mailto:$1">$1</a>');
+      return s;
+    }
+    // Helper: detect if every non-empty line in a block starts with a bullet
+    function isBulletBlock(lines) {
+      return lines.filter(l => l.trim()).every(l => /^[\-\*•]\s+/.test(l.trim()));
+    }
+    function isOrderedBlock(lines) {
+      return lines.filter(l => l.trim()).every(l => /^\d+[.):]\s+/.test(l.trim()));
+    }
+    // Split into paragraphs (blank line = separator)
+    const blocks = text.split(/\n{2,}/);
+    return blocks.map(block => {
+      const lines = block.split('\n');
+      const nonEmpty = lines.filter(l => l.trim());
+      if (!nonEmpty.length) return '';
+      // Bullet list
+      if (isBulletBlock(lines)) {
+        const items = nonEmpty.map(l => `  <li>${autoLink(l.replace(/^[\-\*•]\s+/, '').trim())}</li>`);
+        return `<ul>\n${items.join('\n')}\n</ul>`;
+      }
+      // Numbered list
+      if (isOrderedBlock(lines)) {
+        const items = nonEmpty.map(l => `  <li>${autoLink(l.replace(/^\d+[.):]\s+/, '').trim())}</li>`);
+        return `<ol>\n${items.join('\n')}\n</ol>`;
+      }
+      // Single short ALL-CAPS line → heading
+      if (nonEmpty.length === 1) {
+        const line = nonEmpty[0].trim();
+        if (line.length >= 3 && line.length <= 72 && line === line.toUpperCase() && /[A-Z]/.test(line)) {
+          return `<h2>${line}</h2>`;
+        }
+      }
+      // Paragraph — preserve single line breaks as <br>
+      // (e.g. signature blocks, addresses, multi-line sentences)
+      if (nonEmpty.length === 1) {
+        // single-line paragraph
+        return `<p>${autoLink(nonEmpty[0].trim())}</p>`;
+      }
+      // Multi-line block: first check if it looks like soft-wrapped prose
+      // (all lines reasonably long, no short lines like "Best regards,")
+      const avgLen = nonEmpty.reduce((s, l) => s + l.trim().length, 0) / nonEmpty.length;
+      const hasShortLines = nonEmpty.some(l => l.trim().length < 40);
+      if (!hasShortLines && avgLen > 60) {
+        // Soft-wrapped prose — join with space
+        return `<p>${autoLink(nonEmpty.map(l => l.trim()).join(' '))}</p>`;
+      }
+      // Hard line breaks block (signatures, addresses, short items)
+      const linesHtml = nonEmpty.map(l => autoLink(l.trim())).join('<br>\n');
+      return `<p>${linesHtml}</p>`;
+    }).filter(Boolean).join('\n\n');
+  }
+
+  // ── Plain Text → Markdown ─────────────────────────────
+  function plainTextToMarkdown(text) {
+    function autoLinkMd(s) {
+      s = s.replace(/(https?:\/\/[^\s]+)/g, '[$1]($1)');
+      s = s.replace(/\b([A-Za-z0-9._%+\-]+@[A-Za-z0-9.\-]+\.[A-Za-z]{2,})\b/g, '[$1](mailto:$1)');
+      return s;
+    }
+    function isBulletBlock(lines) {
+      return lines.filter(l => l.trim()).every(l => /^[\-\*•]\s+/.test(l.trim()));
+    }
+    function isOrderedBlock(lines) {
+      return lines.filter(l => l.trim()).every(l => /^\d+[.):]\s+/.test(l.trim()));
+    }
+    const blocks = text.split(/\n{2,}/);
+    return blocks.map(block => {
+      const lines = block.split('\n');
+      const nonEmpty = lines.filter(l => l.trim());
+      if (!nonEmpty.length) return '';
+      // Bullet list — normalise to `-`
+      if (isBulletBlock(lines)) {
+        return nonEmpty.map(l => `- ${autoLinkMd(l.replace(/^[\-\*•]\s+/, '').trim())}`).join('\n');
+      }
+      // Numbered list — re-number cleanly
+      if (isOrderedBlock(lines)) {
+        return nonEmpty.map((l, i) => `${i + 1}. ${autoLinkMd(l.replace(/^\d+[.):]\s+/, '').trim())}`).join('\n');
+      }
+      // Single ALL-CAPS short line → h2
+      if (nonEmpty.length === 1) {
+        const line = nonEmpty[0].trim();
+        if (line.length >= 3 && line.length <= 72 && line === line.toUpperCase() && /[A-Z]/.test(line)) {
+          return `## ${line}`;
+        }
+      }
+      // Single line paragraph
+      if (nonEmpty.length === 1) {
+        return autoLinkMd(nonEmpty[0].trim());
+      }
+      // Multi-line block: detect soft-wrapped prose vs hard line breaks
+      const avgLen = nonEmpty.reduce((s, l) => s + l.trim().length, 0) / nonEmpty.length;
+      const hasShortLines = nonEmpty.some(l => l.trim().length < 40);
+      if (!hasShortLines && avgLen > 60) {
+        // Soft-wrapped prose — join with space
+        return autoLinkMd(nonEmpty.map(l => l.trim()).join(' '));
+      }
+      // Hard line breaks (signatures, addresses, short items)
+      // Two trailing spaces = Markdown hard line break
+      return nonEmpty.map(l => autoLinkMd(l.trim())).join('  \n');
+    }).filter(Boolean).join('\n\n');
+  }
+
   // ── Swap panels ───────────────────────────────────────
   function swapPanels() {
     const outputVal = document.getElementById('outputArea').value;
-    const inputVal = document.getElementById('inputArea').value;
-    document.getElementById('inputArea').value = outputVal || inputVal;
+    const inputVal  = document.getElementById('inputArea').value;
+    document.getElementById('inputArea').value  = outputVal || inputVal;
     document.getElementById('outputArea').value = '';
-    // Also flip mode
-    setMode(currentMode === 'md2html' ? 'html2md' : 'md2html');
+    // Flip mode for reversible pairs
+    const flipMap = { md2html: 'html2md', html2md: 'md2html', text2html: 'md2html', text2md: 'md2html' };
+    setMode(flipMap[currentMode] || 'md2html');
     if (outputVal) convert();
   }
 
@@ -760,7 +940,7 @@ console.log(result); // &lt;h1&gt;Hello&lt;/h1&gt;</code></pre>
     panel.style.flexDirection = 'column';
     btn.innerHTML = `<i data-lucide="${previewVisible ? 'eye-off' : 'eye'}" style="width:16px;height:16px;"></i> ${previewVisible ? 'Hide Preview' : 'Preview HTML'}`;
     toggleBtn.textContent = previewVisible ? 'Hide Preview' : 'Show Preview';
-    if (previewVisible && currentMode === 'md2html') {
+    if (previewVisible && (currentMode === 'md2html' || currentMode === 'text2html')) {
       const outputVal = document.getElementById('outputArea').value;
       if (outputVal) document.getElementById('previewArea').innerHTML = outputVal;
     }
@@ -775,7 +955,8 @@ console.log(result); // &lt;h1&gt;Hello&lt;/h1&gt;</code></pre>
   }
 
   function pasteExample() {
-    document.getElementById('inputArea').value = currentMode === 'md2html' ? MARKDOWN_EXAMPLE : HTML_EXAMPLE;
+    const exMap = { md2html: MARKDOWN_EXAMPLE, html2md: HTML_EXAMPLE, text2html: TEXT_EXAMPLE, text2md: TEXT_EXAMPLE };
+    document.getElementById('inputArea').value = exMap[currentMode] || MARKDOWN_EXAMPLE;
     convert();
   }
 
@@ -792,7 +973,8 @@ console.log(result); // &lt;h1&gt;Hello&lt;/h1&gt;</code></pre>
   function downloadOutput() {
     const text = document.getElementById('outputArea').value;
     if (!text) { showNotification('Nothing to download yet!', 'warning'); return; }
-    const ext = currentMode === 'md2html' ? 'html' : 'md';
+    const extMap = { md2html: 'html', html2md: 'md', text2html: 'html', text2md: 'md' };
+    const ext = extMap[currentMode] || 'txt';
     const blob = new Blob([text], { type: 'text/plain' });
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
