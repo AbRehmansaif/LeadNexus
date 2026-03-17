@@ -44,7 +44,7 @@
               </div>
             </label>
             <div class="slider-wrapper">
-              <input type="range" id="targetVolume" min="10" max="250" value="50" class="range-slider">
+              <input type="range" id="targetVolume" min="10" max="2000" value="50" class="range-slider">
               <span id="targetVolumeVal" class="slider-val">50 emails/day</span>
             </div>
           </div>
@@ -119,6 +119,15 @@
                 <div class="summary-label">Daily Increment</div>
                 <div class="summary-value" id="dailyInc">0</div>
               </div>
+              <div class="summary-box" style="background: rgba(167, 139, 250, 0.1); border-color: rgba(167, 139, 250, 0.3);">
+                <div class="summary-label">Req. Inboxes <div class="custom-tooltip"><i data-lucide="info" style="width:12px;height:12px;color:var(--text-muted);cursor:help;"></i><div class="tooltip-content tooltip-left">Based on max 50 emails/day per inbox for optimal deliverability.</div></div></div>
+                <div class="summary-value" id="reqInboxes">0</div>
+              </div>
+            </div>
+
+            <!-- Chart Container -->
+            <div class="chart-container" style="margin-bottom: 24px; background: rgba(0,0,0,0.2); padding: 16px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.05);">
+              <canvas id="warmupChart" style="width: 100%; height: 250px;"></canvas>
             </div>
 
             <div class="table-container">
@@ -186,5 +195,6 @@
 {% endblock %}
 
 {% block extra_js %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="{% static 'js/tool-email-warmup-calculator.js' %}"></script>
 {% endblock %}

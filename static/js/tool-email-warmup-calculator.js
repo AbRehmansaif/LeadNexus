@@ -18,10 +18,12 @@ window.addEventListener('DOMContentLoaded', () => {
   const daysToTargetEl = document.getElementById('daysToTarget');
   const startingVolEl = document.getElementById('startingVol');
   const dailyIncEl = document.getElementById('dailyInc');
+  const reqInboxesEl = document.getElementById('reqInboxes');
 
   // ── State ─────────────────────────────────────────────────
   let selectedStrategy = 'recommended';
   let generatedData = [];
+  let chartInstance = null;
 
   // ── Event Listeners ───────────────────────────────────────
   targetVolumeSlider.addEventListener('input', (e) => {
@@ -42,6 +44,12 @@ window.addEventListener('DOMContentLoaded', () => {
   // ── Logic ─────────────────────────────────────────────────
   function generateSchedule() {
     const targetVolume = parseInt(targetVolumeSlider.value);
+    
+    if (!targetVolume || targetVolume < 1) {
+      alert("Invalid target volume. Please configure a volume greater than 0.");
+      return;
+    }
+
     const domainReputation = domainReputationSelect.value;
     
     let startVol = 2;
@@ -69,18 +77,23 @@ window.addEventListener('DOMContentLoaded', () => {
       if (domainReputation === 'recovering') increment = 2; // too risky, cap it
     }
 
+    if (increment > 3 && domainReputation === 'new') {
+      alert("⚠️ High spam risk! A daily increment over 3 on a brand new domain can quickly trigger Google/Outlook spam filters. Proceed with extreme caution.");
+    }
+
     // 3. Generate Schedule Array
     generatedData = [];
     let currentVol = startVol;
     let day = 1;
 
     while (currentVol < targetVolume) {
-      // For the first few days, warmup percentage is 100%
-      // As volume climbs, warmup percentage drops to maintain ~30-40% at max capacity
-      let warmupPercent = 1.0;
-      if (currentVol > 10) warmupPercent = 0.8;
-      if (currentVol > 20) warmupPercent = 0.5;
-      if (currentVol >= targetVolume * 0.8) warmupPercent = 0.3; // Ramping down to long-term safe percentage
+      let progress = currentVol / targetVolume;
+      let warmupPercent;
+      
+      if (progress < 0.2) warmupPercent = 1;
+      else if (progress < 0.5) warmupPercent = 0.7;
+      else if (progress < 0.8) warmupPercent = 0.5;
+      else warmupPercent = 0.3;
       
       let warmupEmails = Math.max(1, Math.floor(currentVol * warmupPercent));
       
@@ -127,6 +140,7 @@ window.addEventListener('DOMContentLoaded', () => {
     daysToTargetEl.textContent = totalDays;
     startingVolEl.textContent = startVol;
     dailyIncEl.textContent = `+${increment}/day`;
+    reqInboxesEl.textContent = Math.ceil(parseInt(targetVolumeSlider.value) / 50);
 
     // Render Table
     scheduleTableBody.innerHTML = generatedData.map(row => `
@@ -137,6 +151,76 @@ window.addEventListener('DOMContentLoaded', () => {
         <td>${row.statusHtml}</td>
       </tr>
     `).join('');
+
+    // Render Chart
+    const ctx = document.getElementById('warmupChart');
+    if (ctx && window.Chart) {
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+      
+      const labels = generatedData.map(r => `Day ${r.day}`);
+      const totalData = generatedData.map(r => r.totalEmails);
+      const warmupData = generatedData.map(r => r.warmupEmails);
+
+      chartInstance = new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: 'Total Sends',
+              data: totalData,
+              borderColor: '#a78bfa',
+              backgroundColor: 'rgba(167, 139, 250, 0.15)',
+              borderWidth: 2,
+              fill: true,
+              tension: 0.3
+            },
+            {
+              label: 'Warm-up Portion',
+              data: warmupData,
+              borderColor: '#10b981',
+              backgroundColor: 'transparent',
+              borderWidth: 2,
+              borderDash: [5, 5],
+              fill: false,
+              tension: 0.3
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          interaction: {
+            mode: 'index',
+            intersect: false,
+          },
+          plugins: {
+            legend: {
+              labels: { color: 'rgba(255,255,255,0.7)', font: { size: 11 } }
+            },
+            tooltip: {
+              backgroundColor: 'rgba(15, 23, 42, 0.9)',
+              titleColor: '#fff',
+              bodyColor: '#cbd5e1',
+              borderColor: 'rgba(255,255,255,0.1)',
+              borderWidth: 1
+            }
+          },
+          scales: {
+            x: {
+              grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+              ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10 } }
+            },
+            y: {
+              grid: { color: 'rgba(255,255,255,0.05)', drawBorder: false },
+              ticks: { color: 'rgba(255,255,255,0.5)', font: { size: 10 } }
+            }
+          }
+        }
+      });
+    }
 
     if (window.lucide) {
       lucide.createIcons();
