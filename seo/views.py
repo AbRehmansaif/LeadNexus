@@ -45,3 +45,13 @@ def lead_generation_email_tool(request):
 def outreach_automation(request):
     """Target keyword: outreach automation"""
     return render(request, 'seo/outreach-automation.html', {'active_page': 'seo'})
+
+# ── Free Tool Pages ───────────────────────────────────
+
+def markdown_to_html_converter(request):
+    """Target keywords: markdown to html converter, html to markdown, free markdown converter"""
+    return render(request, 'seo/tools/markdown-to-html-converter.html', {'active_page': 'seo'})
+
+def excel_to_csv_converter(request):
+    """Target keywords: excel to csv converter, xlsx to csv, xls to csv, free csv converter"""
+    return render(request, 'seo/tools/excel-to-csv-converter.html', {'active_page': 'seo'})

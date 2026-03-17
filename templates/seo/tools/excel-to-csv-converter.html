@@ -1,0 +1,1010 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Free Excel to CSV Converter — XLS, XLSX, ODS, TSV Online Tool | LeadNexus{% endblock %}
+{% block meta_description %}Free online Excel to CSV converter. Convert XLS, XLSX, ODS, TSV, and other spreadsheet formats to CSV instantly in your browser. No upload to server. 100% private and free.{% endblock %}
+{% block meta_keywords %}excel to csv converter, xlsx to csv, xls to csv, tsv to csv, ods to csv, convert excel to csv online, free csv converter, spreadsheet to csv, excel converter free{% endblock %}
+
+{% block extra_css %}
+<style>
+  .tool-page {
+    padding: 48px 0 80px;
+    min-height: 80vh;
+  }
+  .tool-hero {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+  .tool-hero h1 {
+    font-size: clamp(1.8rem, 4vw, 2.6rem);
+    font-weight: 800;
+    background: var(--gradient-primary);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 12px;
+    line-height: 1.2;
+  }
+  .tool-hero p {
+    font-size: 1.05rem;
+    color: var(--text-muted);
+    max-width: 620px;
+    margin: 0 auto;
+  }
+  .tool-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(124,58,237,.15);
+    border: 1px solid rgba(124,58,237,.35);
+    color: #a78bfa;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 5px 14px;
+    border-radius: 999px;
+    margin-bottom: 16px;
+  }
+  /* Inline mini CTA */
+  .mini-cta-bar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    background: rgba(124,58,237,.08);
+    border: 1px solid rgba(124,58,237,.22);
+    border-radius: 999px;
+    padding: 8px 20px;
+    margin: -28px auto 28px;
+    max-width: 580px;
+    flex-wrap: wrap;
+  }
+  .mini-cta-text {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1;
+  }
+  .mini-cta-text strong { color: var(--text-primary); font-weight: 700; }
+  .mini-cta-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #fff;
+    background: var(--gradient-primary);
+    padding: 5px 14px;
+    border-radius: 999px;
+    text-decoration: none;
+    white-space: nowrap;
+    transition: opacity .2s, transform .2s;
+    line-height: 1;
+  }
+  .mini-cta-link:hover { opacity: .88; transform: scale(1.03); }
+  /* Supported formats bar */
+  .format-bar {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+  .format-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 6px 14px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    letter-spacing: .04em;
+  }
+  .format-chip .chip-dot {
+    width: 7px; height: 7px;
+    border-radius: 50%;
+  }
+  /* Upload area */
+  .upload-area {
+    border: 2px dashed rgba(124,58,237,.4);
+    border-radius: 20px;
+    background: rgba(124,58,237,.04);
+    padding: 60px 40px;
+    text-align: center;
+    cursor: pointer;
+    transition: all .25s;
+    position: relative;
+    margin-bottom: 24px;
+  }
+  .upload-area:hover, .upload-area.dragover {
+    border-color: #7c3aed;
+    background: rgba(124,58,237,.09);
+    transform: scale(1.005);
+  }
+  .upload-area input[type="file"] {
+    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
+  }
+  .upload-icon {
+    width: 56px; height: 56px;
+    background: rgba(124,58,237,.15);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 16px;
+    color: #a78bfa;
+  }
+  .upload-area h3 { font-size: 1.15rem; font-weight: 700; margin-bottom: 6px; }
+  .upload-area p { color: var(--text-muted); font-size: .88rem; margin: 0; }
+  .upload-area .or-divider { color: var(--text-muted); font-size: .8rem; margin: 12px 0; }
+  .browse-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 24px;
+    background: var(--gradient-primary);
+    color: #fff;
+    border: none;
+    border-radius: 10px;
+    font-size: .87rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    pointer-events: none;
+  }
+  /* Options panel */
+  .options-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 20px 24px;
+    margin-bottom: 24px;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+  }
+  .opt-group label {
+    display: block;
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--text-muted);
+    margin-bottom: 8px;
+  }
+  .opt-select, .opt-input {
+    width: 100%;
+    padding: 9px 14px;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    color: var(--text-primary);
+    font-size: .87rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color .2s;
+  }
+  .opt-select:focus, .opt-input:focus {
+    border-color: rgba(124,58,237,.6);
+  }
+  .opt-select option { background: #1a1a2e; }
+  .opt-checkbox-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+  }
+  .opt-checkbox-row input[type="checkbox"] {
+    width: 16px; height: 16px; cursor: pointer; accent-color: #7c3aed;
+  }
+  .opt-checkbox-row span { font-size: .87rem; color: var(--text-muted); }
+
+  /* File list */
+  .file-list {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .file-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    transition: border-color .2s;
+  }
+  .file-item.success { border-color: rgba(16,185,129,.4); }
+  .file-item.error { border-color: rgba(239,68,68,.4); }
+  .file-item.processing { border-color: rgba(124,58,237,.4); }
+  .file-icon {
+    width: 40px; height: 40px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: .7rem;
+    font-weight: 800;
+    letter-spacing: .04em;
+    flex-shrink: 0;
+  }
+  .file-icon.xlsx { background: rgba(16,185,129,.15); color: #34d399; }
+  .file-icon.xls  { background: rgba(16,185,129,.1);  color: #6ee7b7; }
+  .file-icon.csv  { background: rgba(59,130,246,.15); color: #93c5fd; }
+  .file-icon.tsv  { background: rgba(245,158,11,.15); color: #fcd34d; }
+  .file-icon.ods  { background: rgba(124,58,237,.15); color: #a78bfa; }
+  .file-icon.txt  { background: rgba(156,163,175,.15); color: #9ca3af; }
+  .file-info { flex: 1; min-width: 0; }
+  .file-info .file-name {
+    font-size: .9rem;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .file-info .file-meta {
+    font-size: .76rem;
+    color: var(--text-muted);
+    margin-top: 2px;
+  }
+  .file-status {
+    font-size: .78rem;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .file-status.success { color: #34d399; }
+  .file-status.error { color: #f87171; }
+  .file-status.processing { color: #a78bfa; }
+  .file-status.ready { color: var(--text-muted); }
+  .file-download-btn {
+    padding: 6px 14px;
+    border-radius: 7px;
+    border: 1px solid rgba(16,185,129,.4);
+    background: rgba(16,185,129,.1);
+    color: #34d399;
+    font-size: .77rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .2s;
+    flex-shrink: 0;
+  }
+  .file-download-btn:hover { background: rgba(16,185,129,.2); }
+  .file-remove-btn {
+    padding: 6px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: .8rem;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all .2s;
+    flex-shrink: 0;
+  }
+  .file-remove-btn:hover { border-color: rgba(239,68,68,.4); color: #f87171; }
+
+  /* Preview table */
+  .preview-wrap {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .preview-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,.02);
+  }
+  .preview-header-label {
+    font-size: .8rem;
+    font-weight: 700;
+    letter-spacing: .06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .preview-header-label .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--gradient-primary);
+  }
+  .preview-table-wrap {
+    overflow-x: auto;
+    max-height: 300px;
+    overflow-y: auto;
+  }
+  .preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: .82rem;
+  }
+  .preview-table th {
+    background: rgba(124,58,237,.1);
+    color: #a78bfa;
+    font-weight: 700;
+    padding: 8px 14px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+  }
+  .preview-table td {
+    padding: 7px 14px;
+    border-bottom: 1px solid rgba(255,255,255,.04);
+    color: var(--text-muted);
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .preview-table tr:hover td { background: rgba(255,255,255,.02); }
+
+  /* Action buttons */
+  .action-row {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-bottom: 40px;
+    flex-wrap: wrap;
+  }
+  .btn-convert {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 36px;
+    background: var(--gradient-primary);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-size: .95rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .25s;
+    font-family: inherit;
+    box-shadow: 0 4px 20px rgba(124,58,237,.4);
+  }
+  .btn-convert:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(124,58,237,.55);
+  }
+  .btn-convert:disabled {
+    opacity: .5;
+    pointer-events: none;
+  }
+  .btn-secondary-action {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 14px 24px;
+    background: rgba(255,255,255,.05);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    font-size: .88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .25s;
+    font-family: inherit;
+  }
+  .btn-secondary-action:hover {
+    background: rgba(124,58,237,.12);
+    border-color: rgba(124,58,237,.4);
+    color: #a78bfa;
+  }
+
+  /* Features + SEO */
+  .features-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 16px;
+    margin: 48px 0;
+  }
+  .feature-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 20px;
+    transition: border-color .2s, transform .2s;
+  }
+  .feature-card:hover { border-color: rgba(124,58,237,.4); transform: translateY(-3px); }
+  .feature-card i { color: #a78bfa; margin-bottom: 10px; display: block; }
+  .feature-card h3 { font-size: .95rem; font-weight: 700; margin-bottom: 6px; }
+  .feature-card p { font-size: .82rem; color: var(--text-muted); line-height: 1.6; margin: 0; }
+  .seo-content-block {
+    max-width: 780px;
+    margin: 0 auto;
+    padding-top: 20px;
+  }
+  .seo-content-block h2 { font-size: 1.4rem; font-weight: 700; margin: 36px 0 12px; }
+  .seo-content-block h3 { font-size: 1.1rem; font-weight: 700; margin: 24px 0 8px; }
+  .seo-content-block p { color: var(--text-muted); line-height: 1.8; margin-bottom: 12px; }
+  .seo-content-block ul { color: var(--text-muted); line-height: 1.8; padding-left: 20px; margin-bottom: 12px; }
+  .tool-cta {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 40px;
+    text-align: center;
+    margin-top: 48px;
+  }
+  .tool-cta h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+  .tool-cta p { color: var(--text-muted); margin-bottom: 24px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<section class="tool-page">
+  <div class="container">
+
+    <!-- Hero -->
+    <div class="tool-hero">
+      <div class="tool-badge">
+        <i data-lucide="zap" style="width:13px;height:13px;"></i>
+        100% Free · No Login Required
+      </div>
+      <h1>Free Excel to CSV Converter</h1>
+      <p>Convert XLS, XLSX, ODS, TSV, and other spreadsheet formats to CSV instantly — all in your browser, zero server upload.</p>
+    </div>
+
+    <!-- Mini inline CTA -->
+    <div class="mini-cta-bar">
+      <span class="mini-cta-text">
+        <i data-lucide="rocket" style="width:13px;height:13px;color:#a78bfa;"></i>
+        <span>Import your CSV directly into automated outreach with <strong>LeadNexus</strong>.</span>
+      </span>
+      <a href="{% url 'register' %}" class="mini-cta-link">
+        <i data-lucide="zap" style="width:12px;height:12px;"></i>
+        Start Free
+      </a>
+    </div>
+
+    <!-- Format chips -->
+    <div class="format-bar">
+      <div class="format-chip"><span class="chip-dot" style="background:#34d399;"></span>XLSX</div>
+      <div class="format-chip"><span class="chip-dot" style="background:#6ee7b7;"></span>XLS</div>
+      <div class="format-chip"><span class="chip-dot" style="background:#fcd34d;"></span>TSV</div>
+      <div class="format-chip"><span class="chip-dot" style="background:#a78bfa;"></span>ODS</div>
+      <div class="format-chip"><span class="chip-dot" style="background:#93c5fd;"></span>CSV</div>
+      <div class="format-chip"><span class="chip-dot" style="background:#9ca3af;"></span>TXT</div>
+    </div>
+
+    <!-- Upload area -->
+    <div class="upload-area" id="uploadArea">
+      <input type="file"
+             id="fileInput"
+             multiple
+             accept=".xlsx,.xls,.csv,.tsv,.ods,.txt"
+             onchange="handleFiles(this.files)" />
+      <div class="upload-icon">
+        <i data-lucide="upload-cloud" style="width:28px;height:28px;"></i>
+      </div>
+      <h3>Drop your spreadsheet files here</h3>
+      <p>or click to browse — supports multiple files</p>
+      <div class="or-divider">Accepts XLSX, XLS, ODS, TSV, CSV, TXT</div>
+      <button class="browse-btn" type="button">
+        <i data-lucide="folder-open" style="width:15px;height:15px;"></i>
+        Browse Files
+      </button>
+    </div>
+
+    <!-- Options -->
+    <div class="options-panel" id="optionsPanel" style="display:none;">
+      <!-- Output format -->
+      <div class="opt-group">
+        <label>Output Format</label>
+        <select class="opt-select" id="outputFormatOpt" onchange="onFormatChange()">
+          <option value="csv">.CSV — Comma-Separated</option>
+          <option value="tsv">.TSV — Tab-Separated</option>
+          <option value="pipe">.TXT — Pipe-Separated ( | )</option>
+          <option value="json">.JSON — JSON Array</option>
+          <option value="xlsx">.XLSX — Excel Workbook</option>
+        </select>
+      </div>
+      <!-- Delimiter (hidden for json/xlsx) -->
+      <div class="opt-group" id="delimiterGroup">
+        <label>Delimiter Override</label>
+        <select class="opt-select" id="delimiterOpt">
+          <option value=",">Comma ( , )</option>
+          <option value=";">Semicolon ( ; )</option>
+          <option value="&#9;">Tab ( \t )</option>
+          <option value="|">Pipe ( | )</option>
+        </select>
+      </div>
+      <div class="opt-group">
+        <label>Sheet (multi-sheet files)</label>
+        <select class="opt-select" id="sheetOpt">
+          <option value="0">First Sheet Only</option>
+          <option value="all">All Sheets</option>
+        </select>
+      </div>
+      <div class="opt-group">
+        <label>Options</label>
+        <div class="opt-checkbox-row">
+          <input type="checkbox" id="skipEmptyRows" checked>
+          <span>Skip empty rows</span>
+        </div>
+        <div class="opt-checkbox-row" style="margin-top:8px;">
+          <input type="checkbox" id="quoteFields">
+          <span>Quote all fields</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- File list -->
+    <div class="file-list" id="fileList"></div>
+
+    <!-- Preview table -->
+    <div class="preview-wrap" id="previewWrap">
+      <div class="preview-header">
+        <span class="preview-header-label"><span class="dot"></span>Data Preview</span>
+        <span id="previewMeta" style="font-size:.78rem;color:var(--text-muted);"></span>
+      </div>
+      <div class="preview-table-wrap">
+        <table class="preview-table" id="previewTable">
+          <thead id="previewThead"></thead>
+          <tbody id="previewTbody"></tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Action buttons -->
+    <div class="action-row" id="actionRow" style="display:none;">
+      <button class="btn-convert" id="convertBtn" onclick="convertAllFiles()">
+        <i data-lucide="refresh-cw" style="width:18px;height:18px;"></i>
+        <span id="convertBtnLabel">Convert to CSV</span>
+      </button>
+      <button class="btn-secondary-action" onclick="downloadAllAsZip()" id="zipBtn" style="display:none;">
+        <i data-lucide="archive" style="width:16px;height:16px;"></i>
+        Download All as ZIP
+      </button>
+      <button class="btn-secondary-action" onclick="clearAll()">
+        <i data-lucide="trash-2" style="width:16px;height:16px;"></i>
+        Clear All
+      </button>
+    </div>
+
+    <!-- Feature cards -->
+    <div class="features-grid">
+      <div class="feature-card">
+        <i data-lucide="lock" style="width:24px;height:24px;"></i>
+        <h3>100% Private</h3>
+        <p>Files are processed entirely in your browser using JavaScript. Nothing is ever uploaded to a server.</p>
+      </div>
+      <div class="feature-card">
+        <i data-lucide="layers" style="width:24px;height:24px;"></i>
+        <h3>Batch Conversion</h3>
+        <p>Drop multiple files at once and convert them all in a single click with automatic naming.</p>
+      </div>
+      <div class="feature-card">
+        <i data-lucide="settings-2" style="width:24px;height:24px;"></i>
+        <h3>Flexible Options</h3>
+        <p>Choose your delimiter (comma, semicolon, tab, pipe), encoding, and row handling preferences.</p>
+      </div>
+      <div class="feature-card">
+        <i data-lucide="eye" style="width:24px;height:24px;"></i>
+        <h3>Live Preview</h3>
+        <p>See a preview of your data before downloading, so you always know what you're getting.</p>
+      </div>
+    </div>
+
+    <!-- SEO content -->
+    <article class="seo-content-block">
+      <h2>How to Convert Excel to CSV Online</h2>
+      <p>Converting Excel files to CSV (Comma-Separated Values) is one of the most common data tasks for analysts, developers, and marketers. Our <strong>free Excel to CSV converter</strong> makes it effortless — just drop your file, optionally configure the delimiter, and download the result in seconds.</p>
+
+      <h2>Step-by-Step Guide</h2>
+      <ul>
+        <li><strong>Step 1:</strong> Drag and drop your XLS, XLSX, ODS, or TSV file into the upload area (or click to browse).</li>
+        <li><strong>Step 2:</strong> Configure options — choose your preferred delimiter, sheet, and encoding.</li>
+        <li><strong>Step 3:</strong> Click "Convert to CSV" to process your file instantly in-browser.</li>
+        <li><strong>Step 4:</strong> Preview the data table, then download individual CSVs or all files as a ZIP.</li>
+      </ul>
+
+      <h2>Why Convert Excel to CSV?</h2>
+      <p>CSV is the universal language of data exchange. While Excel's XLSX format is powerful, it can only be opened with specific software. A <strong>CSV file</strong> can be read by any spreadsheet program, database, programming language, or analytics tool.</p>
+      <ul>
+        <li><strong>Database imports:</strong> MySQL, PostgreSQL, SQLite all accept CSV natively.</li>
+        <li><strong>Python / R / pandas:</strong> Data scientists overwhelmingly prefer CSV for data manipulation.</li>
+        <li><strong>CRM imports:</strong> Salesforce, HubSpot, and most CRMs require CSV for contact uploads.</li>
+        <li><strong>Email marketing:</strong> Mailchimp, Klaviyo, and similar tools use CSV for subscriber lists.</li>
+        <li><strong>API integrations:</strong> CSV is the simplest format for data pipeline automation.</li>
+      </ul>
+
+      <h2>Supported Input Formats</h2>
+      <ul>
+        <li><strong>XLSX</strong> — Modern Microsoft Excel (Office 2007+)</li>
+        <li><strong>XLS</strong> — Legacy Microsoft Excel 97-2003</li>
+        <li><strong>ODS</strong> — OpenDocument Spreadsheet (LibreOffice, Google Sheets export)</li>
+        <li><strong>TSV</strong> — Tab-Separated Values</li>
+        <li><strong>CSV</strong> — Re-format or re-delimiter an existing CSV</li>
+        <li><strong>TXT</strong> — Plain text files with delimited data</li>
+      </ul>
+
+      <h2>XLS vs XLSX vs CSV — What's the Difference?</h2>
+      <p><strong>XLS</strong> is the older binary Excel format from Office 97–2003. <strong>XLSX</strong> is the modern XML-based format from Office 2007 and later, which is more compact and standardized. <strong>CSV</strong> is a plain text format with no formatting, formulas, or multiple sheets — just pure data rows and columns, making it the most portable and universally compatible format.</p>
+
+      <h2>What Is an ODS File?</h2>
+      <p>ODS (OpenDocument Spreadsheet) is the open-standard spreadsheet format used by LibreOffice Calc and exported by Google Sheets. If you receive an ODS file and need to import it into a database or analytics platform, converting it to CSV with this tool is the fastest solution.</p>
+    </article>
+
+    <!-- CTA -->
+    <div class="tool-cta">
+      <h2>Need to Manage Your CSV Data for Outreach?</h2>
+      <p>LeadNexus lets you import your CSV contact lists directly into automated email campaigns. B2B lead generation and outreach — automated and at scale.</p>
+      <a href="{% url 'register' %}" class="btn-convert" style="display:inline-flex; text-decoration:none;">
+        <i data-lucide="rocket" style="width:18px;height:18px;"></i>
+        Start Free Trial
+      </a>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<!-- SheetJS for parsing Excel files -->
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<script>
+  // ── State ─────────────────────────────────────────────
+  let uploadedFiles = []; // { file, workbook, outputData, outputExt, name, ext, status }
+
+  // ── Format config ─────────────────────────────────────
+  const FORMAT_META = {
+    csv:  { label: '.CSV',  ext: 'csv',  mime: 'text/csv',               btnLabel: 'Convert to CSV'  },
+    tsv:  { label: '.TSV',  ext: 'tsv',  mime: 'text/tab-separated-values', btnLabel: 'Convert to TSV' },
+    pipe: { label: '.TXT',  ext: 'txt',  mime: 'text/plain',              btnLabel: 'Convert to TXT (Pipe)' },
+    json: { label: '.JSON', ext: 'json', mime: 'application/json',        btnLabel: 'Convert to JSON' },
+    xlsx: { label: '.XLSX', ext: 'xlsx', mime: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', btnLabel: 'Convert to XLSX' },
+  };
+
+  const FORMAT_COLORS = {
+    xlsx: '#34d399', xls: '#6ee7b7', csv: '#93c5fd',
+    tsv: '#fcd34d', ods: '#a78bfa', txt: '#9ca3af',
+  };
+
+  const FORMAT_DESCRIPTION = {
+    xlsx: 'Microsoft Excel Workbook',
+    xls:  'Legacy Excel 97-2003',
+    csv:  'Comma-Separated Values',
+    tsv:  'Tab-Separated Values',
+    ods:  'OpenDocument Spreadsheet',
+    txt:  'Plain Text / Delimited',
+  };
+
+  // ── Drag & Drop ───────────────────────────────────────
+  const uploadArea = document.getElementById('uploadArea');
+  uploadArea.addEventListener('dragover', (e) => { e.preventDefault(); uploadArea.classList.add('dragover'); });
+  uploadArea.addEventListener('dragleave', () => uploadArea.classList.remove('dragover'));
+  uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    handleFiles(e.dataTransfer.files);
+  });
+
+  // ── Output format change ───────────────────────────────
+  function onFormatChange() {
+    const fmt = document.getElementById('outputFormatOpt').value;
+    const meta = FORMAT_META[fmt];
+
+    // Update button label
+    document.getElementById('convertBtnLabel').textContent = meta.btnLabel;
+
+    // Show/hide delimiter for text formats only
+    const delimGroup = document.getElementById('delimiterGroup');
+    const textFormats = ['csv', 'tsv', 'pipe'];
+    delimGroup.style.display = textFormats.includes(fmt) ? 'block' : 'none';
+
+    // Auto-set delimiter to match chosen format
+    const delimSel = document.getElementById('delimiterOpt');
+    if (fmt === 'csv')  delimSel.value = ',';
+    if (fmt === 'tsv')  delimSel.value = '\t';
+    if (fmt === 'pipe') delimSel.value = '|';
+
+    // Re-render file list with updated "→ FORMAT" arrows
+    renderFileList();
+  }
+
+  // ── File Handling ─────────────────────────────────────
+  function handleFiles(files) {
+    if (!files || !files.length) return;
+    Array.from(files).forEach(file => {
+      const ext = file.name.split('.').pop().toLowerCase();
+      const supported = ['xlsx', 'xls', 'csv', 'tsv', 'ods', 'txt'];
+      if (!supported.includes(ext)) {
+        showToast(`"${file.name}" is not a supported format.`, 'error');
+        return;
+      }
+      uploadedFiles.push({ file, workbook: null, outputData: null, outputExt: null, name: file.name, ext, status: 'ready' });
+    });
+    renderFileList();
+    loadWorkbooks();
+    document.getElementById('optionsPanel').style.display = 'grid';
+    document.getElementById('actionRow').style.display = 'flex';
+    onFormatChange(); // sync button label & delimiter state
+    if (window.lucide) lucide.createIcons();
+  }
+
+  function loadWorkbooks() {
+    uploadedFiles.forEach((item, idx) => {
+      if (item.workbook) return;
+      item.status = 'processing';
+      renderFileList();
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = new Uint8Array(e.target.result);
+          const wb = XLSX.read(data, { type: 'array' });
+          uploadedFiles[idx].workbook = wb;
+          uploadedFiles[idx].status = 'ready';
+          renderFileList();
+          if (idx === 0) renderPreview(wb);
+        } catch(err) {
+          uploadedFiles[idx].status = 'error';
+          uploadedFiles[idx].error = err.message;
+          renderFileList();
+        }
+      };
+      reader.readAsArrayBuffer(item.file);
+    });
+  }
+
+  // ── Preview ───────────────────────────────────────────
+  function renderPreview(wb) {
+    const sheetName = wb.SheetNames[0];
+    const ws = wb.Sheets[sheetName];
+    const data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+    if (!data.length) return;
+
+    const skipEmpty = document.getElementById('skipEmptyRows').checked;
+    const filtered = skipEmpty ? data.filter(r => r.some(c => c !== '' && c !== null && c !== undefined)) : data;
+    const maxCols = Math.max(...filtered.map(r => r.length));
+    const header = filtered[0] || [];
+    const rows = filtered.slice(1, 11);
+
+    document.getElementById('previewThead').innerHTML =
+      '<tr>' + header.map(h => `<th>${escHtml(String(h))}</th>`).join('') + '</tr>';
+    document.getElementById('previewTbody').innerHTML =
+      rows.map(row =>
+        '<tr>' + Array.from({ length: maxCols }, (_, i) => `<td>${escHtml(String(row[i] ?? ''))}</td>`).join('') + '</tr>'
+      ).join('');
+
+    document.getElementById('previewMeta').textContent =
+      `${filtered.length - 1} rows · ${maxCols} columns · ${wb.SheetNames.length} sheet(s) · Sheet: "${sheetName}"`;
+    document.getElementById('previewWrap').style.display = 'block';
+  }
+
+  // ── Convert ───────────────────────────────────────────
+  function convertAllFiles() {
+    const btn = document.getElementById('convertBtn');
+    btn.disabled = true;
+    btn.innerHTML = `<i data-lucide="loader" style="width:18px;height:18px;"></i> Converting...`;
+    if (window.lucide) lucide.createIcons();
+
+    const fmt = document.getElementById('outputFormatOpt').value;
+    const skipEmpty = document.getElementById('skipEmptyRows').checked;
+    const quoteFields = document.getElementById('quoteFields').checked;
+    const sheetMode = document.getElementById('sheetOpt').value;
+    const meta = FORMAT_META[fmt];
+
+    // Resolve delimiter
+    let delimiter = ',';
+    if (fmt === 'tsv')  delimiter = '\t';
+    else if (fmt === 'pipe') delimiter = '|';
+    else if (['csv'].includes(fmt)) delimiter = document.getElementById('delimiterOpt').value;
+
+    setTimeout(() => {
+      uploadedFiles.forEach((item, idx) => {
+        if (!item.workbook) {
+          uploadedFiles[idx].status = 'error';
+          uploadedFiles[idx].error = 'File not loaded yet';
+          return;
+        }
+        try {
+          const sheetsToProcess = sheetMode === 'all' ? item.workbook.SheetNames : [item.workbook.SheetNames[0]];
+
+          if (fmt === 'xlsx') {
+            // Output as XLSX — re-export via SheetJS
+            const newWb = XLSX.utils.book_new();
+            sheetsToProcess.forEach(sName => {
+              const ws = item.workbook.Sheets[sName];
+              XLSX.utils.book_append_sheet(newWb, ws, sName);
+            });
+            const wbout = XLSX.write(newWb, { bookType: 'xlsx', type: 'array' });
+            uploadedFiles[idx].outputData = new Blob([wbout], { type: meta.mime });
+            uploadedFiles[idx].isBinary = true;
+
+          } else if (fmt === 'json') {
+            // Output as JSON array of objects
+            const parts = sheetsToProcess.map(sName => {
+              const ws = item.workbook.Sheets[sName];
+              let rows = XLSX.utils.sheet_to_json(ws, { defval: '' });
+              if (skipEmpty) rows = rows.filter(r => Object.values(r).some(v => v !== ''));
+              return rows;
+            });
+            const combined = parts.length === 1 ? parts[0] : parts.reduce((a,b) => [...a, ...b], []);
+            uploadedFiles[idx].outputData = JSON.stringify(combined, null, 2);
+            uploadedFiles[idx].isBinary = false;
+
+          } else {
+            // CSV / TSV / Pipe text output
+            const textParts = sheetsToProcess.map(sName => {
+              const ws = item.workbook.Sheets[sName];
+              let data = XLSX.utils.sheet_to_json(ws, { header: 1, defval: '' });
+              if (skipEmpty) data = data.filter(r => r.some(c => c !== '' && c !== null && c !== undefined));
+              return data.map(row => row.map(cell => {
+                let val = String(cell ?? '');
+                if (quoteFields || val.includes(delimiter) || val.includes('"') || val.includes('\n')) {
+                  val = '"' + val.replace(/"/g, '""') + '"';
+                }
+                return val;
+              }).join(delimiter)).join('\n');
+            });
+            uploadedFiles[idx].outputData = textParts.join('\n\n--- SHEET BREAK ---\n\n');
+            uploadedFiles[idx].isBinary = false;
+          }
+
+          uploadedFiles[idx].outputExt = meta.ext;
+          uploadedFiles[idx].outputMime = meta.mime;
+          uploadedFiles[idx].status = 'success';
+
+        } catch(err) {
+          uploadedFiles[idx].status = 'error';
+          uploadedFiles[idx].error = err.message;
+        }
+      });
+
+      renderFileList();
+      btn.disabled = false;
+      const doneLabel = `<i data-lucide="check-circle" style="width:18px;height:18px;"></i> <span id="convertBtnLabel">Done! Convert Again</span>`;
+      btn.innerHTML = doneLabel;
+      if (window.lucide) lucide.createIcons();
+
+      const successCount = uploadedFiles.filter(f => f.status === 'success').length;
+      if (successCount > 1) document.getElementById('zipBtn').style.display = 'inline-flex';
+
+      setTimeout(() => {
+        onFormatChange(); // reset label
+        btn.disabled = false;
+        const lbl = FORMAT_META[document.getElementById('outputFormatOpt').value].btnLabel;
+        btn.innerHTML = `<i data-lucide="refresh-cw" style="width:18px;height:18px;"></i> <span id="convertBtnLabel">${lbl}</span>`;
+        if (window.lucide) lucide.createIcons();
+      }, 3000);
+    }, 50);
+  }
+
+  // ── Download ──────────────────────────────────────────
+  function downloadFile(idx) {
+    const item = uploadedFiles[idx];
+    if (!item || !item.outputData) return;
+    const baseName = item.name.replace(/\.[^/.]+$/, '');
+    let blob;
+    if (item.isBinary) {
+      blob = item.outputData; // already a Blob
+    } else {
+      blob = new Blob([item.outputData], { type: item.outputMime + ';charset=utf-8;' });
+    }
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = `${baseName}.${item.outputExt}`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+  }
+
+  // Keep old name for backward compat with zip button
+  function downloadCSV(idx) { downloadFile(idx); }
+
+  async function downloadAllAsZip() {
+    const successes = uploadedFiles.filter(f => f.outputData);
+    successes.forEach((_, i) => {
+      const realIdx = uploadedFiles.indexOf(successes[i]);
+      setTimeout(() => downloadFile(realIdx), i * 450);
+    });
+    showToast(`Downloading ${successes.length} converted file(s)...`, 'success');
+  }
+
+  // ── Render file list ──────────────────────────────────
+  function renderFileList() {
+    const container = document.getElementById('fileList');
+    if (!uploadedFiles.length) { container.innerHTML = ''; return; }
+
+    const fmt = document.getElementById('outputFormatOpt') ? document.getElementById('outputFormatOpt').value : 'csv';
+    const outMeta = FORMAT_META[fmt] || FORMAT_META.csv;
+
+    container.innerHTML = uploadedFiles.map((item, idx) => {
+      const statusMap = {
+        ready: 'Ready', processing: 'Parsing...', success: 'Converted ✓', error: `Error: ${item.error || 'Unknown'}`
+      };
+      const sizeKb = (item.file.size / 1024).toFixed(1);
+      const dotColor = FORMAT_COLORS[item.ext] || '#9ca3af';
+      const fmtDesc = FORMAT_DESCRIPTION[item.ext] || item.ext.toUpperCase();
+      const sheetInfo = item.workbook ? ` · ${item.workbook.SheetNames.length} sheet(s)` : '';
+      
+      // Format detection badge
+      const formatBadge = `
+        <div style="display:flex;align-items:center;gap:5px;margin-top:3px;flex-wrap:wrap;">
+          <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.09);border-radius:6px;padding:2px 8px;font-size:.7rem;font-weight:700;color:${dotColor};">
+            <span style="width:6px;height:6px;border-radius:50%;background:${dotColor};display:inline-block;"></span>
+            .${item.ext.toUpperCase()}
+          </span>
+          <span style="font-size:.7rem;color:var(--text-muted);">${fmtDesc}${sheetInfo}</span>
+          ${item.status !== 'success' ? `
+            <span style="font-size:.7rem;color:var(--text-muted);">→</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(124,58,237,.1);border:1px solid rgba(124,58,237,.25);border-radius:6px;padding:2px 8px;font-size:.7rem;font-weight:700;color:#a78bfa;">
+              ${outMeta.label}
+            </span>
+          ` : `
+            <span style="font-size:.7rem;color:var(--text-muted);">→</span>
+            <span style="display:inline-flex;align-items:center;gap:4px;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.3);border-radius:6px;padding:2px 8px;font-size:.7rem;font-weight:700;color:#34d399;">
+              .${(item.outputExt||'csv').toUpperCase()} ready
+            </span>
+          `}
+        </div>`;
+
+      return `<div class="file-item ${item.status}">
+        <div class="file-icon ${item.ext}">${item.ext.toUpperCase()}</div>
+        <div class="file-info">
+          <div class="file-name">${escHtml(item.name)}</div>
+          <div class="file-meta">${sizeKb} KB${formatBadge}</div>
+        </div>
+        <span class="file-status ${item.status}">${statusMap[item.status] || item.status}</span>
+        ${item.status === 'success' ? `<button class="file-download-btn" onclick="downloadFile(${idx})">⬇ Download ${(item.outputExt||'csv').toUpperCase()}</button>` : ''}
+        <button class="file-remove-btn" onclick="removeFile(${idx})">✕</button>
+      </div>`;
+    }).join('');
+  }
+
+  function removeFile(idx) {
+    uploadedFiles.splice(idx, 1);
+    renderFileList();
+    if (!uploadedFiles.length) {
+      document.getElementById('optionsPanel').style.display = 'none';
+      document.getElementById('actionRow').style.display = 'none';
+      document.getElementById('previewWrap').style.display = 'none';
+    }
+  }
+
+  function clearAll() {
+    uploadedFiles = [];
+    document.getElementById('fileInput').value = '';
+    renderFileList();
+    document.getElementById('optionsPanel').style.display = 'none';
+    document.getElementById('actionRow').style.display = 'none';
+    document.getElementById('previewWrap').style.display = 'none';
+    document.getElementById('zipBtn').style.display = 'none';
+  }
+
+  // ── Utilities ─────────────────────────────────────────
+  function escHtml(str) {
+    return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+  }
+
+  function showToast(msg, type) {
+    const colors = { success: '#34d399', error: '#f87171', warning: '#fcd34d' };
+    const n = document.createElement('div');
+    n.style.cssText = `position:fixed;bottom:24px;right:24px;background:var(--bg-secondary);border:1px solid ${colors[type]||'var(--border)'};color:var(--text-primary);padding:12px 20px;border-radius:10px;font-size:.87rem;font-weight:600;z-index:9999;box-shadow:0 8px 24px rgba(0,0,0,.4);`;
+    n.textContent = msg;
+    document.body.appendChild(n);
+    setTimeout(() => n.remove(), 3000);
+  }
+
+  // ── Init ─────────────────────────────────────────────
+  window.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+    onFormatChange(); // set initial state
+  });
+</script>
+{% endblock %}
+
+

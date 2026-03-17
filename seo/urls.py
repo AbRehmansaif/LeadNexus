@@ -15,4 +15,8 @@ urlpatterns = [
     path('email-automation-for-startups/',    views.email_automation_for_startups,    name='seo-email-automation-for-startups'),
     path('lead-generation-email-tool/',       views.lead_generation_email_tool,       name='seo-lead-generation-email-tool'),
     path('outreach-automation/',             views.outreach_automation,             name='seo-outreach-automation'),
+
+    # ── Free Tools ─────────────────────────────────────
+    path('tools/markdown-to-html/',          views.markdown_to_html_converter,      name='seo-tool-markdown-to-html'),
+    path('tools/excel-to-csv/',              views.excel_to_csv_converter,          name='seo-tool-excel-to-csv'),
 ]

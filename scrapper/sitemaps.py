@@ -32,3 +32,16 @@ class SeoViewSitemap(Sitemap):
 
     def location(self, item):
         return reverse(item)
+
+class ToolsViewSitemap(Sitemap):
+    priority = 0.85
+    changefreq = 'monthly'
+
+    def items(self):
+        return [
+            'seo:seo-tool-markdown-to-html',
+            'seo:seo-tool-excel-to-csv',
+        ]
+
+    def location(self, item):
+        return reverse(item)

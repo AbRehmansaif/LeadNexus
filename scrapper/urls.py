@@ -16,11 +16,12 @@ from core.auth_views import (
 )
 from core import template_views
 from django.contrib.sitemaps.views import sitemap
-from scrapper.sitemaps import StaticViewSitemap, SeoViewSitemap
+from scrapper.sitemaps import StaticViewSitemap, SeoViewSitemap, ToolsViewSitemap
 
 sitemaps = {
     'static': StaticViewSitemap,
     'seo': SeoViewSitemap,
+    'tools': ToolsViewSitemap,
 }
 
 def robots_txt_view(request):
