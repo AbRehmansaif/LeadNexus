@@ -1,0 +1,237 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Free SPF, DKIM & DMARC Generator & Checker — LeadNexus{% endblock %}
+{% block meta_description %}Free professional DNS record generator for email deliverability. Create SPF, DKIM, and DMARC records for Gmail, Outlook, and custom SMTP in seconds to avoid spam filters.{% endblock %}
+{% block meta_keywords %}SPF generator, DMARC generator, DKIM setup, email deliverability tool, DNS records for email, fix spam folder, cold email setup{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tool-dns-generator.css' %}">
+{% endblock %}
+
+{% block content %}
+{% include 'seo/tools/_tool_nav.html' %}
+<section class="tool-page">
+  <div class="container">
+
+    <!-- Hero -->
+    <div class="tool-hero">
+      <div class="tool-badge">
+        <i data-lucide="shield-check" style="width:13px;height:13px;"></i>
+        Deliverability Configurator
+      </div>
+      <h1>SPF, DKIM & DMARC Generator</h1>
+      <p>Configure your domain's DNS identity in seconds. Prevent your emails from landing in spam by generating <strong>precise authentication records</strong> for any email provider.</p>
+    </div>
+
+    <!-- Mini CTA Bar -->
+    <div class="mini-cta-bar">
+      <div class="mini-cta-text">
+        <i data-lucide="mail" style="width:14px;height:14px;color:#a78bfa;"></i>
+        Want to find verified B2B leads and automate your outreach?
+      </div>
+      <a href="{% url 'register' %}" class="mini-cta-link">
+        Try LeadNexus Free <i data-lucide="chevron-right" style="width:14px;height:14px;"></i>
+      </a>
+    </div>
+
+    <!-- Interface -->
+    <div class="dns-grid">
+      
+      <!-- Input Panel -->
+      <div class="panel input-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="dot"></span>
+                Domain Configuration
+          </div>
+        </div>
+        <div class="panel-body">
+          
+          <div class="input-group">
+            <label class="input-label">Your Domain Name</label>
+            <div class="input-wrapper">
+              <i data-lucide="globe" class="input-icon"></i>
+              <input type="text" id="domainInput" placeholder="example.com" class="theme-input">
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Email Service Provider</label>
+            <div class="provider-grid">
+              <div class="provider-card active" data-provider="google">
+                <img src="https://www.gstatic.com/images/branding/product/2x/gmail_64dp.png" alt="Gmail">
+                <span>Google Workspace</span>
+              </div>
+              <div class="provider-card" data-provider="outlook">
+                <img src="https://upload.wikimedia.org/wikipedia/commons/d/df/Microsoft_Office_Outlook_%282018%E2%80%93present%29.svg" alt="Outlook">
+                <span>Microsoft 365</span>
+              </div>
+              <div class="provider-card" data-provider="zoho">
+                <img src="https://www.zohowebstatic.com/sites/default/files/styles/product_logo/public/zoho-logo.png" alt="Zoho">
+                <span>Zoho Mail</span>
+              </div>
+              <div class="provider-card" data-provider="custom">
+                <i data-lucide="server" style="width:24px;height:24px;color:#a78bfa;"></i>
+                <span>Custom SMTP</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">DMARC Policy Rigidity</label>
+            <div class="custom-select-wrapper">
+              <select id="dmarcPolicy" class="theme-select">
+                <option value="none" selected>None (Monitoring Only - Safest Start)</option>
+                <option value="quarantine">Quarantine (Send suspicious mail to Spam)</option>
+                <option value="reject">Reject (Block suspicious mail entirely)</option>
+              </select>
+            </div>
+          </div>
+          
+        </div>
+        <div class="panel-footer">
+          <button class="btn-generate" id="generateBtn">
+            <i data-lucide="zap" style="width:16px;height:16px;"></i>
+            Generate DNS Records
+          </button>
+        </div>
+      </div>
+
+      <!-- Result Panel -->
+      <div class="panel result-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i data-lucide="layout-list" style="width:14px;height:14px; color:#a78bfa; margin-right:6px;"></i> Output Records
+          </div>
+          <div class="header-actions">
+             <button class="btn-check" id="verifyBtn">
+               <i data-lucide="refresh-cw" style="width:14px;height:14px;"></i> Live Check
+             </button>
+          </div>
+        </div>
+        
+        <div class="panel-body results-body">
+          <div id="emptyState" class="empty-state">
+            <i data-lucide="file-code" class="empty-icon"></i>
+            <h3>Ready to Secure Your Domain</h3>
+            <p>Enter your domain and select a provider to generate your professional SPF, DKIM, and DMARC configuration records.</p>
+          </div>
+
+          <div id="recordsOutput" class="records-output" style="display: none;">
+            
+            <!-- SPF -->
+            <div class="record-block" id="spfBlock">
+              <div class="record-header">
+                <div class="record-type">SPF RECORD</div>
+                <div class="record-status" id="spfStatus"><i data-lucide="circle-dashed"></i> Pending Check</div>
+              </div>
+              <div class="record-data">
+                <div class="data-row">
+                  <span class="label">Host/Name:</span>
+                  <span class="value">@</span>
+                </div>
+                <div class="data-row">
+                  <span class="label">Value:</span>
+                  <code id="spfValue">v=spf1 include:_spf.google.com ~all</code>
+                </div>
+                <button class="btn-copy" data-copy-id="spfValue">
+                  <i data-lucide="copy"></i> Copy
+                </button>
+              </div>
+            </div>
+
+            <!-- DKIM -->
+            <div class="record-block" id="dkimBlock">
+              <div class="record-header">
+                <div class="record-type">DKIM CONFIGURATION</div>
+                <div class="record-status" id="dkimStatus"><i data-lucide="circle-dashed"></i> Pending Check</div>
+              </div>
+              <div class="record-data">
+                <div class="data-row">
+                  <span class="label">Selector:</span>
+                  <span class="value" id="dkimSelector">google</span>
+                </div>
+                <div class="data-row">
+                  <span class="label">Information:</span>
+                  <p class="data-note">For DKIM, you must generate a private/public key pair inside your email provider's admin panel first.</p>
+                </div>
+                <button class="btn-action-small" id="dkimGuideBtn">
+                  <i data-lucide="external-link"></i> Provider Guide
+                </button>
+              </div>
+            </div>
+
+            <!-- DMARC -->
+            <div class="record-block" id="dmarcBlock">
+              <div class="record-header">
+                <div class="record-type">DMARC RECORD</div>
+                <div class="record-status" id="dmarcStatus"><i data-lucide="circle-dashed"></i> Pending Check</div>
+              </div>
+              <div class="record-data">
+                <div class="data-row">
+                  <span class="label">Host/Name:</span>
+                  <span class="value">_dmarc</span>
+                </div>
+                <div class="data-row">
+                  <span class="label">Value:</span>
+                  <code id="dmarcValue">v=DMARC1; p=none; rua=mailto:admin@example.com</code>
+                </div>
+                <button class="btn-copy" data-copy-id="dmarcValue">
+                  <i data-lucide="copy"></i> Copy
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SEO Content Block -->
+    <div class="seo-content-block">
+      <h2>Understanding Email Authentication (SPF, DKIM, DMARC)</h2>
+      <p>Modern email deliverability is built on trust. When you send an email, server-side filters at Gmail and Outlook ask one question: <strong>"How do I know this sender is who they say they are?"</strong> Without SPF, DKIM, and DMARC, your domain has no identity, and your emails are treat as potential phishing attacks or spam.</p>
+      
+      <div class="features-grid">
+        <div class="feature-item">
+          <h3><i data-lucide="check-circle" style="color:#10b981;"></i> SPF (Sender Policy Framework)</h3>
+          <p>SPF is a simple TXT record in your DNS that lists exactly which servers (IP addresses or providers) are allowed to send emails on behalf of your domain. It prevents others from spoofing your "From" address.</p>
+        </div>
+        <div class="feature-item">
+          <h3><i data-lucide="check-circle" style="color:#10b981;"></i> DKIM (DomainKeys Identified Mail)</h3>
+          <p>DKIM adds a cryptographic digital signature to your email headers. This "seal" proves that the email was actually sent by your domain and hasn't been tampered with while traveling across the internet.</p>
+        </div>
+        <div class="feature-item">
+          <h3><i data-lucide="check-circle" style="color:#10b981;"></i> DMARC (Domain-based Messaging)</h3>
+          <p>DMARC is the "instruction manual" for email providers. If an email fails SPF or DKIM, DMARC tells the receiving server whether to ignore the failure, put the email in spam, or reject it entirely.</p>
+        </div>
+      </div>
+
+      <h2>Why Cold Emailers Need a 100% Valid Score</h2>
+      <p>If you are doing B2B outreach, your volume is higher than a typical individual. This makes you a target for "Aggressive Spam Filtering." If even one of these three records is missing or misconfigured:</p>
+      <ul>
+        <li><strong>Open rates will plummet:</strong> Your emails will be delivered directly to the 'Spam' or 'Promotions' folder.</li>
+        <li><strong>Domain Blacklisting:</strong> Persistent authentication failures will cause your domain to be flagged by Spamhaus or Google.</li>
+        <li><strong>Infrastructure Failure:</strong> Tools like Instantly, Lemlist, or LeadNexus rely on these records to maintain high-velocity inbox density.</li>
+      </ul>
+    </div>
+
+    <!-- Final CTA -->
+    <div class="tool-cta">
+      <h2>Don't set it up alone. Let LeadNexus handle the scaling.</h2>
+      <p style="font-size:.85rem;color:var(--text-muted);margin-bottom:24px;">✅ Automated deliverability &nbsp;·&nbsp; ✅ Inbox rotation &nbsp;·&nbsp; ✅ Built-in warm-up &nbsp;·&nbsp; ✅ Verified B2B leads</p>
+      <a href="{% url 'register' %}" class="btn-convert" style="display:inline-flex; text-decoration:none;">
+        <i data-lucide="rocket" style="width:18px;height:18px;"></i>
+        Start Free — Secure Your Outreach
+      </a>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/tool-dns-generator.js' %}"></script>
+{% endblock %}

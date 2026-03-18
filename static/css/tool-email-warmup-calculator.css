@@ -36,8 +36,45 @@
   text-transform: uppercase;
   padding: 5px 14px;
   border-radius: 999px;
-  margin-bottom: 16px;
+  margin-bottom: 24px;
 }
+
+/* Mini CTA Bar */
+.mini-cta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: rgba(124,58,237,.08);
+  border: 1px solid rgba(124,58,237,.2);
+  border-radius: 999px;
+  padding: 10px 24px;
+  margin: -24px auto 48px;
+  max-width: 640px;
+  flex-wrap: wrap;
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);
+}
+.mini-cta-text {
+  font-size: 0.85rem;
+  color: #94a3b8;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.mini-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: #fff;
+  background: var(--gradient-primary);
+  padding: 7px 18px;
+  border-radius: 999px;
+  text-decoration: none;
+  transition: all 0.2s;
+}
+.mini-cta-link:hover { transform: scale(1.02); opacity: 0.9; }
 
 /* ── Custom Tooltips ─────────────────────────────────── */
 .custom-tooltip {

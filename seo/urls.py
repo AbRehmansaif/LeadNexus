@@ -21,4 +21,6 @@ urlpatterns = [
     path('tools/excel-to-csv/',              views.excel_to_csv_converter,          name='seo-tool-excel-to-csv'),
     path('tools/email-spam-word-checker/',   views.email_spam_word_checker,         name='seo-tool-email-spam-word-checker'),
     path('tools/email-warmup-schedule-calculator/', views.email_warmup_calculator, name='seo-tool-email-warmup-calculator'),
+    path('tools/spf-dkim-dmarc-config-generator/', views.dns_config_generator, name='seo-tool-dns-config-generator'),
+    path('api/check-dns-records/',                 views.check_dns_records,     name='api-check-dns-records'),
 ]

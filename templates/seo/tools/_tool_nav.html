@@ -1,0 +1,76 @@
+<div class="tool-navigation-bar glass">
+    <div class="container container-tool-nav">
+        <div class="tool-list">
+            <a href="{% url 'seo:seo-tool-email-warmup-calculator' %}" class="tool-nav-item {% if '/email-warmup-schedule-calculator/' in request.path %}active{% endif %}">
+                <i data-lucide="flame"></i> Warm-Up Calculator
+            </a>
+            <a href="{% url 'seo:seo-tool-dns-config-generator' %}" class="tool-nav-item {% if '/spf-dkim-dmarc-config-generator/' in request.path %}active{% endif %}">
+                <i data-lucide="shield-check"></i> DNS Generator
+            </a>
+            <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" class="tool-nav-item {% if '/email-spam-word-checker/' in request.path %}active{% endif %}">
+                <i data-lucide="mail-warning"></i> Spam Checker
+            </a>
+            <a href="{% url 'seo:seo-tool-markdown-to-html' %}" class="tool-nav-item {% if '/markdown-to-html/' in request.path %}active{% endif %}">
+                <i data-lucide="file-code"></i> Markdown Conv.
+            </a>
+            <a href="{% url 'seo:seo-tool-excel-to-csv' %}" class="tool-nav-item {% if '/excel-to-csv/' in request.path %}active{% endif %}">
+                <i data-lucide="sheet"></i> Excel to CSV
+            </a>
+        </div>
+    </div>
+</div>
+
+<style>
+.tool-navigation-bar {
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+    background: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(12px);
+    position: sticky;
+    top: 72px; /* Set just below the main navbar */
+    z-index: 40;
+}
+.container-tool-nav {
+    display: flex;
+    justify-content: center;
+}
+.tool-list {
+    display: flex;
+    overflow-x: auto;
+    gap: 8px;
+    padding: 10px 0;
+    scrollbar-width: none;
+}
+.tool-list::-webkit-scrollbar { display: none; }
+
+.tool-nav-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 99px;
+    color: #94a3b8;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    white-space: nowrap;
+    transition: all 0.25s;
+    border: 1px solid transparent;
+}
+
+.tool-nav-item i { width: 14px; height: 14px; }
+
+.tool-nav-item:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.05);
+}
+
+.tool-nav-item.active {
+    color: #fff;
+    background: rgba(124, 58, 237, 0.1);
+    border-color: rgba(124, 58, 237, 0.3);
+}
+
+@media (max-width: 768px) {
+    .tool-list { padding: 8px 16px; width: 100%; }
+}
+</style>
