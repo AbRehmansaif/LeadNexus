@@ -16,6 +16,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const noHistory = document.getElementById('noHistory');
     const clearHistoryBtn = document.getElementById('clearHistory');
     const conversionModal = document.getElementById('conversionModal');
+    const confirmClearModal = document.getElementById('confirmClearModal');
+    const confirmClearBtn = document.getElementById('confirmClearBtn');
+    const cancelClearBtn = document.getElementById('cancelClearBtn');
 
     // Branding & Counter
     let copyCount = parseInt(localStorage.getItem('utm_copy_count') || '0');
@@ -218,11 +221,22 @@ document.addEventListener('DOMContentLoaded', () => {
     
     if (clearHistoryBtn) {
         clearHistoryBtn.addEventListener('click', () => {
-            if (confirm('Clear all campaign history?')) {
-                history = [];
-                localStorage.setItem('utm_builder_history', JSON.stringify(history));
-                renderHistory();
-            }
+            if (confirmClearModal) confirmClearModal.style.display = 'flex';
+        });
+    }
+
+    if (confirmClearBtn) {
+        confirmClearBtn.addEventListener('click', () => {
+            history = [];
+            localStorage.setItem('utm_builder_history', JSON.stringify(history));
+            renderHistory();
+            if (confirmClearModal) confirmClearModal.style.display = 'none';
+        });
+    }
+
+    if (cancelClearBtn) {
+        cancelClearBtn.addEventListener('click', () => {
+            if (confirmClearModal) confirmClearModal.style.display = 'none';
         });
     }
 
