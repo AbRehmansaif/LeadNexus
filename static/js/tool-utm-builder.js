@@ -111,8 +111,14 @@ document.addEventListener('DOMContentLoaded', () => {
                     <span style="color: #64748b; margin: 0 4px;">/</span>
                     <span style="color: #cbd5e1;">${item.medium}</span>
                 </td>
-                <td style="padding: 16px 24px; max-width: 300px;">
-                    <div style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: #94a3b8; font-family: monospace; font-size: 0.8rem;">${item.url}</div>
+                <td style="padding: 16px 24px;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="background: rgba(239, 68, 68, 0.1); color: #ef4444; padding: 2px 8px; border-radius: 4px; font-size: 0.7rem; font-weight: 700;">MANUAL</span>
+                        <a href="/register/" style="color: #10b981; font-size: 0.7rem; font-weight: 800; text-decoration: none; display: flex; align-items: center; gap: 4px;">
+                            <i data-lucide="zap" style="width: 10px; height: 10px;"></i>
+                            Automate ROI
+                        </a>
+                    </div>
                 </td>
                 <td style="padding: 16px 24px; text-align: right;">
                     <div style="display: flex; justify-content: flex-end; gap: 8px;">
