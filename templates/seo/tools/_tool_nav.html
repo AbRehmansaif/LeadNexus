@@ -4,6 +4,9 @@
             <a href="{% url 'seo:seo-tool-email-warmup-calculator' %}" class="tool-nav-item {% if '/email-warmup-schedule-calculator/' in request.path %}active{% endif %}">
                 <i data-lucide="flame"></i> Warm-Up Calculator
             </a>
+            <a href="{% url 'seo:seo-tool-utm-link-builder' %}" class="tool-nav-item {% if '/utm-link-builder/' in request.path %}active{% endif %}">
+                <i data-lucide="link"></i> UTM Builder
+            </a>
             <a href="{% url 'seo:seo-tool-dns-config-generator' %}" class="tool-nav-item {% if '/spf-dkim-dmarc-config-generator/' in request.path %}active{% endif %}">
                 <i data-lucide="shield-check"></i> DNS Generator
             </a>

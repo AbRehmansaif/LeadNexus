@@ -1,0 +1,365 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Free UTM Link Builder (Campaign URL Builder) — LeadNexus{% endblock %}
+{% block meta_description %}Free UTM link builder for cold emailers and marketers. Generate clean, trackable campaign URLs with source, medium, and name parameters. Perfect for tracking cold outreach performance.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tool-utm-builder.css' %}">
+<style>
+    .theme-input-with-suffix { padding-right: 48px; }
+    .tool-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(124,58,237,.15);
+    border: 1px solid rgba(124,58,237,.3);
+    color: #a78bfa;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+  }
+  .tool-hero { text-align: center; margin-bottom: 48px; }
+  .tool-hero h1 { font-size: clamp(2.2rem, 5vw, 3rem); font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 12px; line-height: 1.2; }
+  .tool-hero p { font-size: 1.1rem; color: var(--text-secondary); max-width: 650px; margin: 0 auto; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'seo/tools/_tool_nav.html' %}
+
+<section class="tool-page">
+    <div class="container">
+        <!-- Hero & Explainer -->
+        <div class="tool-hero" style="margin-bottom: 60px;">
+            <div class="tool-badge">
+                <i data-lucide="help-circle" style="width:13px;height:13px;"></i>
+                The Marketer's Secret Weapon
+            </div>
+            <h1 style="margin-bottom: 20px;">UTM Link Builder</h1>
+            <p style="font-size: 1.2rem; color: #fff; font-weight: 500; margin-bottom: 16px;">"Wait, where did this sale come from?"</p>
+            <p style="max-width: 800px; margin: 0 auto; color: #94a3b8; line-height: 1.7;">A **UTM (Urgent Tracking Module)** is just a fancy name for a few extra words added to the end of your link. These words tell Google Analytics exactly which email, ad, or post the visitor clicked on. **Without UTMs, your data is a guessing game.**</p>
+        </div>
+
+        <div class="utm-container">
+            <!-- Left: Inputs -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <span class="dot"></span>
+                        Campaign Parameters
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="input-group">
+                        <label class="input-label">Website URL <span style="color:#ef4444; margin-left:4px;">*</span></label>
+                        <div class="input-wrapper">
+                            <i data-lucide="globe" class="input-icon"></i>
+                            <input type="text" id="websiteUrl" placeholder="https://www.example.com" class="theme-input">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="input-group">
+                            <label class="input-label">Campaign Source <span style="color:#ef4444; margin-left:4px;">*</span></label>
+                            <div class="input-wrapper">
+                                <i data-lucide="share-2" class="input-icon"></i>
+                                <input type="text" id="campaignSource" value="LeadNexus" class="theme-input">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Campaign Medium <span style="color:#ef4444; margin-left:4px;">*</span></label>
+                            <div class="input-wrapper">
+                                <i data-lucide="layers" class="input-icon"></i>
+                                <input type="text" id="campaignMedium" placeholder="e.g., cold-email" class="theme-input">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label class="input-label">Campaign Name <span style="color:#ef4444; margin-left:4px;">*</span></label>
+                        <div class="input-wrapper">
+                            <i data-lucide="tag" class="input-icon"></i>
+                            <input type="text" id="campaignName" placeholder="e.g., Q1-Outreach" class="theme-input">
+                        </div>
+                    </div>
+
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                        <div class="input-group">
+                            <label class="input-label">Campaign Term <span class="optional-tag">Optional</span></label>
+                            <div class="input-wrapper">
+                                <i data-lucide="type" class="input-icon"></i>
+                                <input type="text" id="campaignTerm" placeholder="e.g., keywords" class="theme-input">
+                            </div>
+                        </div>
+                        <div class="input-group">
+                            <label class="input-label">Campaign Content <span class="optional-tag">Optional</span></label>
+                            <div class="input-wrapper">
+                                <i data-lucide="align-left" class="input-icon"></i>
+                                <input type="text" id="campaignContent" placeholder="e.g., logovariation" class="theme-input">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Result & Analysis -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i data-lucide="check-circle" style="width:14px;height:14px; color:#3b82f6; margin-right:6px;"></i> 
+                        Ready to Track
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:12px;">
+                        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.04em;">Your Tracking Link</span>
+                        <button id="clearBtn" class="btn-secondary" style="padding:6px 12px; font-size:0.75rem;">
+                            <i data-lucide="trash-2" style="width:12px;height:12px;"></i> Clear All
+                        </button>
+                    </div>
+
+                    <div class="result-box">
+                        <div id="generatedUrl" class="generated-url">
+                            Your generated link will appear here...
+                        </div>
+                        <div class="copy-actions">
+                            <button id="copyBtn" class="btn-copy">
+                                <i data-lucide="copy" style="width:18px;height:18px;"></i>
+                                Copy Tracking Link
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="utm-visual-builder">
+                        <div class="utm-tag">
+                            <div class="tag-icon"><i data-lucide="arrow-right-circle"></i></div>
+                            <div class="tag-info">
+                                <div class="tag-name">Source</div>
+                                <div class="tag-val" id="previewSource">---</div>
+                            </div>
+                        </div>
+                        <div class="utm-tag">
+                            <div class="tag-icon"><i data-lucide="terminal"></i></div>
+                            <div class="tag-info">
+                                <div class="tag-name">Medium</div>
+                                <div class="tag-val" id="previewMedium">---</div>
+                            </div>
+                        </div>
+                        <div class="utm-tag">
+                            <div class="tag-icon"><i data-lucide="zap"></i></div>
+                            <div class="tag-info">
+                                <div class="tag-name">Campaign</div>
+                                <div class="tag-val" id="previewName">---</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="margin-top: 30px; padding: 20px; background: rgba(59, 130, 246, 0.05); border-radius: 16px; border: 1px solid rgba(59, 130, 246, 0.1);">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <i data-lucide="info" style="color:#3b82f6; width:20px; height:20px;"></i>
+                            <span style="font-size:0.85rem; color:#fff; font-weight:700;">Marketing Pro-Tip</span>
+                        </div>
+                        <p style="font-size:0.82rem; color:#94a3b8; margin-top:10px; line-height:1.5;">Campaign parameters like **utm_source** and **utm_medium** let Google Analytics track exactly where your traffic is coming from. Always use dashes instead of spaces for better compatibility.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Educational Section: The "What, Who, & How" ── -->
+        <div style="margin-top: 80px; padding-top: 60px; border-top: 1px solid rgba(255,255,255,0.05);">
+            <div style="text-align: center; margin-bottom: 60px;">
+                <h2 style="font-size: 2.2rem; font-weight: 800; color: #fff; margin-bottom: 12px;">Everything you need to know</h2>
+                <p style="color: #94a3b8; font-size: 1.1rem;">Answers to the most common questions about tracking links.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 30px;">
+                <!-- Card 1: What is it? -->
+                <div class="panel" style="background: rgba(15, 23, 42, 0.4); height: 100%;">
+                    <div class="panel-header" style="background: rgba(59, 130, 246, 0.05);">
+                        <div class="panel-title" style="color: #fff;">
+                            <i data-lucide="help-circle" style="color: #3b82f6; margin-right: 8px;"></i>
+                            1. What is this?
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <p style="color: #94a3b8; line-height: 1.7; font-size: 0.9rem;">
+                            Normally, Google Analytics sees all your email clicks as "Direct Traffic"—you can't tell which specific message worked.
+                            <br><br>
+                            This tool adds **"Tracking Tags"** to your link. When someone clicks, those tags tell Google: **"This visitor came from your Cold Email campaign."**
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 2: Who uses it? -->
+                <div class="panel" style="background: rgba(15, 23, 42, 0.4); height: 100%;">
+                    <div class="panel-header" style="background: rgba(59, 130, 246, 0.05);">
+                        <div class="panel-title" style="color: #fff;">
+                            <i data-lucide="users" style="color: #3b82f6; margin-right: 8px;"></i>
+                            2. Who uses it?
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <div style="display: flex; flex-direction: column; gap: 16px;">
+                            <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                <div style="color: #3b82f6; font-weight: 800;">●</div>
+                                <p style="color: #fff; font-size: 0.85rem; font-weight: 600;">Cold Emailers: <span style="font-weight: 400; color: #94a3b8; display: block;">To track which email templates drive the most site visitors.</span></p>
+                            </div>
+                            <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                <div style="color: #3b82f6; font-weight: 800;">●</div>
+                                <p style="color: #fff; font-size: 0.85rem; font-weight: 600;">Agency Owners: <span style="font-weight: 400; color: #94a3b8; display: block;">To prove to clients that their reach is generating real ROI.</span></p>
+                            </div>
+                            <div style="display: flex; gap: 12px; align-items: flex-start;">
+                                <div style="color: #3b82f6; font-weight: 800;">●</div>
+                                <p style="color: #fff; font-size: 0.85rem; font-weight: 600;">Influencers: <span style="font-weight: 400; color: #94a3b8; display: block;">To track how many followers they successfully sent to a brand.</span></p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 3: How to Track? -->
+                <div class="panel" style="background: rgba(15, 23, 42, 0.4); height: 100%;">
+                    <div class="panel-header" style="background: rgba(16, 185, 129, 0.1);">
+                        <div class="panel-title" style="color: #fff;">
+                            <i data-lucide="bar-chart-3" style="color: #10b981; margin-right: 8px;"></i>
+                            3. How to Track?
+                        </div>
+                    </div>
+                    <div class="panel-body">
+                        <ol style="padding-left: 18px; color: #94a3b8; font-size: 0.85rem; display: flex; flex-direction: column; gap: 12px;">
+                            <li>Login to **Google Analytics**.</li>
+                            <li>Go to **Reports → Acquisition → Traffic acquisition**.</li>
+                            <li>Find your **Source** (e.g., `LeadNexus`) and **Medium** (e.g., `email`) in the table!</li>
+                        </ol>
+                        <div style="margin-top: 20px; padding: 12px; background: rgba(59, 130, 246, 0.05); border-radius: 8px; border: 1px dashed rgba(59, 130, 246, 0.2); font-size: 0.75rem; color: #3b82f6; text-align: center; font-weight: 800;">
+                            TIP: Data takes up to 24h to appear.
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Tracking History & Analytics ── -->
+        <div id="historySection" class="panel" style="margin-top: 40px; display: none;">
+            <div class="panel-header" style="background: rgba(59, 130, 246, 0.05); border-bottom-color: rgba(59, 130, 246, 0.1);">
+                <div class="panel-title" style="color: #fff; width: 100%; display: flex; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <span class="dot" style="background: #3b82f6;"></span>
+                        Campaign History & Local Report
+                    </div>
+                    <button id="clearHistory" style="background: transparent; border: none; color: #64748b; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; cursor: pointer; display: flex; align-items: center; gap: 4px;">
+                        <i data-lucide="trash-2" style="width: 12px; height: 12px;"></i> Clear History
+                    </button>
+                </div>
+            </div>
+            <div class="panel-body" style="padding: 0;">
+                <div style="overflow-x: auto;">
+                    <table style="width: 100%; border-collapse: collapse; font-size: 0.85rem; text-align: left;">
+                        <thead>
+                            <tr style="background: rgba(255,255,255,0.02); border-bottom: 1px solid rgba(255,255,255,0.05);">
+                                <th style="padding: 16px 24px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.7rem;">Campaign Name</th>
+                                <th style="padding: 16px 24px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.7rem;">Source / Medium</th>
+                                <th style="padding: 16px 24px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.7rem;">Generated Link</th>
+                                <th style="padding: 16px 24px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; font-size: 0.7rem; text-align: right;">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historyBody">
+                            <!-- JS will inject rows here -->
+                        </tbody>
+                    </table>
+                </div>
+                <div id="noHistory" style="padding: 60px; text-align: center; color: #64748b;">
+                    <i data-lucide="database" style="width: 40px; height: 40px; margin-bottom: 16px; opacity: 0.3;"></i>
+                    <p>No campaign history found. Generate and copy a link to see it here.</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ── Conversion Bridge: Manual vs Automated ── -->
+        <div style="margin-top: 100px; padding: 60px 40px; background: rgba(59, 130, 246, 0.03); border: 1px solid rgba(59, 130, 246, 0.1); border-radius: 32px;">
+            <div style="text-align: center; margin-bottom: 48px;">
+                <h2 style="font-size: 2rem; font-weight: 800; color: #fff; margin-bottom: 12px;">Stop Building Links One-by-One</h2>
+                <p style="color: #94a3b8; font-size: 1.1rem;">Why manual tracking is holding your growth back.</p>
+            </div>
+
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 40px;">
+                <!-- Manual Side -->
+                <div style="padding: 30px; background: rgba(255,255,255,0.02); border-radius: 20px; border: 1px solid rgba(255,255,255,0.05);">
+                    <h4 style="color: #ef4444; font-size: 1.1rem; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="x-circle"></i> Manual UTM Builder
+                    </h4>
+                    <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 16px;">
+                        <li style="color: #94a3b8; font-size: 0.9rem; display: flex; gap: 10px;">
+                            <i data-lucide="minus" style="flex-shrink: 0; width: 16px;"></i>
+                            Takes 2-3 minutes per link created.
+                        </li>
+                        <li style="color: #94a3b8; font-size: 0.9rem; display: flex; gap: 10px;">
+                            <i data-lucide="minus" style="flex-shrink: 0; width: 16px;"></i>
+                            High risk of typos and broken data.
+                        </li>
+                        <li style="color: #94a3b8; font-size: 0.9rem; display: flex; gap: 10px;">
+                            <i data-lucide="minus" style="flex-shrink: 0; width: 16px;"></i>
+                            No connection to actual dollars earned.
+                        </li>
+                    </ul>
+                </div>
+
+                <!-- LeadNexus Side -->
+                <div style="padding: 30px; background: rgba(16, 185, 129, 0.05); border-radius: 20px; border: 1px solid rgba(16, 185, 129, 0.2); position: relative; overflow: hidden;">
+                    <div style="position: absolute; top: 10px; right: 10px; background: #10b981; color: #fff; font-size: 0.65rem; font-weight: 900; padding: 4px 10px; border-radius: 99px; text-transform: uppercase;">Recommended</div>
+                    <h4 style="color: #10b981; font-size: 1.1rem; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <i data-lucide="check-circle"></i> LeadNexus Automation
+                    </h4>
+                    <ul style="list-style: none; padding: 0; display: flex; flex-direction: column; gap: 16px;">
+                        <li style="color: #fff; font-size: 0.9rem; display: flex; gap: 10px; font-weight: 600;">
+                            <i data-lucide="zap" style="color: #10b981; flex-shrink: 0; width: 18px;"></i>
+                            Automatic link building for 1,000s of leads.
+                        </li>
+                        <li style="color: #fff; font-size: 0.9rem; display: flex; gap: 10px; font-weight: 600;">
+                            <i data-lucide="zap" style="color: #10b981; flex-shrink: 0; width: 18px;"></i>
+                            Real-time Revenue Attribution Dashboard.
+                        </li>
+                        <li style="color: #fff; font-size: 0.9rem; display: flex; gap: 10px; font-weight: 600;">
+                            <i data-lucide="zap" style="color: #10b981; flex-shrink: 0; width: 18px;"></i>
+                            See exactly which template made you $$.
+                        </li>
+                    </ul>
+                    <a href="{% url 'register' %}" style="display: block; width: 100%; margin-top: 24px; background: #10b981; color: #fff; text-align: center; padding: 12px; border-radius: 10px; font-weight: 800; text-decoration: none; transition: all 0.3s;">
+                        Start Free Automation Trial
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success Modal (Hidden by default) -->
+        <div id="conversionModal" style="display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); padding: 20px;">
+            <div style="background: #0a0e1a; width: 100%; max-width: 450px; border-radius: 24px; border: 1px solid rgba(59, 130, 246, 0.2); padding: 40px; text-align: center; position: relative;">
+                <button onclick="document.getElementById('conversionModal').style.display='none'" style="position: absolute; top: 20px; right: 20px; background: none; border: none; color: #64748b; cursor: pointer;">
+                    <i data-lucide="x"></i>
+                </button>
+                <div style="width: 64px; height: 64px; background: rgba(59,130,246,0.1); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 24px; color: #3b82f6;">
+                    <i data-lucide="trophy" style="width: 32px; height: 32px;"></i>
+                </div>
+                <h3 style="color: #fff; font-size: 1.5rem; font-weight: 800; margin-bottom: 12px;">Link Created! Ready to Scale?</h3>
+                <p style="color: #94a3b8; line-height: 1.6; margin-bottom: 30px;">You've generated 5+ links today. Why do it manually? Let LeadNexus automate your entire campaign and track ROI for you.</p>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+                    <a href="{% url 'register' %}" class="btn-convert" style="background: linear-gradient(135deg, #3b82f6, #06b6d4); color: #fff; padding: 16px; border-radius: 12px; font-weight: 800; text-decoration: none;">Claim Your Free Trial</a>
+                    <button onclick="document.getElementById('conversionModal').style.display='none'" style="background: transparent; color: #64748b; border: none; font-size: 0.85rem; font-weight: 700; cursor: pointer;">Maybe later, I'll keep doing it manually</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/tool-utm-builder.js' %}"></script>
+<script>
+    // Lucide icons initialization
+    lucide.createIcons();
+</script>
+{% endblock %}

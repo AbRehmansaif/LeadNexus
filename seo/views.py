@@ -80,6 +80,10 @@ def cold_email_roi_calculator(request):
     """Target keywords: cold email ROI calculator, marketing calculator, cold outreach profitability, sales ROI"""
     return render(request, 'seo/tools/cold-email-roi-calculator.html', {'active_page': 'seo'})
 
+def utm_link_builder(request):
+    """Target keywords: UTM link builder, campaign URL builder, UTM tracking, cold email tracking, GA4 UTM builder"""
+    return render(request, 'seo/tools/utm-link-builder.html', {'active_page': 'seo'})
+
 def check_dns_records(request):
     """AJAX endpoint to check SPF and DMARC records for a domain"""
     domain = request.GET.get('domain', '').strip()
