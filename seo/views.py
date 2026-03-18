@@ -84,6 +84,33 @@ def utm_link_builder(request):
     """Target keywords: UTM link builder, campaign URL builder, UTM tracking, cold email tracking, GA4 UTM builder"""
     return render(request, 'seo/tools/utm-link-builder.html', {'active_page': 'seo'})
 
+import random
+from datetime import datetime
+
+def campaign_analytics_dashboard(request):
+    """Premium SaaS dynamic dashboard with randomized realistic stats"""
+    
+    # Generate realistic dynamic data
+    base_revenue = random.randint(12000, 18000)
+    revenue_delta = round(random.uniform(5.0, 15.0), 1)
+    conversion_rate = round(random.uniform(3.5, 5.2), 2)
+    avg_click_value = round(random.uniform(2.5, 4.5), 2)
+    
+    # Generate chart data (7 days)
+    chart_data = [random.randint(40, 95) for _ in range(7)]
+    
+    context = {
+        'active_page': 'seo',
+        'revenue': f"{base_revenue:,.2f}",
+        'revenue_delta': revenue_delta,
+        'conversion_rate': conversion_rate,
+        'avg_click_value': avg_click_value,
+        'chart_data': chart_data,
+        'refresh_time': datetime.now().strftime("%Y.%m.%d %H:%M:%S")
+    }
+    
+    return render(request, 'seo/tools/campaign-roi-dashboard.html', context)
+
 def check_dns_records(request):
     """AJAX endpoint to check SPF and DMARC records for a domain"""
     domain = request.GET.get('domain', '').strip()

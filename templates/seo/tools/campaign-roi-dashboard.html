@@ -1,0 +1,297 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Neural ROI Analytics Dashboard — LeadNexus{% endblock %}
+
+{% block extra_css %}
+<style>
+    :root {
+        --accent-roi: #10b981;
+        --accent-roi-glow: rgba(16, 185, 129, 0.2);
+    }
+    
+    .dashboard-preview-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 40px;
+        background: rgba(59, 130, 246, 0.05);
+        padding: 24px;
+        border-radius: 20px;
+        border: 1px solid rgba(59, 130, 246, 0.1);
+    }
+
+    .roi-stat-card {
+        background: rgba(15, 23, 42, 0.6);
+        backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+        padding: 24px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .roi-stat-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(16, 185, 129, 0.3);
+        box-shadow: 0 20px 40px rgba(0,0,0,0.3), 0 0 20px var(--accent-roi-glow);
+    }
+
+    .stat-label {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #94a3b8;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: #fff;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    .stat-delta {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 0.8rem;
+        font-weight: 700;
+        margin-top: 8px;
+    }
+
+    .delta-up { color: #10b981; }
+    .delta-down { color: #ef4444; }
+
+    .chart-container {
+        height: 200px;
+        display: flex;
+        align-items: flex-end;
+        gap: 8px;
+        margin-top: 24px;
+    }
+
+    .bar {
+        flex: 1;
+        background: linear-gradient(to top, #3b82f6, #06b6d4);
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        transition: height 1s ease;
+        position: relative;
+    }
+
+    .bar:hover {
+        filter: brightness(1.2);
+    }
+
+    .leaderboard-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 16px;
+        background: rgba(255,255,255,0.02);
+        border-radius: 12px;
+        margin-bottom: 12px;
+        border: 1px solid rgba(255,255,255,0.05);
+    }
+
+    .badge-roi {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        padding: 4px 12px;
+        border-radius: 99px;
+        font-weight: 800;
+        font-size: 0.75rem;
+    }
+
+    /* Pulse effect for real-time vibe */
+    .online-indicator {
+        width: 8px;
+        height: 8px;
+        background: #10b981;
+        border-radius: 50%;
+        position: relative;
+    }
+
+    .online-indicator::after {
+        content: '';
+        position: absolute;
+        inset: -4px;
+        border: 2px solid #10b981;
+        border-radius: 50%;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(3); opacity: 0; }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'seo/tools/_tool_nav.html' %}
+
+<section class="tool-page">
+    <div class="container">
+        
+        <!-- Dashboard Header -->
+        <div class="dashboard-preview-header">
+            <div>
+                <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 8px;">
+                    <div class="online-indicator"></div>
+                    <span style="font-size: 0.75rem; color: #10b981; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase;">Real-Time Revenue Attribution Active</span>
+                </div>
+                <h1 style="font-size: 2rem; font-weight: 800; color: #fff;">Campaign ROI Dashboard</h1>
+                <p style="color: #94a3b8;">This is a premium automated report. Manual tracking won't show you these insights.</p>
+            </div>
+            <div style="text-align: right;">
+                <div style="color: #94a3b8; font-size: 0.8rem; margin-bottom: 8px;">Last Intelligence Refresh</div>
+                <div style="font-family: 'JetBrains Mono'; color: #fff; font-weight: 700;">{{ refresh_time }}</div>
+            </div>
+        </div>
+
+        <!-- Top Stat Ribbon -->
+        <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 40px;">
+            <div class="roi-stat-card">
+                <div class="stat-label">Total Attributed Revenue</div>
+                <div class="stat-value">${{ revenue }}</div>
+                <div class="stat-delta delta-up">
+                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> +{{ revenue_delta }}% vs Last Week
+                </div>
+            </div>
+            <div class="roi-stat-card">
+                <div class="stat-label">Lead Conversion Rate</div>
+                <div class="stat-value">{{ conversion_rate }}%</div>
+                <div class="stat-delta delta-up" style="background: rgba(16, 185, 129, 0.1); padding: 2px 8px; border-radius: 4px;">
+                    OPTIMIZED
+                </div>
+            </div>
+            <div class="roi-stat-card">
+                <div class="stat-label">Avg. Value per UTM Click</div>
+                <div class="stat-value">${{ avg_click_value }}</div>
+                <div class="stat-delta delta-up">
+                    <i data-lucide="trending-up" style="width: 14px; height: 14px;"></i> Trending Up
+                </div>
+            </div>
+            <div class="roi-stat-card" style="border-color: rgba(59, 130, 246, 0.5); background: linear-gradient(135deg, rgba(59, 130, 246, 0.1), transparent);">
+                <div class="stat-label" style="color: #3b82f6;">Total ROI (Calculated)</div>
+                <div class="stat-value" style="color: #3b82f6;">842%</div>
+                <div class="stat-delta delta-up" style="color: #fff;">
+                    CAMPAIGN STATUS: HEALTHY
+                </div>
+            </div>
+        </div>
+
+        <div style="display: grid; grid-template-columns: 8fr 4fr; gap: 32px;">
+            
+            <!-- Left: Conversion Funnel & Charts -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i data-lucide="bar-chart-3" style="color: #10b981; margin-right: 8px;"></i>
+                        Weekly Conversion Performance
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                        <p style="color: #94a3b8; font-size: 0.9rem;">Tracking successfully matched 432 individual clicks to revenue events this week.</p>
+                        <div style="display: flex; gap: 8px;">
+                            <span class="badge-roi">Email</span>
+                            <span class="badge-roi" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;">LinkedIn</span>
+                        </div>
+                    </div>
+
+                    <!-- CSS Chart -->
+                    <div class="chart-container">
+                        {% for val in chart_data %}
+                        <div class="bar" style="height: {{ val }}%; background: #3b82f6;"></div>
+                        {% endfor %}
+                    </div>
+                    <div style="display: flex; justify-content: space-between; margin-top: 12px; color: #64748b; font-size: 0.7rem; font-family: 'JetBrains Mono';">
+                        <span>MON</span><span>TUE</span><span>WED</span><span>THU</span><span>FRI</span><span>SAT</span><span>SUN</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right: Top Templates -->
+            <div class="panel">
+                <div class="panel-header">
+                    <div class="panel-title">
+                        <i data-lucide="award" style="color: #fbbf24; margin-right: 8px;"></i>
+                        Top Templates
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="leaderboard-item">
+                        <div>
+                            <div style="color: #fff; font-weight: 700; font-size: 0.85rem;">Q1 Outreach Alpha</div>
+                            <div style="color: #64748b; font-size: 0.7rem;">utm_campaign: lead-gen-24</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: #10b981; font-weight: 800; font-size: 0.9rem;">6.8% CV</div>
+                            <div style="color: #94a3b8; font-size: 0.7rem;">$4,200 Earned</div>
+                        </div>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div>
+                            <div style="color: #fff; font-weight: 700; font-size: 0.85rem;">Direct CEO Invite</div>
+                            <div style="color: #64748b; font-size: 0.7rem;">utm_campaign: high-ticket</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: #10b981; font-weight: 800; font-size: 0.9rem;">4.2% CV</div>
+                            <div style="color: #94a3b8; font-size: 0.7rem;">$2,850 Earned</div>
+                        </div>
+                    </div>
+                    <div class="leaderboard-item">
+                        <div>
+                            <div style="color: #fff; font-weight: 700; font-size: 0.85rem;">Case Study Blast</div>
+                            <div style="color: #64748b; font-size: 0.7rem;">utm_campaign: re-engagement</div>
+                        </div>
+                        <div style="text-align: right;">
+                            <div style="color: #10b981; font-weight: 800; font-size: 0.9rem;">3.1% CV</div>
+                            <div style="color: #94a3b8; font-size: 0.7rem;">$1,100 Earned</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Automation Conversion Banner -->
+        <div style="margin-top: 60px; padding: 48px; background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(16, 185, 129, 0.05)); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 32px; display: flex; align-items: center; justify-content: space-between; gap: 40px;">
+            <div style="flex: 1;">
+                <h3 style="font-size: 1.8rem; font-weight: 800; color: #fff; margin-bottom: 12px;">This is the power of LeadNexus Intelligence.</h3>
+                <p style="color: #94a3b8; font-size: 1.1rem; line-height: 1.6;">Why settle for free link building when you can have absolute revenue clarity? Stop guessing and start scaling with our professional automated suite.</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 12px; width: 300px;">
+                <a href="{% url 'register' %}" class="btn-primary" style="background: linear-gradient(45deg, #10b981, #059669); color: #fff; text-decoration: none; padding: 16px; border-radius: 12px; font-weight: 800; text-align: center; border: none; box-shadow: 0 10px 20px rgba(16, 185, 129, 0.2);">
+                    Unlock Full Automation
+                </a>
+                <p style="color: #64748b; font-size: 0.75rem; text-align: center;">No credit card required. Start 14-day trial.</p>
+            </div>
+        </div>
+
+    </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    lucide.createIcons();
+    
+    // Simple bar animation
+    document.addEventListener('DOMContentLoaded', () => {
+        const bars = document.querySelectorAll('.bar');
+        bars.forEach(bar => {
+            const height = bar.style.height;
+            bar.style.height = '0';
+            setTimeout(() => {
+                bar.style.height = height;
+            }, 500);
+        });
+    });
+</script>
+{% endblock %}

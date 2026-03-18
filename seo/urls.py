@@ -24,5 +24,6 @@ urlpatterns = [
     path('tools/spf-dkim-dmarc-config-generator/', views.dns_config_generator, name='seo-tool-dns-config-generator'),
     path('tools/cold-email-roi-calculator/', views.cold_email_roi_calculator, name='seo-tool-cold-email-roi-calculator'),
     path('tools/utm-link-builder/', views.utm_link_builder, name='seo-tool-utm-link-builder'),
+    path('tools/campaign-analytics-dashboard/', views.campaign_analytics_dashboard, name='seo-tool-campaign-analytics-dashboard'),
     path('api/check-dns-records/',                 views.check_dns_records,     name='api-check-dns-records'),
 ]
