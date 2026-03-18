@@ -76,6 +76,10 @@ def dns_config_generator(request):
     """Target keywords: SPF record generator, DKIM generator, DMARC checker, DNS records for email, deliverability setup"""
     return render(request, 'seo/tools/dns-config-generator.html', {'active_page': 'seo'})
 
+def cold_email_roi_calculator(request):
+    """Target keywords: cold email ROI calculator, marketing calculator, cold outreach profitability, sales ROI"""
+    return render(request, 'seo/tools/cold-email-roi-calculator.html', {'active_page': 'seo'})
+
 def check_dns_records(request):
     """AJAX endpoint to check SPF and DMARC records for a domain"""
     domain = request.GET.get('domain', '').strip()

@@ -1,0 +1,274 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Free Cold Email ROI Calculator — LeadNexus{% endblock %}
+{% block meta_description %}Free online cold email ROI calculator. Determine the exact profitability of your campaigns by calculating your expected revenue, cost per lead, and ROI based on your sending volume and conversion rates.{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/tool-roi-calculator.css' %}">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+  .tool-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(124,58,237,.15);
+    border: 1px solid rgba(124,58,237,.3);
+    color: #a78bfa;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    padding: 6px 16px;
+    border-radius: 999px;
+    margin-bottom: 20px;
+  }
+  .tool-hero { text-align: center; margin-bottom: 48px; }
+  .tool-hero h1 { font-size: clamp(2rem, 5vw, 2.8rem); font-weight: 800; background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; margin-bottom: 12px; line-height: 1.2; }
+  .tool-hero p { font-size: 1.05rem; color: var(--text-secondary); max-width: 650px; margin: 0 auto; }
+</style>
+{% endblock %}
+
+{% block content %}
+{% include 'seo/tools/_tool_nav.html' %}
+
+<section class="tool-page">
+  <div class="container">
+
+    <!-- Hero -->
+    <div class="tool-hero">
+      <div class="tool-badge">
+        <i data-lucide="trending-up" style="width:13px;height:13px;"></i>
+        Sales Strategy Tool
+      </div>
+      <h1>Cold Email ROI Calculator</h1>
+      <p>Estimate the profitability of your outreach campaigns. Calculate exactly how many meetings and sales you'll generate based on your current funnel performance.</p>
+    </div>
+
+    <!-- Interface -->
+    <div class="roi-container">
+      
+      <!-- Inputs -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <span class="dot"></span>
+            Campaign Parameters
+          </div>
+        </div>
+        <div class="panel-body">
+          
+          <div class="input-group">
+            <label class="input-label">Total Emails Sent</label>
+            <div class="input-wrapper">
+              <i data-lucide="mail" class="input-icon"></i>
+              <input type="number" id="totalEmails" value="1000" class="theme-input">
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="input-group">
+                <label class="input-label">Open Rate</label>
+                <div class="input-wrapper">
+                  <i data-lucide="eye" class="input-icon"></i>
+                  <input type="number" id="openRate" value="65" class="theme-input theme-input-with-suffix">
+                  <span class="input-suffix">%</span>
+                </div>
+            </div>
+            <div class="input-group">
+                <label class="input-label">Reply Rate</label>
+                <div class="input-wrapper">
+                  <i data-lucide="message-square" class="input-icon"></i>
+                  <input type="number" id="replyRate" value="5" class="theme-input theme-input-with-suffix">
+                  <span class="input-suffix">%</span>
+                </div>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px;">
+            <div class="input-group">
+                <label class="input-label">Booking Rate</label>
+                <div class="input-wrapper">
+                  <i data-lucide="calendar" class="input-icon"></i>
+                  <input type="number" id="bookingRate" value="20" class="theme-input theme-input-with-suffix">
+                  <span class="input-suffix">%</span>
+                </div>
+            </div>
+            <div class="input-group">
+                <label class="input-label">Closing Rate</label>
+                <div class="input-wrapper">
+                  <i data-lucide="award" class="input-icon"></i>
+                  <input type="number" id="closingRate" value="20" class="theme-input theme-input-with-suffix">
+                  <span class="input-suffix">%</span>
+                </div>
+            </div>
+          </div>
+
+          <div class="input-group">
+            <label class="input-label">Avg. Deal Size <span class="badge">Sales</span></label>
+            <div class="input-wrapper">
+              <i data-lucide="dollar-sign" class="input-icon"></i>
+              <input type="number" id="avgDealSize" value="1500" class="theme-input theme-input-with-suffix">
+              <span class="input-suffix">$</span>
+            </div>
+          </div>
+
+          <div class="input-group" style="margin-bottom:24px;">
+            <label class="input-label">Campaign Cost <span class="badge">Monthly</span></label>
+            <div class="input-wrapper">
+              <i data-lucide="credit-card" class="input-icon"></i>
+              <input type="number" id="campaignCost" value="500" class="theme-input theme-input-with-suffix">
+              <span class="input-suffix">$</span>
+            </div>
+          </div>
+
+          <button id="calcBtn" class="btn-calculate" style="width:100%; justify-content:center; display:flex; align-items:center; gap:8px; padding:12px; border:none; border-radius:10px; background:var(--gradient-primary); color:#fff; font-weight:800; cursor:pointer; font-family:inherit; transition:all 0.3s; box-shadow: 0 4px 15px rgba(124, 58, 237, 0.3);">
+            <i data-lucide="zap" style="width:16px;height:16px;"></i>
+            Calculate My ROI
+          </button>
+
+        </div>
+      </div>
+
+      <!-- Results -->
+      <div class="panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i data-lucide="bar-chart-3" style="width:14px;height:14px; color:#3b82f6; margin-right:6px;"></i> 
+            ROI Analysis
+          </div>
+        </div>
+        <div class="panel-body">
+            
+            <div class="results-grid">
+                <div class="result-card primary" id="outROIBox">
+                    <div class="result-label">Total ROI</div>
+                    <div class="result-value" id="outROI">0%</div>
+                </div>
+                <div class="result-card">
+                    <div class="result-label">Cost Per Lead</div>
+                    <div class="result-value" id="outCPL">$0.00</div>
+                </div>
+            </div>
+
+            <div class="chart-container">
+                <canvas id="roiChart"></canvas>
+            </div>
+
+            <div class="funnel-viz">
+                <div class="funnel-stage s1">
+                    <div class="stage-label">
+                        <div class="stage-name">Sent</div>
+                        <div class="stage-val" id="fEmails">1,000</div>
+                    </div>
+                </div>
+                <div class="funnel-stage s2">
+                    <div class="stage-label">
+                        <div class="stage-name">Opened</div>
+                        <div class="stage-val" id="fOpens">650</div>
+                    </div>
+                    <div class="stage-meta">
+                        <div class="stage-pct" id="rOpen">65%</div>
+                        <div class="stage-desc">OPEN RATE</div>
+                    </div>
+                </div>
+                <div class="funnel-stage s3">
+                    <div class="stage-label">
+                        <div class="stage-name">Replied</div>
+                        <div class="stage-val" id="fReplies">32</div>
+                    </div>
+                    <div class="stage-meta">
+                        <div class="stage-pct" id="rReply">5%</div>
+                        <div class="stage-desc">REPLY RATE</div>
+                    </div>
+                </div>
+                <div class="funnel-stage s4">
+                    <div class="stage-label">
+                        <div class="stage-name">Meetings</div>
+                        <div class="stage-val" id="fMeetings">6</div>
+                    </div>
+                    <div class="stage-meta">
+                        <div class="stage-pct" id="rBook">20%</div>
+                        <div class="stage-desc">BOOKING RATE</div>
+                    </div>
+                </div>
+                <div class="funnel-stage s5">
+                    <div class="stage-label">
+                        <div class="stage-name">Sales</div>
+                        <div class="stage-val" id="fSales">1</div>
+                    </div>
+                    <div class="stage-meta">
+                        <div class="stage-pct" id="rClose">20%</div>
+                        <div class="stage-desc">CLOSING RATE</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="roi-performance">
+                <div class="perf-header">
+                    <div class="perf-title">STRATEGY EFFICIENCY</div>
+                    <div class="perf-status" id="roiStatus">Excellent</div>
+                </div>
+                <div class="perf-bar-bg">
+                    <div class="perf-bar-fill" id="roiBar" style="width: 75%;"></div>
+                </div>
+            </div>
+
+            <div style="margin-top: 24px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; border-top: 1px solid rgba(255,255,255,0.05); padding-top:20px;">
+                <div style="text-align:center;">
+                    <div style="font-size:0.65rem; color:#94a3b8; font-weight:700; text-transform:uppercase; margin-bottom:4px;">Inboxes</div>
+                    <div style="font-size:1.1rem; font-weight:800; color:#fff;" id="outEmails">1,000</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:0.65rem; color:#94a3b8; font-weight:700; text-transform:uppercase; margin-bottom:4px;">Revenue</div>
+                    <div style="font-size:1.1rem; font-weight:800; color:#10b981;" id="outRevenue">$1,500</div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:0.65rem; color:#94a3b8; font-weight:700; text-transform:uppercase; margin-bottom:4px;">Sales</div>
+                    <div style="font-size:1.1rem; font-weight:800; color:#fff;" id="outSales">1</div>
+                </div>
+            </div>
+            
+        </div>
+      </div>
+
+    </div>
+
+    <!-- SEO Content Block -->
+    <div class="seo-content-block">
+      <h2>Why Calculating ROI is Critical for Cold Email</h2>
+      <p>Cold email isn't just about sending messages; it's an investment of time and capital. Without understanding your ROI funnel, you risk scaling "broken" systems that waste money. A high ROI campaign isn't just about high reply rates—it's about the **quality** of those replies and the **closing efficiency** of your sales team.</p>
+      
+      <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:30px;">
+        <div style="background:rgba(255,255,255,0.02); padding:24px; border-radius:16px; border:1px solid rgba(255,255,255,0.05);">
+            <h3 style="font-size:1.1rem; font-weight:800; display:flex; align-items:center; gap:10px;"><i data-lucide="target" style="color:#3b82f6;"></i> Funnel Optimization</h3>
+            <p style="font-size:0.88rem; color:#94a3b8; margin-top:12px;">Identify the bottleneck in your sales process. Is your open rate low? Fix your subject lines. Is your reply-to-meeting rate low? Fix your call-to-action.</p>
+        </div>
+        <div style="background:rgba(255,255,255,0.02); padding:24px; border-radius:16px; border:1px solid rgba(255,255,255,0.05);">
+            <h3 style="font-size:1.1rem; font-weight:800; display:flex; align-items:center; gap:10px;"><i data-lucide="coins" style="color:#3b82f6;"></i> Customer Acquisition Cost</h3>
+            <p style="font-size:0.88rem; color:#94a3b8; margin-top:12px;">By tracking your Cost Per Lead (CPL), you can benchmark cold email against other channels like Paid Ads or LinkedIn automation.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Final CTA -->
+    <div style="background:linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.05)); border:1px solid rgba(59, 130, 246, 0.2); border-radius:20px; padding:40px; text-align:center; margin-top:60px;">
+      <h2 style="font-size:1.6rem; font-weight:800; color:#fff; margin-bottom:12px;">Scale Your ROI with LeadNexus</h2>
+      <p style="font-size:1rem; color:#94a3b8; max-width:600px; margin:0 auto 24px;">Automate your entire ROI funnel. LeadNexus finds the leads, manages the sending, and provides real-time tracking so you never guess your numbers again.</p>
+      <a href="{% url 'register' %}" class="btn-convert" style="background:linear-gradient(135deg, #3b82f6, #06b6d4); box-shadow:0 10px 30px rgba(59, 130, 246, 0.3); text-decoration:none; display:inline-flex;">
+        <i data-lucide="zap" style="width:18px;height:18px;"></i>
+        Start Scaling Free
+      </a>
+    </div>
+
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/tool-roi-calculator.js' %}"></script>
+<script>
+    // Lucide icons initialization
+    lucide.createIcons();
+</script>
+{% endblock %}

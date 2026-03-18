@@ -7,6 +7,9 @@
             <a href="{% url 'seo:seo-tool-dns-config-generator' %}" class="tool-nav-item {% if '/spf-dkim-dmarc-config-generator/' in request.path %}active{% endif %}">
                 <i data-lucide="shield-check"></i> DNS Generator
             </a>
+            <a href="{% url 'seo:seo-tool-cold-email-roi-calculator' %}" class="tool-nav-item {% if '/cold-email-roi-calculator/' in request.path %}active{% endif %}">
+                <i data-lucide="calculator"></i> ROI Calculator
+            </a>
             <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" class="tool-nav-item {% if '/email-spam-word-checker/' in request.path %}active{% endif %}">
                 <i data-lucide="mail-warning"></i> Spam Checker
             </a>
