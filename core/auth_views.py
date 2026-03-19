@@ -11,6 +11,7 @@ import random
 import string
 from .forms import ProfessionalRegisterForm
 from .models import PasswordResetCode, GlobalSettings
+from threading import Thread
 
 class LoginView(auth_views.LoginView):
     template_name = 'registration/login.html'
@@ -93,10 +94,22 @@ class RequestPasswordResetView(auth_views.PasswordResetView):
             code = ''.join(random.choices(string.digits, k=6))
             PasswordResetCode.objects.create(user=user, code=code)
             
-            # Send Email
-            subject = "Nexus Security: Identity Recovery Code"
-            message = f"Your identity recovery code is: {code}\n\nUse this code in the LeadNexus portal to reset your security key. This code will expire in 15 minutes.\n\nLeadNexus Intelligence Unit"
-            send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [email], fail_silently=True)
+            # Send Email (Async for SaaS performance)
+            def send_recovery_email(u_email, u_username, u_code):
+                try:
+                    subject = "LeadNexus Password Reset"
+                    message = (
+                        f"Hello {u_username},\n\n"
+                        f"Your identity recovery code is: {u_code}\n\n"
+                        "Use this code within 15 minutes to reset your security key in the LeadNexus portal.\n\n"
+                        "If you did not request this code, please ignore this email or contact our security team immediately.\n\n"
+                        "LeadNexus"
+                    )
+                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [u_email], fail_silently=True)
+                except Exception:
+                    pass
+
+            Thread(target=send_recovery_email, args=(user.email, user.username, code)).start()
             
             self.request.session['reset_email'] = email
             return redirect('password-verify-code')
@@ -160,9 +173,50 @@ class CustomPasswordResetConfirmView(View):
             
         try:
             user = User.objects.get(email=email)
-            user.password = make_password(password)
+            user.set_password(password) # Using set_password is better practice than make_password manually
             user.save()
             
+            # ── Async Email Notification (SaaS Level Performance) ──
+            from django.utils import timezone as d_timezone
+            now_str = d_timezone.now().strftime('%Y-%m-%d %H:%M:%S %Z')
+            gs = GlobalSettings.objects.first()
+            contact_email = gs.contact_email if gs else "security@leadnexus.ai" 
+
+            # Capture IP and Device
+            x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+            if x_forwarded_for:
+                ip = x_forwarded_for.split(',')[0]
+            else:
+                ip = request.META.get('REMOTE_ADDR')
+            user_agent = request.META.get('HTTP_USER_AGENT', 'Unknown Device')
+
+            def send_confirmation_email(user_email, username, time_str, support_email, client_ip, client_device):
+                try:
+                    subject = "Password Change Successfully - LeadNexus"
+                    message = (
+                        f"Hello {username},\n\n"
+                        f"Your security key (password) was successfully updated on {time_str}.\n\n"
+                        "Security Parameters:\n"
+                        f"- IP Address: {client_ip}\n"
+                        f"- Device: {client_device}\n\n"
+                        "You can now login using your new credentials.\n\n"
+                        "Login here: https://leadnexus.difusionseo.com/login/\n\n"
+                        f"If you did not perform this update, please contact our security team immediately: {support_email}\n"
+                        "And immediately reset your password here: https://leadnexus.difusionseo.com/password_reset/\n\n"
+                        "LeadNexus Security Team"
+                    )
+                    send_mail(
+                        subject,
+                        message,
+                        settings.DEFAULT_FROM_EMAIL,
+                        [user_email],
+                        fail_silently=True,
+                    )
+                except Exception:
+                    pass
+
+            Thread(target=send_confirmation_email, args=(user.email, user.username, now_str, contact_email, ip, user_agent)).start()
+
             # Clear session
             if 'reset_email' in request.session: del request.session['reset_email']
             if 'code_verified' in request.session: del request.session['code_verified']
