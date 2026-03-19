@@ -740,6 +740,12 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
         if (!name) {
             showError('Name', 'Full Name is required.');
             isValid = false;
+        } else if (name.length > 100) {
+            showError('Name', 'Name must be under 100 characters.');
+            isValid = false;
+        } else if (!/^[a-zA-Z0-9\s]+$/.test(name)) {
+            showError('Name', 'Invalid name (alphanumeric and spaces only).');
+            isValid = false;
         }
 
         if (!industry) {
@@ -750,6 +756,9 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
         if (!email) {
             showError('Email', 'Email Address is required.');
             isValid = false;
+        } else if (email.length > 254) {
+            showError('Email', 'Email too long.');
+            isValid = false;
         } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
             showError('Email', 'Please enter a valid format.');
             isValid = false;
@@ -757,6 +766,9 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
 
         if (!msg) {
             showError('Message', 'Please provide a brief overview.');
+            isValid = false;
+        } else if (msg.length > 2000) {
+            showError('Message', 'Message must be under 2000 characters.');
             isValid = false;
         }
 

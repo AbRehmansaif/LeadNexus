@@ -5,18 +5,24 @@ from django.conf import settings
 from .models import ContactMessage
 import json
 
+from .forms import ContactForm
+
 def contact_us_view(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
-            name = data.get('name')
-            email = data.get('email')
-            industry = data.get('industry', '')
-            phone = data.get('phone', '')
-            message = data.get('message')
+            form = ContactForm(data)
 
-            if not all([name, email, message]):
-                return JsonResponse({'status': 'error', 'message': 'Missing required fields.'}, status=400)
+            if not form.is_valid():
+                # Extract first error message for common use
+                error_msg = list(form.errors.values())[0][0]
+                return JsonResponse({'status': 'error', 'message': error_msg}, status=400)
+
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            industry = form.cleaned_data.get('industry', '')
+            phone = form.cleaned_data.get('phone', '')
+            message = form.cleaned_data['message']
 
             # 1. Save to Database
             contact_msg = ContactMessage.objects.create(
