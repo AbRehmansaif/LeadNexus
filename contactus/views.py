@@ -97,6 +97,8 @@ def contact_us_view(request):
             return JsonResponse({'status': 'success', 'message': 'Message sent successfully!'})
 
         except Exception as e:
-            return JsonResponse({'status': 'error', 'message': str(e)}, status=500)
+            # Log technical detail for admin (internally)
+            print(f"System Error: {e}")
+            return JsonResponse({'status': 'error', 'message': 'Something went wrong. Please try again or contact us via email.'}, status=500)
 
     return JsonResponse({'status': 'error', 'message': 'Invalid request method.'}, status=405)
