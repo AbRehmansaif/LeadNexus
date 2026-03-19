@@ -5,6 +5,7 @@ These render HTML pages using Django templates (separate from the API views).
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+import time
 from .models import (
     ScrapeJob, ScrapedWebsite,
     LinkedInScrapeJob, ScrapedLinkedInProfile,
@@ -30,6 +31,9 @@ def landing_page(request):
         # If already logged in, show stats or redirect to dashboard (optional)
         # For now, let's just let them see the landing page too.
         pass
+    
+    # Store timestamp for bot protection (Contact Form)
+    request.session['form_time'] = time.time()
     
     return render(request, 'landing.html', {
         'active_page': 'landing',

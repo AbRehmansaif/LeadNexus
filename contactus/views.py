@@ -6,11 +6,22 @@ from .models import ContactMessage
 import json
 
 from .forms import ContactForm
+import time
 
 def contact_us_view(request):
     if request.method == 'POST':
         try:
             data = json.loads(request.body)
+            
+            # 1. Honeypot Check
+            if data.get('company'):
+                return JsonResponse({'status': 'error', 'message': 'Bot detected (Honeypot).'}, status=403)
+            
+            # 2. Time-based Check (Bots submit too fast)
+            form_time = request.session.get('form_time', 0)
+            if time.time() - form_time < 3:
+                return JsonResponse({'status': 'error', 'message': 'Too fast. Please wait a moment.'}, status=403)
+
             form = ContactForm(data)
 
             if not form.is_valid():
