@@ -30,35 +30,90 @@ class RegisterView(CreateView):
         response = super().form_valid(form)
         user = self.object
         
-        # Send Welcome Email
-        try:
-            subject = "Welcome to LeadNexus - Your B2B Growth Engine"
-            message = (
-                f"Hi {user.username},\n\n"
-                "Welcome to LeadNexus! We are thrilled to have you onboard.\n\n"
-                "LeadNexus is your ultimate autonomous growth engine for B2B lead generation and high precision outreach. "
-                "With your account now active, you have full access to our powerful tools designed to scale your revenue.\n\n"
-                "Here is what you can do right now:\n"
-                "- Extract verified B2B contacts instantly.\n"
-                "- Automate your personalized cold email outreach.\n"
-                "- Track your campaign success securely from your dashboard.\n\n"
-                f"Your Registered Email: {user.email}\n\n"
-                "Login to your Operator Dashboard to get started: https://saqetawasul.store/login/\n\n"
-                "If you need any assistance setting up your first campaign, feel free to reply directly to this email.\n\n"
-                "To your incredible growth,\n"
-                "- The LeadNexus Team"
-            )
-            
-            send_mail(
-                subject,
-                message,
-                settings.DEFAULT_FROM_EMAIL,
-                [user.email],
-                fail_silently=True,
-            )
-        except Exception as e:
-            # Silently fail but log internally if needed
-            pass
+        # ── Send Professional Welcome Email (Async) ──
+        def send_professional_welcome(u_email, u_username):
+            try:
+                subject = "Welcome to LeadNexus - Your B2B Growth Engine"
+                
+                # HTML Version — Premium SaaS Design integrating requested content
+                html_message = f"""
+                <html>
+                <body style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #0d1117; color: #ffffff; padding: 40px; margin: 0;">
+                    <div style="max-width: 600px; margin: 0 auto; background: #161b22; border: 1px solid #30363d; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                        <div style="background: #8b5cf6; padding: 30px; text-align: center;">
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; letter-spacing: 1px;">LEADNEXUS</h1>
+                            <p style="color: rgba(255,255,255,0.8); margin-top: 5px;">Autonomous Growth Engine</p>
+                        </div>
+                        
+                        <div style="padding: 40px;">
+                            <h2 style="color: #ffffff; font-size: 22px;">Hi {u_username},</h2>
+                            <p style="line-height: 1.6; color: #8b949e; font-size: 16px;">Welcome to LeadNexus! We are thrilled to have you onboard.</p>
+                            
+                            <p style="line-height: 1.6; color: #8b949e;">LeadNexus is your ultimate autonomous growth engine for B2B lead generation and high precision outreach. With your account now active, you have full access to our powerful tools designed to scale your revenue.</p>
+
+                            <div style="margin: 30px 0; background: rgba(139, 92, 246, 0.05); border-left: 4px solid #8b5cf6; padding: 25px; border-radius: 8px;">
+                                <h3 style="color: #8b5cf6; margin-top: 0; font-size: 17px; margin-bottom: 15px;">Here is what you can do right now:</h3>
+                                <ul style="list-style: none; padding: 0; color: #8b949e; font-size: 14px;">
+                                    <li style="margin-bottom: 12px; display: flex; align-items: start;">
+                                        <span style="color: #8b5cf6; margin-right: 10px;">⚡</span> Extract verified B2B contacts instantly.
+                                    </li>
+                                    <li style="margin-bottom: 12px; display: flex; align-items: start;">
+                                        <span style="color: #8b5cf6; margin-right: 10px;">⚡</span> Automate your personalized cold email outreach.
+                                    </li>
+                                    <li style="display: flex; align-items: start;">
+                                        <span style="color: #8b5cf6; margin-right: 10px;">⚡</span> Track your campaign success securely from your dashboard.
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <p style="color: #8b949e; margin-bottom: 30px;">
+                                Your Registered Email: <b style="color: #ffffff;">{u_email}</b>
+                            </p>
+
+                            <div style="text-align: center; margin: 40px 0;">
+                                <a href="https://saqetawasul.store/login/" 
+                                   style="background-color: #8b5cf6; color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
+                                    Initialize Operator Dashboard
+                                </a>
+                            </div>
+
+                            <p style="color: #8b949e; font-size: 14px; border-top: 1px solid #30363d; padding-top: 25px;">
+                                If you need any assistance setting up your first campaign, feel free to reply directly to this email.
+                            </p>
+                            
+                            <p style="color: #8b5cf6; font-weight: bold; margin-top: 25px; margin-bottom: 5px;">To your incredible growth,</p>
+                            <p style="color: #ffffff; margin-top: 0; font-weight: 600;">The LeadNexus Team</p>
+                        </div>
+                        
+                        <div style="background: #21262d; padding: 25px; text-align: center; font-size: 12px; color: #8b949e; border-top: 1px solid #30363d;">
+                            &copy; 2026 LeadNexus. All rights reserved.
+                        </div>
+                    </div>
+                </body>
+                </html>
+                """
+                
+                # Plain text version for fallback
+                plain_message = (
+                    f"Hi {u_username},\n\n"
+                    "Welcome to LeadNexus! We are thrilled to have you onboard.\n\n"
+                    "LeadNexus is your ultimate autonomous growth engine.\n\n"
+                    "Login here: https://saqetawasul.store/login/\n\n"
+                    "The LeadNexus Team"
+                )
+
+                send_mail(
+                    subject,
+                    plain_message,
+                    settings.DEFAULT_FROM_EMAIL,
+                    [u_email],
+                    html_message=html_message,
+                    fail_silently=True,
+                )
+            except Exception:
+                pass
+
+        Thread(target=send_professional_welcome, args=(user.email, user.username)).start()
             
         messages.success(self.request, "Account created successfully! You can now log in.")
         return response
