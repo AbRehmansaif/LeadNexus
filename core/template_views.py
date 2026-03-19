@@ -145,6 +145,11 @@ def dashboard(request):
     smtp_count = user_smtp.count()
     smtp_usage_pct = (smtp_count / profile.smtp_limit * 100) if profile.smtp_limit > 0 else 100
 
+    contact_count = 0
+    if request.user.is_superuser:
+        from contactus.models import ContactMessage
+        contact_count = ContactMessage.objects.filter(is_read=False).count()
+
     return render(request, 'dashboard.html', {
         'active_page':     'dashboard',
         'profile':         profile,
@@ -171,6 +176,7 @@ def dashboard(request):
         'recent_linkedin_jobs': linkedin_jobs.order_by('-created_at')[:5],
         'recent_keyword_jobs':  KeywordScrapeJob.objects.filter(user=request.user).order_by('-created_at')[:5],
         'recent_campaigns': user_campaigns.order_by('-created_at')[:5],
+        'contact_count': contact_count,
     })
 
 

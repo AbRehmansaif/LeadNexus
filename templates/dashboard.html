@@ -476,6 +476,15 @@
                 <div class="stat-pill-label">Email Trans.</div>
                 <div class="stat-pill-value">{{ total_emails_sent }}</div>
             </div>
+            {% if request.user.is_superuser and contact_count > 0 %}
+            <div class="stat-pill acc-red">
+                <div class="stat-pill-label">Inbound Comms</div>
+                <div class="stat-pill-value" style="color: var(--accent-red);">{{ contact_count }}</div>
+                <div style="font-size: 0.65rem; color: var(--accent-red); margin-top: 6px; display: flex; align-items: center; gap: 4px;">
+                    <i data-lucide="alert-circle" style="width:10px; height:10px;"></i> REQ_ATTENTION
+                </div>
+            </div>
+            {% endif %}
         </div>
     </div>
 

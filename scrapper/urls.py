@@ -78,6 +78,9 @@ urlpatterns = [
     
     # ── Robots.txt ──────────────────────────────────────────
     path('robots.txt', robots_txt_view, name='robots-txt'),
+
+    # ── Contact Us ──────────────────────────────────────────
+    path('contact-us/', include('contactus.urls', namespace='contactus')),
 ]
 
 from django.conf import settings

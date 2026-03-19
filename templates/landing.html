@@ -526,6 +526,7 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
             <!-- Right Side (Form) -->
             <div style="background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.05); border-radius:24px; padding:clamp(24px, 5vw, 40px); box-shadow:0 25px 50px rgba(0,0,0,0.3);">
                 <form id="contactForm" novalidate onsubmit="handleContact(event)">
+                    {% csrf_token %}
                     <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:16px; margin-bottom:16px;">
                         <div class="form-group" id="groupName" style="margin-bottom:0;">
                             <i data-lucide="user" class="form-icon"></i>
@@ -765,19 +766,46 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
         if (window.lucide) { lucide.createIcons(); }
         btn.disabled = true;
 
-        setTimeout(() => {
-            btn.style.display = 'none';
-            document.getElementById('contactForm').reset();
-            success.style.display = 'block';
-            
-            // Reset after some time
-            setTimeout(() => {
-                success.style.display = 'none';
-                btn.style.display = 'block';
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        
+        fetch('/contact-us/submit/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                name, industry, email, phone, message: msg
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                btn.style.display = 'none';
+                document.getElementById('contactForm').reset();
+                success.style.display = 'block';
+                success.innerHTML = '<i data-lucide="check-circle" style="vertical-align:middle; margin-right:4px;"></i> ' + data.message;
+                if (window.lucide) { lucide.createIcons(); }
+                
+                // Reset after some time
+                setTimeout(() => {
+                    success.style.display = 'none';
+                    btn.style.display = 'block';
+                    btn.innerHTML = 'Submit';
+                    btn.disabled = false;
+                }, 5000);
+            } else {
+                alert('Deployment failed: ' + (data.message || 'Unknown error'));
                 btn.innerHTML = 'Submit';
                 btn.disabled = false;
-            }, 5000);
-        }, 1500);
+            }
+        })
+        .catch(err => {
+            console.error('Core error:', err);
+            alert('Mission failure: Could not reach control center.');
+            btn.innerHTML = 'Submit';
+            btn.disabled = false;
+        });
     }
 </script>
 <style>
