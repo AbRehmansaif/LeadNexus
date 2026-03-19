@@ -82,15 +82,22 @@ def profile_settings(request):
     # Monthly reset countdown
     from django.utils import timezone as tz
     import calendar
-    today = tz.localdate()
-    last_day = calendar.monthrange(today.year, today.month)[1]
     from datetime import date
-    next_reset = date(today.year, today.month, last_day) if today.day < last_day else date(
-        today.year + (1 if today.month == 12 else 0),
-        1 if today.month == 12 else today.month + 1,
-        1
-    )
-    days_until_reset = (next_reset - today).days + 1
+    today = tz.localdate()
+    
+    if profile.is_paid and profile.subscription_end_date:
+        # For paid users, the reset matches their subscription cycle
+        days_until_reset = (profile.subscription_end_date.date() - today).days
+        if days_until_reset < 0: days_until_reset = 0
+    else:
+        # Default monthly budget reset for free users
+        last_day = calendar.monthrange(today.year, today.month)[1]
+        next_reset = date(today.year, today.month, last_day) if today.day < last_day else date(
+            today.year + (1 if today.month == 12 else 0),
+            1 if today.month == 12 else today.month + 1,
+            1
+        )
+        days_until_reset = (next_reset - today).days + 1
 
     return render(request, 'profile_settings.html', {
         'active_page':        'profile',
@@ -315,13 +322,20 @@ def subscription_page(request):
     import calendar
     from datetime import date
     today = tz.localdate()
-    last_day = calendar.monthrange(today.year, today.month)[1]
-    next_reset = date(today.year, today.month, last_day) if today.day < last_day else date(
-        today.year + (1 if today.month == 12 else 0),
-        1 if today.month == 12 else today.month + 1,
-        1
-    )
-    days_until_reset = (next_reset - today).days + 1
+
+    if profile.is_paid and profile.subscription_end_date:
+        # For paid users, the reset targets their subscription/billing anniversary
+        days_until_reset = (profile.subscription_end_date.date() - today).days
+        if days_until_reset < 0: days_until_reset = 0
+    else:
+        # Default calendar month reset for free users
+        last_day = calendar.monthrange(today.year, today.month)[1]
+        next_reset = date(today.year, today.month, last_day) if today.day < last_day else date(
+            today.year + (1 if today.month == 12 else 0),
+            1 if today.month == 12 else today.month + 1,
+            1
+        )
+        days_until_reset = (next_reset - today).days + 1
 
     try:
         from subscriptions.models import PlanFeature, SubscriptionPlan
