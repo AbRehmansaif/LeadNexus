@@ -5,6 +5,7 @@ class ContactMessage(models.Model):
     email = models.EmailField()
     subject = models.CharField(max_length=255, blank=True, null=True)
     message = models.TextField()
+    ip_address = models.GenericIPAddressField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     is_read = models.BooleanField(default=False)
 

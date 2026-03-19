@@ -7,6 +7,17 @@ import json
 
 from .forms import ContactForm
 import time
+from django.utils.html import escape
+from django.utils import timezone
+from datetime import timedelta
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 def contact_us_view(request):
     if request.method == 'POST':
@@ -22,6 +33,13 @@ def contact_us_view(request):
             if time.time() - form_time < 3:
                 return JsonResponse({'status': 'error', 'message': 'Too fast. Please wait a moment.'}, status=403)
 
+            # 3. IP-based Throttling (Database check)
+            ip = get_client_ip(request)
+            one_minute_ago = timezone.now() - timedelta(minutes=1)
+            recent_submissions = ContactMessage.objects.filter(ip_address=ip, created_at__gte=one_minute_ago).count()
+            if recent_submissions >= 5:
+                return JsonResponse({'status': 'error', 'message': 'Too many requests. Our commanders have temporarily blocked your uplink.'}, status=429)
+
             form = ContactForm(data)
 
             if not form.is_valid():
@@ -33,14 +51,15 @@ def contact_us_view(request):
             email = form.cleaned_data['email']
             industry = form.cleaned_data.get('industry', '')
             phone = form.cleaned_data.get('phone', '')
-            message = form.cleaned_data['message']
+            message = escape(form.cleaned_data['message']) # Sanitize before save
 
             # 1. Save to Database
             contact_msg = ContactMessage.objects.create(
                 name=name,
                 email=email,
                 subject=f"Contact from {industry}" if industry else "New Contact Message",
-                message=f"Industry: {industry}\nPhone: {phone}\n\nMessage:\n{message}"
+                message=f"Industry: {industry}\nPhone: {phone}\n\nMessage:\n{message}",
+                ip_address=ip
             )
 
             # 2. Get Contact Settings for Notification
