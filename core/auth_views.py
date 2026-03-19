@@ -153,14 +153,45 @@ class RequestPasswordResetView(auth_views.PasswordResetView):
             def send_recovery_email(u_email, u_username, u_code):
                 try:
                     subject = "LeadNexus Password Reset"
-                    message = (
+                    
+                    html_message = f"""
+                    <html>
+                    <body style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #0d1117; color: #ffffff; padding: 40px; margin: 0;">
+                        <div style="max-width: 600px; margin: 0 auto; background: #161b22; border: 1px solid #30363d; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                            <div style="background: #8b5cf6; padding: 30px; text-align: center;">
+                                <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;">IDENTITY RECOVERY</h1>
+                            </div>
+                            
+                            <div style="padding: 40px; text-align: center;">
+                                <h2 style="color: #ffffff; font-size: 20px;">Hello {u_username},</h2>
+                                <p style="line-height: 1.6; color: #8b949e;">We received a request to access your LeadNexus operator dashboard. Use the code below to authorize your identity restoration.</p>
+                                
+                                <div style="margin: 30px auto; background: rgba(255, 255, 255, 0.03); border: 1px solid #30363d; padding: 30px; border-radius: 12px; display: inline-block;">
+                                    <span style="font-family: 'Courier New', monospace; font-size: 42px; font-weight: 800; color: #8b5cf6; letter-spacing: 8px;">{u_code}</span>
+                                </div>
+
+                                <p style="color: #8b949e; font-size: 14px; margin-top: 20px;">
+                                    Use this code within <b style="color: #f87171;">15 minutes</b> to reset your security key.<br>
+                                    If you did not request this code, please ignore this email or contact our security team.
+                                </p>
+                            </div>
+                            
+                            <div style="background: #21262d; padding: 25px; text-align: center; font-size: 12px; color: #8b949e; border-top: 1px solid #30363d;">
+                                &copy; 2026 LeadNexus. All rights reserved.
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """
+
+                    plain_message = (
                         f"Hello {u_username},\n\n"
                         f"Your identity recovery code is: {u_code}\n\n"
                         "Use this code within 15 minutes to reset your security key in the LeadNexus portal.\n\n"
                         "If you did not request this code, please ignore this email or contact our security team immediately.\n\n"
                         "LeadNexus"
                     )
-                    send_mail(subject, message, settings.DEFAULT_FROM_EMAIL, [u_email], fail_silently=True)
+                    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [u_email], html_message=html_message, fail_silently=True)
                 except Exception:
                     pass
 
@@ -248,7 +279,49 @@ class CustomPasswordResetConfirmView(View):
             def send_confirmation_email(user_email, username, time_str, support_email, client_ip, client_device):
                 try:
                     subject = "Password Change Successfully - LeadNexus"
-                    message = (
+                    
+                    html_message = f"""
+                    <html>
+                    <body style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #0d1117; color: #ffffff; padding: 40px; margin: 0;">
+                        <div style="max-width: 600px; margin: 0 auto; background: #161b22; border: 1px solid #30363d; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                            <div style="background: #10b981; padding: 30px; text-align: center;">
+                                <h1 style="color: #ffffff; margin: 0; font-size: 24px; letter-spacing: 1px;">SECURITY ALERT</h1>
+                            </div>
+                            
+                            <div style="padding: 40px;">
+                                <h2 style="color: #ffffff; font-size: 20px;">Hello {username},</h2>
+                                <p style="line-height: 1.6; color: #8b949e;">Your LeadNexus security key (password) was successfully updated on <b>{time_str}</b>.</p>
+                                
+                                <div style="margin: 30px 0; background: rgba(255, 255, 255, 0.02); border: 1px solid #30363d; padding: 20px; border-radius: 10px;">
+                                    <h3 style="color: #8b949e; margin-top: 0; font-size: 14px; text-transform: uppercase;">Security Parameters:</h3>
+                                    <ul style="list-style: none; padding: 0; color: #8b949e; font-size: 13px;">
+                                        <li style="margin-bottom: 8px;">🌐 <b>IP Address:</b> <span style="color: #ffffff;">{client_ip}</span></li>
+                                        <li>📱 <b>Device:</b> <span style="color: #ffffff;">{client_device}</span></li>
+                                    </ul>
+                                </div>
+
+                                <div style="text-align: center; margin: 35px 0;">
+                                    <a href="https://leadnexus.difusionseo.com/login/" 
+                                       style="background-color: #10b981; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
+                                        Login to Dashboard
+                                    </a>
+                                </div>
+
+                                <p style="color: #8b949e; font-size: 13px; border-top: 1px solid #30363d; padding-top: 20px; line-height: 1.6;">
+                                    If you did not perform this update, please contact our security team immediately: <b style="color: #ffffff;">{support_email}</b><br>
+                                    and immediately reset your password here: <a href="https://leadnexus.difusionseo.com/password_reset/" style="color: #10b981; text-decoration: none;">LeadNexus Security Portal</a>
+                                </p>
+                            </div>
+                            
+                            <div style="background: #21262d; padding: 25px; text-align: center; font-size: 12px; color: #8b949e; border-top: 1px solid #30363d;">
+                                &copy; 2026 LeadNexus. All rights reserved.
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """
+
+                    plain_message = (
                         f"Hello {username},\n\n"
                         f"Your security key (password) was successfully updated on {time_str}.\n\n"
                         "Security Parameters:\n"
@@ -262,9 +335,10 @@ class CustomPasswordResetConfirmView(View):
                     )
                     send_mail(
                         subject,
-                        message,
+                        plain_message,
                         settings.DEFAULT_FROM_EMAIL,
                         [user_email],
+                        html_message=html_message,
                         fail_silently=True,
                     )
                 except Exception:
