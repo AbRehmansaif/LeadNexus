@@ -9,11 +9,12 @@ from django.contrib.auth.models import User
 from django.contrib.auth.hashers import make_password
 import random
 import string
-from .forms import ProfessionalRegisterForm
+from .forms import ProfessionalRegisterForm, EmailAuthenticationForm
 from .models import PasswordResetCode, GlobalSettings
 from threading import Thread
 
 class LoginView(auth_views.LoginView):
+    authentication_form = EmailAuthenticationForm
     template_name = 'registration/login.html'
     redirect_authenticated_user = False
     
