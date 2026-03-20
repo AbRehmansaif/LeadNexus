@@ -53,7 +53,7 @@ urlpatterns = [
     ), name='password_reset_complete'),
     # ── Django Admin ───────────────────────────────────────
     path('admin/', admin.site.urls),
-    path('admin/matrix/', admintask_views.admin_matrix, name='admin-matrix'),
+    path('admin-intelligence/', include('admintask.urls')),
 
     # ── REST API ───────────────────────────────────────────
     path('api/', include('core.urls', namespace='core')),

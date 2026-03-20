@@ -101,8 +101,12 @@ def get_nexus_metrics():
         'cpu_count': 0,
         'ram': 0,
         'ram_total': "0GB",
+        'ram_used': "0GB",
+        'ram_free': "0GB",
         'disk': 0,
         'disk_total': "0GB",
+        'disk_used': "0GB",
+        'disk_free': "0GB",
         'net_sent': "0MB",
         'net_recv': "0MB",
         'uptime': "Unknown"
@@ -110,8 +114,7 @@ def get_nexus_metrics():
     
     try:
         import psutil
-        import time
-
+        
         # CPU Usage
         server_health['cpu'] = psutil.cpu_percent(interval=None)
         server_health['cpu_count'] = psutil.cpu_count(logical=True)
@@ -120,11 +123,15 @@ def get_nexus_metrics():
         ram = psutil.virtual_memory()
         server_health['ram'] = ram.percent
         server_health['ram_total'] = f"{ram.total / (1024**3):.1f}GB"
+        server_health['ram_used'] = f"{ram.used / (1024**3):.1f}GB"
+        server_health['ram_free'] = f"{ram.available / (1024**3):.1f}GB"
         
         # Disk Usage (Root)
         disk = psutil.disk_usage('/')
         server_health['disk'] = disk.percent
         server_health['disk_total'] = f"{disk.total / (1024**3):.1f}GB"
+        server_health['disk_used'] = f"{disk.used / (1024**3):.1f}GB"
+        server_health['disk_free'] = f"{disk.free / (1024**3):.1f}GB"
         
         # Network Traffic
         net_io = psutil.net_io_counters()
@@ -135,8 +142,10 @@ def get_nexus_metrics():
         boot_time_timestamp = psutil.boot_time()
         bt = datetime.fromtimestamp(boot_time_timestamp)
         uptime_delta = datetime.now() - bt
-        hours, remainder = divmod(int(uptime_delta.total_seconds()), 3600)
-        days, hours = divmod(hours, 24)
+        total_seconds = int(uptime_delta.total_seconds())
+        days, remainder = divmod(total_seconds, 86400)
+        hours, remainder = divmod(remainder, 3600)
+        
         if days > 0:
             server_health['uptime'] = f"{days}d {hours}h"
         else:

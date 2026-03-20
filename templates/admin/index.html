@@ -449,6 +449,13 @@
         50% { opacity: 0.5; transform: scale(0.8); }
         100% { opacity: 1; transform: scale(1); }
     }
+    .server-mini-meta {
+        font-size: 0.65rem;
+        color: var(--cc-text-muted);
+        margin-top: 4px;
+        font-family: 'JetBrains Mono', monospace;
+        letter-spacing: -0.01em;
+    }
 </style>
 {% endblock %}
 
@@ -464,35 +471,40 @@
         </div>
 
         <!-- Server Health Matrix -->
-        <div class="server-health-row">
+        <div class="server-health-row" id="serverHealthID">
             <div class="server-mini-card">
                 <div class="server-mini-label">CPU LOAD ({{ stats.server.cpu_count }} Cores)</div>
-                <div class="server-mini-value">{{ stats.server.cpu }}%</div>
+                <div class="server-mini-value" id="cpu-val">{{ stats.server.cpu }}%</div>
                 <div class="health-bar-container">
-                    <div class="health-bar-fill" style="width: {{ stats.server.cpu }}%; background: #a855f7;"></div>
+                    <div class="health-bar-fill" id="cpu-bar" style="width: {{ stats.server.cpu }}%; background: #a855f7;"></div>
                 </div>
+                <div class="server-mini-meta">Thread Pulse: Active</div>
             </div>
             <div class="server-mini-card">
                 <div class="server-mini-label">RAM (Total: {{ stats.server.ram_total }})</div>
-                <div class="server-mini-value">{{ stats.server.ram }}%</div>
+                <div class="server-mini-value" id="ram-val">{{ stats.server.ram }}%</div>
                 <div class="health-bar-container">
-                    <div class="health-bar-fill" style="width: {{ stats.server.ram }}%; background: #3b82f6;"></div>
+                    <div class="health-bar-fill" id="ram-bar" style="width: {{ stats.server.ram }}%; background: #3b82f6;"></div>
                 </div>
+                <div class="server-mini-meta" id="ram-meta">Rem: {{ stats.server.ram_free }} / {{ stats.server.ram_total }}</div>
             </div>
             <div class="server-mini-card">
                 <div class="server-mini-label">DISK (Total: {{ stats.server.disk_total }})</div>
-                <div class="server-mini-value">{{ stats.server.disk }}%</div>
+                <div class="server-mini-value" id="disk-val">{{ stats.server.disk }}%</div>
                 <div class="health-bar-container">
-                    <div class="health-bar-fill" style="width: {{ stats.server.disk }}%; background: #10b981;"></div>
+                    <div class="health-bar-fill" id="disk-bar" style="width: {{ stats.server.disk }}%; background: #10b981;"></div>
                 </div>
+                <div class="server-mini-meta" id="disk-meta">Rem: {{ stats.server.disk_free }} / {{ stats.server.disk_total }}</div>
             </div>
             <div class="server-mini-card">
                 <div class="server-mini-label">BANDWIDTH (SENT/RECV)</div>
-                <div class="server-mini-value" style="font-size: 0.85rem;">{{ stats.server.net_sent }} / {{ stats.server.net_recv }}</div>
+                <div class="server-mini-value" id="net-val" style="font-size: 0.85rem;">{{ stats.server.net_sent }} / {{ stats.server.net_recv }}</div>
+                <div class="server-mini-meta">Traffic Flow: Monitored</div>
             </div>
             <div class="server-mini-card">
                 <div class="server-mini-label">SYSTEM UPTIME</div>
-                <div class="server-mini-value">{{ stats.server.uptime }}</div>
+                <div class="server-mini-value" id="uptime-val">{{ stats.server.uptime }}</div>
+                <div class="server-mini-meta">Node Lifecycle: Steady</div>
             </div>
         </div>
 
@@ -805,6 +817,36 @@
                 }
             });
             document.getElementById('centerTotalLabel').innerText = "{{ stats.total_system_actions }}";
+
+            // Live Health Polling
+            function fetchHealth() {
+                fetch('/admin-intelligence/api/health/')
+                    .then(response => response.json())
+                    .then(data => {
+                        // CPU
+                        document.getElementById('cpu-val').innerText = data.cpu + '%';
+                        document.getElementById('cpu-bar').style.width = data.cpu + '%';
+                        
+                        // RAM
+                        document.getElementById('ram-val').innerText = data.ram_pct + '%';
+                        document.getElementById('ram-bar').style.width = data.ram_pct + '%';
+                        document.getElementById('ram-meta').innerText = 'Rem: ' + data.ram_free + ' / ' + data.ram_total;
+                        
+                        // Disk
+                        document.getElementById('disk-val').innerText = data.disk_pct + '%';
+                        document.getElementById('disk-bar').style.width = data.disk_pct + '%';
+                        document.getElementById('disk-meta').innerText = 'Rem: ' + data.disk_free + ' / ' + data.disk_total;
+                        
+                        // Network
+                        document.getElementById('net-val').innerText = data.net_sent + ' / ' + data.net_recv;
+                        
+                        // Uptime
+                        document.getElementById('uptime-val').innerText = data.uptime;
+                    })
+                    .catch(e => console.error('Health Matrix Disconnected:', e));
+            }
+
+            setInterval(fetchHealth, 10000); // Pulse every 10s
         });
     </script>
 
