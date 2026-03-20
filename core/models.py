@@ -59,6 +59,7 @@ class UserProfile(models.Model):
     linkedin_this_month_count = models.PositiveIntegerField(default=0, verbose_name="Profiles Scraped This Month")
     emails_this_month_count = models.PositiveIntegerField(default=0, verbose_name="Emails Sent This Month")
     last_action_date = models.DateField(auto_now=True)
+    has_sent_80_percent_alert = models.BooleanField(default=False, help_text="Prevents duplicate quota alerts in the same month")
     
     # Lifetime Stats
     total_emails_sent = models.PositiveIntegerField(default=0)
@@ -150,11 +151,12 @@ class UserProfile(models.Model):
             self.jobs_this_month_count = 0
             self.linkedin_this_month_count = 0
             self.emails_this_month_count = 0
+            self.has_sent_80_percent_alert = False
             needs_save = True
         
         if needs_save:
             self.last_action_date = today
-            self.save(update_fields=['jobs_this_month_count', 'linkedin_this_month_count', 'emails_this_month_count', 'last_action_date'])
+            self.save(update_fields=['jobs_this_month_count', 'linkedin_this_month_count', 'emails_this_month_count', 'last_action_date', 'has_sent_80_percent_alert'])
             return True
         return False
 
@@ -179,22 +181,100 @@ class UserProfile(models.Model):
         self.jobs_this_month_count += 1
         self.total_websites_scraped += 1
         self.save(update_fields=['jobs_this_month_count', 'total_websites_scraped', 'last_action_date'])
+        self.check_quota_thresholds()
 
     def increment_linkedin_usage(self):
         self.check_and_reset_quotas()
         self.linkedin_this_month_count += 1
         self.total_linkedin_scraped += 1
         self.save(update_fields=['linkedin_this_month_count', 'total_linkedin_scraped', 'last_action_date'])
+        self.check_quota_thresholds()
 
     def increment_email_usage(self, count=1):
         self.check_and_reset_quotas()
         self.emails_this_month_count += count
         self.total_emails_sent += count
         self.save(update_fields=['emails_this_month_count', 'total_emails_sent', 'last_action_date'])
+        self.check_quota_thresholds()
 
     def increment_records_found(self, count=1):
         self.total_records_scraped += count
         self.save(update_fields=['total_records_scraped'])
+
+    def check_quota_thresholds(self):
+        """Monitors for usage spikes and dispatches psychological upgrade nudges."""
+        if self.membership_status != 'free' or self.has_sent_80_percent_alert:
+            return
+
+        # Check if 80% threshold is reached for Web Scraper or Outreach
+        web_usage_pct = (self.jobs_this_month_count / self.job_limit_monthly) * 100 if self.job_limit_monthly > 0 else 0
+        email_usage_pct = (self.emails_this_month_count / self.email_outreach_limit_monthly) * 100 if self.email_outreach_limit_monthly > 0 else 0
+
+        if web_usage_pct >= 80 or email_usage_pct >= 80:
+            self.has_sent_80_percent_alert = True
+            self.save(update_fields=['has_sent_80_percent_alert'])
+            
+            # Dispatch Async Psychological Email
+            from threading import Thread
+            from django.core.mail import send_mail
+            from django.conf import settings
+
+            def send_quota_nudge(u_email, u_username, u_usage):
+                try:
+                    subject = "Critical Intelligence Alert: Capacity Near 80%"
+                    html_message = f"""
+                    <html>
+                    <body style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #0d1117; color: #ffffff; padding: 40px;">
+                        <div style="max-width: 600px; margin: 0 auto; background: #161b22; border: 1px solid #30363d; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                            <div style="background: #f59e0b; padding: 25px; text-align: center;">
+                                <h1 style="color: #ffffff; margin: 0; font-size: 22px; letter-spacing: 1px;">QUOTA ALERT</h1>
+                            </div>
+                            
+                            <div style="padding: 40px;">
+                                <h2 style="color: #ffffff; font-size: 20px;">Hello {u_username},</h2>
+                                <p style="line-height: 1.6; color: #8b949e;">Scale warning initiated. Your autonomous scraper and outreach cycles have reached <b>80% capacity</b> for this month.</p>
+                                
+                                <div style="margin: 25px 0; background: rgba(245, 158, 11, 0.05); border-left: 4px solid #f59e0b; padding: 15px; border-radius: 4px;">
+                                    <p style="color: #ffffff; margin: 0;">Once you hit 100%, your <b>Identity Extraction</b> and <b>Cold Outreach</b> protocols will pause until next month. Your growth shouldn't have to wait.</p>
+                                </div>
+
+                                <h3 style="color: #ffffff; font-size: 18px; margin-top: 30px;">Why Operators Upgrade to Pro:</h3>
+                                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                                    <tr>
+                                        <td style="padding: 10px 0; color: #8b949e; border-bottom: 1px solid #30363d;">🔒 <b>LinkedIn Discovery:</b></td>
+                                        <td style="padding: 10px 0; text-align: right; color: #10b981; border-bottom: 1px solid #30363d;">UNLOCKED</td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 0; color: #8b949e; border-bottom: 10px solid transparent;">🚀 <b>Scraping Velocity:</b></td>
+                                        <td style="padding: 10px 0; text-align: right; color: #ffffff; border-bottom: 10px solid transparent;"><b>10X INCREASE</b></td>
+                                    </tr>
+                                    <tr>
+                                        <td style="padding: 10px 0; color: #8b949e; border-top: 1px solid #30363d;">📧 <b>Outreach Limit:</b></td>
+                                        <td style="padding: 10px 0; text-align: right; color: #ffffff; border-top: 1px solid #30363d;"><b>10,000 Monthly</b></td>
+                                    </tr>
+                                </table>
+
+                                <div style="text-align: center; margin: 40px 0;">
+                                    <a href="https://leadnexus.difusionseo.com/subscription/" 
+                                       style="background-color: #8b5cf6; color: #ffffff; padding: 15px 35px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                                        Scale My Infrastructure
+                                    </a>
+                                    <p style="margin-top: 15px; font-size: 12px; color: #484f58;">Don't let your revenue hit a hard limit. Go Pro today.</p>
+                                </div>
+                            </div>
+                            
+                            <div style="background: #21262d; padding: 20px; text-align: center; font-size: 11px; color: #484f58; border-top: 1px solid #30363d;">
+                                &copy; 2026 LeadNexus. All rights reserved.
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """
+                    send_mail(subject, "Your LeadNexus quota is at 80%. Upgrade now to avoid interruption: https://leadnexus.difusionseo.com/subscription/", settings.DEFAULT_FROM_EMAIL, [u_email], html_message=html_message, fail_silently=True)
+                except Exception:
+                    pass
+
+            Thread(target=send_quota_nudge, args=(self.user.email, self.user.username, web_usage_pct)).start()
 
     @property
     def subscription_is_active(self):

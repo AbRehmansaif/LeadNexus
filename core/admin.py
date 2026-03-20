@@ -47,7 +47,7 @@ class UserProfileInline(admin.StackedInline):
             'fields': ('membership_status', 'is_verified', 'admin_notes')
         }),
         ('Quotas', {
-            'fields': (('job_limit_monthly', 'linkedin_limit_monthly', 'smtp_limit', 'email_outreach_limit_monthly'), ('jobs_this_month_count', 'linkedin_this_month_count', 'emails_this_month_count')),
+            'fields': (('job_limit_monthly', 'linkedin_limit_monthly', 'smtp_limit', 'email_outreach_limit_monthly'), ('jobs_this_month_count', 'linkedin_this_month_count', 'emails_this_month_count'), 'has_sent_80_percent_alert'),
             'description': 'Manage monthly resource allocations.'
         }),
         ('Lifetime Intelligence', {
@@ -102,6 +102,13 @@ class UserAdmin(BaseUserAdmin):
 # Re-register UserAdmin
 admin.site.unregister(User)
 admin.site.register(User, UserAdmin)
+
+@admin.register(UserProfile)
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ('user', 'membership_status', 'is_paid', 'jobs_this_month_count', 'emails_this_month_count', 'has_sent_80_percent_alert')
+    list_filter = ('membership_status', 'is_paid', 'has_sent_80_percent_alert')
+    search_fields = ('user__username', 'user__email')
+    fieldsets = UserProfileInline.fieldsets
 
 
 # ── Website Scraping ───────────────────────────────────
