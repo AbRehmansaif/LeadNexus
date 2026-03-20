@@ -32,12 +32,12 @@ def admin_matrix(request):
 from admintask.utils.alerts import send_admin_alert
 
 def error_404(request, exception):
-    from core.models import GlobalSettings
+    from admintask.models import GlobalSettings
     settings = GlobalSettings.objects.first()
     return render(request, '404.html', {'global_settings': settings}, status=404)
 
 def error_500(request):
-    from core.models import GlobalSettings
+    from admintask.models import GlobalSettings
     settings = GlobalSettings.objects.first()
     
     # Send intelligence alert for 500 error
@@ -53,11 +53,11 @@ def error_500(request):
     return render(request, '500.html', {'global_settings': settings}, status=500)
 
 def error_403(request, exception=None):
-    from core.models import GlobalSettings
+    from admintask.models import GlobalSettings
     settings = GlobalSettings.objects.first()
     return render(request, '403.html', {'global_settings': settings}, status=403)
 
 def error_400(request, exception=None):
-    from core.models import GlobalSettings
+    from admintask.models import GlobalSettings
     settings = GlobalSettings.objects.first()
     return render(request, '400.html', {'global_settings': settings}, status=400)

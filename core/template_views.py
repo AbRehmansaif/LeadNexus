@@ -24,7 +24,7 @@ def landing_page(request):
         plan_rows = []
         subscription_plans = []
 
-    from core.models import GlobalSettings
+    from admintask.models import GlobalSettings
     global_settings = GlobalSettings.objects.first()
 
     if request.user.is_authenticated:

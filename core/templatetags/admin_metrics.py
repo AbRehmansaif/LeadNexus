@@ -82,7 +82,7 @@ def get_nexus_metrics():
         month_labels.append(month_label)
 
     # 5. Monthly Goals and Conversion (Fetching from GlobalSettings)
-    from core.models import GlobalSettings
+    from admintask.models import GlobalSettings
     settings = GlobalSettings.objects.first()
     
     mrr_target = float(settings.mrr_target) if settings else 55000.00

@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.urls import reverse
-from .models import GlobalSettings
+from admintask.models import GlobalSettings
 
 class MaintenanceModeMiddleware:
     """Blocks all non-staff users when maintenance mode is active."""

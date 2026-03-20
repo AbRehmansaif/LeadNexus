@@ -11,31 +11,7 @@ from django.contrib.auth.models import User
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 
-class GlobalSettings(models.Model):
-    """Singleton model for system-wide configurations."""
-    registrations_enabled = models.BooleanField(default=True, help_text="If disabled, new users cannot register accounts.")
-    maintenance_mode = models.BooleanField(default=False, help_text="If enabled, shows a maintenance notice.")
-    
-    # Contact Information for Landing Page
-    contact_email = models.EmailField(default="sales@leadnexus.ai", help_text="Public contact email displayed on the landing page.")
-    whatsapp_number = models.CharField(max_length=20, default="+1234567890", help_text="WhatsApp number with country code (e.g. +1234567890) for the chat button.")
 
-    # Dashboard Monthly Targets
-    mrr_target = models.DecimalField(max_digits=12, decimal_places=2, default=55000.00, help_text="Monthly Revenue target for the dashboard.")
-    registrations_target = models.PositiveIntegerField(default=1000, help_text="Monthly New Registrations target for the dashboard.")
-
-    class Meta:
-        verbose_name = "Global System Setting"
-        verbose_name_plural = "Global System Settings"
-
-    def __str__(self):
-        return "Global System Configuration"
-
-    def save(self, *args, **kwargs):
-        # Ensure only one instance exists
-        if not self.pk and GlobalSettings.objects.exists():
-            return
-        return super().save(*args, **kwargs)
 
 class UserProfile(models.Model):
     MEMBERSHIP_CHOICES = [

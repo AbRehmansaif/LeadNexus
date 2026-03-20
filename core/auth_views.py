@@ -10,7 +10,8 @@ from django.contrib.auth.hashers import make_password
 import random
 import string
 from .forms import ProfessionalRegisterForm, EmailAuthenticationForm
-from .models import PasswordResetCode, GlobalSettings
+from .models import PasswordResetCode
+from admintask.models import GlobalSettings
 from threading import Thread
 
 class LoginView(auth_views.LoginView):
@@ -276,6 +277,7 @@ class CustomPasswordResetConfirmView(View):
             
             # ── Async Email Notification (SaaS Level Performance) ──
             from django.utils import timezone as d_timezone
+            from admintask.models import GlobalSettings
             now_str = d_timezone.now().strftime('%Y-%m-%d %H:%M:%S %Z')
             gs = GlobalSettings.objects.first()
             contact_email = gs.contact_email if gs else "security@leadnexus.ai" 
