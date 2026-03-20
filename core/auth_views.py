@@ -17,9 +17,20 @@ class LoginView(auth_views.LoginView):
     template_name = 'registration/login.html'
     redirect_authenticated_user = False
     
-    def get_success_url(self):
+    def form_valid(self, form):
+        from django.contrib.auth import login as auth_login
+        auth_login(self.request, form.get_user())
+        
+        remember_me = self.request.POST.get('remember_me')
+        if not remember_me:
+            # If NOT checked, session expires when the browser is closed
+            self.request.session.set_expiry(0)
+        else:
+            # If CHECKED, session stays for 30 days
+            self.request.session.set_expiry(2592000)
+            
         messages.success(self.request, f"Welcome back, {self.request.user.username}!")
-        return super().get_success_url()
+        return redirect(self.get_success_url())
 
 class RegisterView(CreateView):
     form_class = ProfessionalRegisterForm
