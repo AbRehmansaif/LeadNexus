@@ -13,6 +13,7 @@ from django.template import Template, Context
 from django.conf import settings
 from django.urls import reverse
 from django.db.models import Q
+from admintask.utils.alerts import send_admin_alert
 
 logger = logging.getLogger(__name__)
 
@@ -153,6 +154,8 @@ def send_campaign_emails(campaign_id, step_number=1):
                 recipient.smtp_email = creds.from_email  # track which account sent
                 recipient.save()
 
+                recipient.save()
+
                 campaign.sent_count += 1
                 campaign.save(update_fields=['sent_count'])
 
@@ -160,10 +163,18 @@ def send_campaign_emails(campaign_id, step_number=1):
                     time.sleep(campaign.gap_seconds)
 
             except Exception as e:
-                logger.exception(f"Failed to send to {recipient.email}")
+                error_msg = f"Failed to send to {recipient.email} in campaign {campaign.name}: {str(e)}"
+                logger.exception(error_msg)
                 recipient.status = 'failed'
                 recipient.error_message = str(e)
                 recipient.save()
+                
+                # Send intelligence alert
+                send_admin_alert('campaign_fail', error_msg, {
+                    'campaign_id': campaign.id,
+                    'recipient_id': recipient.id,
+                    'smtp_used': creds.from_email if 'creds' in locals() else 'Unknown'
+                })
 
         # After loop: mark campaign as completed
         campaign.refresh_from_db()

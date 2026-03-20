@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     'subscriptions',
     'seo',
     'contactus',
+    'admintask',
 ]
 
 MIDDLEWARE = [
@@ -64,6 +65,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'core.middleware.MaintenanceModeMiddleware',
+    'admintask.middleware.LatencyMiddleware',
 ]
 
 ROOT_URLCONF = 'scrapper.urls'

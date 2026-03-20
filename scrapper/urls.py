@@ -15,6 +15,7 @@ from core.auth_views import (
     VerifyResetCodeView, CustomPasswordResetConfirmView
 )
 from core import template_views
+from admintask import views as admintask_views
 from django.contrib.sitemaps.views import sitemap
 from scrapper.sitemaps import StaticViewSitemap, SeoViewSitemap, ToolsViewSitemap
 
@@ -52,6 +53,7 @@ urlpatterns = [
     ), name='password_reset_complete'),
     # ── Django Admin ───────────────────────────────────────
     path('admin/', admin.site.urls),
+    path('admin/matrix/', admintask_views.admin_matrix, name='admin-matrix'),
 
     # ── REST API ───────────────────────────────────────────
     path('api/', include('core.urls', namespace='core')),
@@ -90,8 +92,8 @@ if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 # ── Custom Error Handlers ───────────────────────────────────────────
-handler404 = 'core.template_views.error_404'
-handler500 = 'core.template_views.error_500'
-handler403 = 'core.template_views.error_403'
-handler400 = 'core.template_views.error_400'
+handler404 = 'admintask.views.error_404'
+handler500 = 'admintask.views.error_500'
+handler403 = 'admintask.views.error_403'
+handler400 = 'admintask.views.error_400'
 

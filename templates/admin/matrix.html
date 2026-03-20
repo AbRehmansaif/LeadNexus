@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block title %}Neural Matrix — Admin Console{% endblock %}
+
+{% block extra_css %}
+<style>
+    .matrix-title {
+        font-size: 2.5rem;
+        font-weight: 900;
+        background: linear-gradient(135deg, var(--accent-purple) 0%, var(--accent-cyan) 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        margin-bottom: 8px;
+    }
+    .grid-container {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 24px;
+        margin-bottom: 40px;
+    }
+    .performance-card {
+        background: rgba(13, 17, 23, 0.7);
+        border: 1px solid var(--border);
+        border-radius: 16px;
+        padding: 24px;
+        backdrop-filter: blur(10px);
+    }
+    .latency-tag {
+        font-family: 'JetBrains Mono', monospace;
+        font-weight: 700;
+        font-size: 0.8rem;
+        padding: 4px 8px;
+        border-radius: 4px;
+    }
+    .latency-good { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+    .latency-warning { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+    .latency-critical { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+    
+    .matrix-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.85rem;
+    }
+    .matrix-table th {
+        text-align: left;
+        padding: 12px;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-muted);
+        text-transform: uppercase;
+        font-size: 0.7rem;
+        letter-spacing: 0.1em;
+    }
+    .matrix-table td {
+        padding: 12px;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .error-log {
+        background: rgba(239, 68, 68, 0.05);
+        border-left: 4px solid #ef4444;
+        padding: 16px;
+        border-radius: 8px;
+        margin-bottom: 12px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="matrix-title">System Matrix</h1>
+        <p class="page-subtitle">Real-time latency monitoring and error intelligence node.</p>
+    </div>
+    <div style="text-align: right;">
+        <div class="latency-tag latency-good">SYSTEM_ONLINE</div>
+        <div style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; margin-top: 8px; opacity: 0.5;">
+            NODE: {{ avg_global_latency }}s GLOBAL_AVG
+        </div>
+    </div>
+</div>
+
+<div class="grid-container">
+    <!-- Performance Summary -->
+    <div class="performance-card">
+        <h3 class="section-title"><i data-lucide="zap"></i> Latency Overview</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;">Average load times for top 20 routes.</p>
+        <table class="matrix-table">
+            <thead>
+                <tr>
+                    <th>ROUTE_PATH</th>
+                    <th>AVG_LATENCY</th>
+                    <th>HITS</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for stat in path_stats %}
+                <tr>
+                    <td style="font-family: 'JetBrains Mono', monospace;">{{ stat.path|truncatechars:30 }}</td>
+                    <td>
+                        <span class="latency-tag {% if stat.avg_latency < 0.5 %}latency-good{% elif stat.avg_latency < 1.5 %}latency-warning{% else %}latency-critical{% endif %}">
+                            {{ stat.avg_latency|round:3 }}s
+                        </span>
+                    </td>
+                    <td style="opacity: 0.7;">{{ stat.request_count }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Error Intelligence -->
+    <div class="performance-card">
+        <h3 class="section-title"><i data-lucide="alert-triangle"></i> Error Intelligence</h3>
+        <p style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: 20px;">Recent system anomalies and campaign failures.</p>
+        <div style="max-height: 500px; overflow-y: auto;">
+            {% for error in recent_errors %}
+            <div class="error-log">
+                <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                    <span style="font-weight: 800; font-size: 0.75rem;">{{ error.get_type_display|upper }}</span>
+                    <span style="font-size: 0.65rem; opacity: 0.6;">{{ error.timestamp|date:"H:i:s" }}</span>
+                </div>
+                <div style="font-size: 0.8rem; line-height: 1.4;">{{ error.message }}</div>
+            </div>
+            {% empty %}
+            <div style="text-align: center; padding: 40px; color: var(--text-muted);">
+                <i data-lucide="shield-check" style="width:40px; height:40px; margin-bottom: 12px; opacity: 0.2;"></i>
+                <p>No anomalies detected in the current matrix.</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<div class="performance-card">
+    <h3 class="section-title"><i data-lucide="list"></i> Real-Time Request Stream</h3>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>TIMESTAMP</th>
+                    <th>METHOD</th>
+                    <th>PATH</th>
+                    <th>STATUS</th>
+                    <th>LATENCY</th>
+                    <th>OPERATOR</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for log in recent_logs %}
+                <tr>
+                    <td style="font-family: 'JetBrains Mono', monospace; font-size: 0.7rem;">{{ log.timestamp|date:"H:i:s.u" }}</td>
+                    <td><span style="font-weight: 800;">{{ log.method }}</span></td>
+                    <td style="font-family: 'JetBrains Mono', monospace;">{{ log.path }}</td>
+                    <td>
+                        <span class="badge {% if log.status_code < 400 %}badge-completed{% else %}badge-failed{% endif %}">
+                            {{ log.status_code }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="latency-tag {% if log.latency_seconds < 0.5 %}latency-good{% elif log.latency_seconds < 1.5 %}latency-warning{% else %}latency-critical{% endif %}">
+                            {{ log.latency_seconds }}s
+                        </span>
+                    </td>
+                    <td style="font-size: 0.75rem;">{{ log.user.username|default:"ANONYMOUS" }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}
