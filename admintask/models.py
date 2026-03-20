@@ -8,7 +8,7 @@ class ServerPerformanceLog(models.Model):
     latency_seconds = models.FloatField()
     status_code = models.IntegerField()
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.DateTimeField(auto_now_add=True, db_index=True)
 
     class Meta:
         ordering = ['-timestamp']
@@ -41,6 +41,11 @@ class AdminTaskSettings(models.Model):
     telegram_bot_token = models.CharField(max_length=255, blank=True, null=True, help_text="Bot token for admin notifications.")
     admin_chat_id = models.CharField(max_length=255, blank=True, null=True, help_text="Telegram Chat ID for receiving alerts.")
     enable_error_alerts = models.BooleanField(default=False, help_text="If enabled, sends telegram alerts on critical errors.")
+
+    # Performance Tracking Settings
+    enable_performance_logging = models.BooleanField(default=True, help_text="Record system-wide latency.")
+    slow_request_threshold = models.FloatField(default=0.5, help_text="Only log requests that take longer than this (in seconds). Set to 0 to log everything.")
+    retention_days = models.PositiveIntegerField(default=7, help_text="Automatically delete logs older than this number of days.")
 
     class Meta:
         verbose_name = "Admin Intelligence Setting"
