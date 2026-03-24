@@ -126,6 +126,14 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
         formData.append('recipients', JSON.stringify(recipients));
     }
 
+    const scheduledAtInput = document.getElementById('scheduled_at');
+    if (scheduledAtInput && scheduledAtInput.value) {
+        // Convert local time to UTC ISO string for robust cross-timezone scheduling
+        const utcDate = new Date(scheduledAtInput.value).toISOString();
+        formData.append('scheduled_at', utcDate);
+        formData.append('status', 'scheduled');
+    }
+
     try {
         const response = await fetch('/mail/api/campaigns/create_with_recipients/', {
             method: 'POST',
@@ -135,12 +143,16 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
 
         if (response.ok) {
             const data = await response.json();
-            // Start Step 1 automatically
-            await fetch(`/mail/api/campaigns/${data.id}/trigger_step/`, {
-                method: 'POST',
-                body: JSON.stringify({ step_number: 1 }),
-                headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' }
-            });
+            
+            // ONLY trigger immediately if it's NOT a scheduled campaign
+            if (data.status !== 'scheduled') {
+                await fetch(`/mail/api/campaigns/${data.id}/trigger_step/`, {
+                    method: 'POST',
+                    body: JSON.stringify({ step_number: 1 }),
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' }
+                });
+            }
+            
             window.location.href = `/mail/campaign/${data.id}/`;
         } else {
             const errorData = await response.json();

@@ -185,14 +185,20 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
         subject = data.get('subject', '')
         body = data.get('body', '')
         gap_seconds = data.get('gap_seconds', 2)
-        
+        scheduled_at = data.get('scheduled_at')
+        status_val = data.get('status', 'running') # Default to running if not scheduled
+        if scheduled_at:
+            status_val = 'scheduled'
+
         # 1. Create Campaign
         campaign = EmailCampaign.objects.create(
             user=request.user,
             name=name or subject,
             subject=subject,
             body=body,
-            gap_seconds=gap_seconds
+            gap_seconds=gap_seconds,
+            scheduled_at=scheduled_at,
+            status=status_val
         )
 
         # 2. Setup Steps if provided

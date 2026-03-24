@@ -60,6 +60,7 @@ class SMTPCredential(models.Model):
 class EmailCampaign(models.Model):
     STATUS_CHOICES = [
         ('pending', 'Pending'),
+        ('scheduled', 'Scheduled'),
         ('running', 'Running'),
         ('paused', 'Paused'),
         ('completed', 'Completed'),
@@ -72,6 +73,7 @@ class EmailCampaign(models.Model):
     body = models.TextField(help_text="Use {{ name }} for placeholders")
     gap_seconds = models.IntegerField(default=2, help_text="Wait time between each email (seconds)")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    scheduled_at = models.DateTimeField(null=True, blank=True, help_text="Set a time to start this campaign automatically", db_index=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
