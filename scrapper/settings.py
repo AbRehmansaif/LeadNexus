@@ -299,4 +299,9 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'mail.tasks.check_for_replies',
         'schedule': crontab(minute='*/30'),
     },
+    # SaaS: Notify users about due follow-ups every morning at 9:00 AM
+    'followup-reminder-notifications': {
+        'task': 'mail.tasks.send_followup_reminder_notifications',
+        'schedule': crontab(hour=9, minute=0),
+    },
 }

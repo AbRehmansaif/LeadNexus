@@ -139,6 +139,14 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                 # 3. Remove trailing slash for reverse suffixing
                 tracking_base = tracking_base.rstrip('/')
             
+            # Unsubscribe Link
+            unsub_url = f"{tracking_base.rstrip('/')}{reverse('unsubscribe', args=[recipient.id])}"
+            unsub_footer = f'<br><br><div style="font-size: 11px; color: #666; border-top: 1px dashed #eee; padding-top: 10px;">' \
+                           f'Too many emails? <a href="{unsub_url}" style="color: #8b5cf6; text-decoration: underline;">Unsubscribe from this campaign</a>' \
+                           f'</div>'
+            rendered_body += f"\n{unsub_footer}"
+
+            # Tracking Pixel
             tracking_url = f"{tracking_base}{reverse('track-open', args=[recipient.id])}"
             pixel_tag = f'<img src="{tracking_url}" width="1" height="1" style="display:none !important;" />'
             rendered_body += f"\n{pixel_tag}"
@@ -446,3 +454,99 @@ def start_scheduled_campaigns():
         campaign.save(update_fields=['status'])
         send_campaign_emails.delay(campaign.id, 1)
         logger.info(f"Automatically started scheduled campaign: {campaign.name}")
+
+@shared_task
+def send_followup_reminder_notifications():
+    """
+    SaaS Feature: Scans for campaigns where follow-up steps are due.
+    Sends a professional summary email to the user with stats and a call to action.
+    """
+    now = timezone.now()
+    # Find active recipients who are due for their next step
+    # We group by campaign and step to send one clean email per user/campaign step
+    campaigns = EmailCampaign.objects.filter(status__in=['running', 'active'])
+    
+    for campaign in campaigns:
+        user = campaign.user
+        profile = user.profile
+        
+        # Check all possible next steps
+        steps = campaign.steps.all().order_by('step_number')
+        for step in steps:
+            if step.step_number <= 1: continue # Skip initial outreach
+            
+            wait_threshold = now - timedelta(days=step.wait_days)
+            
+            # Count recipients who finished the previous step and are now due for THIS step
+            due_recipients = campaign.recipients.filter(
+                current_step_index=step.step_number - 1,
+                last_sent_at__lte=wait_threshold,
+                status='active',
+                is_replied=False,
+                is_unsubscribed=False
+            ).count()
+            
+            if due_recipients > 0:
+                # Prepare Stats for the reminder email
+                stats = campaign.stats
+                
+                # Quota Check
+                quota_warning = ""
+                if not profile.can_send_email():
+                    quota_warning = "<p style='color: #ef4444;'><b>⚠️ Warning:</b> Your monthly email quota is currently empty. Please upgrade to resume sending.</p>"
+                
+                subject = f"🚀 Follow-up Required: {campaign.name}"
+                
+                html_message = f"""
+                <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; border: 1px solid #e5e7eb; border-radius: 12px; color: #1f2937;">
+                    <h2 style="color: #8b5cf6; margin-top: 0;">Follow-up Logic Triggered</h2>
+                    <p>Hello <b>{user.username}</b>,</p>
+                    <p>Your campaign <b>"{campaign.name}"</b> has <b>{due_recipients} leads</b> waiting for <b>Step {step.step_number}</b>.</p>
+                    
+                    <div style="background: #f9fafb; padding: 15px; border-radius: 8px; margin: 20px 0;">
+                        <h4 style="margin-top: 0; margin-bottom: 10px; color: #4b5563;">Current Campaign Pulse:</h4>
+                        <table style="width: 100%; border-collapse: collapse;">
+                            <tr>
+                                <td style="padding: 5px 0; color: #6b7280;">Total Outreach Sent:</td>
+                                <td style="text-align: right; font-weight: bold; color: #111827;">{stats['sent_count']}</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px 0; color: #6b7280;">Total Opens:</td>
+                                <td style="text-align: right; font-weight: bold; color: #10b981;">{stats['open_count']} ({stats['open_rate']}%)</td>
+                            </tr>
+                            <tr>
+                                <td style="padding: 5px 0; color: #6b7280;">Total Replies:</td>
+                                <td style="text-align: right; font-weight: bold; color: #8b5cf6;">{stats['reply_count']} ({stats['reply_rate']}%)</td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    {quota_warning}
+
+                    <p style="line-height: 1.6;">Leads are ready for the follow-up set for <b>{step.wait_days} days</b> after the previous message. Log in to your dashboard to trigger the next sequence.</p>
+                    
+                    <div style="text-align: center; margin-top: 30px;">
+                        <a href="{settings.SITE_URL}/mail/campaign/{campaign.id}/" 
+                           style="background: #8b5cf6; color: white; padding: 12px 24px; border-radius: 8px; text-decoration: none; font-weight: bold; display: inline-block;">
+                           Review & Send Follow-up #{step.step_number}
+                        </a>
+                    </div>
+                    
+                    <p style="font-size: 12px; color: #9ca3af; margin-top: 40px; text-align: center;">
+                        LeadNexus — Your own Campaign Engine
+                    </p>
+                </div>
+                """
+                
+                # Send the reminder to the USER (not the leads)
+                reminder_email = EmailMessage(
+                    subject=subject,
+                    body=html_message,
+                    from_email=settings.DEFAULT_FROM_EMAIL,
+                    to=[user.email]
+                )
+                reminder_email.content_subtype = "html"
+                reminder_email.send()
+                
+                logger.info(f"Sent follow-up reminder for campaign {campaign.id} to {user.email}")
+                break # Send only one reminder per campaign per run to avoid spamming the user

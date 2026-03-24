@@ -1,6 +1,7 @@
 import csv
 import io
 import json
+from django.db import transaction
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
@@ -9,9 +10,10 @@ from django.db.models import F
 from rest_framework import viewsets, status, decorators, permissions, serializers, pagination
 from rest_framework.response import Response
 from .models import SMTPCredential, EmailCampaign, Recipient, CampaignStep, SentEmailLog
-from .tasks import trigger_followup_task, check_for_replies
+from .tasks import trigger_followup_task, check_for_replies, _mark_failed
 # Remove the old ModelSerializer import if it's redundant
 from django.core.mail import get_connection
+from django.views.decorators.clickjacking import xframe_options_exempt
 
 class SMTPCredentialSerializer(serializers.ModelSerializer):
     class Meta:
@@ -358,6 +360,53 @@ def track_open(request, recipient_id):
     response['Pragma'] = 'no-cache'
     response['Expires'] = '0'
     return response
+
+@xframe_options_exempt
+def unsubscribe(request, recipient_id):
+    """
+    View to handle formal unsubscribe requests via link.
+    """
+    try:
+        with transaction.atomic():
+            recipient = Recipient.objects.select_for_update().get(id=recipient_id)
+            if not recipient.is_unsubscribed:
+                recipient.is_unsubscribed = True
+                recipient.unsubscribed_at = timezone.now()
+                recipient.status = 'unsubscribed'
+                recipient.save(update_fields=['is_unsubscribed', 'unsubscribed_at', 'status'])
+                
+                # Invalidate cache
+                cache.delete(f"campaign_stats_{recipient.campaign_id}")
+                
+        # Get the 'From Name' from the last delivery log if possible
+        last_log = recipient.delivery_logs.order_by('-sent_at').first()
+        from_name = last_log.smtp_used.from_name if (last_log and last_log.smtp_used and last_log.smtp_used.from_name) else "the sender"
+
+        html_content = f"""
+        <html>
+        <head>
+            <title>Unsubscribed from emails</title>
+            <style>
+                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: #ffffff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
+                .card {{ background: #161b22; border: 1px solid #30363d; padding: 40px; border-radius: 12px; text-align: center; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }}
+                h1 {{ color: #8b5cf6; margin-top: 0; }}
+                p {{ color: #8b949e; line-height: 1.6; }}
+                .icon {{ font-size: 48px; margin-bottom: 20px; color: #10b981; }}
+            </style>
+        </head>
+        <body>
+            <div class="card">
+                <div class="icon">✓</div>
+                <h1>Unsubscribed</h1>
+                <p>You have been successfully removed from this campaign. You will no longer receive automated follow-ups from <b>{from_name}</b>.</p>
+                <p style="font-size: 0.8rem; margin-top: 20px;">Safe Unsubscribe Protocol Initiated</p>
+            </div>
+        </body>
+        </html>
+        """
+        return HttpResponse(html_content)
+    except Recipient.DoesNotExist:
+        return HttpResponse("Invalid unsubscribe link.", status=404)
 
 @decorators.api_view(['GET'])
 @decorators.permission_classes([permissions.IsAuthenticated])
