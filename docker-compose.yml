@@ -22,13 +22,14 @@ services:
       - .env
     expose:
       - "8000"
+    volumes:
+      - ./staticfiles:/app/staticfiles
+      - ./media:/app/media
     depends_on:
       - db
       - redis
 
   # Celery worker — processes email send tasks, reply checks, etc.
-  # entrypoint is cleared so entrypoint.sh (which starts gunicorn) is NOT run.
-  # Migrations are guaranteed to have run via the 'web' service dependency.
   celery_worker:
     build: .
     entrypoint: []
@@ -36,13 +37,14 @@ services:
     restart: always
     env_file:
       - .env
+    volumes:
+      - ./media:/app/media
     depends_on:
       - db
       - redis
       - web
 
-  # Celery beat — periodic scheduler for start_scheduled_campaigns & check_for_replies.
-  # Only ONE beat instance should ever run to avoid duplicate task scheduling.
+  # Celery beat — periodic scheduler
   celery_beat:
     build: .
     entrypoint: []
@@ -50,6 +52,8 @@ services:
     restart: always
     env_file:
       - .env
+    volumes:
+      - ./media:/app/media
     depends_on:
       - db
       - redis
@@ -63,7 +67,7 @@ services:
       - "443:443"
     volumes:
       - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf
-      - ./static:/app/static
+      - ./staticfiles:/app/static
       - ./media:/app/media
       - /etc/letsencrypt:/etc/letsencrypt:ro
     depends_on:
