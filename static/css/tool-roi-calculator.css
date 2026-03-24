@@ -16,6 +16,46 @@
   .roi-container { grid-template-columns: 1fr; }
 }
 
+/* ── Mini CTA Bar ──────────────────────────────────────────── */
+.mini-cta-bar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: rgba(124,58,237,.08);
+  border: 1px solid rgba(124,58,237,.22);
+  border-radius: 999px;
+  padding: 8px 20px;
+  margin: -28px auto 28px;
+  max-width: 560px;
+  flex-wrap: wrap;
+}
+.mini-cta-text {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  line-height: 1;
+}
+.mini-cta-text strong { color: var(--text-primary); font-weight: 700; }
+.mini-cta-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: #fff;
+  background: var(--gradient-primary);
+  padding: 5px 14px;
+  border-radius: 999px;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: opacity .2s, transform .2s;
+  line-height: 1;
+}
+.mini-cta-link:hover { opacity: .88; transform: scale(1.03); }
+
 /* ── Panels ─────────────────────────────────────────── */
 .panel {
   background: rgba(17, 24, 39, 0.7);

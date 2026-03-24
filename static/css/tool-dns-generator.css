@@ -40,42 +40,45 @@
   margin-bottom: 20px;
 }
 
-/* Mini CTA Bar */
+/* ── Mini CTA Bar ──────────────────────────────────────────── */
 .mini-cta-bar {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 16px;
+  gap: 12px;
   background: rgba(124,58,237,.08);
-  border: 1px solid rgba(124,58,237,.2);
+  border: 1px solid rgba(124,58,237,.22);
   border-radius: 999px;
-  padding: 10px 24px;
-  margin: -24px auto 48px;
-  max-width: 640px;
+  padding: 8px 20px;
+  margin: -28px auto 28px;
+  max-width: 560px;
   flex-wrap: wrap;
-  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);
 }
 .mini-cta-text {
-  font-size: 0.85rem;
-  color: #94a3b8;
+  font-size: 0.78rem;
+  color: var(--text-muted);
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 6px;
+  line-height: 1;
 }
+.mini-cta-text strong { color: var(--text-primary); font-weight: 700; }
 .mini-cta-link {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.82rem;
-  font-weight: 800;
+  gap: 5px;
+  font-size: 0.75rem;
+  font-weight: 700;
   color: #fff;
   background: var(--gradient-primary);
-  padding: 7px 18px;
+  padding: 5px 14px;
   border-radius: 999px;
   text-decoration: none;
-  transition: all 0.2s;
+  white-space: nowrap;
+  transition: opacity .2s, transform .2s;
+  line-height: 1;
 }
-.mini-cta-link:hover { transform: scale(1.02); opacity: 0.9; }
+.mini-cta-link:hover { opacity: .88; transform: scale(1.03); }
 
 .dns-grid {
   display: grid;
