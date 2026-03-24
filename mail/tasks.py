@@ -122,12 +122,24 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             rendered_body = tmpl.render(Context(context_data))
 
             # Tracking Pixel
+            # Logic: Use user's tracking_domain if set, otherwise fallback to SITE_URL.
+            # Ensure the domain ends up with a valid protocol (https preferred) and no trailing slash.
             tracking_base = profile.tracking_domain or settings.SITE_URL
-            if tracking_base and not tracking_base.startswith('http'):
-                tracking_base = f"https://{tracking_base}"
-            elif tracking_base and tracking_base.startswith('http://') and getattr(settings, 'SECURE_SSL_REDIRECT', False):
-                tracking_base = 'https://' + tracking_base[7:]
-            tracking_url = f"{tracking_base.rstrip('/')}{reverse('track-open', args=[recipient.id])}"
+            
+            if tracking_base:
+                tracking_base = tracking_base.strip()
+                # 1. Ensure protocol exists
+                if not tracking_base.startswith(('http://', 'https://')):
+                    tracking_base = f"https://{tracking_base}"
+                
+                # 2. If it's http and SSL is required, upgrade to https
+                elif tracking_base.startswith('http://') and getattr(settings, 'SECURE_SSL_REDIRECT', False):
+                    tracking_base = 'https://' + tracking_base[7:]
+                
+                # 3. Remove trailing slash for reverse suffixing
+                tracking_base = tracking_base.rstrip('/')
+            
+            tracking_url = f"{tracking_base}{reverse('track-open', args=[recipient.id])}"
             pixel_tag = f'<img src="{tracking_url}" width="1" height="1" style="display:none !important;" />'
             rendered_body += f"\n{pixel_tag}"
 
