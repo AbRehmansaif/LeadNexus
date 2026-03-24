@@ -215,8 +215,56 @@
       <ul>
         <li><strong>Open rates will plummet:</strong> Your emails will be delivered directly to the 'Spam' or 'Promotions' folder.</li>
         <li><strong>Domain Blacklisting:</strong> Persistent authentication failures will cause your domain to be flagged by Spamhaus or Google.</li>
-        <li><strong>Infrastructure Failure:</strong> Tools like Instantly, Lemlist, or LeadNexus rely on these records to maintain high-velocity inbox density.</li>
-      </ul>
+            <li><strong>Infrastructure Failure:</strong> Tools like Instantly, Lemlist, or LeadNexus rely on these records to maintain high-velocity inbox density.</li>
+        </ul>
+    </div>
+
+    <!-- FAQ Section -->
+    <div class="seo-content-block">
+        <h2>Frequently Asked Questions</h2>
+        <div class="faq-list">
+
+            <div class="faq-item" id="faq-1">
+                <div class="faq-question" onclick="toggleFaq('faq-1')">
+                    What is the difference between SPF, DKIM, and DMARC?
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    SPF (Sender Policy Framework) lists the IP addresses and domains authorized to send mail on your behalf. DKIM (DomainKeys Identified Mail) provides a digital signature that proves the email wasn't tampered with. DMARC (Domain-based Message Authentication, Reporting, and Conformance) tells the receiving server what to do if SPF or DKIM fails.
+                </div>
+            </div>
+
+            <div class="faq-item" id="faq-2">
+                <div class="faq-question" onclick="toggleFaq('faq-2')">
+                    Do I really need all three records?
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    Yes, especially starting in 2024, major providers like Google and Yahoo have made these authentication protocols mandatory for bulk senders. Missing even one of these can cause your emails to be immediately rejected or sent to the spam folder.
+                </div>
+            </div>
+
+            <div class="faq-item" id="faq-3">
+                <div class="faq-question" onclick="toggleFaq('faq-3')">
+                    Does DMARC 'p=none' protect my domain?
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    A DMARC policy of <code>p=none</code> is used for monitoring and reporting. It doesn't actually stop unauthorized emails from being delivered. To fully protect your reputation, you should aim to move to <code>p=quarantine</code> or <code>p=reject</code> once you've verified all your legitimate sending sources.
+                </div>
+            </div>
+
+            <div class="faq-item" id="faq-4">
+                <div class="faq-question" onclick="toggleFaq('faq-4')">
+                    Will this fix my emails going to spam?
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    DNS records are the first and most critical step, but they aren't the only factor. Your email content (spam words), sending volume (warm-up), and sender reputation also play huge roles. However, without these DNS records, even the best email content will fail.
+                </div>
+            </div>
+
+        </div>
     </div>
 
     <!-- Final CTA -->

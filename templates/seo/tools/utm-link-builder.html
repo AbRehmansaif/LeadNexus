@@ -364,6 +364,54 @@
             </div>
         </div>
 
+        <!-- FAQ Section -->
+        <div class="seo-content-block">
+            <h2>Frequently Asked Questions</h2>
+            <div class="faq-list">
+
+                <div class="faq-item" id="faq-1">
+                    <div class="faq-question" onclick="toggleFaq('faq-1')">
+                        What are UTM parameters?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        UTM (Urchin Tracking Module) parameters are five variants of URL parameters used by marketers to track the effectiveness of online marketing campaigns across traffic sources and publishing media. They allow Google Analytics to tell you exactly where your visitors are coming from.
+                    </div>
+                </div>
+
+                <div class="faq-item" id="faq-2">
+                    <div class="faq-question" onclick="toggleFaq('faq-2')">
+                        Are UTM parameters case-sensitive?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        Yes, UTM parameters are case-sensitive. If you use "email" for some links and "Email" for others, they will show up as two separate sources in your analytics reports. It's best practice to always use lowercase for all parameters.
+                    </div>
+                </div>
+
+                <div class="faq-item" id="faq-3">
+                    <div class="faq-question" onclick="toggleFaq('faq-3')">
+                        Do UTM codes affect SEO?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        No, UTM codes do not directly impact your search engine rankings. Search engines like Google are smart enough to ignore these parameters when indexing pages, especially if you have a proper canonical tag set up on your target URL.
+                    </div>
+                </div>
+
+                <div class="faq-item" id="faq-4">
+                    <div class="faq-question" onclick="toggleFaq('faq-4')">
+                        Which UTM parameters are mandatory?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        Technically, only <code>utm_source</code> is strictly required for tracking to work in Google Analytics, but it is highly recommended to also use <code>utm_medium</code> and <code>utm_campaign</code> to ensure your data is categorized correctly and useful for analysis.
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
         <!-- Success Modal (Hidden by default) -->
         <div id="conversionModal" style="display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); padding: 20px;">
             <div style="background: #0a0e1a; width: 100%; max-width: 450px; border-radius: 24px; border: 1px solid rgba(59, 130, 246, 0.2); padding: 40px; text-align: center; position: relative;">

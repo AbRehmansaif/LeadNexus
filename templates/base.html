@@ -360,6 +360,14 @@
             });
         });
 
+        // FAQ Accordion
+        function toggleFaq(id) {
+            const item = document.getElementById(id);
+            const isOpen = item.classList.contains('open');
+            document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+            if (!isOpen) item.classList.add('open');
+        }
+
         // --- 2. Neural Modal Controller ---
         let currentModalCallback = null;
 
