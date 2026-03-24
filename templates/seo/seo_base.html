@@ -18,7 +18,50 @@
         </header>
 
         <article class="seo-content">
+            <!-- Breadcrumbs -->
+            <nav class="seo-breadcrumbs" aria-label="breadcrumb">
+                <a href="{% url 'index' %}">Home</a>
+                <span class="sep">/</span>
+                <span class="current">{% block breadcrumb_name %}{% block title_shorthand %}{% endblock %}{% endblock %}</span>
+            </nav>
+
             {% block seo_body %}{% endblock %}
+
+            <!-- Categorized Solutions Cluster -->
+            <div class="seo-solutions-cluster">
+                <h2 class="cluster-title">Explore Tailored Outreach Solutions</h2>
+                <div class="cluster-grid">
+                    <!-- Column 1: By Role -->
+                    <div class="cluster-col">
+                        <h3>By Business Role</h3>
+                        <ul>
+                            <li><a href="{% url 'seo:seo-email-automation-for-sales' %}">Sales Teams</a></li>
+                            <li><a href="{% url 'seo:seo-email-automation-for-marketing' %}">Marketing Pros</a></li>
+                            <li><a href="{% url 'seo:seo-email-automation-for-recruiters' %}">Recruiters</a></li>
+                            <li><a href="{% url 'seo:seo-email-automation-for-seo' %}">SEO Specialists</a></li>
+                        </ul>
+                    </div>
+                    <!-- Column 2: By Company Type -->
+                    <div class="cluster-col">
+                        <h3>By Company Type</h3>
+                        <ul>
+                            <li><a href="{% url 'seo:seo-email-automation-for-agencies' %}">Agencies</a></li>
+                            <li><a href="{% url 'seo:seo-email-automation-for-saas' %}">SaaS Platforms</a></li>
+                            <li><a href="{% url 'seo:seo-email-automation-for-startups' %}">Early-Stage Startups</a></li>
+                        </ul>
+                    </div>
+                    <!-- Column 3: By Use Case -->
+                    <div class="cluster-col">
+                        <h3>By Use Case</h3>
+                        <ul>
+                            <li><a href="{% url 'seo:seo-cold-email-automation' %}">Cold Outreach</a></li>
+                            <li><a href="{% url 'seo:seo-lead-generation-email-tool' %}">Lead Generation</a></li>
+                            <li><a href="{% url 'seo:seo-outreach-automation' %}">Outreach Scale</a></li>
+                            <li><a href="{% url 'seo:seo-email-automation-tool' %}">Automation Workflows</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
 
             <section class="seo-cta-section">
                 <h2>Ready to Transform Your Outreach?</h2>
