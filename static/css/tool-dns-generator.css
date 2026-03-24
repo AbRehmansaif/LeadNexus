@@ -402,3 +402,35 @@
 
 .feature-item h3 { font-size: 1rem; margin-bottom: 12px; display: flex; gap: 8px; align-items: center; }
 .feature-item p { font-size: 0.85rem; color: #94a3b8; line-height: 1.6; }
+
+/* ── Final CTA Block ────────────────────────────────────────── */
+.tool-cta {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px;
+  text-align: center;
+  margin-top: 48px;
+}
+.tool-cta h2 { font-size: 1.5rem; font-weight: 800; margin-bottom: 8px; }
+.tool-cta p { color: var(--text-muted); margin-bottom: 24px; }
+
+.btn-convert {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 36px;
+  background: var(--gradient-primary);
+  color: #fff;
+  border: none;
+  border-radius: 12px;
+  font-size: .95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all .25s;
+  box-shadow: 0 4px 20px rgba(124,58,237,.4);
+}
+.btn-convert:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 28px rgba(124,58,237,.55);
+}
