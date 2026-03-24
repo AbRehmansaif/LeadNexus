@@ -320,7 +320,33 @@
             </tbody>
         </table>
     </div>
+    <!-- Pagination Controls -->
+    {% if recipients.has_other_pages %}
+    <div class="pagination-flex" style="display: flex; justify-content: space-between; align-items: center; padding: 16px 24px; border-top: 1px solid var(--border); background: rgba(0,0,0,0.1);">
+        <span class="text-muted" style="font-size: 0.85rem;">
+            Showing <strong>{{ recipients.start_index }}</strong> to <strong>{{ recipients.end_index }}</strong> of <strong>{{ campaign.total_recipients }}</strong> leads
+        </span>
+        <div class="pagination-actions" style="display: flex; gap: 8px;">
+            {% if recipients.has_previous %}
+            <a href="?page={{ recipients.previous_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem;">← Prev</a>
+            {% else %}
+            <button class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem; opacity: 0.5; cursor: not-allowed;" disabled>← Prev</button>
+            {% endif %}
+            
+            <span style="display: inline-flex; align-items: center; padding: 0 12px; font-size: 0.85rem; color: #fff; background: #1e293b; border-radius: 6px;">
+                {{ recipients.number }} / {{ recipients.paginator.num_pages }}
+            </span>
+
+            {% if recipients.has_next %}
+            <a href="?page={{ recipients.next_page_number }}{% if current_sort %}&sort={{ current_sort }}{% endif %}" class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem;">Next →</a>
+            {% else %}
+            <button class="btn btn-secondary btn-sm" style="padding: 6px 12px; font-size: 0.85rem; opacity: 0.5; cursor: not-allowed;" disabled>Next →</button>
+            {% endif %}
+        </div>
+    </div>
+    {% endif %}
 </div>
+
 
 <script>
 async function controlCampaign(action) {

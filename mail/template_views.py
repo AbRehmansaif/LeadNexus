@@ -52,7 +52,10 @@ def campaign_detail_page(request, pk):
     else:  # activity
         order = '-last_sent_at'
         
-    recipients = campaign.recipients.all().order_by(order)
+    recipients_list = campaign.recipients.all().order_by(order)
+    paginator = Paginator(recipients_list, 20) # 20 leads per page
+    page_number = request.GET.get('page')
+    recipients = paginator.get_page(page_number)
     
     # A/B Testing Analytics Logic
     ab_stats = {}
@@ -112,6 +115,7 @@ def campaign_detail_page(request, pk):
         'current_sort': sort_by,
         'ab_stats': ab_stats,
     })
+
 
 @login_required
 def smtp_settings_page(request):
