@@ -121,3 +121,49 @@ build/
 # SECRET KEYS
 ############################################
 secret_key.txt
+
+
+############################################
+# REDIS
+############################################
+# Redis dump files
+dump.rdb
+appendonly.aof
+
+# Redis temp / persistence
+*.rdb
+*.aof
+
+############################################
+# CELERY (EXTENDED)
+############################################
+# Celery worker logs
+celery*.log
+
+# Celery beat schedule (already added but keep wildcard safe)
+celerybeat-schedule*
+celerybeat.pid
+
+# Celery results backend (if file-based fallback ever used)
+celery_results/
+
+############################################
+# DJANGO-CELERY-BEAT (DB scheduler artifacts)
+############################################
+# Sometimes local DB dumps or scheduler states
+beat-schedule*
+schedule.db
+
+############################################
+# MESSAGE QUEUES / BROKERS (fallback cases)
+############################################
+# If using local file-based brokers during dev
+broker/
+queue/
+
+############################################
+# MONITORING (Flower)
+############################################
+flower.db
+flower.pid
+flower.log

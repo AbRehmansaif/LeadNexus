@@ -12,11 +12,14 @@ from .models import EmailCampaign, Recipient, SMTPCredential, CampaignStep, Sent
 from django.template import Template, Context
 from django.conf import settings
 from django.urls import reverse
-from django.db.models import Q
+from django.db.models import Q, F
+from django.core.cache import cache
+from celery import shared_task
 from admintask.utils.alerts import send_admin_alert
 
 logger = logging.getLogger(__name__)
 
+@shared_task
 def send_campaign_emails(campaign_id, step_number=1):
     """
     Background task to send emails for a specific campaign step.
@@ -156,8 +159,13 @@ def send_campaign_emails(campaign_id, step_number=1):
 
                 recipient.save()
 
-                campaign.sent_count += 1
-                campaign.save(update_fields=['sent_count'])
+                # Atomic increment for sent_count
+                EmailCampaign.objects.filter(id=campaign.id).update(
+                    sent_count=F('sent_count') + 1
+                )
+                
+                # Invalidate cache
+                cache.delete(f"campaign_stats_{campaign.id}")
 
                 if campaign.gap_seconds > 0:
                     time.sleep(campaign.gap_seconds)
@@ -185,10 +193,10 @@ def send_campaign_emails(campaign_id, step_number=1):
         logger.exception(f"Error in campaign task: {e}")
 
 def trigger_followup_task(campaign_id, step_number):
-    """Entry point for manual follow-up triggers."""
-    t = threading.Thread(target=send_campaign_emails, args=(campaign_id, step_number), daemon=True)
-    t.start()
+    """Entry point for manual follow-up triggers using Celery."""
+    send_campaign_emails.delay(campaign_id, step_number)
 
+@shared_task
 def check_for_replies():
     """
     Poller to check all active SMTP/IMAP accounts for replies.
@@ -229,6 +237,15 @@ def check_for_replies():
                         recipient.replied_at = timezone.now()
                         recipient.status = 'replied'
                         recipient.save()
+                        
+                        # Atomic increment for reply_count
+                        EmailCampaign.objects.filter(id=recipient.campaign.id).update(
+                            reply_count=F('reply_count') + 1
+                        )
+                        
+                        # Invalidate cache
+                        cache.delete(f"campaign_stats_{recipient.campaign.id}")
+                        
                         logger.info(f"Reply detected for {recipient.email} in {recipient.campaign.name}")
 
             mail.close()

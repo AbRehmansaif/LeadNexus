@@ -50,6 +50,7 @@ if [ ! -f .env ]; then
     echo "POSTGRES_PASSWORD=$(openssl rand -hex 12)" >> .env
     echo "POSTGRES_HOST=db" >> .env
     echo "POSTGRES_PORT=5432" >> .env
+    echo "REDIS_URL=redis://redis:6379/1" >> .env
     echo "⚠️  NOTE: A default .env was created. Please edit it for your specific SMTP/LinkedIn credentials."
 fi
 

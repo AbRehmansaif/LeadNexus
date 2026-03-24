@@ -4,6 +4,8 @@ import json
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
+from django.core.cache import cache
+from django.db.models import F
 from rest_framework import viewsets, status, decorators, permissions, serializers
 from rest_framework.response import Response
 from .models import SMTPCredential, EmailCampaign, Recipient, CampaignStep, SentEmailLog
@@ -35,24 +37,8 @@ class EmailCampaignSerializer(serializers.ModelSerializer):
         fields = '__all__'
     
     def get_stats(self, obj):
-        recipients = obj.recipients.all()
-        total = recipients.count()
-        if total == 0: return {}
-        
-        replied = recipients.filter(is_replied=True).count()
-        opened = recipients.filter(is_opened=True).count()
-        sent = recipients.exclude(current_step_index=0).count()
-        
-        return {
-            'total_recipients': total,
-            'sent_count': sent,
-            'open_count': opened,
-            'reply_count': replied,
-            'open_rate': int((opened / sent * 100)) if sent > 0 else 0,
-            'reply_rate': int((replied / sent * 100)) if sent > 0 else 0,
-            'not_opened': total - opened,
-            'not_replied': total - replied
-        }
+        """Use the high-performance stats property from the model."""
+        return obj.stats
 
 class SMTPCredentialViewSet(viewsets.ModelViewSet):
     serializer_class = SMTPCredentialSerializer
@@ -181,8 +167,8 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
 
     @decorators.action(detail=False, methods=['post'])
     def check_replies(self, request):
-        """Manually trigger the IMAP reply checker."""
-        check_for_replies()
+        """Manually trigger the IMAP reply checker using Celery."""
+        check_for_replies.delay()
         return Response({'status': 'Reply detection task initiated'})
 
     @decorators.action(detail=True, methods=['post'])
@@ -318,10 +304,15 @@ def track_open(request, recipient_id):
             recipient.is_opened = True
             recipient.opened_at = timezone.now()
             
-            # Update campaign open count
+            # ATOMIC UPDATES (Essential for 1000+ users)
+            # Use F() expressions to prevent race conditions
             campaign = recipient.campaign
-            campaign.open_count += 1
-            campaign.save(update_fields=['open_count'])
+            EmailCampaign.objects.filter(id=campaign.id).update(
+                open_count=F('open_count') + 1
+            )
+            
+            # Invalidate cache for this campaign
+            cache.delete(f"campaign_stats_{campaign.id}")
         
         recipient.open_count += 1
         recipient.save(update_fields=['is_opened', 'opened_at', 'open_count'])

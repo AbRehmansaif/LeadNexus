@@ -43,3 +43,11 @@ debugpy==1.8.15; sys_platform == 'win32'
 ipykernel==6.29.5; sys_platform == 'win32'
 ipython==9.4.0; sys_platform == 'win32'
 
+# High Scale Requirements
+django-redis==5.4.0
+redis==5.0.1
+celery==5.3.6
+flower==2.0.1
+django-celery-beat==2.5.0
+django-celery-results==2.5.1
+

@@ -79,6 +79,7 @@ class EmailCampaign(models.Model):
     sent_count = models.IntegerField(default=0)
     failed_count = models.IntegerField(default=0)
     open_count = models.IntegerField(default=0)
+    reply_count = models.IntegerField(default=0, help_text="Total recipients who have replied")
 
     @property
     def pending_count(self):
@@ -89,12 +90,55 @@ class EmailCampaign(models.Model):
         if self.sent_count == 0:
             return 0
         return int((self.open_count / self.sent_count) * 100)
+    
+    @property
+    def reply_rate(self):
+        if self.sent_count == 0:
+            return 0
+        return int((self.reply_count / self.sent_count) * 100)
 
     @property
     def progress_percentage(self):
         if self.total_recipients == 0:
             return 0
         return int(((self.sent_count + self.failed_count) / self.total_recipients) * 100)
+
+    @property
+    def stats(self):
+        """High-performance cached stats for both API and Templates."""
+        from django.core.cache import cache
+        cache_key = f"campaign_stats_{self.id}"
+        cached_stats = cache.get(cache_key)
+        
+        if cached_stats:
+            return cached_stats
+            
+        stats = {
+            'total_recipients': self.total_recipients,
+            'sent_count': self.sent_count,
+            'open_count': self.open_count,
+            'reply_count': self.reply_count,
+            'open_rate': self.open_rate,
+            'reply_rate': self.reply_rate,
+            'pending_count': self.pending_count,
+            'progress_percentage': self.progress_percentage,
+        }
+        
+        cache.set(cache_key, stats, timeout=10)
+        return stats
+
+    def sync_stats_from_db(self):
+        """Force a one-time sync of all stats from the Recipient table."""
+        self.total_recipients = self.recipients.count()
+        self.sent_count = self.recipients.exclude(status='pending').count()
+        self.open_count = self.recipients.filter(is_opened=True).count()
+        self.reply_count = self.recipients.filter(is_replied=True).count()
+        self.failed_count = self.recipients.filter(status='failed').count()
+        self.save()
+        
+        # Clear cache after sync
+        from django.core.cache import cache
+        cache.delete(f"campaign_stats_{self.id}")
 
     def __str__(self):
         return self.name
@@ -126,24 +170,24 @@ class Recipient(models.Model):
     ]
 
     campaign = models.ForeignKey(EmailCampaign, related_name='recipients', on_delete=models.CASCADE)
-    email = models.EmailField()
+    email = models.EmailField(db_index=True)
     name = models.CharField(max_length=255, blank=True, null=True)
     custom_data = models.JSONField(default=dict, blank=True)
     
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending', db_index=True)
     error_message = models.TextField(blank=True, null=True)
     
     # Sequence Tracking
-    current_step_index = models.IntegerField(default=0, help_text="Last successfully sent step number")
-    last_sent_at = models.DateTimeField(blank=True, null=True)
+    current_step_index = models.IntegerField(default=0, help_text="Last successfully sent step number", db_index=True)
+    last_sent_at = models.DateTimeField(blank=True, null=True, db_index=True)
     smtp_email = models.EmailField(blank=True, null=True, help_text="SMTP email used for last send")
     
     # Interaction Tracking
-    is_opened = models.BooleanField(default=False)
+    is_opened = models.BooleanField(default=False, db_index=True)
     opened_at = models.DateTimeField(blank=True, null=True)
     open_count = models.IntegerField(default=0)
     
-    is_replied = models.BooleanField(default=False)
+    is_replied = models.BooleanField(default=False, db_index=True)
     replied_at = models.DateTimeField(blank=True, null=True)
 
     def __str__(self):
