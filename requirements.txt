@@ -1,14 +1,14 @@
-asgiref==3.9.1
-psycopg2-binary==2.9.10
-beautifulsoup4==4.14.3
-certifi==2026.2.25
-charset-normalizer==3.4.4
+asgiref==3.8.1
+psycopg2-binary==2.9.9
+beautifulsoup4==4.12.3
+certifi==2024.2.2
+charset-normalizer==3.3.2
 colorama==0.4.6
 Django==4.2.11
 django-cors-headers==4.3.1
 django-shortuuidfield==0.1.3
 djangorestframework==3.14.0
-fake-useragent==2.2.0
+fake-useragent==1.5.1
 gunicorn==21.2.0; sys_platform != 'win32'
 idna==3.6
 joblib==1.3.2
@@ -16,17 +16,17 @@ numpy==1.26.4
 packaging==24.0
 pandas==2.2.1
 pdfkit==1.0.0
-pillow==11.1.0
+pillow==10.2.0
 platformdirs==4.2.0
 psutil==5.9.8
 python-dateutil==2.9.0
 python-dotenv==1.0.1
 pytz==2024.1
 requests==2.31.0
-scikit-learn==1.4.1
+scikit-learn==1.4.2
 scipy==1.12.0
 shortuuid==1.0.13
-six==1.17.0
+six==1.16.0
 soupsieve==2.5
 sqlparse==0.4.4
 threadpoolctl==3.4.0
@@ -38,10 +38,10 @@ webdriver-manager==4.0.1
 selenium==4.18.1
 
 # Windows-only development (Ignored on Linux/Docker)
-pywin32==311; sys_platform == 'win32'
-debugpy==1.8.15; sys_platform == 'win32'
-ipykernel==6.29.5; sys_platform == 'win32'
-ipython==9.4.0; sys_platform == 'win32'
+pywin32==306; sys_platform == 'win32'
+debugpy==1.8.1; sys_platform == 'win32'
+ipykernel==6.29.3; sys_platform == 'win32'
+ipython==8.22.2; sys_platform == 'win32'
 
 # High Scale Requirements
 django-redis==5.4.0
@@ -50,4 +50,3 @@ celery==5.3.6
 flower==2.0.1
 django-celery-beat==2.5.0
 django-celery-results==2.5.1
-
