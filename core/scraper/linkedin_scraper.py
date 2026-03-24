@@ -69,6 +69,11 @@ class LinkedInScraper:
         if self.config.get('scraping', {}).get('headless', False):
             chrome_options.add_argument('--headless=new')
 
+        chrome_options.add_argument('--no-sandbox')
+        chrome_options.add_argument('--disable-dev-shm-usage')
+        chrome_options.add_argument('--disable-gpu')
+        chrome_options.add_argument('--remote-debugging-port=9222')
+        chrome_options.add_argument('--disable-software-rasterizer')
         chrome_options.add_argument('--disable-blink-features=AutomationControlled')
         chrome_options.add_argument('--disable-infobars')
         chrome_options.add_argument('--disable-notifications')
@@ -77,6 +82,12 @@ class LinkedInScraper:
         chrome_options.add_argument('--window-size=1920,1080')
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
+
+        # Explicitly set binary location if in Linux/Docker (usually /usr/bin/google-chrome)
+        if os.path.exists('/usr/bin/google-chrome'):
+            chrome_options.binary_location = '/usr/bin/google-chrome'
+        elif os.path.exists('/usr/bin/google-chrome-stable'):
+            chrome_options.binary_location = '/usr/bin/google-chrome-stable'
 
         # Random user agent (same as original)
         ua = UserAgent()
@@ -88,20 +99,6 @@ class LinkedInScraper:
             # Use the default OS detection, or linux64 for Docker
             driver_path = ChromeDriverManager().install()
             logger.info(f"webdriver-manager returned: {driver_path}")
-
-            # Correct the path if it's not pointing to the binary directly
-            if not os.path.isfile(driver_path) or 'THIRD_PARTY' in driver_path:
-                # Find the actual chromedriver binary in the installation directory
-                import glob
-                base_dir = os.path.dirname(driver_path)
-                found_paths = glob.glob(os.path.join(base_dir, '**/chromedriver'), recursive=True)
-                if not found_paths:
-                    # Try with .exe extension (for robustness during development)
-                    found_paths = glob.glob(os.path.join(base_dir, '**/chromedriver.exe'), recursive=True)
-                
-                if found_paths:
-                    driver_path = found_paths[0]
-                    logger.info(f"Found chromedriver at: {driver_path}")
 
             service = Service(executable_path=driver_path)
         except ImportError:
