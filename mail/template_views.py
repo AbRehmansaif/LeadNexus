@@ -31,6 +31,7 @@ def create_campaign_page(request):
     """Page to create a new email campaign."""
     return render(request, 'mail/create_campaign.html', {
         'active_page': 'campaigns',
+        'profile': request.user.profile
     })
 
 @login_required

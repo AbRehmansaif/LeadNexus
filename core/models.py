@@ -99,6 +99,12 @@ class UserProfile(models.Model):
     
     avatar = models.ImageField(upload_to='avatars/', null=True, blank=True)
     bio = models.TextField(max_length=500, blank=True)
+    tracking_domain = models.CharField(max_length=255, blank=True, null=True, help_text="Custom domain for tracking pixel (e.g., link.yourdomain.com)")
+    
+    # Global Outreach Schedule Defaults
+    default_send_window_start = models.TimeField(null=True, blank=True, default="09:00")
+    default_send_window_end = models.TimeField(null=True, blank=True, default="17:00")
+    default_work_days = models.JSONField(default=list, blank=True)
     
     def __str__(self):
         return f"Profile for {self.user.username} ({self.get_membership_status_display()})"

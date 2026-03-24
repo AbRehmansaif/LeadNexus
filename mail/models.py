@@ -74,6 +74,11 @@ class EmailCampaign(models.Model):
     gap_seconds = models.IntegerField(default=2, help_text="Wait time between each email (seconds)")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     scheduled_at = models.DateTimeField(null=True, blank=True, help_text="Set a time to start this campaign automatically", db_index=True)
+    # SaaS Control: Business Hours & Days
+    send_window_start = models.TimeField(null=True, blank=True, help_text="Starting hour (e.g., 09:00)")
+    send_window_end = models.TimeField(null=True, blank=True, help_text="Ending hour (e.g., 17:00)")
+    work_days = models.CharField(max_length=20, default='1,2,3,4,5', help_text="Comma separated days (1=Mon, 7=Sun)")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
@@ -152,6 +157,10 @@ class CampaignStep(models.Model):
     wait_days = models.IntegerField(default=3, help_text="Days to wait after previous step")
     subject = models.CharField(max_length=255)
     body = models.TextField(help_text="Template body. Supports {{ name }}")
+    
+    # A/B Testing Variants
+    subject_b = models.CharField(max_length=255, null=True, blank=True, help_text="Alternate subject for A/B testing")
+    body_b = models.TextField(null=True, blank=True, help_text="Alternate body for A/B testing")
 
     class Meta:
         ordering = ['step_number']
@@ -192,6 +201,9 @@ class Recipient(models.Model):
     is_replied = models.BooleanField(default=False, db_index=True)
     replied_at = models.DateTimeField(blank=True, null=True)
 
+    is_unsubscribed = models.BooleanField(default=False, db_index=True)
+    unsubscribed_at = models.DateTimeField(blank=True, null=True)
+
     def __str__(self):
         return f"{self.email} ({self.campaign.name})"
 
@@ -203,6 +215,7 @@ class SentEmailLog(models.Model):
     
     subject = models.CharField(max_length=255)
     body_sent = models.TextField()
+    variant_used = models.CharField(max_length=1, default='A', help_text="A or B variant used for this send")
     
     message_id = models.CharField(max_length=255, db_index=True, help_text="SMTP Message-ID for reply threading")
     sent_at = models.DateTimeField(auto_now_add=True)

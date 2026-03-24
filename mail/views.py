@@ -6,7 +6,7 @@ from django.shortcuts import get_object_or_404
 from django.utils import timezone
 from django.core.cache import cache
 from django.db.models import F
-from rest_framework import viewsets, status, decorators, permissions, serializers
+from rest_framework import viewsets, status, decorators, permissions, serializers, pagination
 from rest_framework.response import Response
 from .models import SMTPCredential, EmailCampaign, Recipient, CampaignStep, SentEmailLog
 from .tasks import trigger_followup_task, check_for_replies
@@ -140,6 +140,7 @@ class SMTPCredentialViewSet(viewsets.ModelViewSet):
 
 class EmailCampaignViewSet(viewsets.ModelViewSet):
     serializer_class = EmailCampaignSerializer
+    pagination_class = pagination.PageNumberPagination
     
     def get_queryset(self):
         return EmailCampaign.objects.filter(user=self.request.user).order_by('-created_at')
@@ -191,6 +192,7 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
             status_val = 'scheduled'
 
         # 1. Create Campaign
+        profile = request.user.profile
         campaign = EmailCampaign.objects.create(
             user=request.user,
             name=name or subject,
@@ -198,7 +200,10 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
             body=body,
             gap_seconds=gap_seconds,
             scheduled_at=scheduled_at,
-            status=status_val
+            status=status_val,
+            send_window_start=profile.default_send_window_start,
+            send_window_end=profile.default_send_window_end,
+            work_days=profile.default_work_days
         )
 
         # 2. Setup Steps if provided
@@ -213,7 +218,9 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
                     step_number=s.get('step_number'),
                     wait_days=s.get('wait_days', 3),
                     subject=s.get('subject'),
-                    body=s.get('body')
+                    body=s.get('body'),
+                    subject_b=s.get('subject_b'),
+                    body_b=s.get('body_b')
                 )
         else:
             # Fallback: Create Step 1 from basic campaign info
@@ -290,6 +297,7 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
 class RecipientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Recipient.objects.all()
     serializer_class = RecipientSerializer
+    pagination_class = pagination.PageNumberPagination
     filterset_fields = ['campaign', 'status']
 
     def get_queryset(self):

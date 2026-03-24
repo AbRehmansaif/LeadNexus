@@ -12,6 +12,33 @@
                     <div class="error-feedback">Transmission payload cannot be empty.</div>
                     <p class="form-help">Use {% verbatim %}{{ name }}{% endverbatim %} and {% verbatim %}{{ email }}{% endverbatim %} for data injection. Variables are case-sensitive.</p>
                 </div>
+
+                <!-- A/B Testing Toggle Option -->
+                <div style="margin-top: 15px;">
+                    <button type="button" class="btn btn-secondary btn-sm toggle-ab-btn" onclick="this.style.display='none'; this.nextElementSibling.style.display='block'; lucide.createIcons();" style="background: rgba(59,130,246, 0.1); border: 1px dashed var(--accent-blue); color: var(--accent-blue);">
+                        <i data-lucide="layers" style="width:16px;height:16px;margin-right:8px;"></i> Add A/B Testing Variant
+                    </button>
+                    <!-- A/B Testing Variant Expandable -->
+                    <div class="ab-testing-box" style="display: none; margin-top: 20px; padding: 15px; background: rgba(59,130,246,0.05); border-radius: 12px; border: 1px dashed rgba(59,130,246,0.3); position: relative;">
+                        <!-- Close button -->
+                        <button type="button" class="btn" onclick="this.closest('.ab-testing-box').style.display='none'; this.closest('.ab-testing-box').previousElementSibling.style.display='inline-flex'; this.closest('.ab-testing-box').querySelectorAll('input, textarea').forEach(el=>el.value='');" style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 4px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Remove A/B Variant">
+                            <i data-lucide="x" style="width: 14px; height: 14px;"></i>
+                        </button>
+                        
+                        <h4 style="font-size: 0.85rem; margin-top: 0; margin-bottom: 15px; color: var(--accent-blue); display: flex; align-items: center; gap: 8px;">
+                            <i data-lucide="layers" style="width:14px; height:14px;"></i> A/B Testing Variant
+                        </h4>
+                        <div class="form-group">
+                            <label class="form-label" for="subject_b">Variant B Subject</label>
+                            <input type="text" id="subject_b" name="subject_b" class="form-control" placeholder="Test a different hook...">
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0;">
+                            <label class="form-label" for="body_b">Variant B Payload</label>
+                            <textarea id="body_b" name="body_b" class="form-control payload-area" placeholder="Try a different angle or call to action..."></textarea>
+                        </div>
+                        <p class="form-help" style="margin-top: 10px; margin-bottom: 0;">If provided, LeadNexus will perform a 50/50 split test across your lead list.</p>
+                    </div>
+                </div>
             </div>
 
             <div id="followupContainer">
@@ -36,8 +63,8 @@
 
                 <div class="form-group">
                     <label class="form-label" for="gap_seconds">Latency Buffer (Seconds)</label>
-                    <input type="number" id="gap_seconds" name="gap_seconds" class="form-control" value="2" min="1">
-                    <p class="form-help">Wait time between individual emails in a batch to avoid spam filters.</p>
+                    <input type="number" id="gap_seconds" name="gap_seconds" class="form-control" value="60" min="1">
+                    <p class="form-help">Wait time between individual emails in a batch to avoid spam filters. Recommend 30-120s.</p>
                 </div>
 
                 <div class="form-group">

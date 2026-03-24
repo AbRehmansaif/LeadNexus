@@ -5,6 +5,7 @@ These render HTML pages using Django templates (separate from the API views).
 from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from django.conf import settings
 import time
 from .models import (
     ScrapeJob, ScrapedWebsite,
@@ -53,12 +54,28 @@ def profile_settings(request):
 
     if request.method == 'POST':
         bio = request.POST.get('bio', '')
+        tracking_domain = request.POST.get('tracking_domain', '').strip()
         first_name = request.POST.get('first_name', '').strip()
         last_name  = request.POST.get('last_name', '').strip()
         email      = request.POST.get('email', '').strip()
         avatar     = request.FILES.get('avatar')
 
+        default_start = request.POST.get('default_send_window_start', '09:00')
+        default_end   = request.POST.get('default_send_window_end', '17:00')
+        work_days     = request.POST.getlist('default_work_days')
+        
+        # Convert work days to integers for consistency
+        try:
+            work_days_ints = [int(d) for d in work_days]
+        except:
+            work_days_ints = [0, 1, 2, 3, 4] # fallback to business week
+
         profile.bio = bio
+        profile.tracking_domain = tracking_domain
+        profile.default_send_window_start = default_start
+        profile.default_send_window_end   = default_end
+        profile.default_work_days         = work_days_ints
+        
         if avatar:
             profile.avatar = avatar
         profile.save()
@@ -100,6 +117,7 @@ def profile_settings(request):
         days_until_reset = (next_reset - today).days + 1
 
     return render(request, 'profile_settings.html', {
+        'settings':           settings,
         'active_page':        'profile',
         'profile':            profile,
         'linkedin_accounts':  LinkedInAccount.objects.filter(user=request.user),

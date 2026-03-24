@@ -7,8 +7,18 @@
         <div>
             <h1 class="page-title">{{ campaign.name }}</h1>
             <p class="page-subtitle" style="margin-top: 4px;">Subject: <span style="color: var(--text-primary);">{{ campaign.subject }}</span></p>
-            <div style="margin-top: 12px;">
+            <div style="margin-top: 12px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
                 <span id="campaignStatus" class="badge badge-{{ campaign.status }}"><span class="badge-dot"></span> {{ campaign.status|upper }}</span>
+                {% if campaign.send_window_start %}
+                <span class="badge badge-secondary" style="background: rgba(59,130,246,0.1); border-color: rgba(59,130,246,0.3); color: var(--accent-blue); font-size: 0.7rem; display: flex; align-items: center; padding: 4px 8px;">
+                    <i data-lucide="clock" style="width:12px;height:12px;margin-right:6px;"></i> {{ campaign.send_window_start }} - {{ campaign.send_window_end }} UTC
+                </span>
+                {% endif %}
+                {% if campaign.user.profile.tracking_domain %}
+                <span class="badge" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--accent-purple); font-size: 0.7rem; padding: 4px 8px;">
+                    <i data-lucide="globe" style="width:12px;height:12px;margin-right:6px;"></i> {{ campaign.user.profile.tracking_domain }}
+                </span>
+                {% endif %}
             </div>
         </div>
         <div class="btn-group">
@@ -74,6 +84,15 @@
                     {% else %}
                     <div style="font-size: 0.75rem; color: var(--accent-green); display: flex; align-items: center;">
                         <i data-lucide="check-circle" style="width:14px;height:14px;margin-right:6px;"></i> Active in initial step
+                    </div>
+                    {% endif %}
+
+                    {% if step.subject_b %}
+                    <div style="margin-top: 12px; padding: 10px; background: rgba(59,130,246,0.05); border-radius: 8px; border: 1px dashed rgba(59,130,246,0.2);">
+                        <div style="font-size: 0.65rem; color: var(--accent-blue); text-transform: uppercase; font-weight: 700; margin-bottom: 4px; display: flex; align-items: center; gap: 4px;">
+                            <i data-lucide="layers" style="width:10px; height:10px;"></i> Variant B Hook
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-muted); font-style: italic; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="{{ step.subject_b }}">{{ step.subject_b }}</div>
                     </div>
                     {% endif %}
                 </div>

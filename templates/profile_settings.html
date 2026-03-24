@@ -190,6 +190,85 @@
             </form>
         </div>
 
+        <!-- Tracking Configuration (SaaS Feature) -->
+        <div class="card" style="padding: 32px;">
+            <h2 style="font-size: 1rem; font-weight: 700; margin: 0 0 24px 0; display: flex; align-items: center; gap: 10px;">
+                <span style="width: 28px; height: 28px; background: rgba(59,130,246,0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="globe" style="width:14px; height:14px; color: var(--accent-blue);"></i>
+                </span>
+                Tracking Configuration
+            </h2>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-group" style="margin-bottom: 20px;">
+                    <label class="form-label" style="font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--text-muted); display: block; margin-bottom: 8px;">Custom Tracking Domain</label>
+                    <div style="position: relative;">
+                        <input type="text" name="tracking_domain" value="{{ profile.tracking_domain|default:'' }}" placeholder="link.yourdomain.com" class="form-control" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: white; height: 44px; padding: 0 14px 0 40px; width: 100%;">
+                        <i data-lucide="link" style="width:15px; height:15px; position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--text-muted);"></i>
+                    </div>
+                    <div style="font-size: 0.72rem; color: var(--text-muted); margin-top: 10px; line-height: 1.5;">
+                        <p style="margin-bottom: 5px;">Using a custom domain increases email deliverability by ensuring tracking links match your sender identity.</p>
+                        <strong>Setup:</strong> Point a CNAME record for this subdomain to <code>{{ settings.SITE_URL|cut:"https://"|cut:"http://"|cut:"/" }}</code>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-secondary" style="width: 100%; height: 44px;">
+                    Update Tracking Domain
+                </button>
+            </form>
+        </div>
+
+        <!-- Default Outreach Schedule (SaaS Feature) -->
+        <div class="card" style="padding: 32px;">
+            <h2 style="font-size: 1rem; font-weight: 700; margin: 0 0 24px 0; display: flex; align-items: center; gap: 10px;">
+                <span style="width: 28px; height: 28px; background: rgba(139, 92, 246, 0.15); border-radius: 8px; display: flex; align-items: center; justify-content: center;">
+                    <i data-lucide="clock" style="width:14px; height:14px; color: var(--accent-purple);"></i>
+                </span>
+                Default Outreach Schedule
+            </h2>
+            <form method="POST">
+                {% csrf_token %}
+                <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;">
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.75rem;">Window Start (UTC)</label>
+                        <input type="time" name="default_send_window_start" value="{{ profile.default_send_window_start|time:'H:i'|default:'09:00' }}" class="form-control" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.75rem;">Window End (UTC)</label>
+                        <input type="time" name="default_send_window_end" value="{{ profile.default_send_window_end|time:'H:i'|default:'17:00' }}" class="form-control" style="background: rgba(0,0,0,0.2); border: 1px solid var(--border); border-radius: 8px; color: white;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" style="font-size: 0.75rem; margin-bottom: 12px;">Operational Days</label>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px;">
+                            <input type="checkbox" name="default_work_days" value="0" {% if 0 in profile.default_work_days %}checked{% endif %}> Mon
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px;">
+                            <input type="checkbox" name="default_work_days" value="1" {% if 1 in profile.default_work_days %}checked{% endif %}> Tue
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px;">
+                            <input type="checkbox" name="default_work_days" value="2" {% if 2 in profile.default_work_days %}checked{% endif %}> Wed
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px;">
+                            <input type="checkbox" name="default_work_days" value="3" {% if 3 in profile.default_work_days %}checked{% endif %}> Thu
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px;">
+                            <input type="checkbox" name="default_work_days" value="4" {% if 4 in profile.default_work_days %}checked{% endif %}> Fri
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px;">
+                            <input type="checkbox" name="default_work_days" value="5" {% if 5 in profile.default_work_days %}checked{% endif %}> Sat
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 6px; cursor: pointer; font-size: 0.75rem; background: rgba(255,255,255,0.05); padding: 5px 10px; border-radius: 6px;">
+                            <input type="checkbox" name="default_work_days" value="6" {% if 6 in profile.default_work_days %}checked{% endif %}> Sun
+                        </label>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%; height: 44px; margin-top: 10px;">
+                    Save Global Schedule Defaults
+                </button>
+            </form>
+        </div>
+
         <!-- Monthly Quota Overview -->
         <div class="card" style="padding: 32px;">
             <h2 style="font-size: 1rem; font-weight: 700; margin: 0 0 24px 0; display: flex; align-items: center; gap: 10px;">

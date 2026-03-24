@@ -49,6 +49,31 @@ document.getElementById('addFollowupBtn').addEventListener('click', () => {
                 <label class="form-label">Follow-up Payload</label>
                 <textarea class="form-control step-body payload-area" placeholder="Just following up on my previous email..."></textarea>
             </div>
+
+            <!-- A/B Testing Toggle Option for Follow-up -->
+            <div style="margin-top: 15px;">
+                <button type="button" class="btn btn-secondary btn-sm" onclick="this.style.display='none'; this.nextElementSibling.style.display='block'; lucide.createIcons();" style="background: rgba(59,130,246, 0.1); border: 1px dashed var(--accent-blue); color: var(--accent-blue);">
+                    <i data-lucide="layers" style="width:14px;height:14px;margin-right:6px;"></i> Add Step ${stepIdx} A/B Variant
+                </button>
+                <div class="ab-testing-box" style="display: none; margin-top: 15px; padding: 12px; background: rgba(59,130,246,0.03); border-radius: 8px; border: 1px dashed rgba(59,130,246,0.2); position: relative;">
+                    <!-- Close button -->
+                    <button type="button" class="btn" onclick="this.closest('.ab-testing-box').style.display='none'; this.closest('.ab-testing-box').previousElementSibling.style.display='inline-flex'; this.closest('.ab-testing-box').querySelectorAll('input, textarea').forEach(el=>el.value='');" style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 4px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Remove A/B Variant">
+                        <i data-lucide="x" style="width: 12px; height: 12px;"></i>
+                    </button>
+                    
+                    <h4 style="font-size: 0.75rem; margin-top: 0; margin-bottom: 10px; color: var(--accent-blue); display: flex; align-items: center; gap: 6px;">
+                        <i data-lucide="layers" style="width:12px; height:12px;"></i> Step ${stepIdx} A/B Variant
+                    </h4>
+                    <div class="form-group">
+                        <label class="form-label" style="font-size: 0.7rem;">Variant B Subject</label>
+                        <input type="text" class="form-control step-subject-b" placeholder="Test a different follow-up hook...">
+                    </div>
+                    <div class="form-group" style="margin-bottom: 0;">
+                        <label class="form-label" style="font-size: 0.7rem;">Variant B Payload</label>
+                        <textarea class="form-control step-body-b payload-area" style="min-height: 80px;" placeholder="Try a different follow-up angle..."></textarea>
+                    </div>
+                </div>
+            </div>
         </div>
     `;
     
@@ -105,17 +130,29 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
     // Collect Sequences
     const steps = [];
     // Add Step 1 (Implicitly index 1)
-    steps.push({ step_number: 1, wait_days: 0, subject: subject.value, body: body.value });
+    steps.push({ 
+        step_number: 1, 
+        wait_days: 0, 
+        subject: subject.value, 
+        body: body.value,
+        subject_b: document.getElementById('subject_b').value || null,
+        body_b: document.getElementById('body_b').value || null
+    });
     
     document.querySelectorAll('.followup-step').forEach((el, index) => {
         steps.push({
             step_number: index + 2,
             wait_days: el.querySelector('.step-wait').value,
             subject: el.querySelector('.step-subject').value,
-            body: el.querySelector('.step-body').value
+            body: el.querySelector('.step-body').value,
+            subject_b: el.querySelector('.step-subject-b').value || null,
+            body_b: el.querySelector('.step-body-b').value || null
         });
     });
     formData.append('steps', JSON.stringify(steps));
+
+    // Business Hours are now managed automatically via Profile Settings.
+
 
     if (csvFile) formData.append('csv_file', csvFile);
     if (manualInput.value.trim()) {
