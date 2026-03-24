@@ -133,6 +133,7 @@
                         {% if user.is_authenticated and active_page != 'landing' %}
                             {# --- APP ACTION (User Menu) --- #}
                             <div class="user-menu" style="display: flex; align-items: center; gap: 12px; position: relative;">
+                                {% if user.profile %}
                                 <span class="badge badge-{{ user.profile.membership_status }}" style="font-size: 0.7rem; padding: 4px 10px; border-radius: 20px;">
                                     {{ user.profile.get_membership_status_display|upper }}
                                 </span>
@@ -143,15 +144,23 @@
                                         {{ user.username|slice:":1" }}
                                     {% endif %}
                                 </div>
+                                {% else %}
+                                <div class="profile-circle">
+                                    {{ user.username|slice:":1" }}
+                                </div>
+                                {% endif %}
                                 <div class="dropdown-menu">
                                     <div class="dropdown-header">
                                         <div style="display:flex; align-items:center; justify-content: space-between; gap:12px; margin-bottom:4px;">
                                             <span class="dropdown-user-name" style="font-weight: 700;">{{ user.username }}</span>
+                                            {% if user.profile %}
                                             <span class="badge badge-{{ user.profile.membership_status }}" style="font-size: 0.6rem; padding: 2px 8px;">{{ user.profile.get_membership_status_display }}</span>
+                                            {% endif %}
                                         </div>
                                         <span class="dropdown-user-email" style="color: var(--text-muted); font-size: 0.8rem;">{{ user.email|default:"Neural Operator" }}</span>
                                     </div>
                                     
+                                    {% if user.profile %}
                                     <!-- Mini Usage Indicator -->
                                     <div style="padding: 12px 16px; border-bottom: 1px solid var(--border); background: rgba(255,255,255,0.02);">
                                         <div style="display: flex; justify-content: space-between; font-size: 0.7rem; color: var(--text-muted); margin-bottom: 4px; font-weight: 500;">
@@ -175,6 +184,7 @@
                                             </div>
                                         {% endif %}
                                     </div>
+                                    {% endif %}
 
                                     <a href="{% url 'profile-settings' %}" class="dropdown-item">
                                         <i data-lucide="user-cog" style="width:16px; height:16px; margin-right:8px;"></i> Profile Settings
