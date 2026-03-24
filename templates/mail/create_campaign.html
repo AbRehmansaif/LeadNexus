@@ -221,5 +221,18 @@ document.getElementById('csv_file').addEventListener('change', function(e) {
         if (dummy) dummy.textContent = 'Selected: ' + fileName;
     }
 });
+
+// Auto-open date picker when clicking anywhere on the input field
+const scheduledAtInput = document.getElementById('scheduled_at');
+if (scheduledAtInput) {
+    scheduledAtInput.addEventListener('click', function() {
+        if (typeof this.showPicker === 'function') {
+            try { this.showPicker(); } catch (e) { console.error(e); }
+        } else {
+            // Fallback for older browsers
+            this.focus();
+        }
+    });
+}
 </script>
 {% endblock %}
