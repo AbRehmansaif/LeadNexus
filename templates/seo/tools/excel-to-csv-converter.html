@@ -5,9 +5,21 @@
 {% block meta_description %}Free online spreadsheet converter. Convert Excel (XLSX, XLS), ODS, TSV to CSV, JSON, TSV, or XLSX instantly in your browser. No upload, no login, 100% private. Batch convert multiple files with live data preview.{% endblock %}
 {% block meta_keywords %}excel to csv converter, xlsx to csv, xls to csv, ods to csv, tsv to csv, convert excel to csv online, free csv converter, spreadsheet to csv, excel to json, xlsx to json, csv to json online, excel converter free, batch excel converter, convert spreadsheet online, xls to tsv, csv delimiter converter, data conversion tool, mailchimp csv import, hubspot csv, salesforce csv, pandas csv, python csv, import leads csv, crm import csv, email list converter{% endblock %}
 
+{% block canonical_url %}https://leadnexus.difusionseo.com/tools/excel-to-csv/{% endblock %}
+
+{% block meta_robots %}index, follow{% endblock %}
+
+{% block og_title %}Free Excel to CSV Converter Online | XLSX, XLS, ODS to CSV — LeadNexus{% endblock %}
+{% block og_description %}Convert Excel (XLSX, XLS), ODS, TSV to CSV or JSON instantly in your browser. No server upload. 100% private.{% endblock %}
+{% block og_url %}https://leadnexus.difusionseo.com/tools/excel-to-csv/{% endblock %}
+
+{% block twitter_title %}Free Excel to CSV Converter Online — LeadNexus{% endblock %}
+{% block twitter_description %}Convert XLSX, XLS, ODS to CSV instantly in your browser. No upload. 100% private.{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/tool-excel-converter.css' %}">
 {% endblock %}
+
 
 {% block content %}
 {% include 'seo/tools/_tool_nav.html' %}
@@ -354,6 +366,45 @@
 
     </article>
 
+    <!-- Internal Linking / Explore Tools -->
+    <div style="margin-top: 80px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;">
+            <i data-lucide="grid" style="color: #3b82f6; width: 20px; height: 20px;"></i>
+            Explore More B2B Marketing Tools
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+            <a href="{% url 'seo:seo-tool-markdown-to-html' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="file-code" style="color: #a78bfa; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Markdown Converter</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Convert blog posts and docs between Markdown and HTML.</span>
+                </div>
+            </a>
+            <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="mail-warning" style="color: #ef4444; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Spam Word Checker</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Check your cold emails for trigger words that hurt deliverability.</span>
+                </div>
+            </a>
+            <a href="{% url 'seo:seo-tool-dns-config-generator' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="shield-check" style="color: #10b981; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">DNS Config Generator</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Generate SPF, DKIM, and DMARC records for your domain.</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <style>
+        .internal-tool-link:hover {
+            border-color: rgba(59, 130, 246, 0.3) !important;
+            background: rgba(59, 130, 246, 0.05) !important;
+            transform: translateY(-2px);
+        }
+    </style>
+
     <!-- CTA -->
     <div class="tool-cta">
       <h2>Got Your CSV? Now Put Those Leads to Work.</h2>
@@ -373,6 +424,26 @@
 <!-- Spreadsheet parsing library -->
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="{% static 'js/tool-excel-converter.js' %}"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Tools",
+      "item": "https://leadnexus.difusionseo.com/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Excel to CSV Converter",
+      "item": "https://leadnexus.difusionseo.com/tools/excel-to-csv/"
+    }
+  ]
+}
+</script>
 {% endblock %}
 
 

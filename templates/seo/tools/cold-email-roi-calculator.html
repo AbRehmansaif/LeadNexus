@@ -3,7 +3,16 @@
 
 {% block title %}Free Cold Email ROI Calculator — LeadNexus{% endblock %}
 {% block meta_description %}Free online cold email ROI calculator. Determine the exact profitability of your campaigns by calculating your expected revenue, cost per lead, and ROI based on your sending volume and conversion rates.{% endblock %}
+{% block canonical_url %}https://leadnexus.difusionseo.com/tools/cold-email-roi-calculator/{% endblock %}
 
+{% block meta_robots %}index, follow{% endblock %}
+
+{% block og_title %}Free Cold Email ROI Calculator | Profitability Estimator — LeadNexus{% endblock %}
+{% block og_description %}Calculate the potential revenue and ROI of your cold email campaigns. Predict your sales growth based on open, reply, and conversion rates.{% endblock %}
+{% block og_url %}https://leadnexus.difusionseo.com/tools/cold-email-roi-calculator/{% endblock %}
+
+{% block twitter_title %}Cold Email ROI Calculator — LeadNexus{% endblock %}
+{% block twitter_description %}Estimate your outreach profitability. Calculate meetings and sales ROI instantly.{% endblock %}
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/tool-roi-calculator.css' %}">
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
@@ -311,6 +320,45 @@
             </div>
         </div>
 
+    <!-- Internal Linking / Explore Tools -->
+    <div style="margin-top: 80px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;">
+            <i data-lucide="grid" style="color: #3b82f6; width: 20px; height: 20px;"></i>
+            Explore More B2B Marketing Tools
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+            <a href="{% url 'seo:seo-tool-email-warmup-calculator' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="flame" style="color: #f97316; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Email Warm-Up Calculator</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Calculate the ideal schedule for warming up your new sending domains.</span>
+                </div>
+            </a>
+            <a href="{% url 'seo:seo-tool-utm-link-builder' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="link" style="color: #3b82f6; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">UTM Link Builder</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Generate trackable campaign URLs for precise analytics and ROI tracking.</span>
+                </div>
+            </a>
+            <a href="{% url 'seo:seo-tool-dns-config-generator' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="shield-check" style="color: #10b981; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">DNS Config Generator</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Verify your technical setup with SPF, DKIM, and DMARC generators.</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <style>
+        .internal-tool-link:hover {
+            border-color: rgba(59, 130, 246, 0.3) !important;
+            background: rgba(59, 130, 246, 0.05) !important;
+            transform: translateY(-2px);
+        }
+    </style>
+
     <!-- Final CTA -->
     <div style="background:linear-gradient(135deg, rgba(59, 130, 246, 0.1), rgba(6, 182, 212, 0.05)); border:1px solid rgba(59, 130, 246, 0.2); border-radius:20px; padding:40px; text-align:center; margin-top:60px;">
       <h2 style="font-size:1.6rem; font-weight:800; color:#fff; margin-bottom:12px;">Scale Your ROI with LeadNexus</h2>
@@ -327,6 +375,26 @@
 
 {% block extra_js %}
 <script src="{% static 'js/tool-roi-calculator.js' %}"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Tools",
+      "item": "https://leadnexus.difusionseo.com/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Cold Email ROI Calculator",
+      "item": "https://leadnexus.difusionseo.com/tools/cold-email-roi-calculator/"
+    }
+  ]
+}
+</script>
 <script>
     // Lucide icons initialization
     lucide.createIcons();

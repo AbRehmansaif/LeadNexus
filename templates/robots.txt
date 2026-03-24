@@ -11,6 +11,7 @@ Allow: /email-automation-for-saas/
 Allow: /email-automation-for-startups/
 Allow: /lead-generation-email-tool/
 Allow: /outreach-automation/
+Allow: /tools/
 Allow: /login/
 Allow: /register/
 

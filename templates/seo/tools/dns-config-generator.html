@@ -3,7 +3,16 @@
 
 {% block title %}Free SPF, DKIM & DMARC Generator & Checker — LeadNexus{% endblock %}
 {% block meta_description %}Free professional DNS record generator for email deliverability. Create SPF, DKIM, and DMARC records for Gmail, Outlook, and custom SMTP in seconds to avoid spam filters.{% endblock %}
-{% block meta_keywords %}SPF generator, DMARC generator, DKIM setup, email deliverability tool, DNS records for email, fix spam folder, cold email setup{% endblock %}
+{% block meta_keywords %}SPF generator, DMARC generator, DKIM setup, email deliverability tool, DNS records for email, fix spam folder, cold email setup{% endblock %}{% block canonical_url %}https://leadnexus.difusionseo.com/tools/spf-dkim-dmarc-config-generator/{% endblock %}
+
+{% block meta_robots %}index, follow{% endblock %}
+
+{% block og_title %}Free SPF, DKIM & DMARC Generator | Email Deliverability — LeadNexus{% endblock %}
+{% block og_description %}Generator professional SPF, DKIM, and DMARC records to protect your domain's reputation and ensure your emails land in the primary inbox.{% endblock %}
+{% block og_url %}https://leadnexus.difusionseo.com/tools/spf-dkim-dmarc-config-generator/{% endblock %}
+
+{% block twitter_title %}SPF/DKIM/DMARC Generator — LeadNexus{% endblock %}
+{% block twitter_description %}Configure your email authentication in seconds. Prevent spam folder delivery instantly.{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/tool-dns-generator.css' %}">
@@ -267,6 +276,45 @@
         </div>
     </div>
 
+    <!-- Internal Linking / Explore Tools -->
+    <div style="margin-top: 80px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;">
+            <i data-lucide="grid" style="color: #3b82f6; width: 20px; height: 20px;"></i>
+            Explore More B2B Marketing Tools
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+            <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="mail-warning" style="color: #ef4444; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Email Spam Checker</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Check your cold emails for trigger words that hurt deliverability.</span>
+                </div>
+            </a>
+            <a href="{% url 'seo:seo-tool-email-warmup-calculator' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="flame" style="color: #f97316; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Email Warm-Up Calculator</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Calculate the ideal schedule for warming up your new sending domains.</span>
+                </div>
+            </a>
+            <a href="{% url 'seo:seo-tool-cold-email-roi-calculator' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="calculator" style="color: #3b82f6; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Cold Email ROI Calc</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Predict your sales growth based on outreach volume and conversion rates.</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <style>
+        .internal-tool-link:hover {
+            border-color: rgba(59, 130, 246, 0.3) !important;
+            background: rgba(59, 130, 246, 0.05) !important;
+            transform: translateY(-2px);
+        }
+    </style>
+
     <!-- Final CTA -->
     <div class="tool-cta">
       <h2>Don't set it up alone. Let LeadNexus handle the scaling.</h2>
@@ -283,4 +331,24 @@
 
 {% block extra_js %}
 <script src="{% static 'js/tool-dns-generator.js' %}"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Tools",
+      "item": "https://leadnexus.difusionseo.com/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "DNS Config Generator",
+      "item": "https://leadnexus.difusionseo.com/tools/spf-dkim-dmarc-config-generator/"
+    }
+  ]
+}
+</script>
 {% endblock %}

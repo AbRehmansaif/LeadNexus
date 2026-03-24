@@ -3,7 +3,16 @@
 
 {% block title %}Free Email Spam Word Checker Online — Cold Email Deliverability Tool | LeadNexus{% endblock %}
 {% block meta_description %}Free online email spam word checker — analyzes your cold email copy for spam trigger words to improve your deliverability and open rates. Runs entirely in your browser.{% endblock %}
-{% block meta_keywords %}email spam word checker, cold email spam checker, check email for spam words, cold email deliverability tool, spam trigger words, email copy analyzer, free email checker, improve email open rates, bypass spam filters{% endblock %}
+{% block meta_keywords %}email spam word checker, cold email spam checker, check email for spam words, cold email deliverability tool, spam trigger words, email copy analyzer, free email checker, improve email open rates, bypass spam filters{% endblock %}{% block canonical_url %}https://leadnexus.difusionseo.com/tools/email-spam-word-checker/{% endblock %}
+
+{% block meta_robots %}index, follow{% endblock %}
+
+{% block og_title %}Free Email Spam Word Checker | Cold Email Deliverability — LeadNexus{% endblock %}
+{% block og_description %}Check your cold email copy for spam trigger words. Increase your open rates and inbox deliverability instantly.{% endblock %}
+{% block og_url %}https://leadnexus.difusionseo.com/tools/email-spam-word-checker/{% endblock %}
+
+{% block twitter_title %}Email Spam Word Checker — LeadNexus{% endblock %}
+{% block twitter_description %}Bypass spam filters. Scan your email copy for trigger words instantly.{% endblock %}
 
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/tool-email-spam-checker.css' %}">
@@ -243,6 +252,45 @@
 
     </div>
 
+    <!-- Internal Linking / Explore Tools -->
+    <div style="margin-top: 80px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;">
+            <i data-lucide="grid" style="color: #3b82f6; width: 20px; height: 20px;"></i>
+            Explore More B2B Marketing Tools
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+            <a href="{% url 'seo:seo-tool-email-warmup-calculator' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="flame" style="color: #f97316; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Email Warm-Up Calculator</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Calculate the ideal schedule for warming up your new sending domains.</span>
+                </div>
+            </a>
+            <a href="{% url 'seo:seo-tool-dns-config-generator' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="shield-check" style="color: #10b981; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">DNS Config Generator</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Generate SPF, DKIM, and DMARC records to secure your new domain's identity.</span>
+                </div>
+            </a>
+            <a href="{% url 'seo:seo-tool-cold-email-roi-calculator' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="calculator" style="color: #3b82f6; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Cold Email ROI Calc</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Predict your sales growth based on outreach volume and conversion rates.</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <style>
+        .internal-tool-link:hover {
+            border-color: rgba(59, 130, 246, 0.3) !important;
+            background: rgba(59, 130, 246, 0.05) !important;
+            transform: translateY(-2px);
+        }
+    </style>
+
     <!-- Final CTA -->
     <div class="tool-cta">
       <h2>Ready to start a high-converting campaign?</h2>
@@ -259,4 +307,24 @@
 
 {% block extra_js %}
 <script src="{% static 'js/tool-email-spam-checker.js' %}"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Tools",
+      "item": "https://leadnexus.difusionseo.com/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Email Spam Word Checker",
+      "item": "https://leadnexus.difusionseo.com/tools/email-spam-word-checker/"
+    }
+  ]
+}
+</script>
 {% endblock %}

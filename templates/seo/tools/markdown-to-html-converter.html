@@ -5,9 +5,21 @@
 {% block meta_description %}Free online Markdown to HTML converter — also converts HTML to Markdown and plain text to HTML or Markdown. No login, no file upload. 100% browser-based, instant, and private. Used by developers, writers & email marketers.{% endblock %}
 {% block meta_keywords %}markdown to html converter, html to markdown, markdown converter online, free markdown tool, md to html, html to md, plain text to html, text to markdown, convert markdown, online html converter, markdown editor online, markdown preview, github markdown, jekyll markdown, hugo markdown, markdown for developers, free html generator, email content converter, blog post converter{% endblock %}
 
+{% block canonical_url %}https://leadnexus.difusionseo.com/tools/markdown-to-html/{% endblock %}
+
+{% block meta_robots %}index, follow{% endblock %}
+
+{% block og_title %}Free Markdown to HTML Converter Online | Markdown, HTML & Text — LeadNexus{% endblock %}
+{% block og_description %}Convert Markdown to HTML or HTML to Markdown instantly in your browser. No server upload. 100% private.{% endblock %}
+{% block og_url %}https://leadnexus.difusionseo.com/tools/markdown-to-html/{% endblock %}
+
+{% block twitter_title %}Free Markdown to HTML Converter — LeadNexus{% endblock %}
+{% block twitter_description %}Convert MD to HTML or HTML to MD instantly in your browser. No upload. 100% private.{% endblock %}
+
 {% block extra_css %}
 <link rel="stylesheet" href="{% static 'css/tool-markdown-converter.css' %}">
 {% endblock %}
+
 
 {% block content %}
 {% include 'seo/tools/_tool_nav.html' %}
@@ -314,6 +326,45 @@
 
     </article>
 
+    <!-- Internal Linking / Explore Tools -->
+    <div style="margin-top: 80px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
+        <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;">
+            <i data-lucide="grid" style="color: #3b82f6; width: 20px; height: 20px;"></i>
+            Explore More B2B Marketing Tools
+        </h3>
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px;">
+            <a href="{% url 'seo:seo-tool-excel-to-csv' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="sheet" style="color: #34d399; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Excel to CSV Converter</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Convert XLSX, XLS, and ODS spreadsheets to clean CSV or JSON.</span>
+                </div>
+            </a>
+            <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="mail-warning" style="color: #ef4444; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">Spam Word Checker</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Check your cold emails for trigger words that hurt deliverability.</span>
+                </div>
+            </a>
+            <a href="{% url 'seo:seo-tool-utm-link-builder' %}" style="display: flex; flex-direction: column; gap: 12px; padding: 24px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; text-decoration: none; transition: all 0.3s ease-in-out;" class="internal-tool-link">
+                <i data-lucide="link" style="color: #3b82f6; width: 24px; height: 24px;"></i>
+                <div>
+                   <span style="display: block; color: #fff; font-weight: 700; font-size: 0.95rem; margin-bottom: 4px;">UTM Link Builder</span>
+                   <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Generate trackable campaign URLs for analytics.</span>
+                </div>
+            </a>
+        </div>
+    </div>
+
+    <style>
+        .internal-tool-link:hover {
+            border-color: rgba(59, 130, 246, 0.3) !important;
+            background: rgba(59, 130, 246, 0.05) !important;
+            transform: translateY(-2px);
+        }
+    </style>
+
     <!-- CTA block -->
     <div class="tool-cta">
       <h2>Turn Your Content Into B2B Revenue</h2>
@@ -332,6 +383,26 @@
 {% block extra_js %}
 <!-- Markdown parsing library -->
 <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-
-  <script src="{% static 'js/tool-markdown-converter.js' %}"></script>
+<script src="https://cdn.jsdelivr.net/npm/turndown/dist/turndown.js"></script>
+<script src="{% static 'js/tool-markdown-converter.js' %}"></script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Tools",
+      "item": "https://leadnexus.difusionseo.com/tools/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Markdown to HTML Converter",
+      "item": "https://leadnexus.difusionseo.com/tools/markdown-to-html/"
+    }
+  ]
+}
+</script>
 {% endblock %}
