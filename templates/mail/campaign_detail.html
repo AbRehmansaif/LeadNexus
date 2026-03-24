@@ -14,7 +14,7 @@
                     <i data-lucide="clock" style="width:12px;height:12px;margin-right:6px;"></i> {{ campaign.send_window_start }} - {{ campaign.send_window_end }} UTC
                 </span>
                 {% endif %}
-                {% if campaign.user.profile.tracking_domain %}
+                {% if campaign.user.profile and campaign.user.profile.tracking_domain %}
                 <span class="badge" style="background: rgba(139, 92, 246, 0.1); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--accent-purple); font-size: 0.7rem; padding: 4px 8px;">
                     <i data-lucide="globe" style="width:12px;height:12px;margin-right:6px;"></i> {{ campaign.user.profile.tracking_domain }}
                 </span>

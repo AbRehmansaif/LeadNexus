@@ -60,7 +60,7 @@ def campaign_detail_page(request, pk):
     
     for log in logs:
         step_num = log.step.step_number if log.step else 1
-        variant = log.variant_used # 'A' or 'B'
+        variant = log.variant_used if log.variant_used in ['A', 'B'] else 'A'
         
         if step_num not in ab_stats:
             ab_stats[step_num] = {
