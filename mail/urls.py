@@ -18,6 +18,6 @@ urlpatterns = [
     # API views
     path('mail/api/', include(router.urls)),
     
-    path('mail/track/<int:recipient_id>/pixel.gif', track_open, name='track-open'),
+    path('mail/n/<int:recipient_id>/logo.gif', track_open, name='track-open'),
     path('mail/campaign/<int:pk>/export-csv/', download_campaign_csv, name='mail-campaign-export-csv'),
 ]

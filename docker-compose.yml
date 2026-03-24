@@ -9,6 +9,12 @@ services:
     env_file:
       - .env
 
+  redis:
+    image: redis:7-alpine
+    restart: always
+    expose:
+      - "6379"
+
   web:
     build: .
     restart: always
@@ -20,24 +26,26 @@ services:
       - db
       - redis
 
-  redis:
-    image: redis:7-alpine
-    restart: always
-    expose:
-      - "6379"
-
+  # Celery worker — processes email send tasks, reply checks, etc.
+  # entrypoint is cleared so entrypoint.sh (which starts gunicorn) is NOT run.
+  # Migrations are guaranteed to have run via the 'web' service dependency.
   celery_worker:
     build: .
-    command: celery -A scrapper worker -l info
+    entrypoint: []
+    command: celery -A scrapper worker -l info --concurrency=4
     restart: always
     env_file:
       - .env
     depends_on:
       - db
       - redis
+      - web
 
+  # Celery beat — periodic scheduler for start_scheduled_campaigns & check_for_replies.
+  # Only ONE beat instance should ever run to avoid duplicate task scheduling.
   celery_beat:
     build: .
+    entrypoint: []
     command: celery -A scrapper beat -l info
     restart: always
     env_file:
@@ -45,6 +53,7 @@ services:
     depends_on:
       - db
       - redis
+      - web
 
   nginx:
     image: nginx:alpine

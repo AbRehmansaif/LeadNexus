@@ -1,13 +1,13 @@
-import time
 import logging
 import uuid
 import imaplib
 import email
 from email.header import decode_header
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.core.mail import get_connection, EmailMessage
 from django.utils import timezone
 from .models import EmailCampaign, Recipient, SMTPCredential, CampaignStep, SentEmailLog
+from core.models import UserProfile
 from django.template import Template, Context
 from django.conf import settings
 from django.urls import reverse
@@ -15,53 +15,79 @@ from django.db import transaction
 from django.db.models import Q, F
 from django.core.cache import cache
 from celery import shared_task, group
-from admintask.utils.alerts import send_admin_alert
 
 logger = logging.getLogger(__name__)
+
 
 @shared_task(bind=True, max_retries=3)
 def send_single_email_task(self, recipient_id, step_number, cred_id=None):
     """
-    Atomic worker task that handles the delivery of ONE single email.
-    Using transaction.atomic to ensure status and logs are updated safely.
+    Three-phase email delivery task.
+
+    PHASE 1 (atomic): Pre-flight checks — validate recipient state, business hours,
+                      quota, resolve step/creds, render body. NO email sent yet.
+                      Business-hours deferral uses apply_async (NOT self.retry)
+                      so it never consumes the error retry counter.
+
+    PHASE 2 (outside transaction): email_obj.send()
+                      SMTP is external/irreversible. We deliberately keep this
+                      outside any DB transaction so a DB hiccup in Phase 3/4 can
+                      NEVER roll back a sent email or cause a 'failed' status.
+
+    PHASE 3 (new atomic): Immediately after a successful send update recipient
+                      status to 'active'. This is a tiny fast write — isolated
+                      from stats so nothing can revert it.
+
+    PHASE 4 (best-effort): Stats / logs / cache. Failures here are logged but
+                      DO NOT affect the recipient status — the email is already
+                      delivered and the recipient is already 'active'.
     """
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # PHASE 1 — Pre-flight (reads + validation, zero DB writes)
+    # ─────────────────────────────────────────────────────────────────────────
     try:
+        # We still use select_for_update to prevent double-sending between
+        # concurrent workers, but the lock is released as soon as Phase 1 exits.
         with transaction.atomic():
-            # select_for_update prevents double-sending if two workers pick up the same recipient
             recipient = Recipient.objects.select_for_update().get(id=recipient_id)
             campaign = recipient.campaign
-            
-            # 1. SaaS Safeguards: Skip if Replied, Paused, or Unsubscribed
+
+            # Guard: already processed or in a terminal state for this step
             if recipient.is_replied or recipient.is_unsubscribed or campaign.status == 'paused':
                 return f"Skipped: {recipient.email} (Replied, Unsubscribed, or Paused)"
 
-            # 2. Business Hours Control (SaaS Scheduler)
+            # Business Hours Check — use apply_async NOT self.retry so we
+            # don't burn the precious max_retries=3 SMTP error budget.
             now = timezone.now()
             local_now = timezone.localtime(now)
-            
-            # Day Check (1=Mon...7=Sun)
-            if campaign.work_days and str(local_now.isoweekday()) not in campaign.work_days.split(','):
-                # Try again in 4 hours
-                self.retry(countdown=14400) 
 
-            # Hour window check
+            if campaign.work_days and str(local_now.isoweekday()) not in campaign.work_days.split(','):
+                send_single_email_task.apply_async(
+                    args=[recipient_id, step_number, cred_id],
+                    countdown=14400  # retry in 4 hours
+                )
+                return f"Deferred: {recipient.email} — not a configured work day"
+
             if campaign.send_window_start and campaign.send_window_end:
                 current_time = local_now.time()
                 if not (campaign.send_window_start <= current_time <= campaign.send_window_end):
-                    # Try again in 1 hour
-                    self.retry(countdown=3600)
+                    send_single_email_task.apply_async(
+                        args=[recipient_id, step_number, cred_id],
+                        countdown=3600  # retry in 1 hour
+                    )
+                    return f"Deferred: {recipient.email} — outside send window"
 
-            # 3. Step & A/B Testing Logic
+            # Step & A/B Logic
             step = CampaignStep.objects.filter(campaign=campaign, step_number=step_number).first()
             variant = 'A'
             if not step and step_number == 1:
-                # Use basic campaign defaults
                 step_subject = campaign.subject
                 step_body = campaign.body
+                step = None
             elif not step:
-                return f"Error: No step {step_number} found"
+                return f"Error: No step {step_number} found for campaign {campaign.id}"
             else:
-                # A/B Testing Selection (Simple 50/50 split)
                 if step.subject_b and recipient.id % 2 == 0:
                     step_subject = step.subject_b
                     step_body = step.body_b or step.body
@@ -71,84 +97,203 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                     step_body = step.body
                     variant = 'A'
 
-            # Use specifically assigned creds or fallback to rotation
+            # Monthly Quota Guard
+            profile = campaign.user.profile
+            if not profile.can_send_email():
+                logger.warning(f"Quota exceeded for {campaign.user.username}, skipping {recipient.email}")
+                return f"Skipped: {recipient.email} (Monthly email quota exceeded)"
+
+            # SMTP Selection
             if cred_id:
                 creds = SMTPCredential.objects.filter(id=cred_id, is_active=True).first()
             else:
                 creds = SMTPCredential.objects.filter(user=campaign.user, is_active=True).order_by('?').first()
 
             if not creds:
-                return f"Failed: No active SMTP for {recipient.email}"
+                return f"Failed: No active SMTP account available for {recipient.email}"
 
-            # Render content
-            template = Template(step_body)
-            context_data = {'name': recipient.name or recipient.email.split('@')[0], 'email': recipient.email}
+            # Render body template
+            tmpl = Template(step_body)
+            context_data = {
+                'name': recipient.name or recipient.email.split('@')[0],
+                'email': recipient.email,
+            }
             context_data.update(recipient.custom_data)
-            rendered_body = template.render(Context(context_data))
+            rendered_body = tmpl.render(Context(context_data))
 
-            # Tracking Pixel (SaaS Feature: Custom Tracking Domain)
-            profile = campaign.user.profile
+            # Tracking Pixel
             tracking_base = profile.tracking_domain or settings.SITE_URL
             if tracking_base and not tracking_base.startswith('http'):
                 tracking_base = f"https://{tracking_base}"
-            
-            tracking_url = f"{tracking_base}{reverse('track-open', args=[recipient.id])}"
+            elif tracking_base and tracking_base.startswith('http://') and getattr(settings, 'SECURE_SSL_REDIRECT', False):
+                tracking_base = 'https://' + tracking_base[7:]
+            tracking_url = f"{tracking_base.rstrip('/')}{reverse('track-open', args=[recipient.id])}"
             pixel_tag = f'<img src="{tracking_url}" width="1" height="1" style="display:none !important;" />'
             rendered_body += f"\n{pixel_tag}"
 
-            # SMTP Connection
+            # Build connection & headers (no side effects yet)
             connection = get_connection(
-                host=creds.host, port=creds.port, 
+                host=creds.host, port=creds.port,
                 username=creds.username, password=creds.password,
                 use_tls=creds.use_tls, use_ssl=creds.use_ssl
             )
-
-            # Headers for threading
             domain = creds.from_email.split('@')[-1]
             custom_msg_id = f"<{uuid.uuid4()}@{domain}>"
             headers = {'Message-ID': custom_msg_id}
             previous_log = recipient.delivery_logs.order_by('-sent_at').first()
             if previous_log:
-                headers.update({'In-Reply-To': previous_log.message_id, 'References': previous_log.message_id})
-
+                headers.update({
+                    'In-Reply-To': previous_log.message_id,
+                    'References': previous_log.message_id,
+                })
             from_email = f"{creds.from_name} <{creds.from_email}>" if creds.from_name else creds.from_email
 
-            # SENDING
+            # Build the email object (not sent yet)
             email_obj = EmailMessage(
                 subject=step_subject, body=rendered_body,
                 from_email=from_email, to=[recipient.email],
                 connection=connection, headers=headers
             )
             email_obj.content_subtype = "html"
-            email_obj.send()
 
-            # Update Stats & Logs
-            creds.increment_usage()
-            campaign.user.profile.increment_email_usage()
+            # Capture IDs we need after the transaction closes
+            campaign_id = campaign.id
+            creds_id = creds.id
+            step_id = step.id if step else None
+            user_id = campaign.user.id
+
+        # ── End of Phase 1 atomic block ───────────────────────────────────────
+        # The select_for_update lock is released here. All variables above
+        # (email_obj, creds, step_subject, rendered_body, ...) are in memory.
+
+    except Exception as preflight_error:
+        # Pre-flight DB error (e.g. recipient not found, DB connection lost).
+        # Safe to retry — no email has been sent yet.
+        logger.error(f"Pre-flight error for recipient {recipient_id}: {preflight_error}")
+        try:
+            raise self.retry(exc=preflight_error, countdown=30)
+        except self.MaxRetriesExceededError:
+            logger.error(f"Pre-flight max retries exhausted for recipient {recipient_id}.")
+            _mark_failed(recipient_id, f"Pre-flight error: {preflight_error}")
+
+        return  # stop execution after handling
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # PHASE 2 — Send email (OUTSIDE any DB transaction)
+    # SMTP is external and irreversible. Keeping this outside any atomic block
+    # means no DB rollback can ever "un-send" a delivered email or trigger
+    # a false 'failed' status due to a subsequent DB error.
+    # ─────────────────────────────────────────────────────────────────────────
+    try:
+        email_obj.send()
+    except Exception as smtp_error:
+        # Genuine SMTP failure — safe to retry (email was NOT sent)
+        logger.error(f"SMTP error for {recipient_id}: {smtp_error}")
+        try:
+            raise self.retry(exc=smtp_error, countdown=60)
+        except self.MaxRetriesExceededError:
+            logger.error(f"SMTP max retries exhausted for recipient {recipient_id}.")
+            _mark_failed(recipient_id, f"SMTP delivery failed: {smtp_error}")
+
+        return  # stop execution after handling
+
+    # ─────────────────────────────────────────────────────────────────────────
+    # PHASE 3 — Mark recipient as 'active' or 'completed' (new, tiny atomic block)
+    # This is the ONLY critical DB write. It is completely isolated from stats.
+    # Nothing can revert this status once the email has been successfully sent.
+    # ─────────────────────────────────────────────────────────────────────────
+    try:
+        with transaction.atomic():
+            r = Recipient.objects.select_for_update().get(id=recipient_id)
+            r.current_step_index = step_number
+            r.last_sent_at = timezone.now()
             
-            SentEmailLog.objects.create(
-                recipient=recipient, step=step, smtp_used=creds,
-                subject=step_subject, body_sent=rendered_body, message_id=custom_msg_id,
-                variant_used=variant
-            )
+            total_steps = CampaignStep.objects.filter(campaign_id=campaign_id).count() or 1
+            if step_number >= total_steps:
+                r.status = 'completed'
+            else:
+                r.status = 'active'
+                
+            r.smtp_email = creds.from_email  # record which account sent it
+            r.save(update_fields=['current_step_index', 'last_sent_at', 'status', 'smtp_email'])
+    except Exception as status_error:
+        # Email was sent but we couldn't save the status update.
+        # Log it but do NOT mark as failed — the email was delivered.
+        logger.error(
+            f"Could not update recipient {recipient_id} status to 'active' after successful send: {status_error}. "
+            f"Email was delivered. Manual DB fix may be needed."
+        )
 
-            recipient.current_step_index = step_number
-            recipient.last_sent_at = timezone.now()
-            recipient.status = 'active'
-            recipient.save()
-
-            # HIGH SCALE: Atomically increment campaign sent_count
-            EmailCampaign.objects.filter(id=campaign.id).update(sent_count=F('sent_count') + 1)
-            
-            # Invalidate cache
-            cache.delete(f"campaign_stats_{campaign.id}")
-            
-            return f"Success: {recipient.email}"
-
+    # ─────────────────────────────────────────────────────────────────────────
+    # PHASE 4 — Best-effort stats & logging
+    # Failures here are logged and swallowed — they CANNOT affect recipient status.
+    # ─────────────────────────────────────────────────────────────────────────
+    try:
+        # Re-fetch creds and profile fresh to avoid stale data
+        creds_obj = SMTPCredential.objects.get(id=creds_id)
+        creds_obj.increment_usage()
     except Exception as e:
-        logger.error(f"Task Failed for {recipient_id}: {str(e)}")
-        # Optional: retry on temporary SMTP network errors
-        self.retry(exc=e, countdown=60, max_retries=3)
+        logger.warning(f"Could not increment SMTP usage for cred {creds_id}: {e}")
+
+    try:
+        profile_obj = UserProfile.objects.get(user_id=user_id)
+        profile_obj.increment_email_usage()
+    except Exception as e:
+        logger.warning(f"Could not increment email usage for user {user_id}: {e}")
+
+    try:
+        SentEmailLog.objects.create(
+            recipient_id=recipient_id,
+            step_id=step_id,
+            smtp_used_id=creds_id,
+            subject=step_subject,
+            body_sent=rendered_body,
+            message_id=custom_msg_id,
+            variant_used=variant,
+        )
+    except Exception as e:
+        logger.warning(f"Could not create SentEmailLog for recipient {recipient_id}: {e}")
+
+    try:
+        EmailCampaign.objects.filter(id=campaign_id).update(sent_count=F('sent_count') + 1)
+        
+        # Check if ALL recipients are in terminal states
+        has_active_or_pending = Recipient.objects.filter(
+            campaign_id=campaign_id,
+            status__in=['active', 'pending']
+        ).exists()
+        
+        if not has_active_or_pending:
+            EmailCampaign.objects.filter(id=campaign_id).update(status='completed')
+            
+        cache.delete(f"campaign_stats_{campaign_id}")
+    except Exception as e:
+        logger.warning(f"Could not update campaign sent_count for campaign {campaign_id}: {e}")
+
+    return f"Success: {recipient_id}"
+
+
+def _mark_failed(recipient_id, reason):
+    """Helper: safely mark a recipient as failed and increment campaign counter."""
+    try:
+        r = Recipient.objects.get(id=recipient_id)
+        r.status = 'failed'
+        r.error_message = reason
+        r.save(update_fields=['status', 'error_message'])
+        EmailCampaign.objects.filter(id=r.campaign_id).update(failed_count=F('failed_count') + 1)
+        
+        has_active_or_pending = Recipient.objects.filter(
+            campaign_id=r.campaign_id,
+            status__in=['active', 'pending']
+        ).exists()
+        
+        if not has_active_or_pending:
+            EmailCampaign.objects.filter(id=r.campaign_id).update(status='completed')
+            
+        cache.delete(f"campaign_stats_{r.campaign_id}")
+    except Exception as e:
+        logger.error(f"Could not mark recipient {recipient_id} as failed: {e}")
+
 
 @shared_task
 def send_campaign_emails(campaign_id, step_number=1):
@@ -157,12 +302,16 @@ def send_campaign_emails(campaign_id, step_number=1):
     Packs everything into Redis as small, fast, independent tasks.
     """
     campaign = EmailCampaign.objects.get(pk=campaign_id)
-    
+
     # 1. Get eligible recipients
     if step_number == 1:
         recipients = campaign.recipients.filter(status='pending', current_step_index=0)
     else:
-        recipients = campaign.recipients.filter(current_step_index=step_number - 1, is_replied=False, status='active')
+        recipients = campaign.recipients.filter(
+            current_step_index=step_number - 1,
+            is_replied=False,
+            status='active'
+        )
 
     if not recipients.exists():
         if step_number == 1:
@@ -179,52 +328,51 @@ def send_campaign_emails(campaign_id, step_number=1):
         return "No active SMTP accounts"
 
     gap = max(1, campaign.gap_seconds)
-    
+
     # 3. Dispatch independent tasks with Countdown
-    for i, recipient in enumerate(recipients):
+    recipients_list = list(recipients)
+    for i, recipient in enumerate(recipients_list):
         target_creds = active_smtp[i % len(active_smtp)]
-        
         send_single_email_task.apply_async(
             args=[recipient.id, step_number, target_creds.id],
             countdown=i * gap
         )
-    
-    return f"Campaign {campaign.name} Dispatched: {len(recipients)} tasks queued with {gap}s gap."
+
+    return f"Campaign {campaign.name} Dispatched: {len(recipients_list)} tasks queued with {gap}s gap."
+
 
 def trigger_followup_task(campaign_id, step_number):
     send_campaign_emails.delay(campaign_id, step_number)
+
 
 @shared_task
 def check_single_account_replies(cred_id):
     """Distributed worker to check IMAP for a single account."""
     try:
         cred = SMTPCredential.objects.get(id=cred_id)
-        # Professional IMAP guessing
         imap_host = cred.host.replace('smtp', 'imap')
         mail = imaplib.IMAP4_SSL(imap_host)
         mail.login(cred.username, cred.password)
         mail.select("inbox")
 
-        # Search for emails in the last 7 days
         date_since = (timezone.now() - timedelta(days=7)).strftime("%d-%b-%Y")
         _, messages = mail.search(None, f'(SINCE "{date_since}")')
 
         for msg_num in messages[0].split():
             _, data = mail.fetch(msg_num, '(RFC822)')
-            if not data or not data[0]: continue
-            
+            if not data or not data[0]:
+                continue
+
             raw_email = data[0][1]
             msg = email.message_from_bytes(raw_email)
             in_reply_to = msg.get('In-Reply-To')
             references = msg.get('References', '')
-            
-            # Match reply to our logs
+
             log = SentEmailLog.objects.filter(
                 Q(message_id=in_reply_to) | Q(message_id__in=references.split())
             ).first()
 
             if log and not log.recipient.is_replied:
-                # Detect Unsubscribe Keywords
                 body_lower = ""
                 if msg.is_multipart():
                     for part in msg.walk():
@@ -239,7 +387,7 @@ def check_single_account_replies(cred_id):
 
                 with transaction.atomic():
                     r = Recipient.objects.select_for_update().get(id=log.recipient.id)
-                    
+
                     if is_unsub_request:
                         r.is_unsubscribed = True
                         r.unsubscribed_at = timezone.now()
@@ -249,19 +397,20 @@ def check_single_account_replies(cred_id):
                         r.is_replied = True
                         r.replied_at = timezone.now()
                         r.status = 'replied'
-                        # Atomic increment for reply_count
                         EmailCampaign.objects.filter(id=r.campaign.id).update(reply_count=F('reply_count') + 1)
                         logger.info(f"Reply detected: {r.email}")
-                        
+
                     r.save()
                     cache.delete(f"campaign_stats_{r.campaign.id}")
-                    
+
         mail.close()
         mail.logout()
         return f"Checked: {cred.from_email}"
+
     except Exception as e:
-        logger.error(f"IMAP check failed: {e}")
+        logger.error(f"IMAP check failed for cred {cred_id}: {e}")
         return f"Error: {str(e)}"
+
 
 @shared_task
 def check_for_replies():
@@ -269,11 +418,11 @@ def check_for_replies():
     creds = SMTPCredential.objects.filter(is_active=True).values_list('id', flat=True)
     if not creds:
         return "No active accounts"
-        
-    from celery import group
+
     job = group(check_single_account_replies.s(cid) for cid in creds)
     job.apply_async()
     return f"Dispatched {len(creds)} parallel checks"
+
 
 @shared_task
 def start_scheduled_campaigns():
@@ -282,6 +431,6 @@ def start_scheduled_campaigns():
     campaigns = EmailCampaign.objects.filter(status='scheduled', scheduled_at__lte=now)
     for campaign in campaigns:
         campaign.status = 'running'
-        campaign.save()
+        campaign.save(update_fields=['status'])
         send_campaign_emails.delay(campaign.id, 1)
         logger.info(f"Automatically started scheduled campaign: {campaign.name}")

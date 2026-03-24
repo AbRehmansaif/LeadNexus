@@ -65,10 +65,11 @@ def profile_settings(request):
         work_days     = request.POST.getlist('default_work_days')
         
         # Convert work days to integers for consistency
+        # isoweekday() uses 1=Monday ... 7=Sunday, so valid values are 1-7
         try:
             work_days_ints = [int(d) for d in work_days]
-        except:
-            work_days_ints = [0, 1, 2, 3, 4] # fallback to business week
+        except (ValueError, TypeError):
+            work_days_ints = [1, 2, 3, 4, 5]  # fallback to Mon-Fri (isoweekday 1-5)
 
         profile.bio = bio
         profile.tracking_domain = tracking_domain

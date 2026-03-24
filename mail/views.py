@@ -150,8 +150,7 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
         campaign = self.get_object()
         if campaign.status == 'completed':
             return Response({'error': 'Campaign already completed'}, status=status.HTTP_400_BAD_REQUEST)
-        
-        # Start Step 1
+        # Resume paused campaigns or restart pending ones
         trigger_followup_task(campaign.id, 1)
         return Response({'status': 'Campaign started (Step 1) in background'})
 
@@ -191,8 +190,18 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
         if scheduled_at:
             status_val = 'scheduled'
 
-        # 1. Create Campaign
+        # 1. Validation & Create Campaign
         profile = request.user.profile
+        if not profile.default_work_days or not profile.default_send_window_start or not profile.default_send_window_end:
+            return Response(
+                {'error': 'Mission critical: You must configure your Outreach Schedule in Profile Settings before deploying a campaign.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+            
+        work_days_str = ','.join(map(str, profile.default_work_days))
+
+        # Always create in 'pending' first — status is updated after recipients are confirmed
+        # to avoid a race where the Celery task fires before bulk_create completes.
         campaign = EmailCampaign.objects.create(
             user=request.user,
             name=name or subject,
@@ -200,10 +209,10 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
             body=body,
             gap_seconds=gap_seconds,
             scheduled_at=scheduled_at,
-            status=status_val,
+            status='pending',  # will be updated below once recipients are validated
             send_window_start=profile.default_send_window_start,
             send_window_end=profile.default_send_window_end,
-            work_days=profile.default_work_days
+            work_days=work_days_str
         )
 
         # 2. Setup Steps if provided
@@ -287,10 +296,18 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
                     ))
 
         # Bulk create recipients
-        if recipient_list:
-            Recipient.objects.bulk_create(recipient_list)
-            campaign.total_recipients = len(recipient_list)
-            campaign.save()
+        if not recipient_list:
+            campaign.delete()
+            return Response(
+                {'error': 'No valid recipients found. Ensure your CSV has an "email" column or enter leads manually.'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        Recipient.objects.bulk_create(recipient_list)
+        campaign.total_recipients = len(recipient_list)
+        # Now that recipients are confirmed, set the final status
+        campaign.status = status_val
+        campaign.save(update_fields=['total_recipients', 'status'])
 
         return Response(EmailCampaignSerializer(campaign).data, status=status.HTTP_201_CREATED)
 
@@ -328,7 +345,7 @@ def track_open(request, recipient_id):
             # Invalidate cache for this campaign
             cache.delete(f"campaign_stats_{campaign.id}")
         
-        recipient.open_count += 1
+        recipient.open_count = (recipient.open_count or 0) + 1
         recipient.save(update_fields=['is_opened', 'opened_at', 'open_count'])
         
     except Recipient.DoesNotExist:
@@ -336,41 +353,52 @@ def track_open(request, recipient_id):
         
     # Always return the GIF, even if recipient not found
     pixel_data = b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b'
-    return HttpResponse(pixel_data, content_type='image/gif')
+    response = HttpResponse(pixel_data, content_type='image/gif')
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 @decorators.api_view(['GET'])
 @decorators.permission_classes([permissions.IsAuthenticated])
 def download_campaign_csv(request, pk):
     """
     Export campaign recipients and tracking data as CSV.
+    Only the campaign owner can download their campaign data.
     """
-    campaign = get_object_or_404(EmailCampaign, pk=pk)
+    # Ownership check — prevents any authenticated user from accessing another's data
+    campaign = get_object_or_404(EmailCampaign, pk=pk, user=request.user)
     recipients = campaign.recipients.prefetch_related(
         'delivery_logs__smtp_used'
     ).order_by('id')
-    
+
     response = HttpResponse(content_type='text/csv')
     filename = f"campaign_{campaign.id}_{campaign.name.replace(' ', '_')}_report.csv"
     response['Content-Disposition'] = f'attachment; filename="{filename}"'
-    
+
     writer = csv.writer(response)
-    # Header
     header = ['Email', 'Name', 'Status', 'Last Sent At', 'Step', 'Sent Via (Email)', 'Opened', 'Opened At', 'Replied', 'Replied At', 'Error']
-    
+
     # Add custom data keys to header if they exist
     custom_keys = set()
     for r in recipients:
         if r.custom_data:
             custom_keys.update(r.custom_data.keys())
-    
+
     sorted_custom_keys = sorted(list(custom_keys))
     header.extend(sorted_custom_keys)
     writer.writerow(header)
-    
+
     # Rows
     for r in recipients:
-        last_log = r.delivery_logs.last()
-        sent_via = last_log.smtp_used.email if (last_log and last_log.smtp_used) else 'N/A'
+        # Use r.smtp_email (stored on recipient at send time) as primary source.
+        # Fallback to the delivery log's smtp credential from_email if available.
+        if r.smtp_email:
+            sent_via = r.smtp_email
+        else:
+            last_log = r.delivery_logs.last()
+            sent_via = last_log.smtp_used.from_email if (last_log and last_log.smtp_used) else 'N/A'
+
         row = [
             r.email,
             r.name or '',
@@ -384,11 +412,10 @@ def download_campaign_csv(request, pk):
             r.replied_at.strftime('%m-%d %H:%M') if r.replied_at else '-',
             r.error_message or ''
         ]
-        
-        # Add values for custom keys
+
         for key in sorted_custom_keys:
             row.append(r.custom_data.get(key, ''))
-            
+
         writer.writerow(row)
-        
+
     return response

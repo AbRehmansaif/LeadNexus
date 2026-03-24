@@ -20,10 +20,14 @@ ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "127.0.0.1,localhost").split(",")
 SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000")
 
 # Use a dynamic list for CSRF Trusted Origins (Crucial for Django 4.0+)
-CSRF_TRUSTED_ORIGINS = [SITE_URL]
+CSRF_TRUSTED_ORIGINS = [
+    "http://leadnexus.difusionseo.com",
+    "https://www.leadnexus.difusionseo.com",
+]
+if SITE_URL and SITE_URL not in CSRF_TRUSTED_ORIGINS:
+    CSRF_TRUSTED_ORIGINS.append(SITE_URL)
 for host in ALLOWED_HOSTS:
     if host:
-        # Add both http and https protocols for the host
         if not host.startswith(('http://', 'https://')):
             CSRF_TRUSTED_ORIGINS.append(f"http://{host}")
             CSRF_TRUSTED_ORIGINS.append(f"https://{host}")
@@ -184,11 +188,6 @@ REST_FRAMEWORK = {
 # CORS
 # ==========================================================
 CORS_ALLOW_ALL_ORIGINS = os.getenv("CORS_ALLOW_ALL", "False") == "True"
-CSRF_TRUSTED_ORIGINS = [
-    "http://leadnexus.difusionseo.com",
-    "https://www.leadnexus.difusionseo.com",
-]
-
 if not CORS_ALLOW_ALL_ORIGINS:
     cors_raw = os.getenv("CORS_ALLOWED_ORIGINS", "")
     CORS_ALLOWED_ORIGINS = [o.strip() for o in cors_raw.split(",") if o.strip()]
@@ -286,3 +285,18 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+
+# Periodic task schedule (requires celery beat worker: celery -A scrapper beat -l info)
+from celery.schedules import crontab
+CELERY_BEAT_SCHEDULE = {
+    # Check for scheduled campaigns every minute and start them if their time has passed
+    'start-scheduled-campaigns': {
+        'task': 'mail.tasks.start_scheduled_campaigns',
+        'schedule': 60.0,  # every 60 seconds
+    },
+    # Check all SMTP inboxes for replies every 30 minutes
+    'check-for-replies': {
+        'task': 'mail.tasks.check_for_replies',
+        'schedule': crontab(minute='*/30'),
+    },
+}

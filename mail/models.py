@@ -137,12 +137,13 @@ class EmailCampaign(models.Model):
     def sync_stats_from_db(self):
         """Force a one-time sync of all stats from the Recipient table."""
         self.total_recipients = self.recipients.count()
-        self.sent_count = self.recipients.exclude(status='pending').count()
+        # Only count recipients that were actually sent to (not failed/unsubscribed/pending)
+        self.sent_count = self.recipients.filter(status__in=['active', 'replied', 'completed']).count()
         self.open_count = self.recipients.filter(is_opened=True).count()
         self.reply_count = self.recipients.filter(is_replied=True).count()
         self.failed_count = self.recipients.filter(status='failed').count()
         self.save()
-        
+
         # Clear cache after sync
         from django.core.cache import cache
         cache.delete(f"campaign_stats_{self.id}")

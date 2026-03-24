@@ -281,7 +281,15 @@
                         <div>{{ r.email }}</div>
                         {% if r.name %}<div style="font-size:0.75rem;color:var(--text-muted);">{{ r.name }}</div>{% endif %}
                     </td>
-                    <td><span class="badge badge-{{ r.status }}">{{ r.get_status_display }}</span></td>
+                    <td>
+                        {% if r.status == 'failed' and r.error_message %}
+                            <span class="badge badge-{{ r.status }}" title="{{ r.error_message }}" style="cursor: help;">
+                                {{ r.get_status_display }} ⓘ
+                            </span>
+                        {% else %}
+                            <span class="badge badge-{{ r.status }}">{{ r.get_status_display }}</span>
+                        {% endif %}
+                    </td>
                     <td style="text-align: center; font-weight: 700;">{{ r.current_step_index }}</td>
                     <td style="font-size:0.8rem;">
                         {% if r.smtp_email %}
