@@ -59,7 +59,17 @@ document.getElementById('addFollowupBtn').addEventListener('click', () => {
 
             <div class="form-group">
                 <label class="form-label">Subject Line</label>
-                <input type="text" class="form-control step-subject" placeholder="Re: ${document.getElementById('subject').value || 'Previous Message'}">
+                <input type="text" class="form-control step-subject" oninput="updateStrategyAdvice(this)" placeholder="(Leave blank to use Step 1 subject)">
+                <div class="strategy-advice" style="margin-top: 6px; font-size: 0.75rem; display: block;">
+                    <div class="advice-same" style="color: #10b981; display: flex; align-items: center; gap: 4px;">
+                        <i data-lucide="check-circle" style="width:12px; height:12px;"></i> 
+                        <b>Threaded Strategy:</b> Using Step 1's subject keeps the conversation in one thread. Best for building on your previous message.
+                    </div>
+                    <div class="advice-new" style="color: #8b5cf6; display: flex; align-items: center; gap: 4px;">
+                        <i data-lucide="zap" style="width:12px; height:12px;"></i> 
+                        <b>New Hook Strategy:</b> A different subject line starts a new thread. Great for grabbing attention with a fresh angle if they ignored the first one.
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -83,7 +93,7 @@ document.getElementById('addFollowupBtn').addEventListener('click', () => {
                     </h4>
                     <div class="form-group">
                         <label class="form-label" style="font-size: 0.7rem;">Variant B Subject</label>
-                        <input type="text" class="form-control step-subject-b" placeholder="Test a different follow-up hook...">
+                        <input type="text" class="form-control step-subject-b" placeholder="Variant B Subject (or leave blank for A)">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 0.7rem;">Variant B Payload</label>
@@ -101,7 +111,24 @@ document.getElementById('addFollowupBtn').addEventListener('click', () => {
 });
 
 function removeStep(idx) {
-    document.getElementById(`step_${idx}`).remove();
+    const el = document.getElementById(`step_${idx}`);
+    if (el) el.parentElement.remove(); // Remove the wrapper div
+}
+
+function updateStrategyAdvice(input) {
+    const adviceDiv = input.nextElementSibling;
+    const sameAdvice = adviceDiv.querySelector('.advice-same');
+    const newAdvice = adviceDiv.querySelector('.advice-new');
+    
+    adviceDiv.style.display = 'block';
+    if (!input.value.trim()) {
+        sameAdvice.style.display = 'flex';
+        newAdvice.style.display = 'none';
+    } else {
+        sameAdvice.style.display = 'none';
+        newAdvice.style.display = 'flex';
+    }
+    lucide.createIcons();
 }
 
 document.getElementById('campaignForm').addEventListener('submit', async (e) => {
@@ -157,12 +184,18 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
     });
     
     document.querySelectorAll('.followup-step').forEach((el, index) => {
+        const stepNum = index + 2;
+        const sub = el.querySelector('.step-subject').value.trim();
+        const subB = el.querySelector('.step-subject-b').value.trim();
+        
         steps.push({
-            step_number: index + 2,
+            step_number: stepNum,
             wait_days: el.querySelector('.step-wait').value,
-            subject: el.querySelector('.step-subject').value,
+            // Fallback to primary subject if blank
+            subject: sub || subject.value, 
             body: el.querySelector('.step-body').value,
-            subject_b: el.querySelector('.step-subject-b').value || null,
+            // Fallback to the step's subject if variant B subject is blank
+            subject_b: subB || sub || subject.value,
             body_b: el.querySelector('.step-body-b').value || null
         });
     });
