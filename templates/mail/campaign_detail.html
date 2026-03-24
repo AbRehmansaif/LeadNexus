@@ -102,6 +102,91 @@
     </div>
 </div>
 
+<!-- A/B Testing Insights -->
+{% if ab_stats %}
+{% for step_num, variants in ab_stats.items %}
+{% if variants.has_b %}
+<div class="card" style="margin-bottom: 24px; border-left: 3px solid var(--accent-blue);">
+    <div class="card-header">
+        <h2 class="card-title" style="color: var(--accent-blue); display: flex; align-items: center; gap: 8px;">
+            <i data-lucide="bar-chart-2" style="width:20px; height:20px;"></i> A/B Testing Insights & Analytics
+        </h2>
+    </div>
+    <div style="padding: 20px;">
+        <div style="margin-bottom: 15px; background: rgba(0,0,0,0.2); border-radius: 12px; padding: 20px; border: 1px solid var(--border);">
+            <h3 style="font-size: 1.1rem; margin-bottom: 20px; margin-top: 0; display: flex; align-items: center; justify-content: space-between;">
+                <span>Step {{ step_num }} Split Test Results</span>
+                {% if variants.winner == 'A' %}
+                    <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green); padding: 6px 12px; font-size: 0.8rem;"><i data-lucide="trophy" style="width:14px; height:14px; margin-right:6px;"></i> Variant A Winning</span>
+                {% elif variants.winner == 'B' %}
+                    <span class="badge" style="background: rgba(16, 185, 129, 0.2); color: var(--accent-green); padding: 6px 12px; font-size: 0.8rem;"><i data-lucide="trophy" style="width:14px; height:14px; margin-right:6px;"></i> Variant B Winning</span>
+                {% elif variants.winner == 'Tie' %}
+                    <span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; padding: 6px 12px; font-size: 0.8rem;"><i data-lucide="minus" style="width:14px; height:14px; margin-right:6px;"></i> Tie - Too Early to Call</span>
+                {% else %}
+                    <span class="badge badge-secondary" style="padding: 6px 12px; font-size: 0.8rem;">Awaiting Data</span>
+                {% endif %}
+            </h3>
+            
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <!-- Variant A -->
+                <div style="padding: 20px; background: {% if variants.winner == 'A' %}rgba(16, 185, 129, 0.05){% else %}rgba(255,255,255,0.03){% endif %}; border-radius: 8px; border: 1px solid {% if variants.winner == 'A' %}rgba(16, 185, 129, 0.3){% else %}var(--border){% endif %};">
+                    <div style="font-size: 0.95rem; font-weight: 700; margin-bottom: 16px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 28px; height: 28px; border-radius: 6px; background: rgba(255,255,255,0.1); display: flex; align-items: center; justify-content: center; font-size: 0.85rem;">A</span>
+                        Variant A
+                    </div>
+                    <div style="display: flex; gap: 30px; align-items: flex-end;">
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">Open Rate</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">{{ variants.A.open_rate }}%</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">{{ variants.A.opened }} / {{ variants.A.sent }}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">Reply Rate</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-purple);">{{ variants.A.reply_rate }}%</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">{{ variants.A.replied }} / {{ variants.A.sent }}</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Variant B -->
+                <div style="padding: 20px; background: {% if variants.winner == 'B' %}rgba(16, 185, 129, 0.05){% else %}rgba(59,130,246,0.05){% endif %}; border-radius: 8px; border: 1px solid {% if variants.winner == 'B' %}rgba(16, 185, 129, 0.3){% else %}rgba(59,130,246,0.3){% endif %};">
+                    <div style="font-size: 0.95rem; font-weight: 700; margin-bottom: 16px; color: var(--accent-blue); display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 28px; height: 28px; border-radius: 6px; background: rgba(59,130,246,0.2); display: flex; align-items: center; justify-content: center; font-size: 0.85rem;">B</span>
+                        Variant B
+                    </div>
+                    <div style="display: flex; gap: 30px; align-items: flex-end;">
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">Open Rate</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--text-primary);">{{ variants.B.open_rate }}%</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">{{ variants.B.opened }} / {{ variants.B.sent }}</div>
+                        </div>
+                        <div>
+                            <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">Reply Rate</div>
+                            <div style="font-size: 1.5rem; font-weight: 700; color: var(--accent-purple);">{{ variants.B.reply_rate }}%</div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted); margin-top: 2px;">{{ variants.B.replied }} / {{ variants.B.sent }}</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if variants.winner %}
+            <div style="margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); font-size: 0.9rem; color: var(--text-muted); display: flex; align-items: center; gap: 10px;">
+                <i data-lucide="zap" style="width:16px; height:16px; color: #f59e0b;"></i>
+                {% if variants.winner == 'Tie' %}
+                Currently running in a dead heat. Awaiting more data to declare a statistically significant winner.
+                {% else %}
+                LeadNexus neural engine currently predicts <strong>Variant {{ variants.winner }}</strong> is the optimal conversion path based on weighted reply and open metrics.
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endfor %}
+{% endif %}
+
+
 <!-- Progress Bar -->
 <div class="card" style="margin-bottom: 24px;">
     <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">

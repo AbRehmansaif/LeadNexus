@@ -1,7 +1,7 @@
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from .models import EmailCampaign, SMTPCredential, Recipient
+from .models import EmailCampaign, SMTPCredential, Recipient, SentEmailLog
 
 @login_required
 def mail_dashboard(request):
@@ -54,11 +54,58 @@ def campaign_detail_page(request, pk):
         
     recipients = campaign.recipients.all().order_by(order)
     
+    # A/B Testing Analytics Logic
+    logs = SentEmailLog.objects.filter(recipient__campaign=campaign).select_related('recipient', 'step')
+    ab_stats = {}
+    
+    for log in logs:
+        step_num = log.step.step_number if log.step else 1
+        variant = log.variant_used # 'A' or 'B'
+        
+        if step_num not in ab_stats:
+            ab_stats[step_num] = {
+                'A': {'sent': 0, 'opened': 0, 'replied': 0, 'open_rate': 0, 'reply_rate': 0},
+                'B': {'sent': 0, 'opened': 0, 'replied': 0, 'open_rate': 0, 'reply_rate': 0},
+                'winner': None,
+                'has_b': False
+            }
+            
+        ab_stats[step_num][variant]['sent'] += 1
+        if variant == 'B':
+            ab_stats[step_num]['has_b'] = True
+            
+        if log.recipient.is_opened:
+            ab_stats[step_num][variant]['opened'] += 1
+        if log.recipient.is_replied:
+            ab_stats[step_num][variant]['replied'] += 1
+            
+    # Final Calculation for UI Rates & Winner
+    for step_num, variants in ab_stats.items():
+        if not variants['has_b']:
+            continue # No A/B testing on this step
+            
+        for v in ['A', 'B']:
+            if variants[v]['sent'] > 0:
+                variants[v]['open_rate'] = round((variants[v]['opened'] / variants[v]['sent']) * 100, 1)
+                variants[v]['reply_rate'] = round((variants[v]['replied'] / variants[v]['sent']) * 100, 1)
+                
+        # Premium Auto-Determine Winner Logic
+        score_a = (variants['A']['reply_rate'] * 3) + variants['A']['open_rate']
+        score_b = (variants['B']['reply_rate'] * 3) + variants['B']['open_rate']
+        
+        if score_a > score_b and variants['A']['sent'] > 0:
+            variants['winner'] = 'A'
+        elif score_b > score_a and variants['B']['sent'] > 0:
+            variants['winner'] = 'B'
+        elif variants['A']['sent'] > 0 and variants['B']['sent'] > 0:
+            variants['winner'] = 'Tie'
+
     return render(request, 'mail/campaign_detail.html', {
         'active_page': 'campaigns',
         'campaign': campaign,
         'recipients': recipients,
         'current_sort': sort_by,
+        'ab_stats': ab_stats,
     })
 
 @login_required
