@@ -29,6 +29,7 @@ class UserProfile(models.Model):
     linkedin_limit_monthly = models.PositiveIntegerField(default=0, help_text="Max LinkedIn profiles scraped per month")
     smtp_limit = models.PositiveIntegerField(default=1, help_text="Max SMTP accounts allowed")
     email_outreach_limit_monthly = models.PositiveIntegerField(default=100, help_text="Max individual emails sent per month")
+    max_websites_per_search = models.PositiveIntegerField(default=100, help_text="Max websites allowed per single search job")
     
     # Usage Tracking (Current Month)
     jobs_this_month_count = models.PositiveIntegerField(default=0, verbose_name="Domains Scanned This Month")
@@ -55,18 +56,21 @@ class UserProfile(models.Model):
             'linkedin_limit': 0,
             'smtp_limit': 1,
             'outreach_limit': 100,
+            'max_search_results': 10,
         },
         'pro': {
             'job_limit': 1000,
             'linkedin_limit': 500,
             'smtp_limit': 10,
             'outreach_limit': 10000,
+            'max_search_results': 50,
         },
         'enterprise': {
             'job_limit': 99999,
             'linkedin_limit': 99999,
             'smtp_limit': 100,
             'outreach_limit': 1000000,
+            'max_search_results': 100,
         }
     }
 
@@ -78,6 +82,7 @@ class UserProfile(models.Model):
             self.linkedin_limit_monthly = config['linkedin_limit']
             self.smtp_limit = config['smtp_limit']
             self.email_outreach_limit_monthly = config['outreach_limit']
+            self.max_websites_per_search = config['max_search_results']
             # Also sync is_paid flag for convenience
             if self.membership_status in ['pro', 'enterprise']:
                 self.is_paid = True

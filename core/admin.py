@@ -23,8 +23,8 @@ class UserProfileInline(admin.StackedInline):
             'fields': ('membership_status', 'is_verified', 'admin_notes')
         }),
         ('Quotas', {
-            'fields': (('job_limit_monthly', 'linkedin_limit_monthly', 'smtp_limit', 'email_outreach_limit_monthly'), ('jobs_this_month_count', 'linkedin_this_month_count', 'emails_this_month_count'), 'has_sent_80_percent_alert'),
-            'description': 'Manage monthly resource allocations.'
+            'fields': (('job_limit_monthly', 'linkedin_limit_monthly', 'smtp_limit', 'email_outreach_limit_monthly'), ('jobs_this_month_count', 'linkedin_this_month_count', 'emails_this_month_count'), 'max_websites_per_search', 'has_sent_80_percent_alert'),
+            'description': 'Manage monthly resource allocations and per-search limits.'
         }),
         ('Lifetime Intelligence', {
             'fields': (('total_websites_scraped', 'total_linkedin_scraped'), 'total_emails_sent', 'total_records_scraped'),

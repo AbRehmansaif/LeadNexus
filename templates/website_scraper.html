@@ -219,13 +219,37 @@ Deploy multi-threaded data extraction to instantly harvest verified emails, soci
                 <div class="form-group">
                     <label class="form-label" for="keywordMaxResults">Maximum Websites to Find</label>
                     <select id="keywordMaxResults" class="form-control">
+                        {% if user.profile.max_websites_per_search >= 10 %}
                         <option value="10">10 websites</option>
+                        {% endif %}
+                        
+                        {% if user.profile.max_websites_per_search >= 20 %}
                         <option value="20" selected>20 websites</option>
+                        {% endif %}
+                        
+                        {% if user.profile.max_websites_per_search >= 50 %}
                         <option value="50">50 websites</option>
+                        {% endif %}
+                        
+                        {% if user.profile.max_websites_per_search >= 100 %}
                         <option value="100">100 websites</option>
+                        {% endif %}
+
+                        {% if user.profile.max_websites_per_search >= 150 %}
                         <option value="150">150 websites</option>
+                        {% endif %}
+
+                        {% if user.profile.max_websites_per_search >= 250 %}
                         <option value="250">250 websites</option>
+                        {% endif %}
+
+                        {% if user.profile.max_websites_per_search >= 500 %}
                         <option value="500">500 websites</option>
+                        {% endif %}
+
+                        {% if not user.profile.max_websites_per_search or user.profile.max_websites_per_search < 10 %}
+                        <option value="5" selected>5 websites (Free Trial)</option>
+                        {% endif %}
                     </select>
                 </div>
 

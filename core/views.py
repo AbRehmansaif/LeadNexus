@@ -358,6 +358,15 @@ class KeywordJobListCreateView(ListCreateAPIView):
 
         serializer = KeywordScrapeJobCreateSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+        
+        # Enforce max_results limit from profile
+        requested_max = serializer.validated_data.get('max_results', 20)
+        if requested_max > request.user.profile.max_websites_per_search:
+             return Response(
+                {'error': f'Your current plan allows a maximum of {request.user.profile.max_websites_per_search} websites per search. Please upgrade or contact support.'},
+                status=status.HTTP_403_FORBIDDEN
+            )
+
         job = serializer.save(status='pending', user=request.user)
         
         # Launch background thread
