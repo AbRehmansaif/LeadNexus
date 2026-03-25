@@ -98,7 +98,17 @@ class LinkedInScraper:
             from webdriver_manager.chrome import ChromeDriverManager
             # Use the default OS detection, or linux64 for Docker
             driver_path = ChromeDriverManager().install()
-            logger.info(f"webdriver-manager returned: {driver_path}")
+            
+            # WORKAROUND for webdriver_manager bug where it incorrectly returns a license file
+            if "THIRD_PARTY_NOTICES.chromedriver" in driver_path or "LICENSE.chromedriver" in driver_path:
+                logger.warning(f"webdriver_manager returned the wrong file '{driver_path}', resolving path to 'chromedriver'...")
+                driver_path = os.path.join(os.path.dirname(driver_path), "chromedriver")
+                
+            logger.info(f"webdriver-manager returned / resolved to: {driver_path}")
+
+            # Ensure execution permissions for the downloaded binary
+            if os.path.exists(driver_path):
+                os.chmod(driver_path, 0o755)
 
             service = Service(executable_path=driver_path)
         except ImportError:
