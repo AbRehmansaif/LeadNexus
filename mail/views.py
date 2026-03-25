@@ -145,7 +145,7 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
     pagination_class = pagination.PageNumberPagination
     
     def get_queryset(self):
-        return EmailCampaign.objects.filter(user=self.request.user).order_by('-created_at')
+        return EmailCampaign.objects.filter(user=self.request.user, steps__isnull=False).distinct().order_by('-created_at')
 
     @decorators.action(detail=True, methods=['post'])
     def start(self, request, pk=None):

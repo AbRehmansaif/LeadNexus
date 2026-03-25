@@ -6,7 +6,7 @@ from .models import EmailCampaign, SMTPCredential, Recipient, SentEmailLog
 @login_required
 def mail_dashboard(request):
     """Mail sender dashboard - overview of campaigns and SMTP status."""
-    campaigns_list = EmailCampaign.objects.filter(user=request.user).order_by('-created_at')
+    campaigns_list = EmailCampaign.objects.filter(user=request.user, steps__isnull=False).distinct().order_by('-created_at')
     
     paginator = Paginator(campaigns_list, 10)
     page_number = request.GET.get('page')

@@ -136,7 +136,7 @@ def dashboard(request):
     """Landing page — overview stats & recent jobs."""
     website_jobs  = ScrapeJob.objects.filter(user=request.user)
     linkedin_jobs = LinkedInScrapeJob.objects.filter(user=request.user)
-    user_campaigns = EmailCampaign.objects.filter(user=request.user)
+    user_campaigns = EmailCampaign.objects.filter(user=request.user, steps__isnull=False).distinct()
     user_smtp = SMTPCredential.objects.filter(user=request.user)
 
     total_jobs = website_jobs.count() + linkedin_jobs.count() + KeywordScrapeJob.objects.filter(user=request.user).count()
