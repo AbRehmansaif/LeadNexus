@@ -128,8 +128,11 @@ class RegisterView(CreateView):
 
         Thread(target=send_professional_welcome, args=(user.email, user.username)).start()
             
-        messages.success(self.request, "Account created successfully! You can now log in.")
-        return response
+        from django.contrib.auth import login as auth_login
+        auth_login(self.request, user)
+        
+        messages.success(self.request, "Account created successfully! Please select your plan.")
+        return redirect('subscription')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
