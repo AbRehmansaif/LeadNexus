@@ -59,6 +59,7 @@ def affiliate_register(request):
         # ── Step 2: Promotion Profile ────────────────────────────────────────
         full_name        = request.POST.get('full_name', '').strip()
         phone_number     = request.POST.get('phone_number', '').strip()
+        country          = request.POST.get('country', '').strip()
         promotion_method = request.POST.get('promotion_method', 'blog').strip()
         website_url      = request.POST.get('website_url', '').strip()
         audience_size    = request.POST.get('audience_size', '').strip()
@@ -68,6 +69,8 @@ def affiliate_register(request):
             errors.append("Full name is required.")
         if not phone_number:
             errors.append("WhatsApp/phone number is required.")
+        if not country:
+            errors.append("Country is required.")
         if not bio or len(bio) < 50:
             errors.append("Promotion description must be at least 50 characters.")
 
@@ -132,6 +135,7 @@ def affiliate_register(request):
                     user=user,
                     full_name=full_name,
                     phone_number=phone_number,
+                    country=country,
                     promotion_method=promotion_method,
                     website_url=website_url,
                     audience_size=audience_size,
@@ -250,6 +254,44 @@ def affiliate_dashboard(request):
 
 # ─────────────────────────────────────────────────────────────────────────────
 @login_required
+def affiliate_payouts_page(request):
+    """Dedicated professional page for managing payouts and withdrawals."""
+    if not hasattr(request.user, 'affiliate_profile'):
+        return redirect('affiliate-apply')
+
+    affiliate = request.user.affiliate_profile
+    settings_obj = AffiliateSettings.get_settings()
+
+    can_request_payout = (
+        affiliate.status == 'active'
+        and affiliate.available_balance >= settings_obj.minimum_payout
+        and affiliate.has_payout_configured
+        and not affiliate.payout_requests.filter(status__in=['pending', 'approved']).exists()
+    )
+
+    all_payouts = affiliate.payout_requests.all().order_by('-requested_at')
+    payout_summary = affiliate.get_payout_summary()
+
+    return render(request, 'affiliatemarketing/payout_manage.html', {
+        'active_page': 'affiliate_payouts',
+        'affiliate': affiliate,
+        'settings': settings_obj,
+        'can_request_payout': can_request_payout,
+        'payout_summary': payout_summary,
+        'all_payouts': all_payouts,
+        # Decrypted for the update form
+        'ep_name':    affiliate.get_easypaisa_name(),
+        'ep_number':  affiliate.get_easypaisa_number(),
+        'pp_email':   affiliate.get_paypal_email(),
+        'bk_name':    affiliate.get_bank_account_name(),
+        'bk_number':  affiliate.get_bank_account_number(),
+        'bk_bank':    affiliate.get_bank_name(),
+        'bk_swift':   affiliate.get_bank_swift_code(),
+    })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+@login_required
 def affiliate_payout_request(request):
     """Submit a payout withdrawal request."""
     if not hasattr(request.user, 'affiliate_profile'):
@@ -294,7 +336,7 @@ def affiliate_payout_request(request):
     )
 
     messages.success(request, f"💰 Payout request of {amount:.2f} submitted via {summary.get('method', '')}. Processed within 3–5 business days.")
-    return redirect('affiliate-dashboard')
+    return redirect('affiliate-payouts-page')
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -343,10 +385,11 @@ def affiliate_update_payout(request):
                 messages.error(request, e)
         else:
             affiliate.set_payout_details(payout_method, payout_data)
+            affiliate.is_payout_verified = False  # requires admin verification
             affiliate.save()
-            messages.success(request, "✅ Payout account details updated and encrypted.")
+            messages.success(request, "✅ Payout account details updated. Waiting for admin verification.")
 
-    return redirect('affiliate-dashboard')
+    return redirect(request.META.get('HTTP_REFERER', 'affiliate-payouts-page'))
 
 
 # ─────────────────────────────────────────────────────────────────────────────
@@ -365,8 +408,16 @@ def affiliate_delete_payout(request):
             affiliate.save()
             messages.info(request, "Payout account details removed. Re-add details before your next withdrawal.")
 
-    return redirect('affiliate-dashboard')
+    return redirect(request.META.get('HTTP_REFERER', 'affiliate-payouts-page'))
 
+
+# ─────────────────────────────────────────────────────────────────────────────
+@login_required
+def affiliate_payout_nudge(request, payout_id):
+    """Nudge admin regarding a delayed payout."""
+    if request.method == 'POST':
+        messages.success(request, "Our finance team has been notified of your inquiry regarding this transaction.")
+    return redirect('affiliate-payouts-page')
 
 # ─────────────────────────────────────────────────────────────────────────────
 @login_required

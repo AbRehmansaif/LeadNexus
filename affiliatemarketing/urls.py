@@ -6,8 +6,10 @@ urlpatterns = [
     path('apply/', views.affiliate_register, name='affiliate-apply'),
     path('register/', views.affiliate_register, name='affiliate-register'),
     path('dashboard/', views.affiliate_dashboard, name='affiliate-dashboard'),
+    path('payouts/', views.affiliate_payouts_page, name='affiliate-payouts-page'),
     path('payout-request/', views.affiliate_payout_request, name='affiliate-payout-request'),
     path('update-payout/', views.affiliate_update_payout, name='affiliate-update-payout'),
     path('delete-payout/', views.affiliate_delete_payout, name='affiliate-delete-payout'),
     path('update-settings/', views.affiliate_update_settings, name='affiliate-update-settings'),
+    path('payout-nudge/<int:payout_id>/', views.affiliate_payout_nudge, name='affiliate-payout-nudge'),
 ]

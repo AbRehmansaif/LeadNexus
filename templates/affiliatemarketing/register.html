@@ -252,7 +252,7 @@ textarea.f-input { resize: vertical; min-height: 100px; }
             <div class="f-row two">
                 <div class="f-group">
                     <label class="f-label">Full Legal Name *</label>
-                    <input type="text" name="full_name" class="f-input" placeholder="Muhammad Ali Khan" value="{{ post.full_name|default:'' }}">
+                    <input type="text" name="full_name" class="f-input" placeholder="Muhammad Ali Khan" value="{% if post.full_name %}{{ post.full_name }}{% elif request.user.is_authenticated %}{{ request.user.first_name|default:request.user.username }}{% endif %}" autocomplete="name">
                     <span class="f-hint">Must match your payout account name.</span>
                 </div>
                 <div class="f-group">
@@ -261,7 +261,7 @@ textarea.f-input { resize: vertical; min-height: 100px; }
                     <span class="f-hint">For identity & verification only.</span>
                 </div>
             </div>
-            <div class="f-row">
+            <div class="f-row two">
                 <div class="f-group">
                     <label class="f-label">Primary Promotion Channel *</label>
                     <select name="promotion_method" class="f-input" id="promotionMethodSelect" onchange="updatePromoFields()">
@@ -273,6 +273,10 @@ textarea.f-input { resize: vertical; min-height: 100px; }
                         <option value="community"  {% if post.promotion_method == 'community' %}selected{% endif %}>Online Community / Forum</option>
                         <option value="other"      {% if post.promotion_method == 'other' %}selected{% endif %}>Other</option>
                     </select>
+                </div>
+                <div class="f-group">
+                    <label class="f-label">Country *</label>
+                    <input type="text" name="country" class="f-input" placeholder="e.g. Pakistan" value="{{ post.country|default:'Pakistan' }}">
                 </div>
             </div>
             <div class="f-row two">
@@ -433,6 +437,7 @@ textarea.f-input { resize: vertical; min-height: 100px; }
                 <div class="r-section-label">Promotion Profile</div>
                 <div class="r-row"><span class="r-key">Full Name</span><span class="r-val" id="rv-nm">—</span></div>
                 <div class="r-row"><span class="r-key">Phone</span><span class="r-val" id="rv-ph">—</span></div>
+                <div class="r-row"><span class="r-key">Country</span><span class="r-val" id="rv-co">—</span></div>
                 <div class="r-row"><span class="r-key">Channel</span><span class="r-val" id="rv-ch">—</span></div>
                 <div class="r-row"><span class="r-key">Website</span><span class="r-val" id="rv-ws">—</span></div>
                 <div class="r-row"><span class="r-key">Audience</span><span class="r-val" id="rv-au">—</span></div>
@@ -521,9 +526,10 @@ function validate(n) {
         if (!p || p.length < 8) { err('Password must be at least 8 characters.'); return false; }
     }
     if (n === 2) {
-        const nm = v('full_name'), ph = v('phone_number'), bi = v('bio');
+        const nm = v('full_name'), ph = v('phone_number'), bi = v('bio'), co = v('country');
         if (!nm) { err('Full name is required.'); return false; }
         if (!ph) { err('Phone number is required.'); return false; }
+        if (!co) { err('Country is required.'); return false; }
         if (!bi || bi.length < 50) { err('Promotion description must be at least 50 characters.'); return false; }
     }
     if (n === 3) {
@@ -573,6 +579,7 @@ function fillReview() {
     set('rv-e',  v('email'));
     set('rv-nm', v('full_name'));
     set('rv-ph', v('phone_number'));
+    set('rv-co', v('country'));
     const sel = document.querySelector('[name="promotion_method"]');
     set('rv-ch', sel ? sel.options[sel.selectedIndex]?.text : '—');
     set('rv-ws', v('website_url') || 'Not provided');

@@ -140,6 +140,7 @@ class Affiliate(models.Model):
     bio               = models.TextField(blank=True)
 
     # ── Payout Configuration ─────────────────────────────────────────────────
+    is_payout_verified = models.BooleanField(default=False, help_text="True if admin verified the payout details")
     payout_method = models.CharField(max_length=20, choices=PAYOUT_METHOD_CHOICES, default='easypaisa')
 
     # EasyPaisa (encrypted at rest)
@@ -284,6 +285,8 @@ class PayoutRequest(models.Model):
 
     # Snapshot of payout details at time of request (encrypted)
     payout_snapshot = models.TextField(blank=True, help_text="Encrypted JSON snapshot of payout account details")
+
+    receipt_file = models.FileField(upload_to='payout_receipts/', null=True, blank=True, help_text="PDF or image of the transfer receipt")
 
     admin_notes  = models.TextField(blank=True)
     requested_at = models.DateTimeField(auto_now_add=True)

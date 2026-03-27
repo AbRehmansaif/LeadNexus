@@ -1,0 +1,191 @@
+{% extends "base.html" %}
+{% block title %}Payouts & Withdrawals — Partner Dashboard{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+* { font-family: 'Plus Jakarta Sans', sans-serif; }
+:root { --p: #7c3aed; --p2: #6366f1; --g: #10b981; --r: #ef4444; --a: #f59e0b; --b: rgba(255,255,255,0.05); --t: rgba(255,255,255,0.02); }
+.db { background: #020617; min-height: 100vh; padding: 32px; margin: -20px; color: #fff; }
+.topbar { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:40px; }
+.topbar h1 { font-size:1.75rem; font-weight:800; letter-spacing:-0.03em; margin-bottom:4px; }
+.topbar p  { color:#475569; font-size:0.85rem; }
+.main-grid { display:grid; grid-template-columns:2fr 1.2fr; gap:28px; }
+.panel { background:var(--t); border:1px solid var(--b); border-radius:20px; padding:26px; margin-bottom:24px; }
+.ph { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+.ph h3 { font-size:1rem; font-weight:800; color:#fff; margin:0; display:flex; align-items:center; gap:10px; }
+.tt { width:100%; border-collapse:collapse; }
+.tt th { text-align:left; padding:11px 14px; font-size:0.68rem; font-weight:800; color:#334155; text-transform:uppercase; letter-spacing:0.06em; border-bottom:1px solid var(--b); }
+.tt td { padding:14px; border-bottom:1px solid rgba(255,255,255,0.02); vertical-align:middle; font-size:0.85rem; }
+.pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:100px; font-size:0.7rem; font-weight:800; }
+.pill-pending { background:rgba(245,158,11,0.1);  color:var(--a); }
+.pill-approved{ background:rgba(99,102,241,0.1);  color:#818cf8; }
+.pill-paid    { background:rgba(16,185,129,0.1); color:var(--g); }
+.pill-rejected{ background:rgba(239,68,68,0.1);   color:#fca5a5; }
+.empty { text-align:center; padding:40px 20px; color:#334155; }
+.empty span { font-size:2.5rem; display:block; margin-bottom:12px; }
+.btn-nudge { background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); padding:4px 10px; border-radius:6px; color:#fff; font-size:0.7rem; cursor:pointer; }
+.btn-dl { background:rgba(16,185,129,0.1); color:var(--g); border:1px solid rgba(16,185,129,0.2); padding:4px 10px; border-radius:6px; font-size:0.7rem; text-decoration:none; display:inline-block; }
+.bal { background:var(--t); border:1px solid var(--b); border-radius:20px; padding:24px; margin-bottom:24px; }
+.bal h3 { font-size:1rem; font-weight:800; margin-bottom:20px; color:#fff; display:flex; align-items:center; gap:8px;}
+.bal-display { background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.12); border-radius:14px; padding:24px; text-align:center; margin-bottom:16px; }
+.bal-val { font-size:2.8rem; font-weight:900; color:var(--g); line-height:1; }
+.payout-btn { width:100%; background:linear-gradient(135deg,var(--g),#059669); border:none; border-radius:12px; padding:14px; color:#fff; font-size:0.9rem; font-weight:800; cursor:pointer; box-shadow:0 8px 20px rgba(16,185,129,0.25); }
+.payout-btn:disabled { opacity:0.5; cursor:not-allowed; box-shadow:none; }
+.payout-note { font-size:0.75rem; color:#475569; text-align:center; margin-top:10px; line-height:1.5; }
+.pay-configured { background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.15); border-radius:14px; padding:20px; }
+.pay-unverified { background:rgba(245,158,11,0.05); border:1px solid rgba(245,158,11,0.15); }
+.pay-row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.03); font-size:0.85rem; }
+.pay-key { color:#64748b; font-weight:700; }
+.pay-val { color:#fff; font-weight:700; }
+.pay-not { background:rgba(239,68,68,0.05); border:1px dashed rgba(239,68,68,0.2); border-radius:14px; padding:20px; text-align:center; margin-bottom:20px; }
+.pf-label { font-size:0.72rem; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:7px; display:block; }
+.pf-input { width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px 14px; color:#fff; font-size:0.88rem; box-sizing:border-box; margin-bottom:14px; }
+.m-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:20px; }
+.m-tab { border:2px solid rgba(255,255,255,0.06); border-radius:12px; padding:12px 8px; cursor:pointer; text-align:center; background:rgba(255,255,255,0.02); }
+.m-tab.active { border-color:var(--p); background:rgba(124,58,237,0.08); }
+.m-tab .ti { font-size:1.4rem; margin-bottom:6px; display:block; }
+.m-tab .tn { font-size:0.78rem; font-weight:800; color:#fff; }
+.m-tab .ts { font-size:0.66rem; color:#475569; }
+.m-fields { display:none; }
+.m-fields.active { display:block; }
+.pf-actions { display:flex; gap:10px; margin-top:6px; }
+.btn-save { flex:2; background:linear-gradient(135deg,var(--p),var(--p2)); border:none; border-radius:10px; padding:12px; color:#fff; font-size:0.85rem; font-weight:800; cursor:pointer; }
+.btn-del { flex:1; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:10px; padding:12px; color:#fca5a5; font-size:0.8rem; font-weight:700; cursor:pointer; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="db">
+    <a href="{% url 'affiliate-dashboard' %}" style="display:inline-block; margin-bottom:20px; color:#a78bfa; font-size:0.85rem; text-decoration:none;">← Dashboard</a>
+    <div class="topbar">
+        <div>
+            <h1>Payouts & Withdrawals</h1>
+            <p>Manage your bank details, request withdrawals, and track payouts.</p>
+        </div>
+    </div>
+    {% for msg in messages %}
+    <div style="border-radius:12px;padding:14px;margin-bottom:20px;font-size:0.85rem;background:rgba(124,58,237,0.08);color:#c4b5fd;">{{ msg }}</div>
+    {% endfor %}
+
+    <div class="main-grid">
+        <div class="panel">
+            <div class="ph"><h3><i data-lucide="clock" style="width:16px;height:16px;color:#fbbf24;"></i>Withdrawal History</h3></div>
+            {% if all_payouts %}
+            <table class="tt">
+                <thead><tr><th>Amount</th><th>Status</th><th>Requested On</th><th>Action</th></tr></thead>
+                <tbody>
+                    {% for p in all_payouts %}
+                    <tr>
+                        <td style="font-weight:800;color:#fff;">{{ p.amount|floatformat:2 }} <div style="font-size:0.6rem;color:#64748b;">via {{ p.get_payout_method_display|default:p.payout_method }}</div></td>
+                        <td>
+                            {% if p.status == 'pending' %}<span class="pill pill-pending">Viewed / In Review</span>
+                            {% elif p.status == 'approved' %}<span class="pill pill-approved">Processing</span>
+                            {% elif p.status == 'paid' %}<span class="pill pill-paid">Delivered</span>
+                            {% elif p.status == 'rejected' %}<span class="pill pill-rejected">Rejected</span>
+                            {% endif %}
+                        </td>
+                        <td style="color:#64748b;">{{ p.requested_at|date:"M d, Y" }}</td>
+                        <td>
+                            {% if p.status == 'paid' and p.receipt_file %}
+                                <a href="{{ p.receipt_file.url }}" target="_blank" class="btn-dl">Receipt</a>
+                            {% elif p.status == 'pending' or p.status == 'approved' %}
+                                <form method="post" action="{% url 'affiliate-payout-nudge' p.id %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn-nudge">Nudge Admin</button>
+                                </form>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            {% else %}
+            <div class="empty"><span>💸</span>No payout requests yet.</div>
+            {% endif %}
+        </div>
+
+        <div>
+            <div class="bal">
+                <h3><i data-lucide="wallet" style="width:16px;height:16px;color:#fbbf24;"></i>Request Withdrawal</h3>
+                <div class="bal-display">
+                    <div class="bal-val">{{ affiliate.available_balance|floatformat:0 }}</div>
+                    <div style="font-size:0.8rem; color:#475569; margin-top:6px;">Available Balance</div>
+                </div>
+
+                {% if can_request_payout %}
+                    {% if not affiliate.is_payout_verified %}
+                        <button class="payout-btn" disabled>Waiting For Verification</button>
+                    {% else %}
+                        <form method="post" action="{% url 'affiliate-payout-request' %}">
+                            {% csrf_token %}
+                            <button type="submit" class="payout-btn">Request Payout ({{ affiliate.available_balance|floatformat:2 }})</button>
+                        </form>
+                    {% endif %}
+                {% else %}
+                    <button class="payout-btn" disabled>Unavailable (Min. {{ settings.minimum_payout }})</button>
+                {% endif %}
+            </div>
+
+            <div class="bal">
+                <h3><i data-lucide="credit-card" style="width:16px;height:16px;color:#c4b5fd;"></i>Payout Account</h3>
+                {% if affiliate.has_payout_configured %}
+                <div class="pay-configured {% if not affiliate.is_payout_verified %}pay-unverified{% endif %}">
+                    <div style="font-size:0.72rem;font-weight:800;margin-bottom:14px;color:{% if affiliate.is_payout_verified %}#10b981{% else %}#fbbf24{% endif %};">
+                        {% if affiliate.is_payout_verified %}Verified / Active{% else %}Pending Admin Verification{% endif %}
+                    </div>
+                    <div class="pay-row"><span class="pay-key">Method</span><span class="pay-val">{{ payout_summary.method }}</span></div>
+                    <div class="pay-row"><span class="pay-key">Detail</span><span class="pay-val" style="font-family:monospace;color:#a78bfa;">{{ payout_summary.secondary }}</span></div>
+                </div>
+                <button onclick="document.getElementById('editB').style.display='block'" style="background:none;border:1px solid var(--b);border-radius:8px;padding:10px;color:#94a3b8;cursor:pointer;width:100%;margin-top:14px;">Update Payout Account</button>
+                <div id="editB" style="display:none;margin-top:16px;">
+                    <form method="post" action="{% url 'affiliate-update-payout' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="payout_method" id="dM" value="{{ affiliate.payout_method }}">
+                        <div class="m-tabs">
+                            <div class="m-tab {% if affiliate.payout_method == 'easypaisa' %}active{% endif %}" onclick="sM('easypaisa')"><span class="ti">📱</span><div class="tn">EasyPaisa</div></div>
+                            <div class="m-tab {% if affiliate.payout_method == 'paypal' %}active{% endif %}" onclick="sM('paypal')"><span class="ti">💳</span><div class="tn">PayPal</div></div>
+                            <div class="m-tab {% if affiliate.payout_method == 'bank' %}active{% endif %}" onclick="sM('bank')"><span class="ti">🏦</span><div class="tn">Bank</div></div>
+                        </div>
+                        <div class="m-fields {% if affiliate.payout_method == 'easypaisa' %}active{% endif %}" id="m-ep">
+                            <label class="pf-label">Holder Name</label><input type="text" name="easypaisa_name" class="pf-input" value="{{ ep_name }}">
+                            <label class="pf-label">Number</label><input type="tel" name="easypaisa_number" class="pf-input" value="{{ ep_number }}">
+                        </div>
+                        <div class="m-fields {% if affiliate.payout_method == 'paypal' %}active{% endif %}" id="m-pp">
+                            <label class="pf-label">PayPal Email</label><input type="email" name="paypal_email" class="pf-input" value="{{ pp_email }}">
+                        </div>
+                        <div class="m-fields {% if affiliate.payout_method == 'bank' %}active{% endif %}" id="m-bk">
+                            <label class="pf-label">Holder Name</label><input type="text" name="bank_account_name" class="pf-input" value="{{ bk_name }}">
+                            <label class="pf-label">Bank</label><input type="text" name="bank_name" class="pf-input" value="{{ bk_bank }}">
+                            <label class="pf-label">IBAN</label><input type="text" name="bank_account_number" class="pf-input" value="{{ bk_number }}">
+                        </div>
+                        <div class="pf-actions">
+                            <button type="submit" class="btn-save">Verify & Update</button>
+                            <button type="button" class="btn-del" onclick="document.getElementById('dF').submit()">Delete</button>
+                        </div>
+                    </form>
+                    <form id="dF" method="post" action="{% url 'affiliate-delete-payout' %}">{% csrf_token %}</form>
+                </div>
+                {% else %}
+                <div class="pay-not"><div style="font-weight:800;color:#fca5a5;">No Payout Account</div></div>
+                <button onclick="window.location.href='{% url 'affiliate-apply' %}'" class="btn-save" style="width:100%;">Setup Account</button>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function sM(m) {
+    document.querySelectorAll('.m-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.m-fields').forEach(f => f.classList.remove('active'));
+    document.getElementById('m-' + (m.substring(0,2) === 'ea' ? 'ep' : m.substring(0,2) === 'pa' ? 'pp' : 'bk')).classList.add('active');
+    const tb = document.querySelectorAll('.m-tab');
+    if(tb[['easypaisa','paypal','bank'].indexOf(m)]) tb[['easypaisa','paypal','bank'].indexOf(m)].classList.add('active');
+    document.getElementById('dM').value = m;
+}
+document.addEventListener('DOMContentLoaded', () => { if (window.lucide) lucide.createIcons(); });
+</script>
+{% endblock %}
