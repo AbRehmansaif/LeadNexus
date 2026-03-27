@@ -1,0 +1,375 @@
+from django.shortcuts import render, redirect
+from django.contrib.auth.decorators import login_required
+from django.contrib import messages
+from django.utils import timezone
+from django.db.models import Sum
+from django.db.models.functions import TruncMonth
+from django.contrib.auth.models import User as DjangoUser
+from django.db import transaction
+import json
+
+from .models import (
+    Affiliate, AffiliateEarning, PayoutRequest,
+    AffiliateSettings, encrypt_field, decrypt_field
+)
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+def affiliate_landing(request):
+    """SEO-optimized public landing page for the affiliate program."""
+    settings_obj = AffiliateSettings.get_settings()
+    return render(request, 'affiliatemarketing/landing.html', {
+        'active_page': 'affiliate_landing',
+        'settings': settings_obj,
+    })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+def affiliate_register(request):
+    """
+    Professional 4-step affiliate application wizard.
+    Collects: account identity → promotion profile → payout details → review + declaration.
+    Goes to PENDING for manual admin review (unless auto_approve is on).
+    """
+    if request.user.is_authenticated and hasattr(request.user, 'affiliate_profile'):
+        return redirect('affiliate-dashboard')
+
+    settings_obj = AffiliateSettings.get_settings()
+
+    if request.method == 'POST':
+        errors = []
+
+        # ── Step 1: Account ─────────────────────────────────────────────────
+        if not request.user.is_authenticated:
+            username = request.POST.get('username', '').strip()
+            email    = request.POST.get('email', '').strip()
+            password = request.POST.get('password', '').strip()
+
+            if not username:
+                errors.append("Username is required.")
+            elif DjangoUser.objects.filter(username=username).exists():
+                errors.append(f"Username '{username}' is already taken.")
+            if not email:
+                errors.append("Email address is required.")
+            elif DjangoUser.objects.filter(email=email).exists():
+                errors.append("An account with this email already exists.")
+            if not password or len(password) < 8:
+                errors.append("Password must be at least 8 characters.")
+
+        # ── Step 2: Promotion Profile ────────────────────────────────────────
+        full_name        = request.POST.get('full_name', '').strip()
+        phone_number     = request.POST.get('phone_number', '').strip()
+        promotion_method = request.POST.get('promotion_method', 'blog').strip()
+        website_url      = request.POST.get('website_url', '').strip()
+        audience_size    = request.POST.get('audience_size', '').strip()
+        bio              = request.POST.get('bio', '').strip()
+
+        if not full_name:
+            errors.append("Full name is required.")
+        if not phone_number:
+            errors.append("WhatsApp/phone number is required.")
+        if not bio or len(bio) < 50:
+            errors.append("Promotion description must be at least 50 characters.")
+
+        # ── Step 3: Payout Details ────────────────────────────────────────────
+        payout_method = request.POST.get('payout_method', 'easypaisa').strip()
+        payout_data   = {}
+
+        if payout_method == 'easypaisa':
+            ep_name   = request.POST.get('easypaisa_name', '').strip()
+            ep_number = request.POST.get('easypaisa_number', '').strip()
+            if not ep_name:
+                errors.append("EasyPaisa account holder name is required.")
+            if not ep_number:
+                errors.append("EasyPaisa mobile number is required.")
+            payout_data = {'easypaisa_name': ep_name, 'easypaisa_number': ep_number}
+
+        elif payout_method == 'paypal':
+            pp_email = request.POST.get('paypal_email', '').strip()
+            if not pp_email or '@' not in pp_email:
+                errors.append("A valid PayPal email address is required.")
+            payout_data = {'paypal_email': pp_email}
+
+        elif payout_method == 'bank':
+            ba_name   = request.POST.get('bank_account_name', '').strip()
+            ba_number = request.POST.get('bank_account_number', '').strip()
+            ba_bank   = request.POST.get('bank_name', '').strip()
+            ba_swift  = request.POST.get('bank_swift_code', '').strip()
+            if not ba_name:   errors.append("Bank account holder name is required.")
+            if not ba_number: errors.append("Bank account number / IBAN is required.")
+            if not ba_bank:   errors.append("Bank name is required.")
+            payout_data = {
+                'bank_account_name': ba_name,
+                'bank_account_number': ba_number,
+                'bank_name': ba_bank,
+                'bank_swift_code': ba_swift,
+            }
+
+        # Declaration
+        if not request.POST.get('declaration'):
+            errors.append("You must accept the Partner Program Agreement.")
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+            return render(request, 'affiliatemarketing/register.html', {
+                'post': request.POST,
+                'settings': settings_obj,
+                'active_page': 'affiliate',
+            })
+
+        # ── Create User + Affiliate ───────────────────────────────────────────
+        try:
+            with transaction.atomic():
+                if request.user.is_authenticated:
+                    user = request.user
+                else:
+                    user = DjangoUser.objects.create_user(
+                        username=username, email=email, password=password
+                    )
+
+                affiliate = Affiliate(
+                    user=user,
+                    full_name=full_name,
+                    phone_number=phone_number,
+                    promotion_method=promotion_method,
+                    website_url=website_url,
+                    audience_size=audience_size,
+                    bio=bio,
+                    status='active' if settings_obj.auto_approve_affiliates else 'pending',
+                )
+                affiliate.set_payout_details(payout_method, payout_data)
+                affiliate.save()
+
+                if not request.user.is_authenticated:
+                    from django.contrib.auth import login as auth_login
+                    auth_login(request, user)
+
+                if settings_obj.auto_approve_affiliates:
+                    messages.success(request, "🎉 Your partner account is now active! Start sharing your referral link.")
+                else:
+                    messages.success(request, "✅ Application submitted! Our team will review within 24–48 hours.")
+
+                return redirect('affiliate-dashboard')
+
+        except Exception as e:
+            messages.error(request, f"Registration error: {str(e)}")
+
+    return render(request, 'affiliatemarketing/register.html', {
+        'active_page': 'affiliate',
+        'settings': settings_obj,
+    })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+@login_required
+def affiliate_dashboard(request):
+    """Partner command dashboard."""
+    if not hasattr(request.user, 'affiliate_profile'):
+        return redirect('affiliate-apply')
+
+    affiliate    = request.user.affiliate_profile
+    settings_obj = AffiliateSettings.get_settings()
+
+    from django.conf import settings
+    base         = getattr(settings, 'SITE_URL', 'http://127.0.0.1:8000')
+    referral_url = f"{base}/register/?ref={affiliate.referral_code}"
+
+    # Referred users
+    referred_users = []
+    paid_users     = []
+    try:
+        from core.models import UserProfile
+        referred_profiles = UserProfile.objects.filter(
+            referred_by=affiliate.referral_code
+        ).select_related('user')
+        referred_users = [p.user for p in referred_profiles]
+        paid_users     = [u for u in referred_users if u.profile.is_paid]
+    except Exception:
+        pass
+
+    # Earnings
+    now = timezone.now()
+    this_month_earnings = affiliate.earnings.filter(
+        created_at__year=now.year, created_at__month=now.month
+    ).aggregate(t=Sum('commission_amount'))['t'] or 0
+
+    # Chart (last 6 months)
+    six_ago = now - timezone.timedelta(days=180)
+    monthly = (
+        affiliate.earnings
+        .filter(created_at__gte=six_ago)
+        .annotate(month=TruncMonth('created_at'))
+        .values('month')
+        .annotate(total=Sum('commission_amount'))
+        .order_by('month')
+    )
+    chart_labels = [e['month'].strftime('%b %Y') for e in monthly]
+    chart_data   = [float(e['total']) for e in monthly]
+
+    recent_payouts = affiliate.payout_requests.all()[:10]
+
+    can_request_payout = (
+        affiliate.status == 'active'
+        and affiliate.available_balance >= settings_obj.minimum_payout
+        and affiliate.has_payout_configured
+        and not affiliate.payout_requests.filter(status='pending').exists()
+    )
+
+    payout_summary = affiliate.get_payout_summary()
+
+    return render(request, 'affiliatemarketing/dashboard.html', {
+        'active_page':           'affiliate',
+        'affiliate':             affiliate,
+        'settings':              settings_obj,
+        'referral_url':          referral_url,
+        'total_signups':         affiliate.total_signups,
+        'total_paid_conversions': affiliate.total_paid_conversions,
+        'total_revenue':         affiliate.total_revenue,
+        'this_month_earnings':   this_month_earnings,
+        'available_balance':     affiliate.available_balance,
+        'total_earnings':        affiliate.total_earnings,
+        'paid_out':              affiliate.paid_out,
+        'referred_users':        referred_users[:20],
+        'recent_payouts':        recent_payouts,
+        'minimum_payout':        settings_obj.minimum_payout,
+        'chart_labels':          chart_labels,
+        'chart_data':            chart_data,
+        'can_request_payout':    can_request_payout,
+        'payout_summary':        payout_summary,
+        # Decrypted for display in settings panel
+        'ep_name':    affiliate.get_easypaisa_name(),
+        'ep_number':  affiliate.get_easypaisa_number(),
+        'pp_email':   affiliate.get_paypal_email(),
+        'bk_name':    affiliate.get_bank_account_name(),
+        'bk_number':  affiliate.get_bank_account_number(),
+        'bk_bank':    affiliate.get_bank_name(),
+        'bk_swift':   affiliate.get_bank_swift_code(),
+    })
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+@login_required
+def affiliate_payout_request(request):
+    """Submit a payout withdrawal request."""
+    if not hasattr(request.user, 'affiliate_profile'):
+        return redirect('affiliate-apply')
+
+    affiliate    = request.user.affiliate_profile
+    settings_obj = AffiliateSettings.get_settings()
+
+    if request.method != 'POST':
+        return redirect('affiliate-dashboard')
+
+    if affiliate.status != 'active':
+        messages.error(request, "Your affiliate account must be active to request a payout.")
+        return redirect('affiliate-dashboard')
+
+    if not affiliate.has_payout_configured:
+        messages.error(request, "Configure your payout account details before requesting a payout.")
+        return redirect('affiliate-dashboard')
+
+    amount = affiliate.available_balance
+    if amount < settings_obj.minimum_payout:
+        messages.error(request, f"Minimum payout is {settings_obj.minimum_payout}. Your balance is {amount:.2f}.")
+        return redirect('affiliate-dashboard')
+
+    if affiliate.payout_requests.filter(status='pending').exists():
+        messages.warning(request, "You already have a pending payout request.")
+        return redirect('affiliate-dashboard')
+
+    # Build encrypted snapshot of current payout details
+    summary = affiliate.get_payout_summary()
+    snapshot_json = json.dumps({
+        'method':     affiliate.payout_method,
+        'primary':    summary.get('primary', ''),
+        'secondary':  summary.get('secondary', ''),
+    })
+
+    PayoutRequest.objects.create(
+        affiliate=affiliate,
+        amount=amount,
+        payout_method=affiliate.payout_method,
+        payout_snapshot=encrypt_field(snapshot_json),
+    )
+
+    messages.success(request, f"💰 Payout request of {amount:.2f} submitted via {summary.get('method', '')}. Processed within 3–5 business days.")
+    return redirect('affiliate-dashboard')
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+@login_required
+def affiliate_update_payout(request):
+    """Update payout account details (encrypted)."""
+    if not hasattr(request.user, 'affiliate_profile'):
+        return redirect('affiliate-apply')
+
+    if request.method == 'POST':
+        affiliate     = request.user.affiliate_profile
+        payout_method = request.POST.get('payout_method', 'easypaisa').strip()
+        errors        = []
+
+        payout_data = {}
+        if payout_method == 'easypaisa':
+            ep_name   = request.POST.get('easypaisa_name', '').strip()
+            ep_number = request.POST.get('easypaisa_number', '').strip()
+            if not ep_name:   errors.append("EasyPaisa account holder name is required.")
+            if not ep_number: errors.append("EasyPaisa mobile number is required.")
+            payout_data = {'easypaisa_name': ep_name, 'easypaisa_number': ep_number}
+
+        elif payout_method == 'paypal':
+            pp_email = request.POST.get('paypal_email', '').strip()
+            if not pp_email or '@' not in pp_email:
+                errors.append("A valid PayPal email is required.")
+            payout_data = {'paypal_email': pp_email}
+
+        elif payout_method == 'bank':
+            ba_name   = request.POST.get('bank_account_name', '').strip()
+            ba_number = request.POST.get('bank_account_number', '').strip()
+            ba_bank   = request.POST.get('bank_name', '').strip()
+            ba_swift  = request.POST.get('bank_swift_code', '').strip()
+            if not ba_name:   errors.append("Account holder name is required.")
+            if not ba_number: errors.append("Account number / IBAN is required.")
+            if not ba_bank:   errors.append("Bank name is required.")
+            payout_data = {
+                'bank_account_name': ba_name,
+                'bank_account_number': ba_number,
+                'bank_name': ba_bank,
+                'bank_swift_code': ba_swift,
+            }
+
+        if errors:
+            for e in errors:
+                messages.error(request, e)
+        else:
+            affiliate.set_payout_details(payout_method, payout_data)
+            affiliate.save()
+            messages.success(request, "✅ Payout account details updated and encrypted.")
+
+    return redirect('affiliate-dashboard')
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+@login_required
+def affiliate_delete_payout(request):
+    """Clear all payout account details."""
+    if not hasattr(request.user, 'affiliate_profile'):
+        return redirect('affiliate-apply')
+
+    if request.method == 'POST':
+        affiliate = request.user.affiliate_profile
+        if affiliate.payout_requests.filter(status='pending').exists():
+            messages.error(request, "Cannot remove payout details while a pending request is active.")
+        else:
+            affiliate.clear_payout_details()
+            affiliate.save()
+            messages.info(request, "Payout account details removed. Re-add details before your next withdrawal.")
+
+    return redirect('affiliate-dashboard')
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+@login_required
+def affiliate_update_settings(request):
+    """Alias for update_payout (backwards compat)."""
+    return affiliate_update_payout(request)

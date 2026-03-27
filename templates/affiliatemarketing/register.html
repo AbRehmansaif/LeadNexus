@@ -1,0 +1,635 @@
+{% extends "base.html" %}
+{% block title %}Apply as a LeadNexus Partner — Affiliate Program Application{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+* { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+.reg-wrap {
+    background: #020617; min-height: 100vh; margin: -20px;
+    padding: 60px 24px 100px;
+    display: flex; flex-direction: column; align-items: center;
+    position: relative; overflow: hidden;
+}
+.reg-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+        radial-gradient(ellipse 60% 50% at 10% 20%, rgba(124,58,237,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 50% at 90% 80%, rgba(99,102,241,0.08) 0%, transparent 60%);
+}
+.reg-head { text-align: center; margin-bottom: 40px; position: relative; z-index: 2; color: #fff; }
+.reg-head h1 { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 8px; }
+.reg-head p  { color: #64748b; font-size: 0.9rem; }
+
+/* ── PROGRESS ── */
+.prog { display: flex; align-items: center; margin-bottom: 40px; position: relative; z-index: 2; }
+.p-step { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.p-circle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.82rem; font-weight: 800; color: #475569; transition: all 0.4s;
+}
+.p-circle.active { background: #7c3aed; border-color: #7c3aed; color: #fff; box-shadow: 0 0 20px rgba(124,58,237,0.4); }
+.p-circle.done   { background: #10b981; border-color: #10b981; color: #fff; }
+.p-lbl { font-size: 0.65rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; width: 70px; }
+.p-lbl.active { color: #c4b5fd; }
+.p-line { width: 70px; height: 2px; background: rgba(255,255,255,0.05); align-self: flex-start; margin-top: 22px; transition: background 0.4s; }
+.p-line.done { background: #10b981; }
+
+/* ── CARD ── */
+.reg-card {
+    width: 100%; max-width: 700px;
+    background: rgba(15,23,42,0.85); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 28px; padding: 48px; position: relative; z-index: 2;
+    backdrop-filter: blur(40px); box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+}
+.reg-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #7c3aed, #6366f1, #10b981);
+    border-radius: 28px 28px 0 0;
+}
+
+/* ── STEP PANELS ── */
+.step-panel { display: none; }
+.step-panel.active { display: block; animation: si 0.4s ease; }
+@keyframes si { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+.s-title { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 6px; }
+.s-sub   { font-size: 0.87rem; color: #64748b; margin-bottom: 30px; line-height: 1.6; }
+
+/* ── FORM ── */
+.f-row { display: grid; gap: 14px; margin-bottom: 18px; }
+.f-row.two { grid-template-columns: 1fr 1fr; }
+.f-label { font-size: 0.71rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px; display: block; }
+.f-input {
+    width: 100%; background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;
+    padding: 13px 16px; color: #fff; font-size: 0.92rem; box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.f-input:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
+.f-input::placeholder { color: #334155; }
+select.f-input option { background-color: #0f172a; color: #fff; }
+textarea.f-input { resize: vertical; min-height: 100px; }
+.f-hint { font-size: 0.75rem; color: #334155; margin-top: 5px; line-height: 1.4; }
+.f-group { display: flex; flex-direction: column; }
+
+/* ── PAYOUT METHOD SELECTOR ── */
+.method-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 28px; }
+.m-tab {
+    border: 2px solid rgba(255,255,255,0.06); border-radius: 14px;
+    padding: 16px 12px; cursor: pointer; transition: all 0.3s;
+    background: rgba(255,255,255,0.02); text-align: center;
+}
+.m-tab:hover  { border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.05); }
+.m-tab.active { border-color: #7c3aed; background: rgba(124,58,237,0.08); }
+.m-tab .t-icon { font-size: 1.8rem; margin-bottom: 8px; display: block; }
+.m-tab .t-name { font-size: 0.85rem; font-weight: 800; color: #fff; }
+.m-tab .t-note { font-size: 0.7rem; color: #475569; margin-top: 3px; }
+.method-fields { display: none; }
+.method-fields.active { display: block; }
+
+/* ── HIGHLIGHT BOX ── */
+.info-box {
+    border-radius: 14px; padding: 18px 20px; margin-bottom: 22px;
+    display: flex; align-items: flex-start; gap: 14px;
+}
+.info-box.green { background: rgba(16,185,129,0.06); border: 1px solid rgba(16,185,129,0.2); }
+.info-box.blue  { background: rgba(99,102,241,0.06);  border: 1px solid rgba(99,102,241,0.2); }
+.info-box.amber { background: rgba(245,158,11,0.06);  border: 1px solid rgba(245,158,11,0.2); }
+.info-box-icon { font-size: 1.6rem; flex-shrink: 0; }
+.info-box-text h4 { font-size: 0.88rem; font-weight: 800; margin-bottom: 4px; }
+.info-box-text p  { font-size: 0.8rem; color: #64748b; line-height: 1.5; margin: 0; }
+
+/* ── REVIEW BLOCK ── */
+.r-section { margin-bottom: 24px; }
+.r-section-label { font-size: 0.68rem; font-weight: 800; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.08em; padding-bottom: 8px; border-bottom: 1px solid rgba(124,58,237,0.2); margin-bottom: 8px; }
+.r-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.85rem; }
+.r-row:last-child { border-bottom: none; }
+.r-key { color: #475569; font-weight: 700; min-width: 140px; flex-shrink: 0; }
+.r-val { color: #fff; font-weight: 600; text-align: right; word-break: break-all; }
+
+/* ── AGREE ── */
+.agree-scroll { background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 18px; max-height: 140px; overflow-y: auto; margin-bottom: 20px; font-size: 0.79rem; color: #475569; line-height: 1.7; }
+.agree-scroll::-webkit-scrollbar { width: 3px; }
+.agree-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 2px; }
+.check-row { display: flex; align-items: flex-start; gap: 11px; cursor: pointer; }
+.check-box { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; accent-color: #7c3aed; cursor: pointer; }
+
+/* ── BUTTONS ── */
+.nav-btns { display: flex; gap: 14px; margin-top: 32px; }
+.btn-next {
+    flex: 2; background: linear-gradient(135deg, #7c3aed, #6366f1);
+    color: #fff; border: none; padding: 15px; border-radius: 13px;
+    font-size: 0.95rem; font-weight: 800; cursor: pointer;
+    box-shadow: 0 8px 25px rgba(124,58,237,0.35); transition: all 0.3s;
+}
+.btn-next:hover { transform: translateY(-2px); box-shadow: 0 14px 35px rgba(124,58,237,0.5); }
+.btn-back {
+    flex: 1; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08); color: #94a3b8;
+    padding: 15px; border-radius: 13px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-back:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.btn-submit {
+    flex: 2; background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff; border: none; padding: 15px; border-radius: 13px;
+    font-size: 0.95rem; font-weight: 800; cursor: pointer;
+    box-shadow: 0 8px 25px rgba(16,185,129,0.3); transition: all 0.3s;
+}
+.btn-submit:hover:not(:disabled) { transform: translateY(-2px); }
+.btn-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── ALERT ── */
+.msg-box { border-radius: 11px; padding: 13px 16px; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.5; }
+.msg-error   { background: rgba(239,68,68,0.08);  border: 1px solid rgba(239,68,68,0.25);  color: #fca5a5; }
+.msg-success { background: rgba(16,185,129,0.08); border: 1px solid rgba(16,185,129,0.25); color: #6ee7b7; }
+
+.lock-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 0.7rem; color: #10b981; font-weight: 700; }
+
+@media (max-width: 640px) {
+    .reg-card { padding: 28px 18px; }
+    .f-row.two { grid-template-columns: 1fr; }
+    .method-tabs { grid-template-columns: 1fr; }
+    .prog { transform: scale(0.82); transform-origin: center; }
+    .nav-btns { flex-direction: column-reverse; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reg-wrap">
+<div class="reg-bg"></div>
+
+<div class="reg-head">
+    <h1>LeadNexus Partner Application</h1>
+    <p>Manual review within 24–48 hours. All payment details are AES-256 encrypted.</p>
+</div>
+
+<!-- Progress Bar -->
+<div class="prog" id="prog">
+    <div class="p-step">
+        <div class="p-circle active" id="pc1">1</div>
+        <div class="p-lbl active"   id="pl1">Account</div>
+    </div>
+    <div class="p-line" id="pln1"></div>
+    <div class="p-step">
+        <div class="p-circle" id="pc2">2</div>
+        <div class="p-lbl"    id="pl2">Profile</div>
+    </div>
+    <div class="p-line" id="pln2"></div>
+    <div class="p-step">
+        <div class="p-circle" id="pc3">3</div>
+        <div class="p-lbl"    id="pl3">Payout</div>
+    </div>
+    <div class="p-line" id="pln3"></div>
+    <div class="p-step">
+        <div class="p-circle" id="pc4">4</div>
+        <div class="p-lbl"    id="pl4">Submit</div>
+    </div>
+</div>
+
+<div class="reg-card">
+    {% for msg in messages %}
+    <div class="msg-box {% if 'error' in msg.tags %}msg-error{% else %}msg-success{% endif %}">{{ msg }}</div>
+    {% endfor %}
+
+    <form method="post" id="regForm">
+        {% csrf_token %}
+
+        <!-- ══ STEP 1: ACCOUNT ══ -->
+        <div class="step-panel active" id="s1">
+            <div class="s-title">Account Setup</div>
+            <div class="s-sub">
+                {% if request.user.is_authenticated %}
+                Your session is active. We'll link the partner profile to your account.
+                {% else %}
+                Create your LeadNexus account — or <a href="/login/?next=/affiliate/apply/" style="color:#7c3aed;font-weight:700;">log in if you have one</a>.
+                {% endif %}
+            </div>
+
+            {% if request.user.is_authenticated %}
+            <div class="info-box green">
+                <div class="info-box-icon">✅</div>
+                <div class="info-box-text">
+                    <h4 style="color:#10b981;">Operator Session Detected</h4>
+                    <p>Logged in as <strong style="color:#fff;">{{ request.user.username }}</strong> ({{ request.user.email }}). Your existing account will be used for the partner profile.</p>
+                </div>
+            </div>
+            {% else %}
+            <div class="f-row two">
+                <div class="f-group">
+                    <label class="f-label">Username *</label>
+                    <input type="text" name="username" class="f-input" placeholder="your_handle" value="{{ post.username|default:'' }}">
+                    <span class="f-hint">No spaces, lowercase preferred.</span>
+                </div>
+                <div class="f-group">
+                    <label class="f-label">Email Address *</label>
+                    <input type="email" name="email" class="f-input" placeholder="you@domain.com" value="{{ post.email|default:'' }}">
+                </div>
+            </div>
+            <div class="f-row">
+                <div class="f-group">
+                    <label class="f-label">Password *</label>
+                    <input type="password" name="password" class="f-input" placeholder="Minimum 8 characters">
+                    <span class="f-hint">Keep it strong — this is your platform login.</span>
+                </div>
+            </div>
+            {% endif %}
+            <div class="nav-btns">
+                <button type="button" class="btn-next" onclick="go(2)">Continue — Promotion Profile →</button>
+            </div>
+        </div>
+
+        <!-- ══ STEP 2: PROMOTION PROFILE ══ -->
+        <div class="step-panel" id="s2">
+            <div class="s-title">Promotion Profile</div>
+            <div class="s-sub">Tell us who you are and how you'll promote LeadNexus. This is reviewed by our team — be specific.</div>
+
+            <div class="f-row two">
+                <div class="f-group">
+                    <label class="f-label">Full Legal Name *</label>
+                    <input type="text" name="full_name" class="f-input" placeholder="Muhammad Ali Khan" value="{{ post.full_name|default:'' }}">
+                    <span class="f-hint">Must match your payout account name.</span>
+                </div>
+                <div class="f-group">
+                    <label class="f-label">WhatsApp / Phone *</label>
+                    <input type="tel" name="phone_number" class="f-input" placeholder="03XX-XXXXXXX" value="{{ post.phone_number|default:'' }}">
+                    <span class="f-hint">For identity & verification only.</span>
+                </div>
+            </div>
+            <div class="f-row">
+                <div class="f-group">
+                    <label class="f-label">Primary Promotion Channel *</label>
+                    <select name="promotion_method" class="f-input" id="promotionMethodSelect" onchange="updatePromoFields()">
+                        <option value="blog"       {% if post.promotion_method == 'blog' %}selected{% endif %}>Blog / Website</option>
+                        <option value="youtube"    {% if post.promotion_method == 'youtube' %}selected{% endif %}>YouTube Channel</option>
+                        <option value="social"     {% if post.promotion_method == 'social' %}selected{% endif %}>Social Media (Instagram/TikTok/X)</option>
+                        <option value="newsletter" {% if post.promotion_method == 'newsletter' %}selected{% endif %}>Newsletter / Email List</option>
+                        <option value="agency"     {% if post.promotion_method == 'agency' %}selected{% endif %}>Agency / Consulting Firm</option>
+                        <option value="community"  {% if post.promotion_method == 'community' %}selected{% endif %}>Online Community / Forum</option>
+                        <option value="other"      {% if post.promotion_method == 'other' %}selected{% endif %}>Other</option>
+                    </select>
+                </div>
+            </div>
+            <div class="f-row two">
+                <div class="f-group">
+                    <label class="f-label" id="lbl-url">Website / Profile URL</label>
+                    <input type="url" name="website_url" class="f-input" id="inp-url" placeholder="https://yourblog.com" value="{{ post.website_url|default:'' }}">
+                </div>
+                <div class="f-group">
+                    <label class="f-label" id="lbl-aud">Estimated Monthly Audience</label>
+                    <input type="text" name="audience_size" class="f-input" id="inp-aud" placeholder="e.g. 5,000 subscribers" value="{{ post.audience_size|default:'' }}">
+                </div>
+            </div>
+            <div class="f-row">
+                <div class="f-group">
+                    <label class="f-label">Promotion Strategy *</label>
+                    <textarea name="bio" class="f-input" placeholder="Describe specifically how you'll promote LeadNexus — your content type, target audience, past experience promoting SaaS tools, expected monthly referrals...">{{ post.bio|default:'' }}</textarea>
+                    <span class="f-hint">Min 50 characters. Vague answers are rejected.</span>
+                </div>
+            </div>
+            <div class="nav-btns">
+                <button type="button" class="btn-back" onclick="go(1)">← Back</button>
+                <button type="button" class="btn-next" onclick="go(3)">Continue — Payout Setup →</button>
+            </div>
+        </div>
+
+        <!-- ══ STEP 3: PAYOUT METHOD ══ -->
+        <div class="step-panel" id="s3">
+            <div class="s-title">Payout Account Setup</div>
+            <div class="s-sub">Select your preferred payment method. All account details are AES-256 encrypted before storage and never shared with third parties.</div>
+
+            <div class="info-box amber" style="margin-bottom:24px;">
+                <div class="info-box-icon">🔐</div>
+                <div class="info-box-text">
+                    <h4 style="color:#fbbf24;">Bank-Grade Encryption</h4>
+                    <p>Your account details are encrypted using Fernet (AES-128-CBC) before being stored. Even database administrators cannot read your raw payment information.</p>
+                </div>
+            </div>
+
+            <!-- Method selector tabs -->
+            <div class="method-tabs">
+                <div class="m-tab active" id="tab-easypaisa" onclick="selectMethod('easypaisa')">
+                    <span class="t-icon">📱</span>
+                    <div class="t-name">EasyPaisa</div>
+                    <div class="t-note">Pakistan (PKR)</div>
+                </div>
+                <div class="m-tab" id="tab-paypal" onclick="selectMethod('paypal')">
+                    <span class="t-icon">💳</span>
+                    <div class="t-name">PayPal</div>
+                    <div class="t-note">International (USD)</div>
+                </div>
+                <div class="m-tab" id="tab-bank" onclick="selectMethod('bank')">
+                    <span class="t-icon">🏦</span>
+                    <div class="t-name">Bank Transfer</div>
+                    <div class="t-note">IBAN / SWIFT</div>
+                </div>
+            </div>
+            <input type="hidden" name="payout_method" id="payoutMethodInput" value="easypaisa">
+
+            <!-- EasyPaisa Fields -->
+            <div class="method-fields active" id="fields-easypaisa">
+                <div class="info-box green" style="margin-bottom:18px;">
+                    <div class="info-box-icon" style="font-size:1.2rem;">📱</div>
+                    <div class="info-box-text">
+                        <h4 style="color:#10b981;">EasyPaisa — PKR Payouts</h4>
+                        <p>Provide the name and number exactly as registered with your EasyPaisa account. Transfers are processed within 3–5 business days.</p>
+                    </div>
+                </div>
+                <div class="f-row">
+                    <div class="f-group">
+                        <label class="f-label">EasyPaisa Account Holder Name *</label>
+                        <input type="text" name="easypaisa_name" class="f-input" placeholder="Exact name as on EasyPaisa account" value="{{ post.easypaisa_name|default:'' }}">
+                        <span class="f-hint">This must exactly match the name registered with EasyPaisa.</span>
+                    </div>
+                </div>
+                <div class="f-row">
+                    <div class="f-group">
+                        <label class="f-label">EasyPaisa Mobile Number *</label>
+                        <input type="tel" name="easypaisa_number" class="f-input" placeholder="03XX-XXXXXXX" value="{{ post.easypaisa_number|default:'' }}">
+                        <span class="f-hint">11-digit EasyPaisa-registered mobile number.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PayPal Fields -->
+            <div class="method-fields" id="fields-paypal">
+                <div class="info-box blue" style="margin-bottom:18px;">
+                    <div class="info-box-icon" style="font-size:1.2rem;">💳</div>
+                    <div class="info-box-text">
+                        <h4 style="color:#818cf8;">PayPal — USD Payouts</h4>
+                        <p>International partners can receive commissions via PayPal. Provide the email address linked to your verified PayPal account.</p>
+                    </div>
+                </div>
+                <div class="f-row">
+                    <div class="f-group">
+                        <label class="f-label">PayPal Email Address *</label>
+                        <input type="email" name="paypal_email" class="f-input" placeholder="your@paypal.com" value="{{ post.paypal_email|default:'' }}">
+                        <span class="f-hint">Must be a verified PayPal account to receive payments. Payouts may take 5–7 business days.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Bank Transfer Fields -->
+            <div class="method-fields" id="fields-bank">
+                <div class="info-box blue" style="margin-bottom:18px;">
+                    <div class="info-box-icon" style="font-size:1.2rem;">🏦</div>
+                    <div class="info-box-text">
+                        <h4 style="color:#818cf8;">Bank Transfer — IBAN / SWIFT</h4>
+                        <p>Direct bank transfers. Suitable for all banks including Meezan, HBL, UBL, and international accounts. Processing: 5–10 business days.</p>
+                    </div>
+                </div>
+                <div class="f-row two">
+                    <div class="f-group">
+                        <label class="f-label">Account Holder Name *</label>
+                        <input type="text" name="bank_account_name" class="f-input" placeholder="Legal name on bank account" value="{{ post.bank_account_name|default:'' }}">
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">Bank Name *</label>
+                        <input type="text" name="bank_name" class="f-input" placeholder="e.g. HBL, Meezan, UBL" value="{{ post.bank_name|default:'' }}">
+                    </div>
+                </div>
+                <div class="f-row two">
+                    <div class="f-group">
+                        <label class="f-label">Account Number / IBAN *</label>
+                        <input type="text" name="bank_account_number" class="f-input" placeholder="PK36SCBL0000001123456702" value="{{ post.bank_account_number|default:'' }}">
+                        <span class="f-hint">Full IBAN or account number.</span>
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">SWIFT / BIC Code</label>
+                        <input type="text" name="bank_swift_code" class="f-input" placeholder="SCBLPKKA (optional)" value="{{ post.bank_swift_code|default:'' }}">
+                        <span class="f-hint">Required for international transfers.</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-btns">
+                <button type="button" class="btn-back" onclick="go(2)">← Back</button>
+                <button type="button" class="btn-next" onclick="go(4)">Review Application →</button>
+            </div>
+        </div>
+
+        <!-- ══ STEP 4: REVIEW & SUBMIT ══ -->
+        <div class="step-panel" id="s4">
+            <div class="s-title">Review & Submit</div>
+            <div class="s-sub">Confirm all details before submitting. Manual review takes 24–48 hours.</div>
+
+            <div class="r-section">
+                <div class="r-section-label">Account Identity</div>
+                {% if request.user.is_authenticated %}
+                <div class="r-row"><span class="r-key">Username</span><span class="r-val">{{ request.user.username }}</span></div>
+                <div class="r-row"><span class="r-key">Email</span><span class="r-val">{{ request.user.email }}</span></div>
+                {% else %}
+                <div class="r-row"><span class="r-key">Username</span><span class="r-val" id="rv-u">—</span></div>
+                <div class="r-row"><span class="r-key">Email</span><span class="r-val" id="rv-e">—</span></div>
+                {% endif %}
+            </div>
+
+            <div class="r-section">
+                <div class="r-section-label">Promotion Profile</div>
+                <div class="r-row"><span class="r-key">Full Name</span><span class="r-val" id="rv-nm">—</span></div>
+                <div class="r-row"><span class="r-key">Phone</span><span class="r-val" id="rv-ph">—</span></div>
+                <div class="r-row"><span class="r-key">Channel</span><span class="r-val" id="rv-ch">—</span></div>
+                <div class="r-row"><span class="r-key">Website</span><span class="r-val" id="rv-ws">—</span></div>
+                <div class="r-row"><span class="r-key">Audience</span><span class="r-val" id="rv-au">—</span></div>
+            </div>
+
+            <div class="r-section">
+                <div class="r-section-label">Payout Method <span class="lock-badge"><i data-lucide="lock" style="width:10px;height:10px;"></i> AES-256 Encrypted</span></div>
+                <div class="r-row"><span class="r-key">Method</span><span class="r-val" id="rv-pm">—</span></div>
+                <div class="r-row"><span class="r-key">Details</span><span class="r-val" id="rv-pd" style="max-width:300px;font-family:monospace;font-size:0.78rem;">—</span></div>
+            </div>
+
+            <!-- Agreement -->
+            <div class="agree-scroll">
+                <strong>LeadNexus Partner Program Agreement</strong><br><br>
+                1. All submitted information is accurate and truthful. False or misleading information results in permanent disqualification and forfeiture of all commissions.<br>
+                2. Self-referrals are strictly prohibited. Creating fake accounts to generate commissions leads to immediate account suspension.<br>
+                3. Partner must not use spam, deceptive advertising, or misleading claims to promote LeadNexus.<br>
+                4. Applications are manually reviewed. Approval is not guaranteed and decisions are final unless appealed within 7 days.<br>
+                5. Commission payments are sent exclusively to the registered payout account. Account changes require admin re-verification.<br>
+                6. All payout account details are encrypted using AES-256 and stored securely. LeadNexus will never request your PIN, password, or OTP.<br>
+                7. Minimum payout threshold: {{ settings.minimum_payout }}. Processing time: 3–10 business days based on method.<br>
+                8. LeadNexus reserves the right to modify commission rates with 30 days notice to active partners.
+            </div>
+            <label class="check-row" style="margin-bottom:24px;">
+                <input type="checkbox" name="declaration" class="check-box" id="declCb">
+                <span style="font-size:0.84rem;color:#94a3b8;line-height:1.5;">I have read and agree to the <strong style="color:#c4b5fd;">Partner Program Agreement</strong>. All information is accurate and payment details are correct.</span>
+            </label>
+
+            <div class="nav-btns">
+                <button type="button" class="btn-back" onclick="go(3)">← Modify</button>
+                <button type="submit" class="btn-submit" id="subBtn" disabled>Submit Application ✓</button>
+            </div>
+        </div>
+
+    </form>
+</div>
+
+<!-- Trust strip -->
+<div style="display:flex;gap:24px;flex-wrap:wrap;justify-content:center;margin-top:32px;position:relative;z-index:2;">
+    <span style="font-size:0.73rem;color:#334155;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="shield-check" style="width:13px;height:13px;color:#7c3aed;"></i> Application reviewed within 48 hours
+    </span>
+    <span style="font-size:0.73rem;color:#334155;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="lock" style="width:13px;height:13px;color:#10b981;"></i> Payment details AES-256 encrypted
+    </span>
+    <span style="font-size:0.73rem;color:#334155;display:flex;align-items:center;gap:6px;">
+        <i data-lucide="refresh-cw" style="width:13px;height:13px;color:#6366f1;"></i> {{ settings.commission_rate }}% recurring per conversion
+    </span>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let cur = 1;
+let payMethod = 'easypaisa';
+
+// ── Step Navigation ─────────────────────────────────────────────────────────
+function go(n) {
+    if (n > cur && !validate(cur)) return;
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`s${n}`).classList.add('active');
+    for (let i = 1; i <= 4; i++) {
+        const c = document.getElementById(`pc${i}`);
+        const l = document.getElementById(`pl${i}`);
+        c.classList.remove('active','done');
+        l.classList.remove('active');
+        if (i < n) { c.classList.add('done'); c.innerHTML = '✓'; }
+        else if (i === n) { c.classList.add('active'); c.textContent = i; l.classList.add('active'); }
+        else { c.textContent = i; }
+        const ln = document.getElementById(`pln${i}`);
+        if (ln) ln.classList.toggle('done', i < n);
+    }
+    if (n === 4) fillReview();
+    cur = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ── Validation ───────────────────────────────────────────────────────────────
+function validate(n) {
+    const isAuth = {% if request.user.is_authenticated %}true{% else %}false{% endif %};
+    if (n === 1 && !isAuth) {
+        const u = v('username'), e = v('email'), p = v('password');
+        if (!u) { err('Username is required.'); return false; }
+        if (!e) { err('Email is required.'); return false; }
+        if (!p || p.length < 8) { err('Password must be at least 8 characters.'); return false; }
+    }
+    if (n === 2) {
+        const nm = v('full_name'), ph = v('phone_number'), bi = v('bio');
+        if (!nm) { err('Full name is required.'); return false; }
+        if (!ph) { err('Phone number is required.'); return false; }
+        if (!bi || bi.length < 50) { err('Promotion description must be at least 50 characters.'); return false; }
+    }
+    if (n === 3) {
+        if (payMethod === 'easypaisa') {
+            if (!v('easypaisa_name'))   { err('EasyPaisa account holder name is required.'); return false; }
+            if (!v('easypaisa_number')) { err('EasyPaisa mobile number is required.'); return false; }
+        } else if (payMethod === 'paypal') {
+            const pe = v('paypal_email');
+            if (!pe || !pe.includes('@')) { err('A valid PayPal email is required.'); return false; }
+        } else if (payMethod === 'bank') {
+            if (!v('bank_account_name'))   { err('Bank account holder name is required.'); return false; }
+            if (!v('bank_account_number')) { err('Account number / IBAN is required.'); return false; }
+            if (!v('bank_name'))           { err('Bank name is required.'); return false; }
+        }
+    }
+    return true;
+}
+
+function v(name) { const el = document.querySelector(`[name="${name}"]`); return el ? el.value.trim() : ''; }
+
+function err(msg) {
+    let box = document.getElementById('stepErr');
+    if (!box) {
+        box = document.createElement('div');
+        box.id = 'stepErr'; box.className = 'msg-box msg-error';
+        const panel = document.querySelector('.step-panel.active');
+        panel.insertBefore(box, panel.firstChild);
+    }
+    box.textContent = '⚠ ' + msg;
+    setTimeout(() => box && box.remove(), 4000);
+}
+
+// ── Payout Method Tab Switching ───────────────────────────────────────────────
+function selectMethod(m) {
+    payMethod = m;
+    document.querySelectorAll('.m-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.method-fields').forEach(f => f.classList.remove('active'));
+    document.getElementById(`tab-${m}`).classList.add('active');
+    document.getElementById(`fields-${m}`).classList.add('active');
+    document.getElementById('payoutMethodInput').value = m;
+}
+
+// ── Review Summary ────────────────────────────────────────────────────────────
+function fillReview() {
+    const set = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '—'; };
+    set('rv-u',  v('username'));
+    set('rv-e',  v('email'));
+    set('rv-nm', v('full_name'));
+    set('rv-ph', v('phone_number'));
+    const sel = document.querySelector('[name="promotion_method"]');
+    set('rv-ch', sel ? sel.options[sel.selectedIndex]?.text : '—');
+    set('rv-ws', v('website_url') || 'Not provided');
+    set('rv-au', v('audience_size') || 'Not provided');
+
+    const methods = { easypaisa: 'EasyPaisa (PKR)', paypal: 'PayPal (USD)', bank: 'Bank Transfer' };
+    set('rv-pm', methods[payMethod] || payMethod);
+
+    let details = '';
+    if (payMethod === 'easypaisa') {
+        const num = v('easypaisa_number');
+        details = v('easypaisa_name') + ' · ' + (num.length >= 4 ? '****' + num.slice(-4) : num);
+    } else if (payMethod === 'paypal') {
+        const em = v('paypal_email');
+        const parts = em.split('@');
+        details = (parts[0].slice(0,2) + '***@' + (parts[1] || ''));
+    } else if (payMethod === 'bank') {
+        const num = v('bank_account_number');
+        details = v('bank_account_name') + ' · ' + v('bank_name') + ' · ' + (num.length >= 4 ? '****' + num.slice(-4) : num);
+    }
+    set('rv-pd', details + ' [Encrypted before storage]');
+}
+
+// ── Dynamic Form Fields ──────────────────────────────────────────────────────
+const pmMap = {
+    blog: { lblUrl: 'Blog / Website URL', phUrl: 'https://yourblog.com', lblAud: 'Monthly Visitors', phAud: 'e.g. 10,000' },
+    youtube: { lblUrl: 'YouTube Channel URL', phUrl: 'https://youtube.com/c/yourchannel', lblAud: 'Subscribers', phAud: 'e.g. 50,000' },
+    social: { lblUrl: 'Social Media Profile URL', phUrl: 'https://instagram.com/yourhandle', lblAud: 'Total Followers', phAud: 'e.g. 100k' },
+    newsletter: { lblUrl: 'Newsletter Landing Page URL', phUrl: 'https://yournewsletter.com', lblAud: 'List Size', phAud: 'e.g. 5,000' },
+    agency: { lblUrl: 'Agency Website URL', phUrl: 'https://youragency.com', lblAud: 'Active Clients', phAud: 'e.g. 20' },
+    community: { lblUrl: 'Community URL', phUrl: 'https://discord.gg/yourinvite', lblAud: 'Active Members', phAud: 'e.g. 2,000' },
+    other: { lblUrl: 'Main URL (Optional)', phUrl: 'https://...', lblAud: 'Estimated Audience', phAud: 'e.g. 1,000' }
+};
+
+function updatePromoFields() {
+    const pm = document.getElementById('promotionMethodSelect').value;
+    const data = pmMap[pm] || pmMap.other;
+    const lblUrl = document.getElementById('lbl-url');
+    const inpUrl = document.getElementById('inp-url');
+    const lblAud = document.getElementById('lbl-aud');
+    const inpAud = document.getElementById('inp-aud');
+
+    if (lblUrl) lblUrl.textContent = data.lblUrl;
+    if (inpUrl) inpUrl.placeholder = data.phUrl;
+    if (lblAud) lblAud.textContent = data.lblAud;
+    if (inpAud) inpAud.placeholder = data.phAud;
+}
+
+// ── Declaration checkbox ──────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+
+    const cb  = document.getElementById('declCb');
+    const btn = document.getElementById('subBtn');
+    if (cb && btn) cb.addEventListener('change', () => { btn.disabled = !cb.checked; });
+
+    updatePromoFields(); // Initialize
+});
+</script>
+{% endblock %}

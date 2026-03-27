@@ -127,7 +127,26 @@ class RegisterView(CreateView):
                 pass
 
         Thread(target=send_professional_welcome, args=(user.email, user.username)).start()
-            
+        
+        # ── Affiliate Referral Tracking ──
+        ref_code = self.request.session.pop('affiliate_ref', None)
+        if ref_code:
+            try:
+                from core.models import UserProfile
+                profile, _ = UserProfile.objects.get_or_create(user=user)
+                profile.referred_by = ref_code
+                profile.save(update_fields=['referred_by'])
+                
+                from affiliatemarketing.models import Affiliate
+                try:
+                    affiliate = Affiliate.objects.get(referral_code=ref_code, status='active')
+                    affiliate.total_signups += 1
+                    affiliate.save(update_fields=['total_signups'])
+                except Affiliate.DoesNotExist:
+                    pass
+            except Exception:
+                pass
+
         from django.contrib.auth import login as auth_login
         auth_login(self.request, user)
         

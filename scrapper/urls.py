@@ -83,6 +83,7 @@ urlpatterns = [
 
     # ── Contact Us ──────────────────────────────────────────
     path('contact-us/', include('contactus.urls', namespace='contactus')),
+    path('affiliate/', include('affiliatemarketing.urls')),
 ]
 
 from django.conf import settings

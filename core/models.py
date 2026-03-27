@@ -44,6 +44,9 @@ class UserProfile(models.Model):
     total_linkedin_scraped = models.PositiveIntegerField(default=0)
     total_records_scraped = models.PositiveIntegerField(default=0, help_text="Total verified contacts found across all origins")
     
+    # Affiliate / Referral
+    referred_by = models.CharField(max_length=20, blank=True, null=True, help_text="Affiliate referral code used during signup")
+
     # Payment & Subscription Status
     is_paid = models.BooleanField(default=False, help_text="True if user has an active paid subscription")
     last_payment_date = models.DateTimeField(null=True, blank=True)

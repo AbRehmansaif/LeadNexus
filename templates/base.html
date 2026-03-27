@@ -192,6 +192,9 @@
                                     <a href="{% url 'subscription' %}" class="dropdown-item">
                                         <i data-lucide="crown" style="width:16px; height:16px; margin-right:8px; color: var(--accent-amber);"></i> Manage Plan
                                     </a>
+                                    <a href="{% url 'affiliate-dashboard' %}" class="dropdown-item">
+                                        <i data-lucide="link-2" style="width:16px; height:16px; margin-right:8px; color: var(--accent-green);"></i> Affiliate Program
+                                    </a>
                                     <form action="{% url 'logout' %}" method="post" class="logout-form">
                                         {% csrf_token %}
                                         <button type="submit" class="dropdown-item logout" style="color: var(--accent-red);">
@@ -263,6 +266,16 @@
                             <li><a href="/#pricing">Pricing Plans</a></li>
                             <li><a href="{% url 'register' %}">Get Started</a></li>
                             <li><a href="{% url 'login' %}">Member Login</a></li>
+                            <li><a href="{% url 'affiliate-apply' %}" style="color:var(--accent-green);">💰 Affiliate Program</a></li>
+                        </ul>
+                    </div>
+                    {% else %}
+                    <div>
+                        <h4 class="footer-heading">Platform</h4>
+                        <ul class="footer-links">
+                            <li><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                            <li><a href="{% url 'subscription' %}">Manage Plan</a></li>
+                            <li><a href="{% url 'affiliate-dashboard' %}" style="color:var(--accent-green);">💰 Affiliate Program</a></li>
                         </ul>
                     </div>
                     {% endif %}

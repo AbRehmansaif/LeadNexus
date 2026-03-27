@@ -1,0 +1,597 @@
+{% extends "base.html" %}
+{% block title %}Partner Dashboard — LeadNexus{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+* { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+:root {
+    --p: #7c3aed; --p2: #6366f1;
+    --g: #10b981; --r: #ef4444; --a: #f59e0b;
+    --b: rgba(255,255,255,0.05);
+    --t: rgba(255,255,255,0.02);
+}
+.db { background: #020617; min-height: 100vh; padding: 32px; margin: -20px; color: #fff; }
+
+/* Top bar */
+.topbar { display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:16px; margin-bottom:40px; }
+.topbar h1 { font-size:1.75rem; font-weight:800; letter-spacing:-0.03em; margin-bottom:4px; }
+.topbar p  { color:#475569; font-size:0.85rem; }
+.chip { display:inline-flex; align-items:center; gap:8px; padding:8px 18px; border-radius:100px; font-size:0.75rem; font-weight:800; }
+.chip-pending  { background:rgba(245,158,11,0.1);  border:1px solid rgba(245,158,11,0.25);  color:var(--a); }
+.chip-active   { background:rgba(16,185,129,0.1);  border:1px solid rgba(16,185,129,0.25);  color:var(--g); }
+.chip-rejected { background:rgba(239,68,68,0.1);   border:1px solid rgba(239,68,68,0.25);   color:var(--r); }
+.chip-suspended{ background:rgba(239,68,68,0.1);   border:1px solid rgba(239,68,68,0.25);   color:var(--r); }
+
+/* Notice card */
+.notice { background:rgba(245,158,11,0.05); border:1px solid rgba(245,158,11,0.2); border-radius:20px; padding:40px; text-align:center; margin-bottom:40px; }
+.notice.red { background:rgba(239,68,68,0.05); border-color:rgba(239,68,68,0.2); }
+.notice-steps { display:grid; grid-template-columns:repeat(3,1fr); gap:12px; max-width:600px; margin:28px auto 0; }
+.ns { background:rgba(255,255,255,0.03); border:1px solid var(--b); border-radius:12px; padding:16px; font-size:0.8rem; color:#64748b; }
+.ns-num { font-size:1.4rem; margin-bottom:8px; display:block; }
+.ns-t { font-weight:700; color:#fff; font-size:0.85rem; margin-bottom:4px; }
+.promo-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; max-width:600px; margin:24px auto 0; background:rgba(255,255,255,0.02); border:1px solid var(--b); border-radius:14px; padding:16px; }
+.pg-it .pk { color:#475569; font-weight:700; font-size:0.68rem; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:3px; }
+.pg-it .pv { color:#fff; font-weight:600; font-size:0.85rem; }
+
+/* KPI */
+.kpis { display:grid; grid-template-columns:repeat(4,1fr); gap:16px; margin-bottom:32px; }
+.kpi { background:var(--t); border:1px solid var(--b); border-radius:20px; padding:24px; transition:transform 0.2s,border-color 0.2s; }
+.kpi:hover { transform:translateY(-4px); border-color:rgba(124,58,237,0.3); }
+.kpi-ico { width:38px; height:38px; border-radius:10px; display:flex; align-items:center; justify-content:center; margin-bottom:16px; }
+.kpi-lbl { font-size:0.7rem; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:6px; }
+.kpi-val { font-size:2rem; font-weight:900; line-height:1; margin-bottom:4px; }
+.kpi-sub { font-size:0.75rem; color:#475569; }
+
+/* Referral bar */
+.ref-bar { background:linear-gradient(135deg,rgba(124,58,237,0.08),rgba(99,102,241,0.04)); border:1px solid rgba(124,58,237,0.2); border-radius:18px; padding:22px 28px; display:flex; align-items:center; gap:20px; flex-wrap:wrap; margin-bottom:32px; }
+.ref-bar h4 { font-size:0.95rem; font-weight:800; color:#fff; margin-bottom:4px; }
+.ref-bar p  { font-size:0.8rem; color:#64748b; margin:0; }
+.ref-group { flex:1; min-width:260px; display:flex; gap:8px; }
+.ref-input { flex:1; background:#000; border:1px solid rgba(255,255,255,0.08); border-radius:10px; padding:12px 16px; color:#a78bfa; font-family:monospace; font-size:0.85rem; }
+.copy-btn { background:var(--p); border:none; border-radius:10px; padding:12px 20px; color:#fff; font-weight:800; font-size:0.82rem; cursor:pointer; transition:background 0.2s; }
+.copy-btn:hover { background:#6d28d9; }
+
+/* Grid */
+.main-grid { display:grid; grid-template-columns:2fr 1fr; gap:28px; }
+
+/* Panel */
+.panel { background:var(--t); border:1px solid var(--b); border-radius:20px; padding:26px; margin-bottom:24px; }
+.ph { display:flex; justify-content:space-between; align-items:center; margin-bottom:22px; }
+.ph h3 { font-size:1rem; font-weight:800; color:#fff; margin:0; display:flex; align-items:center; gap:10px; }
+
+/* Table */
+.tt { width:100%; border-collapse:collapse; }
+.tt th { text-align:left; padding:11px 14px; font-size:0.68rem; font-weight:800; color:#334155; text-transform:uppercase; letter-spacing:0.06em; border-bottom:1px solid var(--b); }
+.tt td { padding:14px; border-bottom:1px solid rgba(255,255,255,0.02); vertical-align:middle; font-size:0.85rem; }
+.tt tr:last-child td { border-bottom:none; }
+.tt tr:hover td { background:rgba(255,255,255,0.015); }
+.pill { display:inline-flex; align-items:center; padding:3px 10px; border-radius:100px; font-size:0.7rem; font-weight:800; }
+.pill-paid    { background:rgba(16,185,129,0.1); color:var(--g); }
+.pill-free    { background:rgba(255,255,255,0.04); color:#64748b; }
+.pill-pro     { background:rgba(124,58,237,0.1);  color:#c4b5fd; }
+.pill-pending { background:rgba(245,158,11,0.1);  color:var(--a); }
+.pill-approved{ background:rgba(99,102,241,0.1);  color:#818cf8; }
+.pill-rejected{ background:rgba(239,68,68,0.1);   color:#fca5a5; }
+.empty { text-align:center; padding:40px 20px; color:#334155; }
+.empty span { font-size:2.5rem; display:block; margin-bottom:12px; }
+
+/* Balance sidebar */
+.bal { background:var(--t); border:1px solid var(--b); border-radius:20px; padding:24px; margin-bottom:24px; }
+.bal h3 { font-size:1rem; font-weight:800; margin-bottom:20px; color:#fff; }
+.bal-display { background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.12); border-radius:14px; padding:24px; text-align:center; margin-bottom:16px; }
+.bal-val { font-size:2.8rem; font-weight:900; color:var(--g); line-height:1; }
+.bal-sub { font-size:0.8rem; color:#475569; margin-top:6px; }
+.bal-mini-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin-bottom:20px; }
+.bal-mini { background:rgba(255,255,255,0.02); border:1px solid var(--b); border-radius:10px; padding:14px; text-align:center; }
+.bal-mini-val { font-size:1.1rem; font-weight:800; }
+.bal-mini-lbl { font-size:0.65rem; font-weight:700; color:#475569; text-transform:uppercase; margin-top:3px; }
+.info-strip { background:rgba(124,58,237,0.06); border:1px solid rgba(124,58,237,0.15); border-radius:10px; padding:14px; margin-bottom:20px; }
+.irow { display:flex; justify-content:space-between; font-size:0.82rem; }
+.irow+.irow { margin-top:6px; }
+.payout-btn { width:100%; background:linear-gradient(135deg,var(--g),#059669); border:none; border-radius:12px; padding:14px; color:#fff; font-size:0.9rem; font-weight:800; cursor:pointer; transition:all 0.3s; box-shadow:0 8px 20px rgba(16,185,129,0.25); }
+.payout-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 12px 30px rgba(16,185,129,0.4); }
+.payout-btn:disabled { opacity:0.3; cursor:not-allowed; transform:none; box-shadow:none; }
+.payout-note { font-size:0.75rem; color:#475569; text-align:center; margin-top:10px; line-height:1.5; }
+
+/* Payout Account Card */
+.pay-card { background:var(--t); border:1px solid var(--b); border-radius:20px; padding:24px; margin-bottom:24px; }
+.pay-card h3 { font-size:1rem; font-weight:800; color:#fff; margin-bottom:20px; display:flex; align-items:center; gap:8px; }
+.pay-configured { background:rgba(16,185,129,0.05); border:1px solid rgba(16,185,129,0.15); border-radius:14px; padding:20px; }
+.pay-row { display:flex; justify-content:space-between; padding:9px 0; border-bottom:1px solid rgba(255,255,255,0.03); font-size:0.85rem; }
+.pay-row:last-child { border-bottom:none; }
+.pay-key { color:#64748b; font-weight:700; }
+.pay-val { color:#fff; font-weight:700; }
+.pay-not { background:rgba(239,68,68,0.05); border:1px dashed rgba(239,68,68,0.2); border-radius:14px; padding:20px; text-align:center; margin-bottom:20px; }
+
+/* Payout form */
+.pf { margin-top:18px; }
+.pf-label { font-size:0.72rem; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:7px; display:block; }
+.pf-input { width:100%; background:rgba(0,0,0,0.3); border:1px solid rgba(255,255,255,0.06); border-radius:10px; padding:12px 14px; color:#fff; font-size:0.88rem; box-sizing:border-box; margin-bottom:14px; transition:border-color 0.2s; }
+.pf-input:focus { outline:none; border-color:var(--p); }
+.pf-hint { font-size:0.73rem; color:#334155; margin-top:-10px; margin-bottom:14px; line-height:1.4; }
+.m-tabs { display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-bottom:20px; }
+.m-tab { border:2px solid rgba(255,255,255,0.06); border-radius:12px; padding:12px 8px; cursor:pointer; text-align:center; background:rgba(255,255,255,0.02); transition:all 0.2s; }
+.m-tab:hover, .m-tab.active { border-color:var(--p); background:rgba(124,58,237,0.08); }
+.m-tab .ti { font-size:1.4rem; margin-bottom:6px; display:block; }
+.m-tab .tn { font-size:0.78rem; font-weight:800; color:#fff; }
+.m-tab .ts { font-size:0.66rem; color:#475569; }
+.m-fields { display:none; }
+.m-fields.active { display:block; }
+.pf-actions { display:flex; gap:10px; margin-top:6px; }
+.btn-save { flex:2; background:linear-gradient(135deg,var(--p),var(--p2)); border:none; border-radius:10px; padding:12px; color:#fff; font-size:0.85rem; font-weight:800; cursor:pointer; transition:all 0.2s; }
+.btn-save:hover { transform:translateY(-1px); }
+.btn-del { flex:1; background:rgba(239,68,68,0.08); border:1px solid rgba(239,68,68,0.2); border-radius:10px; padding:12px; color:#fca5a5; font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.2s; }
+.btn-del:hover { background:rgba(239,68,68,0.15); }
+.warn-box { background:rgba(245,158,11,0.06); border:1px solid rgba(245,158,11,0.2); border-radius:8px; padding:12px; margin-bottom:14px; font-size:0.78rem; color:#fbbf24; line-height:1.5; }
+.lock-tag { font-size:0.66rem; font-weight:700; color:var(--g); display:flex; align-items:center; gap:4px; margin-left:auto; }
+
+/* Terms panel */
+.terms-row { display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid var(--b); font-size:0.85rem; color:#64748b; }
+.terms-row:last-child { border-bottom:none; }
+
+@media (max-width:1024px) { .main-grid { grid-template-columns:1fr; } .kpis { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:640px)  { .kpis { grid-template-columns:1fr; } .notice-steps { grid-template-columns:1fr; } .ref-bar { flex-direction:column; } .promo-grid { grid-template-columns:1fr; } .m-tabs { grid-template-columns:1fr; } }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="db">
+
+    <!-- TOP BAR -->
+    <div class="topbar">
+        <div>
+            <h1>Partner Dashboard</h1>
+            <p>Code: <code style="color:#a78bfa;font-family:monospace;font-weight:700;">{{ affiliate.referral_code }}</code> &nbsp;|&nbsp; Joined {{ affiliate.created_at|date:"M d, Y" }}</p>
+        </div>
+        <span class="chip chip-{{ affiliate.status }}">
+            {% if affiliate.status == 'pending' %}⏳{% elif affiliate.status == 'active' %}✓{% else %}✗{% endif %}
+            {{ affiliate.get_status_display }}
+        </span>
+    </div>
+
+    {% for msg in messages %}
+    <div style="border-radius:12px;padding:14px 18px;margin-bottom:20px;font-size:0.85rem;
+        {% if 'error' in msg.tags %}background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);color:#fca5a5;
+        {% elif 'success' in msg.tags %}background:rgba(16,185,129,0.08);border:1px solid rgba(16,185,129,0.2);color:#6ee7b7;
+        {% else %}background:rgba(124,58,237,0.08);border:1px solid rgba(124,58,237,0.2);color:#c4b5fd;{% endif %}">
+        {{ msg }}
+    </div>
+    {% endfor %}
+
+    <!-- ══ PENDING NOTICE ══ -->
+    {% if affiliate.status == 'pending' %}
+    <div class="notice">
+        <span style="font-size:3.5rem;display:block;margin-bottom:16px;">⏳</span>
+        <div style="font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:10px;">Application Under Review</div>
+        <div style="font-size:0.9rem;color:#64748b;max-width:560px;margin:0 auto;line-height:1.65;">
+            Your partner application has been submitted. Our team manually reviews every application within <strong style="color:#fbbf24;">24–48 hours</strong>. You'll be notified once a decision is made.
+        </div>
+        <div class="notice-steps">
+            <div class="ns"><span class="ns-num">✅</span><div class="ns-t">Application Submitted</div>Identity, promotion profile, and encrypted payout details received.</div>
+            <div class="ns"><span class="ns-num">🔍</span><div class="ns-t">Manual Review</div>Our team verifies your identity, strategy, and payout account validity.</div>
+            <div class="ns"><span class="ns-num">🚀</span><div class="ns-t">Link Activated</div>On approval, your referral link activates and commissions begin tracking.</div>
+        </div>
+        <div class="promo-grid">
+            <div class="pg-it"><div class="pk">Full Name</div><div class="pv">{{ affiliate.full_name|default:"—" }}</div></div>
+            <div class="pg-it"><div class="pk">Phone</div><div class="pv">{{ affiliate.phone_number|default:"—" }}</div></div>
+            <div class="pg-it"><div class="pk">Promotion Channel</div><div class="pv">{{ affiliate.get_promotion_method_display|default:"—" }}</div></div>
+            <div class="pg-it"><div class="pk">Payout Method</div><div class="pv">{{ payout_summary.method|default:"—" }}</div></div>
+            <div class="pg-it"><div class="pk">Account Details</div><div class="pv">{{ payout_summary.secondary|default:"—" }}</div></div>
+            <div class="pg-it"><div class="pk">Applied</div><div class="pv">{{ affiliate.created_at|date:"M d, Y" }}</div></div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ══ REJECTED NOTICE ══ -->
+    {% if affiliate.status == 'rejected' %}
+    <div class="notice red">
+        <span style="font-size:3.5rem;display:block;margin-bottom:16px;">❌</span>
+        <div style="font-size:1.3rem;font-weight:800;color:#fff;margin-bottom:10px;">Application Not Approved</div>
+        <div style="font-size:0.9rem;color:#64748b;max-width:560px;margin:0 auto;line-height:1.65;">
+            Your application did not meet our current partner program standards.
+            {% if affiliate.rejection_reason %}
+            <div style="background:rgba(239,68,68,0.08);border:1px solid rgba(239,68,68,0.2);border-radius:10px;padding:16px;margin-top:16px;max-width:480px;margin-left:auto;margin-right:auto;">
+                <strong style="color:#fca5a5;">Reason:</strong> {{ affiliate.rejection_reason }}
+            </div>
+            {% endif %}
+            <br>You may contact support to appeal or re-apply after 30 days.
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ══ ACTIVE DASHBOARD ══ -->
+    {% if affiliate.status == 'active' %}
+
+    <!-- KPIs -->
+    <div class="kpis">
+        <div class="kpi" style="border-color:rgba(124,58,237,0.2);">
+            <div class="kpi-ico" style="background:rgba(124,58,237,0.1);"><i data-lucide="users" style="width:18px;height:18px;color:#c4b5fd;"></i></div>
+            <div class="kpi-lbl">Total Signups</div>
+            <div class="kpi-val" style="color:#c4b5fd;">{{ total_signups }}</div>
+            <div class="kpi-sub">Via your referral link</div>
+        </div>
+        <div class="kpi" style="border-color:rgba(16,185,129,0.2);">
+            <div class="kpi-ico" style="background:rgba(16,185,129,0.1);"><i data-lucide="credit-card" style="width:18px;height:18px;color:#10b981;"></i></div>
+            <div class="kpi-lbl">Paid Conversions</div>
+            <div class="kpi-val" style="color:#10b981;">{{ total_paid_conversions }}</div>
+            <div class="kpi-sub">Paying plan subscribers</div>
+        </div>
+        <div class="kpi" style="border-color:rgba(99,102,241,0.2);">
+            <div class="kpi-ico" style="background:rgba(99,102,241,0.1);"><i data-lucide="trending-up" style="width:18px;height:18px;color:#818cf8;"></i></div>
+            <div class="kpi-lbl">Revenue Generated</div>
+            <div class="kpi-val" style="color:#818cf8;">{{ total_revenue|floatformat:0 }}</div>
+            <div class="kpi-sub">Revenue from your referrals</div>
+        </div>
+        <div class="kpi" style="border-color:rgba(245,158,11,0.2);">
+            <div class="kpi-ico" style="background:rgba(245,158,11,0.1);"><i data-lucide="calendar" style="width:18px;height:18px;color:#fbbf24;"></i></div>
+            <div class="kpi-lbl">This Month</div>
+            <div class="kpi-val" style="color:#fbbf24;">{{ this_month_earnings|floatformat:0 }}</div>
+            <div class="kpi-sub">Commission earned (MTD)</div>
+        </div>
+    </div>
+
+    <!-- Referral Bar -->
+    <div class="ref-bar">
+        <div>
+            <h4><i data-lucide="link-2" style="width:15px;height:15px;display:inline;margin-right:5px;color:#a78bfa;"></i>Your Referral Link</h4>
+            <p>Your audience gets {{ settings.referral_discount_rate }}% off. You earn {{ settings.commission_rate }}% recurring commission per paid user.</p>
+        </div>
+        <div class="ref-group">
+            <input type="text" class="ref-input" id="refIn" value="{{ referral_url }}" readonly>
+            <button class="copy-btn" onclick="copyLink()">Copy</button>
+        </div>
+    </div>
+
+    <div class="main-grid">
+        <!-- ─ LEFT ─ -->
+        <div>
+            <!-- Referred Users -->
+            <div class="panel">
+                <div class="ph">
+                    <h3><i data-lucide="users" style="width:16px;height:16px;color:#c4b5fd;"></i>Referred Users</h3>
+                    <span style="font-size:0.75rem;color:#475569;">Last {{ referred_users|length }}</span>
+                </div>
+                {% if referred_users %}
+                <div style="overflow-x:auto;">
+                    <table class="tt">
+                        <thead><tr><th>User</th><th>Joined</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for u in referred_users %}
+                            <tr>
+                                <td>
+                                    <div style="font-weight:700;color:#fff;">{{ u.username }}</div>
+                                    <div style="font-size:0.72rem;color:#475569;">{{ u.email }}</div>
+                                </td>
+                                <td style="color:#64748b;font-size:0.8rem;">{{ u.date_joined|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if u.profile.is_paid %}<span class="pill pill-paid">✓ Paid</span>
+                                    {% else %}<span class="pill pill-free">Free</span>{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty"><span>👥</span>No referrals yet. Share your link to start tracking.</div>
+                {% endif %}
+            </div>
+
+            <!-- Earnings Chart -->
+            <div class="panel">
+                <div class="ph"><h3><i data-lucide="bar-chart-2" style="width:16px;height:16px;color:#818cf8;"></i>Earnings Trend (6 Months)</h3></div>
+                {% if chart_labels %}
+                <canvas id="earningsChart" height="90"></canvas>
+                {% else %}
+                <div class="empty"><span>📊</span>No earnings yet. Commission tracks here once referrals convert to paid users.</div>
+                {% endif %}
+            </div>
+
+            <!-- Payout History -->
+            <div class="panel">
+                <div class="ph"><h3><i data-lucide="clock" style="width:16px;height:16px;color:#fbbf24;"></i>Payout History</h3></div>
+                {% if recent_payouts %}
+                <div style="overflow-x:auto;">
+                    <table class="tt">
+                        <thead><tr><th>Amount</th><th>Method</th><th>Requested</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for p in recent_payouts %}
+                            <tr>
+                                <td style="font-weight:800;color:#fff;">{{ p.amount|floatformat:2 }}</td>
+                                <td style="color:#a78bfa;font-size:0.82rem;">{{ p.get_payout_method_display|default:p.payout_method }}</td>
+                                <td style="color:#64748b;font-size:0.8rem;">{{ p.requested_at|date:"M d, Y" }}</td>
+                                <td><span class="pill pill-{{ p.status }}">{{ p.get_status_display }}</span></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% else %}
+                <div class="empty"><span>💸</span>No payout requests yet.</div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ─ RIGHT SIDEBAR ─ -->
+        <div>
+            <!-- Balance -->
+            <div class="bal">
+                <h3><i data-lucide="wallet" style="width:16px;height:16px;display:inline;margin-right:8px;color:#fbbf24;"></i>Balance &amp; Withdrawal</h3>
+                <div class="bal-display">
+                    <div class="bal-val">{{ available_balance|floatformat:0 }}</div>
+                    <div class="bal-sub">Available to withdraw</div>
+                </div>
+                <div class="bal-mini-grid">
+                    <div class="bal-mini">
+                        <div class="bal-mini-val" style="color:#10b981;">{{ total_earnings|floatformat:0 }}</div>
+                        <div class="bal-mini-lbl">Total Earned</div>
+                    </div>
+                    <div class="bal-mini">
+                        <div class="bal-mini-val" style="color:#818cf8;">{{ paid_out|floatformat:0 }}</div>
+                        <div class="bal-mini-lbl">Paid Out</div>
+                    </div>
+                </div>
+                <div class="info-strip">
+                    <div class="irow"><span style="color:#64748b;">Commission Rate</span><strong style="color:#c4b5fd;">{{ settings.commission_rate }}%</strong></div>
+                    <div class="irow"><span style="color:#64748b;">Min. Withdrawal</span><strong style="color:#fff;">{{ minimum_payout }}</strong></div>
+                    <div class="irow"><span style="color:#64748b;">Payout Method</span><strong style="color:#10b981;">{{ payout_summary.method|default:"Not set" }}</strong></div>
+                </div>
+
+                {% if can_request_payout %}
+                <form method="post" action="{% url 'affiliate-payout-request' %}">
+                    {% csrf_token %}
+                    <button type="submit" class="payout-btn">Request Payout ({{ available_balance|floatformat:2 }})</button>
+                </form>
+                {% elif not affiliate.has_payout_configured %}
+                <button class="payout-btn" disabled>Setup Payout Account First</button>
+                <div class="payout-note">⚠ Add your payment account below before requesting withdrawal.</div>
+                {% elif available_balance < minimum_payout %}
+                <button class="payout-btn" disabled>Min. {{ minimum_payout }} Required</button>
+                <div class="payout-note">Balance: {{ available_balance|floatformat:2 }} / {{ minimum_payout|floatformat:2 }} needed.</div>
+                {% else %}
+                <button class="payout-btn" disabled>Request Pending</button>
+                <div class="payout-note">⏳ Processing your request (3–10 business days).</div>
+                {% endif %}
+            </div>
+
+            <!-- ─ PAYOUT ACCOUNT MANAGEMENT ─ -->
+            <div class="pay-card">
+                <h3>
+                    <i data-lucide="credit-card" style="width:16px;height:16px;color:#c4b5fd;"></i>
+                    Payout Account
+                    <span class="lock-tag"><i data-lucide="lock" style="width:10px;height:10px;"></i>AES-256</span>
+                </h3>
+
+                {% if affiliate.has_payout_configured %}
+                <!-- Configured -->
+                <div class="pay-configured">
+                    <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+                        <i data-lucide="shield-check" style="width:15px;height:15px;color:#10b981;"></i>
+                        <span style="font-size:0.72rem;font-weight:800;color:#10b981;text-transform:uppercase;">Active — {{ payout_summary.method }}</span>
+                    </div>
+                    <div class="pay-row">
+                        <span class="pay-key">Method</span>
+                        <span class="pay-val">
+                            {% if affiliate.payout_method == 'easypaisa' %}📱 EasyPaisa (PKR)
+                            {% elif affiliate.payout_method == 'paypal' %}💳 PayPal (USD)
+                            {% elif affiliate.payout_method == 'bank' %}🏦 Bank Transfer
+                            {% endif %}
+                        </span>
+                    </div>
+                    <div class="pay-row">
+                        <span class="pay-key">Account Holder</span>
+                        <span class="pay-val">{{ payout_summary.primary }}</span>
+                    </div>
+                    <div class="pay-row">
+                        <span class="pay-key">Account</span>
+                        <span class="pay-val" style="font-family:monospace;font-size:0.8rem;color:#a78bfa;">{{ payout_summary.secondary }}</span>
+                    </div>
+                    {% if affiliate.payout_method == 'bank' and bk_bank %}
+                    <div class="pay-row">
+                        <span class="pay-key">Bank</span>
+                        <span class="pay-val">{{ bk_bank }}</span>
+                    </div>
+                    {% endif %}
+                </div>
+
+                <button onclick="document.getElementById('editBlock').style.display=document.getElementById('editBlock').style.display==='none'?'block':'none'"
+                    style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:10px;color:#94a3b8;font-size:0.8rem;font-weight:700;cursor:pointer;width:100%;margin-top:14px;">
+                    ✏ Update Payout Account
+                </button>
+                <div id="editBlock" style="display:none;margin-top:16px;">
+                    <!-- Update form with method tabs -->
+                    <form method="post" action="{% url 'affiliate-update-payout' %}">
+                        {% csrf_token %}
+                        <input type="hidden" name="payout_method" id="dbMethodInput" value="{{ affiliate.payout_method }}">
+                        <div class="m-tabs">
+                            <div class="m-tab {% if affiliate.payout_method == 'easypaisa' %}active{% endif %}" onclick="dbSelectMethod('easypaisa')">
+                                <span class="ti">📱</span><div class="tn">EasyPaisa</div><div class="ts">PKR</div>
+                            </div>
+                            <div class="m-tab {% if affiliate.payout_method == 'paypal' %}active{% endif %}" onclick="dbSelectMethod('paypal')">
+                                <span class="ti">💳</span><div class="tn">PayPal</div><div class="ts">USD</div>
+                            </div>
+                            <div class="m-tab {% if affiliate.payout_method == 'bank' %}active{% endif %}" onclick="dbSelectMethod('bank')">
+                                <span class="ti">🏦</span><div class="tn">Bank</div><div class="ts">IBAN</div>
+                            </div>
+                        </div>
+
+                        <!-- EasyPaisa fields -->
+                        <div class="m-fields {% if affiliate.payout_method == 'easypaisa' %}active{% endif %}" id="db-ep">
+                            <label class="pf-label">Account Holder Name</label>
+                            <input type="text" name="easypaisa_name" class="pf-input" value="{{ ep_name }}" placeholder="Registered EasyPaisa name">
+                            <label class="pf-label">Mobile Number</label>
+                            <input type="tel" name="easypaisa_number" class="pf-input" value="{{ ep_number }}" placeholder="03XX-XXXXXXX">
+                        </div>
+
+                        <!-- PayPal fields -->
+                        <div class="m-fields {% if affiliate.payout_method == 'paypal' %}active{% endif %}" id="db-pp">
+                            <label class="pf-label">PayPal Email</label>
+                            <input type="email" name="paypal_email" class="pf-input" value="{{ pp_email }}" placeholder="your@paypal.com">
+                        </div>
+
+                        <!-- Bank fields -->
+                        <div class="m-fields {% if affiliate.payout_method == 'bank' %}active{% endif %}" id="db-bk">
+                            <label class="pf-label">Account Holder Name</label>
+                            <input type="text" name="bank_account_name" class="pf-input" value="{{ bk_name }}" placeholder="Legal name on bank account">
+                            <label class="pf-label">Bank Name</label>
+                            <input type="text" name="bank_name" class="pf-input" value="{{ bk_bank }}" placeholder="HBL, Meezan, UBL...">
+                            <label class="pf-label">Account Number / IBAN</label>
+                            <input type="text" name="bank_account_number" class="pf-input" value="{{ bk_number }}" placeholder="PK36SCBL000...">
+                            <label class="pf-label">SWIFT / BIC Code (Optional)</label>
+                            <input type="text" name="bank_swift_code" class="pf-input" value="{{ bk_swift }}" placeholder="SCBLPKKA">
+                        </div>
+
+                        <div class="warn-box">⚠ Changes take effect immediately but do not affect pending payout requests already submitted.</div>
+                        <div class="pf-actions">
+                            <button type="submit" class="btn-save">Save Changes</button>
+                            <button type="button" class="btn-del" onclick="delPayout()">Remove</button>
+                        </div>
+                    </form>
+                </div>
+
+                {% else %}
+                <!-- Not configured -->
+                <div class="pay-not">
+                    <span style="font-size:2rem;display:block;margin-bottom:8px;">⚠</span>
+                    <div style="font-weight:800;color:#fca5a5;margin-bottom:4px;">No Payout Account</div>
+                    <div style="font-size:0.8rem;color:#64748b;">Add your payment details to enable withdrawals.</div>
+                </div>
+
+                <form method="post" action="{% url 'affiliate-update-payout' %}">
+                    {% csrf_token %}
+                    <input type="hidden" name="payout_method" id="dbMethodInputNew" value="easypaisa">
+                    <div class="m-tabs">
+                        <div class="m-tab active" id="tab-ep-new" onclick="dbSelectMethodNew('easypaisa')">
+                            <span class="ti">📱</span><div class="tn">EasyPaisa</div><div class="ts">PKR</div>
+                        </div>
+                        <div class="m-tab" id="tab-pp-new" onclick="dbSelectMethodNew('paypal')">
+                            <span class="ti">💳</span><div class="tn">PayPal</div><div class="ts">USD</div>
+                        </div>
+                        <div class="m-tab" id="tab-bk-new" onclick="dbSelectMethodNew('bank')">
+                            <span class="ti">🏦</span><div class="tn">Bank</div><div class="ts">IBAN</div>
+                        </div>
+                    </div>
+
+                    <div class="m-fields active" id="new-ep">
+                        <label class="pf-label">EasyPaisa Account Holder Name *</label>
+                        <input type="text" name="easypaisa_name" class="pf-input" placeholder="Exact name as on EasyPaisa">
+                        <label class="pf-label">EasyPaisa Mobile Number *</label>
+                        <input type="tel" name="easypaisa_number" class="pf-input" placeholder="03XX-XXXXXXX">
+                    </div>
+
+                    <div class="m-fields" id="new-pp">
+                        <label class="pf-label">PayPal Email Address *</label>
+                        <input type="email" name="paypal_email" class="pf-input" placeholder="your@paypal.com">
+                        <div class="pf-hint">Must be a verified PayPal account to receive payments.</div>
+                    </div>
+
+                    <div class="m-fields" id="new-bk">
+                        <label class="pf-label">Account Holder Name *</label>
+                        <input type="text" name="bank_account_name" class="pf-input" placeholder="Legal name on bank account">
+                        <label class="pf-label">Bank Name *</label>
+                        <input type="text" name="bank_name" class="pf-input" placeholder="HBL, Meezan, UBL...">
+                        <label class="pf-label">Account Number / IBAN *</label>
+                        <input type="text" name="bank_account_number" class="pf-input" placeholder="PK36SCBL000...">
+                        <label class="pf-label">SWIFT / BIC Code (Optional)</label>
+                        <input type="text" name="bank_swift_code" class="pf-input" placeholder="SCBLPKKA">
+                    </div>
+
+                    <div style="font-size:0.78rem;color:#475569;background:rgba(0,0,0,0.2);border-radius:8px;padding:12px;margin-bottom:14px;line-height:1.5;">
+                        🔒 All account details are encrypted before storage. We never request PINs or passwords.
+                    </div>
+                    <button type="submit" class="btn-save" style="width:100%;">Activate Payout Account</button>
+                </form>
+                {% endif %}
+
+                <form id="delPayForm" method="post" action="{% url 'affiliate-delete-payout' %}" style="display:none;">{% csrf_token %}</form>
+            </div>
+
+            <!-- Program Terms -->
+            <div class="panel" style="margin-bottom:0;">
+                <div class="ph"><h3><i data-lucide="percent" style="width:15px;height:15px;color:#c4b5fd;"></i>Program Terms</h3></div>
+                <div class="terms-row"><span>Commission</span><strong style="color:#c4b5fd;">{{ settings.commission_rate }}% recurring</strong></div>
+                <div class="terms-row"><span>Referral Discount</span><strong>{{ settings.referral_discount_rate }}% off for referrals</strong></div>
+                <div class="terms-row"><span>Cookie Window</span><strong>{{ settings.cookie_duration_days }} days</strong></div>
+                <div class="terms-row"><span>Min. Payout</span><strong>{{ minimum_payout }}</strong></div>
+                <div class="terms-row"><span>Processing Time</span><strong>3–10 business days</strong></div>
+            </div>
+        </div>
+    </div>
+
+    {% endif %}<!-- end active -->
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if chart_labels %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4/dist/chart.umd.min.js"></script>
+<script>
+new Chart(document.getElementById('earningsChart').getContext('2d'), {
+    type: 'line',
+    data: {
+        labels: {{ chart_labels|safe }},
+        datasets: [{ label:'Commission', data: {{ chart_data|safe }}, borderColor:'#7c3aed', borderWidth:3, backgroundColor:'rgba(124,58,237,0.06)', fill:true, tension:0.4, pointRadius:4, pointBackgroundColor:'#7c3aed' }]
+    },
+    options: {
+        responsive:true,
+        plugins:{ legend:{display:false}, tooltip:{ callbacks:{ label: c => c.parsed.y.toFixed(0) }} },
+        scales:{ x:{ticks:{color:'#334155'}, grid:{color:'rgba(255,255,255,0.02)'}}, y:{beginAtZero:true, ticks:{color:'#334155'}, grid:{color:'rgba(255,255,255,0.03)'}} }
+    }
+});
+</script>
+{% endif %}
+<script>
+function copyLink() {
+    const inp = document.getElementById('refIn');
+    if (!inp) return;
+    inp.select();
+    navigator.clipboard.writeText(inp.value).then(() => {
+        const btn = document.querySelector('.copy-btn');
+        const orig = btn.textContent;
+        btn.textContent = '✓ Copied!'; btn.style.background = '#10b981';
+        setTimeout(() => { btn.textContent = orig; btn.style.background = ''; }, 2500);
+    });
+}
+
+function dbSelectMethod(m) {
+    document.querySelectorAll('#editBlock .m-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('#editBlock .m-fields').forEach(f => f.classList.remove('active'));
+    document.getElementById('db-' + (m === 'easypaisa' ? 'ep' : m === 'paypal' ? 'pp' : 'bk')).classList.add('active');
+    const tabs = document.querySelectorAll('#editBlock .m-tab');
+    const idx = ['easypaisa','paypal','bank'].indexOf(m);
+    if (tabs[idx]) tabs[idx].classList.add('active');
+    const mi = document.getElementById('dbMethodInput');
+    if (mi) mi.value = m;
+}
+
+function dbSelectMethodNew(m) {
+    ['ep','pp','bk'].forEach(id => {
+        const el = document.getElementById('new-' + id);
+        if (el) el.classList.remove('active');
+    });
+    ['ep','pp','bk'].forEach((id, i) => {
+        const tab = document.getElementById('tab-' + id + '-new');
+        if (tab) tab.classList.remove('active');
+    });
+    const map = {easypaisa:'ep', paypal:'pp', bank:'bk'};
+    const el = document.getElementById('new-' + map[m]);
+    if (el) el.classList.add('active');
+    const tab = document.getElementById('tab-' + map[m] + '-new');
+    if (tab) tab.classList.add('active');
+    const mi = document.getElementById('dbMethodInputNew');
+    if (mi) mi.value = m;
+}
+
+function delPayout() {
+    if (confirm('Remove your payout account details?\n\nYou will not be able to request withdrawals until you re-add your information. Pending requests already submitted will not be cancelled.')) {
+        document.getElementById('delPayForm').submit();
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+});
+</script>
+{% endblock %}

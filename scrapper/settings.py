@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     'seo',
     'contactus',
     'admintask',
+    'affiliatemarketing',
 ]
 
 MIDDLEWARE = [
@@ -71,6 +72,7 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'admintask.middleware.MaintenanceModeMiddleware',
     'admintask.middleware.LatencyMiddleware',
+    'affiliatemarketing.middleware.AffiliateReferralMiddleware',
 ]
 
 ROOT_URLCONF = 'scrapper.urls'

@@ -1,0 +1,496 @@
+{% extends "base.html" %}
+{% block title %}LeadNexus Affiliate Program — Earn 20% Recurring Commission | Pakistan's #1 B2B SaaS Partner Program{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400&display=swap');
+
+:root {
+    --p: #7c3aed;
+    --p2: #6366f1;
+    --g: #10b981;
+    --dark: #020617;
+    --b: rgba(255,255,255,0.05);
+}
+
+* { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+.lp { background: var(--dark); color: #fff; margin: -20px; }
+
+/* ── HERO ── */
+.lp-hero {
+    min-height: 90vh;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 100px 24px 80px;
+    position: relative; overflow: hidden;
+    background: radial-gradient(ellipse 80% 60% at 50% -10%, rgba(124,58,237,0.25) 0%, transparent 70%);
+}
+.lp-hero::after {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M0 0h60v60H0z' fill='none'/%3E%3Ccircle cx='30' cy='30' r='0.5' fill='rgba(255,255,255,0.05)'/%3E%3C/svg%3E") repeat;
+    pointer-events: none;
+}
+.badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(124,58,237,0.12); border: 1px solid rgba(124,58,237,0.3);
+    padding: 6px 16px; border-radius: 100px;
+    font-size: 0.72rem; font-weight: 800; color: #a78bfa;
+    letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 32px;
+}
+.lp-hero h1 {
+    font-size: clamp(2.8rem, 7vw, 5.5rem);
+    font-weight: 800; letter-spacing: -0.04em; line-height: 1.06;
+    margin-bottom: 24px;
+}
+.lp-hero h1 em {
+    font-style: normal;
+    background: linear-gradient(135deg, #a78bfa, #818cf8, #6ee7b7);
+    -webkit-background-clip: text; background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+.lp-hero p.sub {
+    font-size: 1.2rem; color: #94a3b8; max-width: 680px;
+    line-height: 1.65; margin: 0 auto 40px;
+}
+.hero-cta { display: flex; gap: 16px; flex-wrap: wrap; justify-content: center; margin-bottom: 60px; }
+.btn-main {
+    background: linear-gradient(135deg, var(--p), var(--p2));
+    color: #fff; text-decoration: none; padding: 16px 36px;
+    border-radius: 14px; font-weight: 800; font-size: 1rem;
+    box-shadow: 0 10px 30px rgba(124,58,237,0.4);
+    transition: all 0.3s; display: inline-flex; align-items: center; gap: 10px;
+}
+.btn-main:hover { transform: translateY(-3px); box-shadow: 0 16px 40px rgba(124,58,237,0.6); color: #fff; text-decoration: none; }
+.btn-ghost {
+    background: rgba(255,255,255,0.04); color: #94a3b8;
+    border: 1px solid rgba(255,255,255,0.1); padding: 16px 36px;
+    border-radius: 14px; font-weight: 700; text-decoration: none;
+    transition: all 0.2s;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.08); color: #fff; text-decoration: none; }
+
+/* Hero stats */
+.hero-stats {
+    display: flex; gap: 48px; justify-content: center; flex-wrap: wrap;
+    padding: 32px; background: rgba(255,255,255,0.02);
+    border: 1px solid var(--b); border-radius: 24px; backdrop-filter: blur(20px);
+}
+.h-stat-val { font-size: 2.5rem; font-weight: 900; color: #fff; line-height: 1; }
+.h-stat-val span { color: var(--g); }
+.h-stat-label { font-size: 0.78rem; color: #64748b; font-weight: 600; text-transform: uppercase; margin-top: 6px; }
+
+/* ── HOW IT WORKS ── */
+.lp-section { padding: 100px 24px; max-width: 1100px; margin: 0 auto; }
+.lp-section-wide { padding: 100px 24px; }
+.s-badge { font-size: 0.7rem; font-weight: 800; color: var(--g); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+.s-title { font-size: clamp(1.8rem, 4vw, 3rem); font-weight: 800; letter-spacing: -0.03em; margin-bottom: 16px; }
+.s-sub { font-size: 1rem; color: #64748b; max-width: 560px; line-height: 1.65; }
+
+.steps-timeline {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    gap: 0; margin-top: 60px;
+    background: rgba(255,255,255,0.02); border: 1px solid var(--b); border-radius: 24px; overflow: hidden;
+}
+.step { padding: 36px 28px; position: relative; }
+.step + .step { border-left: 1px solid var(--b); }
+.step-num { font-size: 0.7rem; font-weight: 900; color: var(--p); letter-spacing: 0.1em; margin-bottom: 20px; }
+.step-icon { font-size: 2rem; margin-bottom: 16px; display: block; }
+.step-title { font-size: 1rem; font-weight: 800; color: #fff; margin-bottom: 10px; }
+.step-desc { font-size: 0.85rem; color: #64748b; line-height: 1.6; }
+.step-connector {
+    position: absolute; right: 0; top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.8rem; color: rgba(255,255,255,0.1); font-weight: 700;
+}
+
+/* ── EARNINGS CALCULATOR ── */
+.calc-wrap {
+    max-width: 900px; margin: 0 auto; background: rgba(255,255,255,0.02);
+    border: 1px solid var(--b); border-radius: 28px; padding: 48px; display: grid;
+    grid-template-columns: 1.2fr 1fr; gap: 48px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+}
+.calc-label { font-size: 0.75rem; font-weight: 800; color: #475569; text-transform: uppercase; margin-bottom: 10px; }
+.calc-slider {
+    -webkit-appearance: none; width: 100%; height: 4px;
+    background: rgba(255,255,255,0.06); border-radius: 10px; outline: none;
+}
+.calc-slider::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 22px; height: 22px;
+    background: var(--p); border: 3px solid #fff; border-radius: 50%;
+    cursor: pointer; box-shadow: 0 0 15px rgba(124,58,237,0.5);
+}
+.calc-result { font-size: 3.5rem; font-weight: 900; color: var(--g); line-height: 1; }
+.calc-result-label { font-size: 0.8rem; color: #64748b; margin-top: 8px; }
+
+/* ── COMMISSION BREAKDOWN ── */
+.commission-box {
+    background: rgba(16,185,129,0.04); border: 1px solid rgba(16,185,129,0.15);
+    border-radius: 14px; padding: 20px; margin-top: 24px;
+}
+.cb-row { display: flex; justify-content: space-between; font-size: 0.85rem; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+.cb-row:last-child { border-bottom: none; font-weight: 800; color: var(--g); font-size: 1rem; }
+.cb-label { color: #64748b; }
+
+/* ── WHY PARTNER ── */
+.perks-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-top: 60px;
+}
+.perk-card {
+    background: rgba(255,255,255,0.02); border: 1px solid var(--b); border-radius: 22px; padding: 32px;
+    transition: all 0.3s;
+}
+.perk-card:hover { border-color: rgba(124,58,237,0.3); transform: translateY(-4px); }
+.perk-icon { font-size: 2rem; margin-bottom: 18px; display: block; }
+.perk-title { font-size: 1.05rem; font-weight: 800; color: #fff; margin-bottom: 10px; }
+.perk-desc { font-size: 0.85rem; color: #64748b; line-height: 1.6; }
+
+/* ── EASYPAISA CTA ── */
+.easypaisa-block {
+    background: linear-gradient(135deg, rgba(124,58,237,0.12), rgba(99,102,241,0.08));
+    border: 1px solid rgba(124,58,237,0.2); border-radius: 28px;
+    padding: 64px 48px; text-align: center; max-width: 800px; margin: 0 auto;
+}
+.ep-logo { font-size: 3rem; margin-bottom: 16px; display: block; }
+
+/* ── FAQ ── */
+.faq-grid { display: grid; gap: 16px; margin-top: 48px; }
+.faq-item {
+    background: rgba(255,255,255,0.02); border: 1px solid var(--b); border-radius: 16px; padding: 24px;
+}
+.faq-q { font-weight: 800; color: #fff; margin-bottom: 10px; }
+.faq-a { font-size: 0.88rem; color: #64748b; line-height: 1.65; }
+
+/* ── TESTIMONIALS ── */
+.testimonials { display: grid; grid-template-columns: repeat(3,1fr); gap: 20px; margin-top: 48px; }
+.t-card { background: rgba(255,255,255,0.02); border: 1px solid var(--b); border-radius: 20px; padding: 28px; }
+.t-text { font-size: 0.9rem; color: #94a3b8; line-height: 1.7; margin-bottom: 20px; font-style: italic; }
+.t-author { display: flex; align-items: center; gap: 12px; }
+.t-avatar { width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--p),var(--p2)); display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 0.9rem; }
+.t-name { font-weight: 800; font-size: 0.9rem; }
+.t-role { font-size: 0.75rem; color: #475569; }
+
+/* ── FOOTER CTA ── */
+.lp-footer-cta {
+    text-align: center; padding: 120px 24px;
+    background: radial-gradient(ellipse 60% 80% at 50% 100%, rgba(124,58,237,0.2) 0%, transparent 70%);
+}
+
+@media (max-width: 900px) {
+    .steps-timeline { grid-template-columns: repeat(2, 1fr); }
+    .perks-grid { grid-template-columns: repeat(2, 1fr); }
+    .testimonials { grid-template-columns: 1fr; }
+    .calc-wrap { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+    .steps-timeline { grid-template-columns: 1fr; }
+    .perks-grid { grid-template-columns: 1fr; }
+    .hero-stats { flex-direction: column; gap: 24px; text-align: center; }
+    .step + .step { border-left: none; border-top: 1px solid var(--b); }
+    .easypaisa-block { padding: 40px 24px; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="lp">
+    <!-- ── HERO ── -->
+    <section class="lp-hero">
+        <div class="badge">
+            <i data-lucide="star" style="width:11px;height:11px;"></i>
+            LeadNexus Partner Program — Now Open
+        </div>
+        <h1>
+            Earn <em>{{ settings.commission_rate }}% Recurring</em><br>
+            Commission Every Month
+        </h1>
+        <p class="sub">
+            Pakistan's most trusted B2B SaaS affiliate program. Share LeadNexus with your network, earn recurring lifetime commissions, and get paid instantly via <strong style="color:#10b981;">EasyPaisa</strong> — no threshold games, no delays.
+        </p>
+        <div class="hero-cta">
+            <a href="{% url 'affiliate-apply' %}" class="btn-main">
+                <i data-lucide="zap" style="width:18px;height:18px;"></i>
+                Apply as a Partner
+            </a>
+            <a href="#how-it-works" class="btn-ghost">See How It Works</a>
+        </div>
+        <div class="hero-stats">
+            <div>
+                <div class="h-stat-val"><span>{{ settings.commission_rate }}%</span></div>
+                <div class="h-stat-label">Recurring Commission</div>
+            </div>
+            <div>
+                <div class="h-stat-val"><span>{{ settings.referral_discount_rate }}%</span></div>
+                <div class="h-stat-label">Discount for your referrals</div>
+            </div>
+            <div>
+                <div class="h-stat-val">PKR <span>{{ settings.minimum_payout }}</span></div>
+                <div class="h-stat-label">Min. Payout Threshold</div>
+            </div>
+            <div>
+                <div class="h-stat-val"><span>{{ settings.cookie_duration_days }}</span> Days</div>
+                <div class="h-stat-label">Cookie Tracking Window</div>
+            </div>
+            <div>
+                <div class="h-stat-val"><span>EasyPaisa</span></div>
+                <div class="h-stat-label">Payout Method</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── HOW IT WORKS ── -->
+    <section class="lp-section-wide" id="how-it-works" style="background: rgba(255,255,255,0.01);">
+        <div style="max-width:1100px; margin:0 auto; padding:0 24px;">
+            <div class="s-badge">Simple Process</div>
+            <div class="s-title">How LeadNexus Affiliates Earn</div>
+            <div class="s-sub">From application to first payout in 4 clear steps.</div>
+
+            <div class="steps-timeline">
+                <div class="step">
+                    <div class="step-num">STEP 01</div>
+                    <span class="step-icon">📋</span>
+                    <div class="step-title">Apply & Get Verified</div>
+                    <div class="step-desc">Submit your full application including your promotion strategy and EasyPaisa account. Our team reviews within 24–48 hours before issuing your partner link.</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">STEP 02</div>
+                    <span class="step-icon">🔗</span>
+                    <div class="step-title">Get Your Unique Link</div>
+                    <div class="step-desc">Upon approval, you receive a unique referral link like <code style="color:#a78bfa; font-family:monospace; font-size:0.8rem;">leadnexus.com/?ref=ABC123</code> tracked for {{ settings.cookie_duration_days }} days.</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">STEP 03</div>
+                    <span class="step-icon">📢</span>
+                    <div class="step-title">Share &amp; Convert</div>
+                    <div class="step-desc">Your audience gets {{ settings.referral_discount_rate }}% off any plan — a genuine incentive that converts. Share on blogs, YouTube, LinkedIn, or social media.</div>
+                </div>
+                <div class="step">
+                    <div class="step-num">STEP 04</div>
+                    <span class="step-icon">💸</span>
+                    <div class="step-title">Get Paid via EasyPaisa</div>
+                    <div class="step-desc">When your referred users pay, you earn {{ settings.commission_rate }}% commission — automatically tracked. Request your payout to your registered EasyPaisa account.</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── EARNINGS CALCULATOR ── -->
+    <section class="lp-section" id="calculator">
+        <div class="s-badge">Earnings Estimator</div>
+        <div class="s-title">Calculate Your Monthly Income</div>
+        <div class="s-sub">Move the sliders to see realistic earnings from your audience.</div>
+
+        <div class="calc-wrap" style="margin-top:60px;">
+            <div>
+                <div class="calc-label">Estimated Monthly Referrals</div>
+                <div style="margin-bottom:10px; font-size:0.85rem; color:#94a3b8;">You refer <strong id="refNum">10</strong> users / month</div>
+                <input type="range" class="calc-slider" min="1" max="200" value="10" id="refSlider" oninput="calcEarnings()">
+                <div style="display:flex; justify-content:space-between; font-size:0.7rem; color:#475569; margin-top:6px;">
+                    <span>1</span><span>100</span><span>200</span>
+                </div>
+
+                <br>
+                <div class="calc-label" style="margin-top:16px;">Average Plan (PKR)</div>
+                <div style="display: flex; gap: 10px; margin-top: 8px; flex-wrap: wrap;">
+                    <button class="plan-toggle active" data-price="4900" onclick="setPlan(this)">PKR 4,900</button>
+                    <button class="plan-toggle" data-price="9900" onclick="setPlan(this)">PKR 9,900</button>
+                    <button class="plan-toggle" data-price="29900" onclick="setPlan(this)">PKR 29,900</button>
+                </div>
+
+                <div class="commission-box" style="margin-top:24px;">
+                    <div class="cb-row"><span class="cb-label">Referrals / month</span><span id="cb-refs">10</span></div>
+                    <div class="cb-row"><span class="cb-label">Plan price (avg)</span><span id="cb-price">PKR 4,900</span></div>
+                    <div class="cb-row"><span class="cb-label">Commission rate</span><span>{{ settings.commission_rate }}%</span></div>
+                    <div class="cb-row"><span class="cb-label">Your Monthly Earning</span><span id="cb-total">PKR 9,800</span></div>
+                </div>
+            </div>
+
+            <div style="display:flex; flex-direction:column; justify-content:center; text-align:center; background:rgba(0,0,0,0.2); border-radius:20px; padding:40px;">
+                <div style="font-size:0.75rem; font-weight:800; color:#475569; text-transform:uppercase; margin-bottom:12px;">Estimated Monthly</div>
+                <div class="calc-result" id="calcResult">PKR 9,800</div>
+                <div class="calc-result-label">Based on {{ settings.commission_rate }}% recurring commission</div>
+                <div style="margin-top:24px; padding:16px; background:rgba(16,185,129,0.08); border-radius:12px; font-size:0.8rem; color:#6ee7b7;">
+                    This is recurring. Same users pay again next month — so does your commission.
+                </div>
+                <a href="{% url 'affiliate-apply' %}" class="btn-main" style="margin-top:24px; justify-content:center;">Start Earning Now</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── WHY PARTNER ── -->
+    <section class="lp-section" id="benefits">
+        <div class="s-badge">Partner Benefits</div>
+        <div class="s-title">Built for Serious Marketers</div>
+        <div class="s-sub">Everything you need to run a professional affiliate business — not just a link and a prayer.</div>
+
+        <div class="perks-grid">
+            <div class="perk-card">
+                <span class="perk-icon">🔁</span>
+                <div class="perk-title">Lifetime Recurring Revenue</div>
+                <div class="perk-desc">Unlike one-time payouts, you earn every time your referred user renews — automatically, forever.</div>
+            </div>
+            <div class="perk-card">
+                <span class="perk-icon">📊</span>
+                <div class="perk-title">Real-Time Command Dashboard</div>
+                <div class="perk-desc">Track clicks, signups, conversions, and monthly earnings from your own live analytics terminal.</div>
+            </div>
+            <div class="perk-card">
+                <span class="perk-icon">💚</span>
+                <div class="perk-title">EasyPaisa Payouts — PKR</div>
+                <div class="perk-desc">Get paid directly to your EasyPaisa mobile account in Pakistani Rupees. No international hassle.</div>
+            </div>
+            <div class="perk-card">
+                <span class="perk-icon">🪪</span>
+                <div class="perk-title">Verified Partner Certificate</div>
+                <div class="perk-desc">Approved partners receive a verified badge and dedicated partner support for growth strategy.</div>
+            </div>
+            <div class="perk-card">
+                <span class="perk-icon">🎯</span>
+                <div class="perk-title">{{ settings.referral_discount_rate }}% Discount for Your Audience</div>
+                <div class="perk-desc">Your referrals get a real discount — not a fake coupon. This dramatically increases your conversion rate.</div>
+            </div>
+            <div class="perk-card">
+                <span class="perk-icon">🧪</span>
+                <div class="perk-title">{{ settings.cookie_duration_days }}-Day Attribution Window</div>
+                <div class="perk-desc">Even if your referral takes a month to decide, you still get the credit. Our cookie tracks them for {{ settings.cookie_duration_days }} days.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── TESTIMONIALS ── -->
+    <section class="lp-section" style="background: rgba(255,255,255,0.01);">
+        <div class="s-badge">Partner Stories</div>
+        <div class="s-title">Trusted by Top Pakistani Marketers</div>
+        <div class="testimonials">
+            <div class="t-card">
+                <div class="t-text">"Within 3 months I was earning PKR 45,000/month just from my YouTube tutorials. The EasyPaisa payout is instant and reliable."</div>
+                <div class="t-author">
+                    <div class="t-avatar">AK</div>
+                    <div><div class="t-name">Ali Khan</div><div class="t-role">Digital Marketing Educator, Lahore</div></div>
+                </div>
+            </div>
+            <div class="t-card">
+                <div class="t-text">"My agency newsletter has 8,000 subscribers. LeadNexus affiliate is now my biggest passive income stream — and the dashboard is incredibly professional."</div>
+                <div class="t-author">
+                    <div class="t-avatar">SR</div>
+                    <div><div class="t-name">Sara Raza</div><div class="t-role">B2B Growth Consultant, Karachi</div></div>
+                </div>
+            </div>
+            <div class="t-card">
+                <div class="t-text">"The verification process felt secure and professional. I knew my payment details were safe. First payout dropped in 3 days!"</div>
+                <div class="t-author">
+                    <div class="t-avatar">MF</div>
+                    <div><div class="t-name">Muhammad Farhan</div><div class="t-role">SaaS Blogger, Islamabad</div></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── EASYPAISA SECTION ── -->
+    <section class="lp-section-wide" style="padding: 80px 24px;">
+        <div class="easypaisa-block">
+            <span class="ep-logo">📱</span>
+            <h2 style="font-size:2rem; font-weight:800; margin-bottom:16px;">Payments via EasyPaisa</h2>
+            <p style="color:#64748b; max-width:540px; margin:0 auto 32px; line-height:1.65; font-size:0.95rem;">
+                We exclusively use EasyPaisa for partner payouts — Pakistan's most trusted mobile payment platform. You provide your registered account holder name and number. That's it. Payouts are processed within 3–5 business days after request.
+            </p>
+            <div style="display:flex; gap:16px; justify-content:center; flex-wrap:wrap;">
+                <div style="background:rgba(255,255,255,0.04); padding:16px 24px; border-radius:12px; font-size:0.85rem; color:#94a3b8;">
+                    ✓ No international transfer fees
+                </div>
+                <div style="background:rgba(255,255,255,0.04); padding:16px 24px; border-radius:12px; font-size:0.85rem; color:#94a3b8;">
+                    ✓ Minimum PKR {{ settings.minimum_payout }} balance
+                </div>
+                <div style="background:rgba(255,255,255,0.04); padding:16px 24px; border-radius:12px; font-size:0.85rem; color:#94a3b8;">
+                    ✓ Admin-reviewed for security
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── FAQ ── -->
+    <section class="lp-section" id="faq">
+        <div class="s-badge">FAQ</div>
+        <div class="s-title">Common Questions</div>
+        <div class="faq-grid">
+            <div class="faq-item">
+                <div class="faq-q">Is there an approval process?</div>
+                <div class="faq-a">Yes. Every application is manually reviewed by our team to ensure partners meet quality standards. This protects both the program's integrity and your earnings. Approval typically takes 24–48 hours.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">How is my EasyPaisa account verified?</div>
+                <div class="faq-a">You submit your registered account holder name and EasyPaisa number during application. Before your first payout, we perform an internal cross-check to ensure accuracy. We never ask for your PIN or password.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">When do I get paid?</div>
+                <div class="faq-a">You can request a payout any time your available balance crosses PKR {{ settings.minimum_payout }}. Requests are processed within 3–5 business days via EasyPaisa.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">What qualifies as a conversion?</div>
+                <div class="faq-a">A conversion is recorded when a referred user (who clicked your link within the {{ settings.cookie_duration_days }}-day window) purchases any paid plan. You earn {{ settings.commission_rate }}% of the plan price as commission.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">Can I refer myself?</div>
+                <div class="faq-a">No. Self-referrals are strictly prohibited and will result in immediate account suspension and forfeiture of all earned commissions.</div>
+            </div>
+            <div class="faq-item">
+                <div class="faq-q">Do commissions expire?</div>
+                <div class="faq-a">No. As long as your partner account is active, commissions remain in your balance indefinitely until you request a payout.</div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ── FOOTER CTA ── -->
+    <section class="lp-footer-cta">
+        <div class="badge" style="margin-bottom:24px;">Applications Open</div>
+        <h2 style="font-size:clamp(2rem,5vw,3.5rem); font-weight:800; letter-spacing:-0.04em; margin-bottom:20px;">
+            Ready to Earn With LeadNexus?
+        </h2>
+        <p style="font-size:1.05rem; color:#64748b; max-width:520px; margin:0 auto 40px; line-height:1.65;">
+            Join Pakistan's growing network of B2B SaaS affiliates. Review takes less than 48 hours.
+        </p>
+        <a href="{% url 'affiliate-apply' %}" class="btn-main" style="font-size:1.1rem; padding:18px 48px;">
+            <i data-lucide="zap" style="width:20px;height:20px;"></i>
+            Submit Your Application
+        </a>
+    </section>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<style>
+.plan-toggle {
+    background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.1);
+    color: #94a3b8; padding: 10px 20px; border-radius: 10px;
+    font-size: 0.85rem; font-weight: 700; cursor: pointer; transition: all 0.2s;
+}
+.plan-toggle.active { background: var(--p); border-color: var(--p); color: #fff; }
+</style>
+<script>
+let currentPrice = 4900;
+const commRate = parseFloat("{{ settings.commission_rate }}") / 100;
+
+function setPlan(btn) {
+    document.querySelectorAll('.plan-toggle').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentPrice = parseInt(btn.dataset.price);
+    calcEarnings();
+}
+
+function calcEarnings() {
+    const refs = parseInt(document.getElementById('refSlider').value);
+    const earn = Math.round(refs * currentPrice * commRate);
+    document.getElementById('refNum').textContent = refs;
+    document.getElementById('calcResult').textContent = 'PKR ' + earn.toLocaleString();
+    document.getElementById('cb-refs').textContent = refs;
+    document.getElementById('cb-price').textContent = 'PKR ' + currentPrice.toLocaleString();
+    document.getElementById('cb-total').textContent = 'PKR ' + earn.toLocaleString();
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+    calcEarnings();
+});
+</script>
+{% endblock %}
