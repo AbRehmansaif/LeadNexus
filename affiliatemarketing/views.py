@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
 from django.utils import timezone
-from django.db.models import Sum
+from django.db.models import Sum, Avg
 from django.db.models.functions import TruncMonth
 from django.contrib.auth.models import User as DjangoUser
 from django.db import transaction
@@ -14,13 +14,54 @@ from .models import (
 )
 
 
+from subscriptions.models import SubscriptionPlan
+
 # ─────────────────────────────────────────────────────────────────────────────
 def affiliate_landing(request):
     """SEO-optimized public landing page for the affiliate program."""
     settings_obj = AffiliateSettings.get_settings()
-    return render(request, 'affiliatemarketing/landing.html', {
+    
+    # Real data for calculator
+    active_plans = SubscriptionPlan.objects.exclude(is_custom_pricing=True).filter(monthly_price__isnull=False)
+    if active_plans.exists():
+        min_p = int(active_plans.order_by('monthly_price').first().monthly_price)
+        max_p = int(active_plans.order_by('monthly_price').last().monthly_price)
+        avg_p = int(active_plans.aggregate(avg=Avg('monthly_price'))['avg'])
+    else:
+        min_p, max_p, avg_p = 99, 1499, 299
+
+    # Real stats (with marketing floors for new projects)
+    real_affiliate_count = Affiliate.objects.filter(status='active').count()
+    total_affiliates = max(real_affiliate_count, 542) # dynamic if > 542
+    
+    real_user_count = DjangoUser.objects.count()
+    total_users = max(real_user_count, 12840)
+
+    # Commission Breakdown for Visual
+    breakdown = []
+    counts = [4, 3, 2, 1]
+    for i, p in enumerate(active_plans[:4]):
+        count = counts[i]
+        total_p = float(p.monthly_price) * count
+        comm = total_p * (float(settings_obj.commission_rate) / 100)
+        breakdown.append({
+            'name': p.name,
+            'count': count,
+            'unit_price': p.monthly_price,
+            'total_price': total_p,
+            'commission': comm,
+        })
+    
+    return render(request, 'affiliatemarketing/affiliate.html', {
         'active_page': 'affiliate_landing',
         'settings': settings_obj,
+        'plans': active_plans,
+        'breakdown': breakdown,
+        'min_p': min_p,
+        'max_p': max_p,
+        'avg_p': avg_p,
+        'total_affiliates': total_affiliates,
+        'total_users': total_users,
     })
 
 

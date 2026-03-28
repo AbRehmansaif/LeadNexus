@@ -1,0 +1,1238 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{# ═══════════════════════════════════════════════════════════════════════
+   SEO — AFFILIATE PAGE
+   PRIMARY KEYWORDS:
+   - LeadNexus affiliate program
+   - B2B SaaS affiliate program
+   - earn commission referring leads software
+   - best affiliate program for marketers
+   - recurring commission affiliate program
+   - LeadNexus referral program
+   ═══════════════════════════════════════════════════════════════════════ #}
+
+{% block title %}LeadNexus Affiliate Program — Earn {{ settings.commission_rate|floatformat:0 }}% Recurring Commission | B2B SaaS Referrals{% endblock %}
+
+{% block meta_description %}Join the LeadNexus Affiliate Program and earn {{ settings.commission_rate|floatformat:0 }}% recurring monthly commission for every customer you refer. No cap on earnings. The highest-paying B2B lead generation affiliate program available. Apply free today.{% endblock %}
+
+{% block meta_keywords %}LeadNexus affiliate program, B2B SaaS affiliate program, recurring commission affiliate, lead generation software affiliate, earn money referring B2B tools, LeadNexus referral program, cold email software affiliate, best SaaS affiliate program 2025, high commission affiliate marketing, passive income affiliate program{% endblock %}
+
+{% block og_title %}LeadNexus Affiliate Program — Earn {{ settings.commission_rate|floatformat:0 }}% Recurring Commission{% endblock %}
+{% block og_description %}Refer businesses to LeadNexus and earn {{ settings.commission_rate|floatformat:0 }}% recurring monthly commission — forever. No cap, no minimum payout threshold. Join 500+ affiliates already earning passive income.{% endblock %}
+{% block og_image %}{% static 'images/og-affiliate.png' %}{% endblock %}
+
+{% block twitter_title %}Earn {{ settings.commission_rate|floatformat:0 }}% Recurring Commission with the LeadNexus Affiliate Program{% endblock %}
+{% block twitter_description %}Join LeadNexus affiliates earning passive income every month. {{ settings.commission_rate|floatformat:0 }}% recurring commission, real-time dashboard, instant payouts.{% endblock %}
+
+{% block canonical_url %}https://getleadnexus.com/affiliate/{% endblock %}
+
+{% block extra_seo %}
+<!-- Affiliate Page Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebPage",
+      "@id": "https://getleadnexus.com/affiliate/#webpage",
+      "url": "https://getleadnexus.com/affiliate/",
+      "name": "LeadNexus Affiliate Program — Earn {{ settings.commission_rate|floatformat:0 }}% Recurring Commission",
+      "description": "Join the LeadNexus affiliate program and earn {{ settings.commission_rate|floatformat:0 }}% recurring monthly commission for every B2B customer you refer. No earnings cap.",
+      "isPartOf": { "@id": "https://getleadnexus.com/#website" },
+      "about": { "@id": "https://getleadnexus.com/#organization" },
+      "breadcrumb": {
+        "@type": "BreadcrumbList",
+        "itemListElement": [
+          { "@type": "ListItem", "position": 1, "name": "Home", "item": "https://getleadnexus.com/" },
+          { "@type": "ListItem", "position": 2, "name": "Affiliate Program", "item": "https://leadnexus.io/affiliate/" }
+        ]
+      }
+    },
+    {
+      "@type": "FinancialProduct",
+      "name": "LeadNexus Affiliate Program",
+      "description": "Earn {{ settings.commission_rate|floatformat:0 }}% recurring monthly commission for every paying customer you refer to LeadNexus — the all-in-one B2B lead generation and cold email outreach platform.",
+      "provider": { "@id": "https://getleadnexus.com/#organization" },
+      "url": "https://getleadnexus.com/affiliate/",
+      "feesAndCommissionsSpecification": "{{ settings.commission_rate|floatformat:0 }}% recurring monthly commission on all referred customer payments, paid for the lifetime of the customer subscription."
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How much does the LeadNexus affiliate program pay?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "LeadNexus pays a {{ settings.commission_rate|floatformat:0 }}% recurring monthly commission on every subscription payment made by customers you refer. This means you earn every month for as long as your referral remains a paying customer — with no earnings cap."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How do I join the LeadNexus affiliate program?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Joining is free and instant. Simply register for a LeadNexus account, navigate to the Affiliate section in your dashboard, and get your unique referral link. You can start promoting immediately after approval."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "When and how does LeadNexus pay affiliates?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "LeadNexus pays affiliates on a monthly basis. Payouts are processed via bank transfer, PayPal, or cryptocurrency. There is no minimum payout threshold — you receive every dollar you earn."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "What is the cookie duration for the LeadNexus affiliate program?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "LeadNexus uses a 90-day cookie window. If someone clicks your referral link and subscribes within 90 days, you earn the commission — even if they don't sign up immediately."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Who should join the LeadNexus affiliate program?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The LeadNexus affiliate program is ideal for B2B marketers, sales consultants, content creators, agency owners, LinkedIn influencers, email marketing bloggers, and anyone with an audience of business owners, sales professionals, or growth teams."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is there a cap on affiliate earnings with LeadNexus?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. There is absolutely no cap on how much you can earn through the LeadNexus affiliate program. Refer 10 customers or 10,000 — you earn {{ settings.commission_rate|floatformat:0 }}% recurring commission on all of them, every month."
+          }
+        }
+      ]
+    },
+    {
+      "@type": "HowTo",
+      "name": "How to Join the LeadNexus Affiliate Program",
+      "description": "Step-by-step guide to joining and earning with the LeadNexus B2B affiliate program",
+      "step": [
+        {
+          "@type": "HowToStep",
+          "position": 1,
+          "name": "Create Your Free Account",
+          "text": "Register for a free LeadNexus account at leadnexus.io/register. No credit card required."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 2,
+          "name": "Access Your Affiliate Dashboard",
+          "text": "Navigate to the Affiliate section in your dashboard to get your unique referral link and access all marketing materials."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 3,
+          "name": "Share Your Referral Link",
+          "text": "Promote LeadNexus through your blog, LinkedIn, YouTube, email list, or any channel where your audience includes B2B professionals."
+        },
+        {
+          "@type": "HowToStep",
+          "position": 4,
+          "name": "Earn Recurring Commission",
+          "text": "Every time a referred customer makes a payment, you automatically earn {{ settings.commission_rate|floatformat:0 }}% commission — deposited to your account monthly."
+        }
+      ]
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block extra_css %}
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+/* ═══════════════════════════════════════════════════════
+   LEADNEXUS AFFILIATE PAGE
+   Aesthetic: Dark editorial × wealth × precision
+   Font: Bricolage Grotesque (display) + DM Sans (body)
+   ═══════════════════════════════════════════════════════ */
+:root {
+    --gold:     212, 175, 55;
+    --green:    16, 185, 129;
+    --purple:   139, 92, 246;
+    --blue:     59, 130, 246;
+    --bg:       #060810;
+    --bg2:      #0c1020;
+    --surface:  rgba(255,255,255,0.025);
+    --border:   rgba(255,255,255,0.07);
+    --text:     #f0f4ff;
+    --muted:    #5a6580;
+    --sub:      #8896b3;
+    --fd:       'Bricolage Grotesque', sans-serif;
+    --fb:       'DM Sans', sans-serif;
+    --ease:     cubic-bezier(0.16, 1, 0.3, 1);
+    --r:        20px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--fb);
+    overflow-x: hidden;
+}
+
+.aff-page { overflow: hidden; }
+.ac { max-width: 1200px; margin: 0 auto; padding: 0 24px; width: 100%; }
+.section { padding: 100px 0; }
+.section-sm { padding: 64px 0; }
+
+/* ── Type ── */
+.t-display {
+    font-family: var(--fd);
+    font-size: clamp(3rem, 8vw, 6.5rem);
+    font-weight: 800;
+    line-height: 0.95;
+    letter-spacing: -0.04em;
+    color: #fff;
+}
+.t-h2 {
+    font-family: var(--fd);
+    font-size: clamp(2rem, 5vw, 3.5rem);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    color: #fff;
+}
+.t-h3 {
+    font-family: var(--fd);
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: -0.02em;
+}
+.t-body { font-size: 1rem; color: var(--sub); line-height: 1.7; }
+.t-label {
+    font-family: var(--fd);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: rgba(var(--gold), 1);
+}
+
+/* ── Gradients ── */
+.g-gold {
+    background: linear-gradient(135deg, #f5e27a 0%, #d4af37 50%, #a07c20 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.g-green {
+    background: linear-gradient(135deg, #6ee7b7 0%, #10b981 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+.g-mixed {
+    background: linear-gradient(135deg, #f5e27a 0%, #10b981 60%, #3b82f6 100%);
+    -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+/* ── Buttons ── */
+.btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 9px;
+    padding: 0 32px; height: 54px; border-radius: 14px;
+    font-family: var(--fd); font-weight: 700; font-size: 1rem;
+    cursor: pointer; text-decoration: none; border: none;
+    transition: all 0.35s var(--ease); white-space: nowrap;
+}
+.btn-gold {
+    background: linear-gradient(135deg, #d4af37, #a07c20);
+    color: #060810;
+    box-shadow: 0 4px 28px rgba(var(--gold), 0.45);
+}
+.btn-gold:hover { transform: translateY(-3px); box-shadow: 0 10px 40px rgba(var(--gold), 0.6); color: #060810; }
+.btn-outline {
+    background: transparent;
+    border: 1px solid rgba(var(--gold), 0.35);
+    color: rgba(var(--gold), 1);
+}
+.btn-outline:hover { background: rgba(var(--gold), 0.08); color: rgba(var(--gold), 1); }
+.btn-ghost {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: #cbd5e1;
+}
+.btn-ghost:hover { background: rgba(255,255,255,0.06); color: #fff; }
+
+/* ── Badges ── */
+.pill {
+    display: inline-flex; align-items: center; gap: 7px;
+    background: rgba(var(--gold), 0.08);
+    border: 1px solid rgba(var(--gold), 0.22);
+    padding: 7px 16px; border-radius: 100px;
+    font-size: 0.8rem; font-weight: 700;
+    color: rgba(var(--gold), 1);
+}
+
+/* ── Reveal ── */
+.rv { opacity: 0; transform: translateY(30px); transition: opacity 0.65s var(--ease), transform 0.65s var(--ease); }
+.rv.vis { opacity: 1; transform: none; }
+
+/* ═══════════════════════════════
+   HERO
+   ═══════════════════════════════ */
+.hero {
+    position: relative;
+    padding: 160px 0 100px;
+    text-align: center;
+    overflow: hidden;
+}
+/* Animated gold beams */
+.hero-beam {
+    position: absolute;
+    top: -200px; left: 50%; transform: translateX(-50%);
+    width: 1200px; height: 800px;
+    background: radial-gradient(ellipse at 50% 20%,
+        rgba(var(--gold), 0.12) 0%,
+        rgba(var(--green), 0.06) 35%,
+        transparent 65%);
+    pointer-events: none; z-index: 0;
+    animation: pulse-aura 6s ease-in-out infinite;
+}
+@keyframes pulse-aura {
+    0%, 100% { opacity: 1; transform: translateX(-50%) scale(1); }
+    50% { opacity: 0.7; transform: translateX(-50%) scale(1.08); }
+}
+.hero-dots {
+    position: absolute; inset: 0; z-index: 0;
+    background-image: radial-gradient(rgba(255,255,255,0.06) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse at center, black 20%, transparent 75%);
+}
+.hero > .ac { position: relative; z-index: 1; }
+
+/* Commission counter strip */
+.counter-strip {
+    display: flex; align-items: center; justify-content: center; gap: 48px;
+    flex-wrap: wrap;
+    background: rgba(var(--gold), 0.04);
+    border: 1px solid rgba(var(--gold), 0.15);
+    border-radius: 16px;
+    padding: 24px 40px;
+    margin-top: 60px;
+}
+.counter-item { text-align: center; }
+.counter-num {
+    font-family: var(--fd);
+    font-size: clamp(1.8rem, 4vw, 2.8rem);
+    font-weight: 800;
+    color: rgba(var(--gold), 1);
+    letter-spacing: -0.04em;
+    line-height: 1;
+}
+.counter-lbl { font-size: 0.8rem; color: var(--muted); margin-top: 5px; font-weight: 500; }
+.counter-divider { width: 1px; height: 48px; background: var(--border); }
+@media(max-width: 600px) { .counter-divider { display: none; } }
+
+/* ═══════════════════════════════
+   COMMISSION VISUAL
+   ═══════════════════════════════ */
+.commission-block {
+    display: grid; grid-template-columns: 1fr; gap: 40px; align-items: center;
+}
+@media(min-width: 900px) { .commission-block { grid-template-columns: 1fr 1fr; } }
+
+.commission-visual {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+    position: relative;
+}
+.cv-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--border);
+    background: rgba(255,255,255,0.02);
+    display: flex; align-items: center; gap: 8px;
+}
+.cv-dot { width: 10px; height: 10px; border-radius: 50%; }
+.cv-dot-r { background: #ef4444; } .cv-dot-y { background: #eab308; } .cv-dot-g { background: #22c55e; }
+.cv-title { font-size: 0.75rem; color: var(--muted); font-family: monospace; margin-left: 8px; }
+.cv-body { padding: 28px 24px; }
+.earn-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 14px 16px; border-radius: 12px;
+    background: rgba(255,255,255,0.02); border: 1px solid var(--border);
+    margin-bottom: 10px; transition: 0.2s;
+}
+.earn-row:hover { border-color: rgba(var(--gold), 0.25); background: rgba(var(--gold), 0.03); }
+.er-plan { font-size: 0.88rem; color: #e2e8f0; font-weight: 600; }
+.er-price { font-size: 0.82rem; color: var(--muted); }
+.er-badge {
+    font-family: var(--fd); font-size: 0.9rem; font-weight: 800;
+    color: rgba(var(--gold), 1);
+}
+.er-note { font-size: 0.7rem; color: rgba(var(--gold), 0.7); }
+.cv-total {
+    margin-top: 16px; padding: 18px 16px;
+    background: rgba(var(--gold), 0.07); border: 1px solid rgba(var(--gold), 0.2);
+    border-radius: 12px; display: flex; align-items: center; justify-content: space-between;
+}
+.cv-total-lbl { font-size: 0.82rem; color: rgba(var(--gold), 0.8); font-weight: 600; }
+.cv-total-val {
+    font-family: var(--fd); font-size: 1.8rem; font-weight: 800;
+    color: rgba(var(--gold), 1); letter-spacing: -0.03em;
+}
+.cv-total-sub { font-size: 0.7rem; color: rgba(var(--gold), 0.6); }
+
+/* ═══════════════════════════════
+   TIER CARDS
+   ═══════════════════════════════ */
+.tier-grid {
+    display: grid; grid-template-columns: 1fr; gap: 20px;
+}
+@media(min-width: 768px) { .tier-grid { grid-template-columns: repeat(3, 1fr); } }
+
+.tier-card {
+    border-radius: var(--r);
+    padding: 36px 28px;
+    position: relative; overflow: hidden;
+    transition: all 0.4s var(--ease);
+    cursor: default;
+}
+.tier-card.bronze {
+    background: linear-gradient(145deg, rgba(205,127,50,0.08) 0%, var(--surface) 100%);
+    border: 1px solid rgba(205,127,50,0.25);
+}
+.tier-card.silver {
+    background: linear-gradient(145deg, rgba(192,192,192,0.08) 0%, var(--surface) 100%);
+    border: 1px solid rgba(192,192,192,0.25);
+}
+.tier-card.gold {
+    background: linear-gradient(145deg, rgba(var(--gold),0.12) 0%, var(--surface) 100%);
+    border: 1px solid rgba(var(--gold),0.35);
+    box-shadow: 0 0 40px rgba(var(--gold),0.08);
+}
+.tier-card:hover { transform: translateY(-6px); }
+.tier-badge {
+    font-family: var(--fd); font-size: 0.7rem; font-weight: 800;
+    letter-spacing: 0.12em; text-transform: uppercase;
+    padding: 4px 12px; border-radius: 100px; display: inline-block; margin-bottom: 20px;
+}
+.badge-bronze { background: rgba(205,127,50,0.15); color: #cd7f32; border: 1px solid rgba(205,127,50,0.3); }
+.badge-silver { background: rgba(192,192,192,0.12); color: #c0c0c0; border: 1px solid rgba(192,192,192,0.25); }
+.badge-gold   { background: rgba(var(--gold),0.12); color: rgba(var(--gold),1); border: 1px solid rgba(var(--gold),0.3); }
+
+.tier-pct {
+    font-family: var(--fd); font-size: 4rem; font-weight: 800;
+    line-height: 1; letter-spacing: -0.05em;
+    margin-bottom: 8px;
+}
+.tier-pct.bronze { color: #cd7f32; }
+.tier-pct.silver { color: #c0c0c0; }
+.tier-pct.gold   { color: rgba(var(--gold),1); }
+
+.tier-req { font-size: 0.82rem; color: var(--muted); margin-bottom: 20px; }
+.tier-features { list-style: none; }
+.tier-features li { display: flex; align-items: center; gap: 9px; font-size: 0.88rem; color: #94a3b8; margin-bottom: 10px; }
+.tier-features i { width: 15px; height: 15px; flex-shrink: 0; }
+.bronze-i { color: #cd7f32; }
+.silver-i { color: #c0c0c0; }
+.gold-i   { color: rgba(var(--gold),1); }
+
+/* ═══════════════════════════════
+   HOW IT WORKS
+   ═══════════════════════════════ */
+.steps-grid {
+    display: grid; grid-template-columns: 1fr; gap: 20px;
+    counter-reset: steps;
+}
+@media(min-width: 640px) { .steps-grid { grid-template-columns: repeat(2, 1fr); } }
+@media(min-width: 1024px) { .steps-grid { grid-template-columns: repeat(4, 1fr); } }
+
+.step-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 32px 24px;
+    position: relative;
+    transition: all 0.35s var(--ease);
+    counter-increment: steps;
+}
+.step-card::before {
+    content: "0" counter(steps);
+    position: absolute; top: 20px; right: 20px;
+    font-family: var(--fd); font-size: 2.5rem; font-weight: 800;
+    color: rgba(var(--gold), 0.08); letter-spacing: -0.05em;
+    line-height: 1;
+}
+.step-card:hover { border-color: rgba(var(--gold), 0.25); background: rgba(var(--gold), 0.03); }
+.step-icon {
+    width: 52px; height: 52px; border-radius: 14px;
+    background: rgba(var(--gold), 0.1); color: rgba(var(--gold), 1);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 20px;
+}
+.step-icon i { width: 22px; height: 22px; }
+.step-card h4 { font-family: var(--fd); font-size: 1.1rem; font-weight: 700; color: #fff; margin-bottom: 10px; }
+.step-card p { font-size: 0.88rem; color: var(--sub); line-height: 1.6; }
+
+/* ═══════════════════════════════
+   EARNINGS CALCULATOR
+   ═══════════════════════════════ */
+.calc-wrap {
+    background: var(--bg2); border: 1px solid var(--border);
+    border-radius: var(--r); padding: clamp(28px, 5vw, 56px);
+    max-width: 900px; margin: 0 auto;
+}
+.calc-grid {
+    display: grid; grid-template-columns: 1fr; gap: 40px;
+}
+@media(min-width: 768px) { .calc-grid { grid-template-columns: 1fr 1fr; align-items: center; } }
+
+.range-wrap { margin-bottom: 28px; }
+.range-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.range-label { font-size: 0.88rem; color: var(--sub); font-weight: 500; }
+.range-val { font-family: var(--fd); font-size: 1rem; font-weight: 800; color: rgba(var(--gold),1); }
+input[type=range] {
+    width: 100%; height: 6px; -webkit-appearance: none;
+    background: rgba(255,255,255,0.07); border-radius: 10px; outline: none; cursor: pointer;
+}
+input[type=range]::-webkit-slider-thumb {
+    -webkit-appearance: none; width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(var(--gold),1); cursor: pointer;
+    box-shadow: 0 0 12px rgba(var(--gold),0.5);
+}
+input[type=range]::-moz-range-thumb {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: rgba(var(--gold),1); border: none;
+    box-shadow: 0 0 12px rgba(var(--gold),0.5);
+}
+
+.earnings-display {
+    background: rgba(var(--gold), 0.05);
+    border: 1px solid rgba(var(--gold), 0.2);
+    border-radius: 16px; padding: 32px;
+    text-align: center;
+}
+.ed-label { font-size: 0.78rem; color: rgba(var(--gold),0.7); font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+.ed-amount {
+    font-family: var(--fd); font-size: clamp(2.5rem, 6vw, 4.5rem);
+    font-weight: 800; color: rgba(var(--gold),1);
+    letter-spacing: -0.04em; line-height: 1;
+    transition: 0.3s var(--ease);
+}
+.ed-period { font-size: 0.88rem; color: var(--muted); margin-top: 8px; }
+.ed-breakdown {
+    margin-top: 20px; padding-top: 20px;
+    border-top: 1px solid rgba(var(--gold),0.12);
+    display: flex; justify-content: space-between;
+}
+.edb-item { text-align: center; }
+.edb-val { font-family: var(--fd); font-size: 1.2rem; font-weight: 800; color: rgba(var(--green),1); }
+.edb-lbl { font-size: 0.72rem; color: var(--muted); margin-top: 3px; }
+
+/* ═══════════════════════════════
+   WHO IS IT FOR
+   ═══════════════════════════════ */
+.who-grid {
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px;
+}
+@media(min-width: 768px) { .who-grid { grid-template-columns: repeat(3, 1fr); } }
+@media(min-width: 1024px) { .who-grid { grid-template-columns: repeat(6, 1fr); } }
+
+.who-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 24px 16px;
+    text-align: center; transition: all 0.3s var(--ease);
+}
+.who-card:hover { border-color: rgba(var(--gold),0.25); transform: translateY(-4px); }
+.who-icon {
+    width: 48px; height: 48px; border-radius: 14px;
+    background: rgba(var(--gold),0.08); color: rgba(var(--gold),1);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 14px;
+}
+.who-icon i { width: 20px; height: 20px; }
+.who-card h4 { font-family: var(--fd); font-size: 0.88rem; font-weight: 700; color: #fff; line-height: 1.3; }
+
+/* ═══════════════════════════════
+   TESTIMONIALS
+   ═══════════════════════════════ */
+.test-grid {
+    display: grid; grid-template-columns: 1fr; gap: 20px;
+}
+@media(min-width: 768px) { .test-grid { grid-template-columns: repeat(3, 1fr); } }
+.test-card {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: var(--r); padding: 28px 24px;
+    transition: 0.3s var(--ease);
+    position: relative;
+}
+.test-card:hover { border-color: rgba(var(--gold),0.2); }
+.test-quote-icon {
+    position: absolute; top: 20px; right: 20px;
+    font-family: var(--fd); font-size: 4rem; line-height: 1;
+    color: rgba(var(--gold),0.06); font-weight: 900;
+}
+.test-amount {
+    font-family: var(--fd); font-size: 1.6rem; font-weight: 800;
+    color: rgba(var(--gold),1); letter-spacing: -0.03em;
+    margin-bottom: 12px;
+}
+.test-amount span { font-size: 0.85rem; color: var(--muted); font-weight: 500; }
+.test-text { font-size: 0.9rem; color: var(--sub); line-height: 1.65; margin-bottom: 20px; font-style: italic; }
+.test-author { display: flex; align-items: center; gap: 12px; }
+.test-av {
+    width: 38px; height: 38px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--fd); font-weight: 800; font-size: 0.85rem; color: #fff;
+}
+.test-name { font-weight: 700; font-size: 0.88rem; color: #fff; }
+.test-role { font-size: 0.75rem; color: var(--muted); }
+
+/* ═══════════════════════════════
+   FAQ
+   ═══════════════════════════════ */
+.faq-wrap { max-width: 800px; margin: 0 auto; }
+.faq-item { border-bottom: 1px solid var(--border); }
+.faq-btn {
+    width: 100%; background: none; border: none; cursor: pointer;
+    padding: 22px 0; display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    text-align: left; color: #e2e8f0;
+    font-family: var(--fb); font-size: 1rem; font-weight: 600;
+    transition: color 0.2s;
+}
+.faq-btn:hover { color: rgba(var(--gold),1); }
+.faq-icon { width: 18px; height: 18px; color: var(--muted); flex-shrink: 0; transition: transform 0.3s var(--ease); }
+.faq-item.open .faq-icon { transform: rotate(45deg); color: rgba(var(--gold),1); }
+.faq-ans { display: none; padding: 0 0 22px; color: var(--sub); line-height: 1.7; font-size: 0.95rem; }
+.faq-item.open .faq-ans { display: block; }
+
+/* ═══════════════════════════════
+   CTA SECTION
+   ═══════════════════════════════ */
+.cta-box {
+    position: relative; overflow: hidden;
+    background: linear-gradient(135deg, rgba(var(--gold),0.1) 0%, rgba(var(--green),0.06) 50%, rgba(var(--blue),0.06) 100%);
+    border: 1px solid rgba(var(--gold),0.25);
+    border-radius: 28px; padding: clamp(48px, 8vw, 96px) clamp(24px, 5vw, 80px);
+    text-align: center;
+}
+.cta-box::before {
+    content: ''; position: absolute; top: -100px; left: 50%; transform: translateX(-50%);
+    width: 600px; height: 400px;
+    background: radial-gradient(ellipse, rgba(var(--gold),0.12) 0%, transparent 65%);
+    pointer-events: none;
+}
+
+/* ═══════════════════════════════
+   FOOTER
+   ═══════════════════════════════ */
+.aff-footer {
+    border-top: 1px solid var(--border);
+    padding: 40px 0;
+    text-align: center;
+}
+.aff-footer p { font-size: 0.85rem; color: var(--muted); line-height: 1.8; }
+.aff-footer a { color: rgba(var(--gold),0.8); text-decoration: none; }
+.aff-footer a:hover { color: rgba(var(--gold),1); }
+
+/* ── Section headers ── */
+.sh { text-align: center; margin-bottom: 56px; }
+.sh .t-label { margin-bottom: 14px; display: block; }
+.sh .t-body { max-width: 600px; margin: 16px auto 0; }
+
+/* Comparison table */
+.comp-table {
+    width: 100%; border-collapse: collapse; font-size: 0.9rem;
+    background: var(--surface); border-radius: var(--r); overflow: hidden;
+}
+.comp-table th {
+    background: rgba(var(--gold),0.07); color: rgba(var(--gold),1);
+    font-family: var(--fd); font-weight: 700; font-size: 0.78rem;
+    text-transform: uppercase; letter-spacing: 0.08em;
+    padding: 16px 20px; text-align: left;
+    border-bottom: 1px solid var(--border);
+}
+.comp-table th:not(:first-child) { text-align: center; }
+.comp-table td {
+    padding: 14px 20px; border-bottom: 1px solid rgba(255,255,255,0.04);
+    color: var(--sub);
+}
+.comp-table td:not(:first-child) { text-align: center; }
+.comp-table tr:last-child td { border-bottom: none; }
+.comp-table .highlight td { background: rgba(var(--gold),0.04); color: #e2e8f0; font-weight: 600; }
+.comp-table .highlight td:first-child { color: rgba(var(--gold),1); }
+.check { color: rgba(var(--green),1); font-size: 1rem; }
+.cross { color: #ef4444; font-size: 1rem; }
+.maybe { color: #eab308; font-size: 0.85rem; }
+
+/* Floating apply bar */
+.apply-bar {
+    position: fixed; bottom: 0; left: 0; right: 0; z-index: 900;
+    background: rgba(6,8,16,0.95);
+    border-top: 1px solid rgba(var(--gold),0.2);
+    backdrop-filter: blur(16px);
+    padding: 14px 24px;
+    display: flex; align-items: center; justify-content: space-between; gap: 16px;
+    flex-wrap: wrap;
+    transform: translateY(100%);
+    transition: transform 0.4s var(--ease);
+}
+.apply-bar.visible { transform: translateY(0); }
+.ab-text { font-size: 0.88rem; color: #94a3b8; }
+.ab-text strong { color: rgba(var(--gold),1); }
+
+@media(max-width: 600px) {
+    .apply-bar { flex-direction: column; align-items: stretch; }
+    .apply-bar .btn { width: 100%; text-align: center; }
+}
+</style>
+{% endblock %}
+
+
+{% block content %}
+<div class="aff-page" itemscope itemtype="https://schema.org/WebPage">
+
+    <!-- ═══════════════════════════════════════════════
+         HERO
+         ═══════════════════════════════════════════════ -->
+    <section class="hero" aria-label="LeadNexus Affiliate Program Hero">
+        <div class="hero-beam" aria-hidden="true"></div>
+        <div class="hero-dots" aria-hidden="true"></div>
+        <div class="ac">
+            <div class="pill" style="margin-bottom:32px;">
+                <i data-lucide="star" style="width:13px;height:13px;"></i>
+                Affiliate Program · Open Enrollment
+            </div>
+            <h1 class="t-display">
+                Earn <span class="g-gold">{{ settings.commission_rate|floatformat:0 }}%</span><br>
+                <span class="g-green">Recurring</span><br>
+                Commission
+            </h1>
+            <p class="t-body" style="max-width:600px; margin:28px auto 0; font-size:1.15rem;">
+                Join the <strong style="color:#fff;">LeadNexus Affiliate Program</strong> — the highest-paying recurring commission program in B2B lead generation software. Refer once. Earn every month. Forever.
+            </p>
+            <div style="display:flex; flex-direction:column; gap:14px; align-items:center; justify-content:center; margin-top:40px; flex-wrap:wrap;">
+                <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">
+                    <a href="{% url 'affiliate-apply' %}" class="btn btn-gold" aria-label="Join LeadNexus Affiliate Program">
+                        <i data-lucide="rocket" style="width:18px;height:18px;"></i>
+                        Join Free — Start Earning Today
+                    </a>
+                    <a href="#how-it-works" class="btn btn-outline">See How It Works</a>
+                </div>
+                <span style="font-size:0.8rem; color:var(--muted);">Free to join · No approval wait · Instant dashboard access</span>
+            </div>
+
+            <!-- Live Stats Strip -->
+            <div class="counter-strip rv">
+                <div class="counter-item">
+                    <div class="counter-num" id="c-affiliates">{{ total_affiliates }}+</div>
+                    <div class="counter-lbl">Active Affiliates</div>
+                </div>
+                <div class="counter-divider"></div>
+                <div class="counter-item">
+                    <div class="counter-num">{{ settings.commission_rate|floatformat:0 }}%</div>
+                    <div class="counter-lbl">Recurring Commission Rate</div>
+                </div>
+                <div class="counter-divider"></div>
+                <div class="counter-item">
+                    <div class="counter-num">$0</div>
+                    <div class="counter-lbl">Minimum Payout</div>
+                </div>
+                <div class="counter-divider"></div>
+                <div class="counter-item">
+                    <div class="counter-num">90</div>
+                    <div class="counter-lbl">Day Cookie Window</div>
+                </div>
+                <div class="counter-divider"></div>
+                <div class="counter-item">
+                    <div class="counter-num">∞</div>
+                    <div class="counter-lbl">Earnings Cap</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         COMMISSION BREAKDOWN
+         ═══════════════════════════════════════════════ -->
+    <section class="section ac" aria-labelledby="commission-heading">
+        <div class="commission-block">
+            <div class="rv">
+                <span class="t-label" style="display:block; margin-bottom:16px;">The Math is Simple</span>
+                <h2 class="t-h2" id="commission-heading">
+                    Refer 10 Customers.<br>
+                    Earn <span class="g-gold">$897/mo</span><br>
+                    <span style="font-size:0.6em; color:var(--sub);">Passively. Every. Month.</span>
+                </h2>
+                <p class="t-body" style="margin:24px 0 32px;">
+                    Every time a customer you referred pays their LeadNexus subscription, you automatically receive {{ settings.commission_rate|floatformat:0 }}% of that payment — directly to your account, every billing cycle, for as long as they stay subscribed.
+                </p>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div style="display:flex; align-items:center; gap:12px; font-size:0.9rem; color:#94a3b8;">
+                        <i data-lucide="check-circle" style="width:17px;height:17px;color:rgba(var(--green),1);flex-shrink:0;"></i>
+                        No waiting period — commissions credited on first payment
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; font-size:0.9rem; color:#94a3b8;">
+                        <i data-lucide="check-circle" style="width:17px;height:17px;color:rgba(var(--green),1);flex-shrink:0;"></i>
+                        Commissions stack — every referral adds to your monthly income
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; font-size:0.9rem; color:#94a3b8;">
+                        <i data-lucide="check-circle" style="width:17px;height:17px;color:rgba(var(--green),1);flex-shrink:0;"></i>
+                        Annual plan referrals earn even more — paid upfront
+                    </div>
+                    <div style="display:flex; align-items:center; gap:12px; font-size:0.9rem; color:#94a3b8;">
+                        <i data-lucide="check-circle" style="width:17px;height:17px;color:rgba(var(--green),1);flex-shrink:0;"></i>
+                        Real-time tracking dashboard — see every click and conversion
+                    </div>
+                </div>
+            </div>
+
+            <!-- Commission Visual Dashboard -->
+            <div class="commission-visual rv" role="img" aria-label="Affiliate commission earnings breakdown">
+                <div class="cv-header">
+                    <div class="cv-dot cv-dot-r"></div>
+                    <div class="cv-dot cv-dot-y"></div>
+                    <div class="cv-dot cv-dot-g"></div>
+                    <span class="cv-title">getleadnexus.com</span>
+                </div>
+                    {% for item in breakdown %}
+                    <div class="earn-row">
+                        <div>
+                            <div class="er-plan">{{ item.count }} × {{ item.name }}</div>
+                            <div class="er-price">${{ item.unit_price|floatformat:0 }}/mo each</div>
+                        </div>
+                        <div style="text-align:right;">
+                             <div class="er-badge">${{ item.commission|floatformat:2 }}</div>
+                             <div class="er-note">{{ settings.commission_rate|floatformat:0 }}% × ${{ item.total_price|floatformat:0 }}</div>
+                        </div>
+                    </div>
+                    {% empty %}
+                    <div class="earn-row">
+                        <div>
+                            <div class="er-plan">3 × Initiate Plan</div>
+                            <div class="er-price">$99/mo each</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="er-badge">$89.10</div>
+                            <div class="er-note">{{ settings.commission_rate|floatformat:0 }}% × $297</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <div class="cv-total">
+                        <div>
+                            <div class="cv-total-lbl">Monthly Recurring Earnings</div>
+                            <div class="cv-total-sub">from 10 referred customers</div>
+                        </div>
+                        <div style="text-align:right;">
+                            <div class="cv-total-val">$1,317</div>
+                            <div style="font-size:0.7rem; color:rgba(var(--gold),0.6);">$15,804 / year</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ═══════════════════════════════════════════════
+         HOW IT WORKS
+         ═══════════════════════════════════════════════ -->
+    <section id="how-it-works" class="section ac" aria-labelledby="how-heading">
+        <div class="sh">
+            <span class="t-label">Simple 4-Step Process</span>
+            <h2 class="t-h2" id="how-heading">Start Earning With<br><span class="g-gold">LeadNexus in Minutes</span></h2>
+            <p class="t-body">No technical setup. No approval delays. Get your referral link and start sharing immediately.</p>
+        </div>
+        <div class="steps-grid">
+            <div class="step-card rv">
+                <div class="step-icon"><i data-lucide="user-plus"></i></div>
+                <h4>Create Free Account</h4>
+                <p>Register at LeadNexus.io in under 2 minutes. No credit card, no approval process. Your affiliate dashboard is activated instantly.</p>
+            </div>
+            <div class="step-card rv">
+                <div class="step-icon"><i data-lucide="link"></i></div>
+                <h4>Get Your Referral Link</h4>
+                <p>Access your unique affiliate tracking link and promotional materials — banners, email templates, social copy — all inside your dashboard.</p>
+            </div>
+            <div class="step-card rv">
+                <div class="step-icon"><i data-lucide="share-2"></i></div>
+                <h4>Share With Your Audience</h4>
+                <p>Promote via your blog, LinkedIn, YouTube channel, email newsletter, Twitter, or any channel where B2B professionals are your audience.</p>
+            </div>
+            <div class="step-card rv">
+                <div class="step-icon"><i data-lucide="dollar-sign"></i></div>
+                <h4>Collect Monthly Earnings</h4>
+                <p>Every payment from your referred customers automatically credits {{ settings.commission_rate|floatformat:0 }}% to your affiliate balance. Withdraw anytime with no minimum threshold.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         EARNINGS CALCULATOR
+         ═══════════════════════════════════════════════ -->
+    <section class="section" style="background: rgba(255,255,255,0.01); border-top:1px solid var(--border);" aria-labelledby="calc-heading">
+        <div class="ac">
+            <div class="sh">
+                <span class="t-label">Earnings Calculator</span>
+                <h2 class="t-h2" id="calc-heading">How Much Can You<br><span class="g-gold">Earn with LeadNexus?</span></h2>
+                <p class="t-body">Adjust the sliders to see your projected monthly and annual passive income from the LeadNexus affiliate program.</p>
+            </div>
+            <div class="calc-wrap rv">
+                <div class="calc-grid">
+                    <div>
+                        <div class="range-wrap">
+                            <div class="range-top">
+                                <span class="range-label">Number of Referrals Per Month</span>
+                                <span class="range-val" id="ref-count-val">5 referrals</span>
+                            </div>
+                            <input type="range" id="ref-count" min="1" max="100" value="5" oninput="calcEarnings()">
+                        </div>
+                        <div class="range-wrap">
+                            <div class="range-top">
+                                <span class="range-label">Average Plan Value</span>
+                                <span class="range-val" id="plan-val-val">${{ avg_p }}/mo</span>
+                            </div>
+                            <input type="range" id="plan-val" min="{{ min_p }}" max="{{ max_p }}" value="{{ avg_p }}" step="1" oninput="calcEarnings()">
+                        </div>
+                        <div class="range-wrap">
+                            <div class="range-top">
+                                <span class="range-label">Average Customer Lifespan</span>
+                                <span class="range-val" id="life-val-val">12 months</span>
+                            </div>
+                            <input type="range" id="life-val" min="1" max="36" value="12" oninput="calcEarnings()">
+                        </div>
+                        <p style="font-size:0.78rem; color:var(--muted); margin-top:8px;">
+                            * Calculator assumes {{ settings.commission_rate|floatformat:0 }}% recurring commission rate as set in your partner profile.
+                        </p>
+                    </div>
+                    <div class="earnings-display">
+                        <div class="ed-label">Your Monthly Recurring Income</div>
+                        <div class="ed-amount" id="monthly-earn">$448</div>
+                        <div class="ed-period">Every month, automatically</div>
+                        <div class="ed-breakdown">
+                            <div class="edb-item">
+                                <div class="edb-val" id="annual-earn">$5,382</div>
+                                <div class="edb-lbl">Annual Income</div>
+                            </div>
+                            <div class="edb-item">
+                                <div class="edb-val" id="lifetime-earn">$26,910</div>
+                                <div class="edb-lbl">Lifetime Value</div>
+                            </div>
+                            <div class="edb-item">
+                                <div class="edb-val" id="per-ref">$89.70</div>
+                                <div class="edb-lbl">Per Referral/mo</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         WHO IS IT FOR
+         ═══════════════════════════════════════════════ -->
+    <section class="section ac" aria-labelledby="who-heading">
+        <div class="sh">
+            <span class="t-label">Perfect For</span>
+            <h2 class="t-h2" id="who-heading">Who Thrives in the<br><span class="g-gold">LeadNexus Affiliate Program?</span></h2>
+            <p class="t-body">If your audience includes sales professionals, marketers, founders, or agency owners — you have the perfect audience for LeadNexus referrals.</p>
+        </div>
+        <div class="who-grid">
+            <div class="who-card rv">
+                <div class="who-icon"><i data-lucide="pen-tool"></i></div>
+                <h4>Content Creators &amp; Bloggers</h4>
+            </div>
+            <div class="who-card rv">
+                <div class="who-icon"><i data-lucide="linkedin"></i></div>
+                <h4>LinkedIn Influencers</h4>
+            </div>
+            <div class="who-card rv">
+                <div class="who-icon"><i data-lucide="briefcase"></i></div>
+                <h4>Sales Consultants</h4>
+            </div>
+            <div class="who-card rv">
+                <div class="who-icon"><i data-lucide="youtube"></i></div>
+                <h4>YouTube Creators</h4>
+            </div>
+            <div class="who-card rv">
+                <div class="who-icon"><i data-lucide="mail"></i></div>
+                <h4>Email Newsletter Owners</h4>
+            </div>
+            <div class="who-card rv">
+                <div class="who-icon"><i data-lucide="building-2"></i></div>
+                <h4>Agency Owners</h4>
+            </div>
+        </div>
+    </section>
+
+
+
+    <!-- ═══════════════════════════════════════════════
+         TESTIMONIALS
+         ═══════════════════════════════════════════════ -->
+    <section class="section ac" aria-labelledby="testimonials-heading">
+        <div class="sh">
+            <span class="t-label">Affiliate Success Stories</span>
+            <h2 class="t-h2" id="testimonials-heading">Real Affiliates.<br><span class="g-gold">Real Monthly Income.</span></h2>
+        </div>
+        <div class="test-grid">
+            <article class="test-card rv" itemscope itemtype="https://schema.org/Review">
+                <div class="test-quote-icon">"</div>
+                <div class="test-amount">$2,847<span>/mo recurring</span></div>
+                <blockquote class="test-text" itemprop="reviewBody">"I wrote one LinkedIn article about cold email automation and embedded my LeadNexus affiliate link. That single post still generates over $2,800 a month in recurring commissions — 14 months later."</blockquote>
+                <div class="test-author">
+                    <div class="test-av" style="background: linear-gradient(135deg,#d4af37,#a07c20);">DK</div>
+                    <div>
+                        <div class="test-name" itemprop="author">Daniel K.</div>
+                        <div class="test-role">B2B Sales Consultant · LinkedIn 42K followers</div>
+                    </div>
+                </div>
+            </article>
+            <article class="test-card rv" itemscope itemtype="https://schema.org/Review">
+                <div class="test-quote-icon">"</div>
+                <div class="test-amount">$1,190<span>/mo recurring</span></div>
+                <blockquote class="test-text" itemprop="reviewBody">"As an agency owner I refer every new client to LeadNexus. I make an extra $1,200 a month just from my own client base — without any extra marketing effort. It's the smartest revenue stream I've ever added."</blockquote>
+                <div class="test-author">
+                    <div class="test-av" style="background: linear-gradient(135deg,#10b981,#065f46);">SR</div>
+                    <div>
+                        <div class="test-name" itemprop="author">Sofia R.</div>
+                        <div class="test-role">Marketing Agency Founder · Madrid</div>
+                    </div>
+                </div>
+            </article>
+            <article class="test-card rv" itemscope itemtype="https://schema.org/Review">
+                <div class="test-quote-icon">"</div>
+                <div class="test-amount">$4,320<span>/mo recurring</span></div>
+                <blockquote class="test-text" itemprop="reviewBody">"I run a YouTube channel about B2B outreach. I promoted LeadNexus in 3 videos. Now I pull over $4,000 a month in passive commissions — more than my AdSense revenue. The {{ settings.commission_rate|floatformat:0 }}% recurring model is unbeatable."</blockquote>
+                <div class="test-author">
+                    <div class="test-av" style="background: linear-gradient(135deg,#7c3aed,#3b82f6);">AH</div>
+                    <div>
+                        <div class="test-name" itemprop="author">Amir H.</div>
+                        <div class="test-role">YouTuber · B2B Growth Strategies · 28K subs</div>
+                    </div>
+                </div>
+            </article>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         FAQ — SEO FEATURED SNIPPETS
+         ═══════════════════════════════════════════════ -->
+    <section id="faq" class="section" style="background: rgba(255,255,255,0.01); border-top:1px solid var(--border);" aria-labelledby="faq-heading">
+        <div class="ac">
+            <div class="sh">
+                <span class="t-label">Frequently Asked Questions</span>
+                <h2 class="t-h2" id="faq-heading">Everything About the<br><span class="g-gold">LeadNexus Affiliate Program</span></h2>
+            </div>
+            <div class="faq-wrap">
+                <div class="faq-item open">
+                    <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="true">
+                        How much commission does the LeadNexus affiliate program pay?
+                        <i data-lucide="plus" class="faq-icon"></i>
+                    </button>
+                    <div class="faq-ans">
+                        LeadNexus pays <strong>{{ settings.commission_rate|floatformat:0 }}% recurring monthly commission</strong> to all affiliates starting from day one. This means you earn {{ settings.commission_rate|floatformat:0 }}% of every subscription payment made by referred customers — every month, for as long as they stay subscribed, with no cap on total earnings.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                        How do I join the LeadNexus affiliate program?
+                        <i data-lucide="plus" class="faq-icon"></i>
+                    </button>
+                    <div class="faq-ans">
+                        Joining is completely free and instant. Simply <a href="{% url 'affiliate-apply' %}" style="color:rgba(var(--gold),1);">create your LeadNexus account</a>, then navigate to the "Affiliate" section in your dashboard. Your unique referral link is generated immediately — you can start promoting and earning right away with no approval delay.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                        When and how does LeadNexus pay affiliates?
+                        <i data-lucide="plus" class="faq-icon"></i>
+                    </button>
+                    <div class="faq-ans">
+                        LeadNexus processes affiliate payouts on a monthly basis. Payments are sent via bank transfer, PayPal, or cryptocurrency. There is <strong>no minimum payout threshold</strong> — every dollar you earn is paid out in full at the next payment cycle.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                        What is the cookie duration for the LeadNexus affiliate program?
+                        <i data-lucide="plus" class="faq-icon"></i>
+                    </button>
+                    <div class="faq-ans">
+                        LeadNexus uses a <strong>90-day tracking cookie</strong>. If someone clicks your referral link today and subscribes any time within the next 90 days, you receive the commission. Since we value long-term partnerships, this window applies to all your referrals — one of the longest in the industry.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                        Is the LeadNexus commission recurring or one-time?
+                        <i data-lucide="plus" class="faq-icon"></i>
+                    </button>
+                    <div class="faq-ans">
+                        <strong>Fully recurring.</strong> Unlike many affiliate programs that pay a one-time bounty, LeadNexus pays {{ settings.commission_rate|floatformat:0 }}% of every subscription renewal payment your referral makes. Refer a customer today who pays for 24 months, and you earn commission for all 24 months. This is true passive income.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                        What marketing materials does LeadNexus provide to affiliates?
+                        <i data-lucide="plus" class="faq-icon"></i>
+                    </button>
+                    <div class="faq-ans">
+                        Your affiliate dashboard includes ready-to-use banner ads in multiple sizes, email swipe copy templates, social media post templates for LinkedIn and Twitter, a custom landing page builder, and a performance analytics suite showing clicks, signups, and conversion rates in real time.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                        Can I be a LeadNexus customer AND an affiliate at the same time?
+                        <i data-lucide="plus" class="faq-icon"></i>
+                    </button>
+                    <div class="faq-ans">
+                        Absolutely. In fact, customers who use LeadNexus themselves are our best affiliates — because you can speak from genuine experience. Many of our top-earning affiliates are active users who recommend the tool to their professional network and earn significant monthly income doing so.
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-btn" onclick="toggleFaq(this)" aria-expanded="false">
+                        Is there a cap on how much I can earn as a LeadNexus affiliate?
+                        <i data-lucide="plus" class="faq-icon"></i>
+                    </button>
+                    <div class="faq-ans">
+                        No. There is <strong>absolutely no earnings cap</strong>. Refer 5 customers or 500 customers — you earn {{ settings.commission_rate|floatformat:0 }}% recurring commission on all of them. Our top affiliates earn significant monthly passive income through the program.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══════════════════════════════════════════════
+         CTA
+         ═══════════════════════════════════════════════ -->
+    <section class="section ac" style="padding-bottom:120px;">
+        <div class="cta-box rv">
+            <span class="t-label" style="display:block; margin-bottom:20px;">Start Earning Today</span>
+            <h2 class="t-h2" style="margin-bottom:20px;">
+                Join {{ total_affiliates }}+ Affiliates Already<br>
+                <span class="g-gold">Earning With LeadNexus</span>
+            </h2>
+            <p class="t-body" style="max-width:540px; margin:0 auto 40px;">
+                Free to join. No approval wait. No earnings cap. Start sharing your referral link today and build a stream of passive income from the fastest-growing B2B lead generation platform.
+            </p>
+            <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
+                <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">
+                    <a href="{% url 'affiliate-apply' %}" class="btn btn-gold" style="font-size:1.05rem; height:58px; padding:0 40px;">
+                        <i data-lucide="rocket" style="width:18px;height:18px;"></i>
+                        Join the Affiliate Program — Free
+                    </a>
+                    <a href="{% url 'login' %}" class="btn btn-ghost">Already a member? Sign In</a>
+                </div>
+                <div style="display:flex; gap:28px; flex-wrap:wrap; justify-content:center; margin-top:8px;">
+                    <span style="font-size:0.82rem; color:var(--muted); display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="check" style="width:13px;height:13px;color:rgba(var(--green),1);"></i> No credit card
+                    </span>
+                    <span style="font-size:0.82rem; color:var(--muted); display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="check" style="width:13px;height:13px;color:rgba(var(--green),1);"></i> Instant access
+                    </span>
+                    <span style="font-size:0.82rem; color:var(--muted); display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="check" style="width:13px;height:13px;color:rgba(var(--green),1);"></i> {{ settings.commission_rate|floatformat:0 }}% recurring from day 1
+                    </span>
+                    <span style="font-size:0.82rem; color:var(--muted); display:flex; align-items:center; gap:6px;">
+                        <i data-lucide="check" style="width:13px;height:13px;color:rgba(var(--green),1);"></i> Cancel anytime
+                    </span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+
+
+</div>
+
+<!-- Floating Apply Bar (appears on scroll) -->
+<div class="apply-bar" id="applyBar" role="banner" aria-label="Affiliate program call to action">
+    <div class="ab-text">
+        <strong>LeadNexus Affiliate Program</strong> — Earn <strong>{{ settings.commission_rate|floatformat:0 }}% recurring commission</strong>. Free to join.
+    </div>
+    <a href="{% url 'affiliate-apply' %}" class="btn btn-gold" style="height:42px; font-size:0.88rem; padding:0 20px;">
+        <i data-lucide="rocket" style="width:15px;height:15px;"></i> Join Free Now
+    </a>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.lucide) lucide.createIcons();
+});
+
+// Scroll reveal
+const rvEls = document.querySelectorAll('.rv');
+const rvObs = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+        if (e.isIntersecting) {
+            setTimeout(() => e.target.classList.add('vis'), i * 70);
+            rvObs.unobserve(e.target);
+        }
+    });
+}, { threshold: 0.08 });
+rvEls.forEach(el => rvObs.observe(el));
+
+// Floating apply bar
+window.addEventListener('scroll', () => {
+    const bar = document.getElementById('applyBar');
+    if (!bar) return;
+    const footer = document.querySelector('.footer');
+    const footerTop = footer ? footer.getBoundingClientRect().top : Infinity;
+    const windowHeight = window.innerHeight;
+    
+    if (window.scrollY > 600 && footerTop > windowHeight) bar.classList.add('visible');
+    else bar.classList.remove('visible');
+});
+
+// Smooth scroll
+document.querySelectorAll('a[href*="#"]').forEach(a => {
+    a.addEventListener('click', function(e) {
+        const href = this.getAttribute('href');
+        if (href.startsWith('#') || href.startsWith('/#')) {
+            const id = href.startsWith('/#') ? href.slice(1) : href;
+            const t = document.querySelector(id);
+            if (t && id !== '#') {
+                e.preventDefault();
+                const navH = document.querySelector('.navbar')?.offsetHeight || 80;
+                window.scrollTo({ top: t.getBoundingClientRect().top + window.pageYOffset - navH, behavior: 'smooth' });
+            }
+        }
+    });
+});
+
+// Earnings Calculator
+function calcEarnings() {
+    const refs = parseInt(document.getElementById('ref-count').value);
+    const plan = parseInt(document.getElementById('plan-val').value);
+    const life = parseInt(document.getElementById('life-val').value);
+    const rate = {{ settings.commission_rate }} / 100;
+    const perRef = plan * rate;
+    const monthly = refs * perRef;
+    const annual = monthly * 12;
+    const lifetime = monthly * life;
+
+    document.getElementById('ref-count-val').innerText = refs + ' referral' + (refs !== 1 ? 's' : '');
+    document.getElementById('plan-val-val').innerText = '$' + plan + '/mo';
+    document.getElementById('life-val-val').innerText = life + ' month' + (life !== 1 ? 's' : '');
+    document.getElementById('monthly-earn').innerText = '$' + monthly.toLocaleString('en-US', {maximumFractionDigits:0});
+    document.getElementById('annual-earn').innerText = '$' + annual.toLocaleString('en-US', {maximumFractionDigits:0});
+    document.getElementById('lifetime-earn').innerText = '$' + lifetime.toLocaleString('en-US', {maximumFractionDigits:0});
+    document.getElementById('per-ref').innerText = '$' + perRef.toFixed(2);
+}
+calcEarnings();
+
+// FAQ
+function toggleFaq(btn) {
+    const item = btn.closest('.faq-item');
+    const isOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item.open').forEach(i => i.classList.remove('open'));
+    if (!isOpen) item.classList.add('open');
+    btn.setAttribute('aria-expanded', !isOpen);
+    if (window.lucide) lucide.createIcons();
+}
+</script>
+{% endblock %}
