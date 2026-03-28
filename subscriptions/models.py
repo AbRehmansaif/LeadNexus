@@ -40,6 +40,9 @@ class SubscriptionPlan(models.Model):
         return [f.strip() for f in self.features.split('\n') if f.strip()]
 
     def get_discount_pct(self):
-        if self.monthly_price and self.yearly_price and self.monthly_price > self.yearly_price:
-            return int(((self.monthly_price - self.yearly_price) / self.monthly_price) * 100)
+        """Calculates discount percentage when billed annually."""
+        monthly = self.monthly_price
+        yearly_monthly = self.yearly_price_per_month
+        if monthly and yearly_monthly and monthly > yearly_monthly:
+            return int(((monthly - yearly_monthly) / monthly) * 100)
         return 0
