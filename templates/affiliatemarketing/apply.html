@@ -1,0 +1,438 @@
+{% extends "base.html" %}
+{% block title %}Apply as a LeadNexus Partner — Affiliate Program Application{% endblock %}
+
+{% block extra_css %}
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap');
+* { font-family: 'Plus Jakarta Sans', sans-serif; }
+
+.reg-wrap {
+    background: #020617; min-height: 100vh; margin: -20px;
+    padding: 60px 24px 100px;
+    display: flex; flex-direction: column; align-items: center;
+    position: relative; overflow: hidden;
+}
+.reg-bg {
+    position: absolute; inset: 0; pointer-events: none;
+    background:
+        radial-gradient(ellipse 60% 50% at 10% 20%, rgba(124,58,237,0.12) 0%, transparent 60%),
+        radial-gradient(ellipse 40% 50% at 90% 80%, rgba(99,102,241,0.08) 0%, transparent 60%);
+}
+.reg-head { text-align: center; margin-bottom: 40px; position: relative; z-index: 2; color: #fff; }
+.reg-head h1 { font-size: 2.1rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 8px; }
+.reg-head p  { color: #64748b; font-size: 0.9rem; }
+
+/* ── PROGRESS ── */
+.prog { display: flex; align-items: center; margin-bottom: 40px; position: relative; z-index: 2; }
+.p-step { display: flex; flex-direction: column; align-items: center; gap: 7px; }
+.p-circle {
+    width: 44px; height: 44px; border-radius: 50%;
+    background: rgba(255,255,255,0.04); border: 2px solid rgba(255,255,255,0.08);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.82rem; font-weight: 800; color: #475569; transition: all 0.4s;
+}
+.p-circle.active { background: #7c3aed; border-color: #7c3aed; color: #fff; box-shadow: 0 0 20px rgba(124,58,237,0.4); }
+.p-circle.done   { background: #10b981; border-color: #10b981; color: #fff; }
+.p-lbl { font-size: 0.65rem; font-weight: 700; color: #475569; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; width: 70px; }
+.p-lbl.active { color: #c4b5fd; }
+.p-line { width: 70px; height: 2px; background: rgba(255,255,255,0.05); align-self: flex-start; margin-top: 22px; transition: background 0.4s; }
+.p-line.done { background: #10b981; }
+
+/* ── CARD ── */
+.reg-card {
+    width: 100%; max-width: 700px;
+    background: rgba(15,23,42,0.85); border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 28px; padding: 48px; position: relative; z-index: 2;
+    backdrop-filter: blur(40px); box-shadow: 0 40px 100px rgba(0,0,0,0.5);
+}
+.reg-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #7c3aed, #6366f1, #10b981);
+    border-radius: 28px 28px 0 0;
+}
+
+/* ── STEP PANELS ── */
+.step-panel { display: none; }
+.step-panel.active { display: block; animation: si 0.4s ease; }
+@keyframes si { from { opacity:0; transform:translateY(10px); } to { opacity:1; transform:translateY(0); } }
+
+.s-title { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 6px; }
+.s-sub   { font-size: 0.87rem; color: #64748b; margin-bottom: 30px; line-height: 1.6; }
+
+/* ── FORM ── */
+.f-row { display: grid; gap: 14px; margin-bottom: 18px; }
+.f-row.two { grid-template-columns: 1fr 1fr; }
+.f-label { font-size: 0.71rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.07em; margin-bottom: 7px; display: block; }
+.f-input {
+    width: 100%; background: rgba(0,0,0,0.3);
+    border: 1px solid rgba(255,255,255,0.06); border-radius: 12px;
+    padding: 13px 16px; color: #fff; font-size: 0.92rem; box-sizing: border-box;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.f-input:focus { outline: none; border-color: #7c3aed; box-shadow: 0 0 0 3px rgba(124,58,237,0.12); }
+.f-input::placeholder { color: #334155; }
+select.f-input option { background-color: #0f172a; color: #fff; }
+textarea.f-input { resize: vertical; min-height: 100px; }
+.f-hint { font-size: 0.75rem; color: #334155; margin-top: 5px; line-height: 1.4; }
+
+/* ── PAYOUT METHOD SELECTOR ── */
+.method-tabs { display: grid; grid-template-columns: repeat(3,1fr); gap: 10px; margin-bottom: 28px; }
+.m-tab {
+    border: 2px solid rgba(255,255,255,0.06); border-radius: 14px;
+    padding: 16px 12px; cursor: pointer; transition: all 0.3s;
+    background: rgba(255,255,255,0.02); text-align: center;
+}
+.m-tab:hover  { border-color: rgba(124,58,237,0.4); background: rgba(124,58,237,0.05); }
+.m-tab.active { border-color: #7c3aed; background: rgba(124,58,237,0.08); }
+.m-tab .t-icon { font-size: 1.8rem; margin-bottom: 8px; display: block; }
+.m-tab .t-name { font-size: 0.85rem; font-weight: 800; color: #fff; }
+.m-tab .t-note { font-size: 0.7rem; color: #475569; margin-top: 3px; }
+.method-fields { display: none; }
+.method-fields.active { display: block; }
+
+/* ── REVIEW BLOCK ── */
+.r-section { margin-bottom: 24px; }
+.r-section-label { font-size: 0.68rem; font-weight: 800; color: #7c3aed; text-transform: uppercase; letter-spacing: 0.08em; padding-bottom: 8px; border-bottom: 1px solid rgba(124,58,237,0.2); margin-bottom: 8px; }
+.r-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.03); font-size: 0.85rem; }
+.r-row:last-child { border-bottom: none; }
+.r-key { color: #475569; font-weight: 700; min-width: 140px; flex-shrink: 0; }
+.r-val { color: #fff; font-weight: 600; text-align: right; word-break: break-all; }
+
+/* ── AGREE ── */
+.agree-scroll { background: rgba(0,0,0,0.25); border: 1px solid rgba(255,255,255,0.05); border-radius: 12px; padding: 18px; max-height: 140px; overflow-y: auto; margin-bottom: 20px; font-size: 0.79rem; color: #475569; line-height: 1.7; }
+.check-row { display: flex; align-items: flex-start; gap: 11px; cursor: pointer; }
+.check-box { width: 18px; height: 18px; flex-shrink: 0; margin-top: 1px; accent-color: #7c3aed; cursor: pointer; }
+
+/* ── BUTTONS ── */
+.nav-btns { display: flex; gap: 14px; margin-top: 32px; }
+.btn-next {
+    flex: 2; background: linear-gradient(135deg, #7c3aed, #6366f1);
+    color: #fff; border: none; padding: 15px; border-radius: 13px;
+    font-size: 0.95rem; font-weight: 800; cursor: pointer;
+    box-shadow: 0 8px 25px rgba(124,58,237,0.35); transition: all 0.3s;
+}
+.btn-next:hover { transform: translateY(-2px); box-shadow: 0 14px 35px rgba(124,58,237,0.5); }
+.btn-back {
+    flex: 1; background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08); color: #94a3b8;
+    padding: 15px; border-radius: 13px; font-size: 0.9rem; font-weight: 600; cursor: pointer;
+    transition: all 0.2s;
+}
+.btn-back:hover { background: rgba(255,255,255,0.08); color: #fff; }
+.btn-submit {
+    flex: 2; background: linear-gradient(135deg, #10b981, #059669);
+    color: #fff; border: none; padding: 15px; border-radius: 13px;
+    font-size: 0.95rem; font-weight: 800; cursor: pointer;
+    box-shadow: 0 8px 25px rgba(16,185,129,0.3); transition: all 0.3s;
+}
+.btn-submit:hover:not(:disabled) { transform: translateY(-2px); }
+.btn-submit:disabled { opacity: 0.35; cursor: not-allowed; }
+
+/* ── ALERT ── */
+.msg-box { border-radius: 11px; padding: 13px 16px; margin-bottom: 20px; font-size: 0.85rem; line-height: 1.5; }
+.msg-error   { background: rgba(239,68,68,0.08);  border: 1px solid rgba(239,68,68,0.25);  color: #fca5a5; }
+
+@media (max-width: 640px) {
+    .reg-card { padding: 28px 18px; }
+    .f-row.two { grid-template-columns: 1fr; }
+    .method-tabs { grid-template-columns: 1fr; }
+    .prog { transform: scale(0.82); transform-origin: center; }
+    .nav-btns { flex-direction: column-reverse; }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="reg-wrap">
+<div class="reg-bg"></div>
+
+<div class="reg-head">
+    <h1>LeadNexus Partner Application</h1>
+    <p>Complete your profile to join the affiliate program. All details are encrypted.</p>
+</div>
+
+<!-- Progress Bar -->
+<div class="prog" id="prog">
+    <div class="p-step">
+        <div class="p-circle active" id="pc1">1</div>
+        <div class="p-lbl active"   id="pl1">Profile</div>
+    </div>
+    <div class="p-line" id="pln1"></div>
+    <div class="p-step">
+        <div class="p-circle" id="pc2">2</div>
+        <div class="p-lbl"    id="pl2">Payout</div>
+    </div>
+    <div class="p-line" id="pln2"></div>
+    <div class="p-step">
+        <div class="p-circle" id="pc3">3</div>
+        <div class="p-lbl"    id="pl3">Submit</div>
+    </div>
+</div>
+
+<div class="reg-card">
+    {% for msg in messages %}
+    <div class="msg-box {% if 'error' in msg.tags %}msg-error{% else %}msg-success{% endif %}">{{ msg }}</div>
+    {% endfor %}
+
+    <form method="post" id="regForm">
+        {% csrf_token %}
+
+        <!-- ══ STEP 1: PROMOTION PROFILE ══ -->
+        <div class="step-panel active" id="s1">
+            <div class="s-title">Promotion Profile</div>
+            <div class="s-sub">Logged in as <strong>{{ request.user.username }}</strong>. Tell us how you'll promote LeadNexus.</div>
+
+            <div class="f-row two">
+                <div class="f-group">
+                    <label class="f-label">Full Legal Name *</label>
+                    <input type="text" name="full_name" class="f-input" placeholder="Muhammad Ali Khan" value="{% if post.full_name %}{{ post.full_name }}{% else %}{{ request.user.first_name }} {{ request.user.last_name }}{% endif %}" autocomplete="name">
+                </div>
+                <div class="f-group">
+                    <label class="f-label">WhatsApp / Phone *</label>
+                    <input type="tel" name="phone_number" class="f-input" placeholder="03XX-XXXXXXX" value="{{ post.phone_number|default:'' }}">
+                </div>
+            </div>
+            <div class="f-row two">
+                <div class="f-group">
+                    <label class="f-label">Primary Promotion Channel *</label>
+                    <select name="promotion_method" class="f-input" id="promotionMethodSelect" onchange="updatePromoFields()">
+                        <option value="blog">Blog / Website</option>
+                        <option value="youtube">YouTube Channel</option>
+                        <option value="social">Social Media (Instagram/TikTok/X)</option>
+                        <option value="newsletter">Newsletter / Email List</option>
+                        <option value="agency">Agency / Consulting Firm</option>
+                        <option value="community">Online Community / Forum</option>
+                        <option value="other">Other</option>
+                    </select>
+                </div>
+                <div class="f-group">
+                    <label class="f-label">Country *</label>
+                    <input type="text" name="country" class="f-input" placeholder="e.g. Pakistan" value="{{ post.country|default:'Pakistan' }}">
+                </div>
+            </div>
+            <div class="f-row two">
+                <div class="f-group">
+                    <label class="f-label" id="lbl-url">Website / Profile URL</label>
+                    <input type="url" name="website_url" class="f-input" id="inp-url" placeholder="https://yourblog.com" value="{{ post.website_url|default:'' }}">
+                </div>
+                <div class="f-group">
+                    <label class="f-label" id="lbl-aud">Estimated Monthly Audience</label>
+                    <input type="text" name="audience_size" class="f-input" id="inp-aud" placeholder="e.g. 5,000 subscribers" value="{{ post.audience_size|default:'' }}">
+                </div>
+            </div>
+            <div class="f-row">
+                <div class="f-group">
+                    <label class="f-label">Promotion Strategy *</label>
+                    <textarea name="bio" class="f-input" placeholder="Describe specifically how you'll promote LeadNexus...">{{ post.bio|default:'' }}</textarea>
+                </div>
+            </div>
+            <div class="nav-btns">
+                <button type="button" class="btn-next" onclick="go(2)">Continue — Payout Setup →</button>
+            </div>
+        </div>
+
+        <!-- ══ STEP 2: PAYOUT METHOD ══ -->
+        <div class="step-panel" id="s2">
+            <div class="s-title">Payout Setup</div>
+            <div class="s-sub">Select where you'd like to receive your commissions.</div>
+
+            <div class="method-tabs">
+                <div class="m-tab active" id="tab-easypaisa" onclick="selectMethod('easypaisa')">
+                    <span class="t-icon">📱</span>
+                    <div class="t-name">EasyPaisa</div>
+                    <div class="t-note">Pakistan (PKR)</div>
+                </div>
+                <div class="m-tab" id="tab-paypal" onclick="selectMethod('paypal')">
+                    <span class="t-icon">💳</span>
+                    <div class="t-name">PayPal</div>
+                    <div class="t-note">International (USD)</div>
+                </div>
+                <div class="m-tab" id="tab-bank" onclick="selectMethod('bank')">
+                    <span class="t-icon">🏦</span>
+                    <div class="t-name">Bank Transfer</div>
+                    <div class="t-note">IBAN / SWIFT</div>
+                </div>
+            </div>
+            <input type="hidden" name="payout_method" id="payoutMethodInput" value="easypaisa">
+
+            <div class="method-fields active" id="fields-easypaisa">
+                <div class="f-row">
+                    <div class="f-group">
+                        <label class="f-label">EasyPaisa Account Holder Name *</label>
+                        <input type="text" name="easypaisa_name" class="f-input" placeholder="Exact name as on account">
+                    </div>
+                </div>
+                <div class="f-row">
+                    <div class="f-group">
+                        <label class="f-label">EasyPaisa Mobile Number *</label>
+                        <input type="tel" name="easypaisa_number" class="f-input" placeholder="03XX-XXXXXXX">
+                    </div>
+                </div>
+            </div>
+
+            <div class="method-fields" id="fields-paypal">
+                <div class="f-row">
+                    <div class="f-group">
+                        <label class="f-label">PayPal Email Address *</label>
+                        <input type="email" name="paypal_email" class="f-input" placeholder="your@paypal.com">
+                    </div>
+                </div>
+            </div>
+
+            <div class="method-fields" id="fields-bank">
+                <div class="f-row two">
+                    <div class="f-group">
+                        <label class="f-label">Account Holder Name *</label>
+                        <input type="text" name="bank_account_name" class="f-input" placeholder="Legal name">
+                    </div>
+                    <div class="f-group">
+                        <label class="f-label">Bank Name *</label>
+                        <input type="text" name="bank_name" class="f-input" placeholder="e.g. HBL, Meezan">
+                    </div>
+                </div>
+                <div class="f-row">
+                    <div class="f-group">
+                        <label class="f-label">Account Number / IBAN *</label>
+                        <input type="text" name="bank_account_number" class="f-input" placeholder="IBAN">
+                    </div>
+                </div>
+            </div>
+
+            <div class="nav-btns">
+                <button type="button" class="btn-back" onclick="go(1)">← Back</button>
+                <button type="button" class="btn-next" onclick="go(3)">Review Application →</button>
+            </div>
+        </div>
+
+        <!-- ══ STEP 3: REVIEW & SUBMIT ══ -->
+        <div class="step-panel" id="s3">
+            <div class="s-title">Review & Submit</div>
+            <div class="s-sub">Confirm all details before submitting.</div>
+
+            <div class="r-section">
+                <div class="r-section-label">Account</div>
+                <div class="r-row"><span class="r-key">Username</span><span class="r-val">{{ request.user.username }}</span></div>
+                <div class="r-row"><span class="r-key">Email</span><span class="r-val">{{ request.user.email }}</span></div>
+            </div>
+
+            <div class="r-section">
+                <div class="r-section-label">Profile</div>
+                <div class="r-row"><span class="r-key">Full Name</span><span class="r-val" id="rv-nm">—</span></div>
+                <div class="r-row"><span class="r-key">Phone</span><span class="r-val" id="rv-ph">—</span></div>
+                <div class="r-row"><span class="r-key">Channel</span><span class="r-val" id="rv-ch">—</span></div>
+            </div>
+
+            <div class="r-section">
+                <div class="r-section-label">Payout</div>
+                <div class="r-row"><span class="r-key">Method</span><span class="r-val" id="rv-pm">—</span></div>
+                <div class="r-row"><span class="r-key">Details</span><span class="r-val" id="rv-pd">—</span></div>
+            </div>
+
+            <div class="agree-scroll">
+                1. All submitted information is accurate and truthful.<br>
+                2. Self-referrals are strictly prohibited.<br>
+                3. Partner must not use spam or deceptive advertising.<br>
+                4. Applications are manually reviewed within 48 hours.<br>
+                5. Payout threshold: {{ settings.minimum_payout }}.
+            </div>
+            <label class="check-row" style="margin-bottom:24px;">
+                <input type="checkbox" name="declaration" class="check-box" id="declCb">
+                <span style="font-size:0.84rem;color:#94a3b8;">I agree to the Partner Program Terms & Conditions.</span>
+            </label>
+
+            <div class="nav-btns">
+                <button type="button" class="btn-back" onclick="go(2)">← Modify</button>
+                <button type="submit" class="btn-submit" id="subBtn" disabled>Submit Application ✓</button>
+            </div>
+        </div>
+    </form>
+</div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+let cur = 1;
+let payMethod = 'easypaisa';
+
+function go(n) {
+    if (n > cur && !validate(cur)) return;
+    document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+    document.getElementById(`s${n}`).classList.add('active');
+    for (let i = 1; i <= 3; i++) {
+        const c = document.getElementById(`pc${i}`);
+        const l = document.getElementById(`pl${i}`);
+        c.classList.remove('active','done');
+        l.classList.remove('active');
+        if (i < n) { c.classList.add('done'); c.innerHTML = '✓'; }
+        else if (i === n) { c.classList.add('active'); c.textContent = i; l.classList.add('active'); }
+        else { c.textContent = i; }
+        const ln = document.getElementById(`pln${i}`);
+        if (ln) ln.classList.toggle('done', i < n);
+    }
+    if (n === 3) fillReview();
+    cur = n;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function validate(n) {
+    if (n === 1) {
+        if (!v('full_name')) return err('Full name is required.');
+        if (!v('phone_number')) return err('Phone number is required.');
+        if (!v('bio') || v('bio').length < 50) return err('Strategy must be at least 50 chars.');
+    }
+    return true;
+}
+
+function v(name) { const el = document.querySelector(`[name="${name}"]`); return el ? el.value.trim() : ''; }
+
+function err(msg) {
+    alert(msg);
+    return false;
+}
+
+function selectMethod(m) {
+    payMethod = m;
+    document.querySelectorAll('.m-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.method-fields').forEach(f => f.classList.remove('active'));
+    document.getElementById(`tab-${m}`).classList.add('active');
+    document.getElementById(`fields-${m}`).classList.add('active');
+    document.getElementById('payoutMethodInput').value = m;
+}
+
+function fillReview() {
+    document.getElementById('rv-nm').textContent = v('full_name');
+    document.getElementById('rv-ph').textContent = v('phone_number');
+    const sel = document.querySelector('[name="promotion_method"]');
+    document.getElementById('rv-ch').textContent = sel ? sel.options[sel.selectedIndex].text : '—';
+    document.getElementById('rv-pm').textContent = payMethod;
+    document.getElementById('rv-pd').textContent = payMethod === 'easypaisa' ? v('easypaisa_number') : (payMethod === 'paypal' ? v('paypal_email') : v('bank_account_number'));
+}
+
+const pmMap = {
+    blog: { lblUrl: 'Blog / Website URL', phUrl: 'https://yourblog.com', lblAud: 'Visitors', phAud: 'e.g. 10k' },
+    youtube: { lblUrl: 'YouTube URL', phUrl: 'https://youtube.com/...', lblAud: 'Subscribers', phAud: 'e.g. 50k' },
+    social: { lblUrl: 'Social Profile URL', phUrl: '...', lblAud: 'Followers', phAud: '...' },
+    newsletter: { lblUrl: 'Newsletter URL', phUrl: '...', lblAud: 'List Size', phAud: '...' },
+    agency: { lblUrl: 'Agency URL', phUrl: '...', lblAud: 'Clients', phAud: '...' },
+    community: { lblUrl: 'Community URL', phUrl: '...', lblAud: 'Members', phAud: '...' },
+    other: { lblUrl: 'Main URL', phUrl: '...', lblAud: 'Audience', phAud: '...' }
+};
+
+function updatePromoFields() {
+    const pm = document.getElementById('promotionMethodSelect').value;
+    const data = pmMap[pm] || pmMap.other;
+    document.getElementById('lbl-url').textContent = data.lblUrl;
+    document.getElementById('inp-url').placeholder = data.phUrl;
+    document.getElementById('lbl-aud').textContent = data.lblAud;
+    document.getElementById('inp-aud').placeholder = data.phAud;
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const cb  = document.getElementById('declCb');
+    const btn = document.getElementById('subBtn');
+    if (cb && btn) cb.addEventListener('change', () => { btn.disabled = !cb.checked; });
+    updatePromoFields();
+});
+</script>
+{% endblock %}

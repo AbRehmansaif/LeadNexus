@@ -66,6 +66,7 @@ def affiliate_landing(request):
 
 
 # ─────────────────────────────────────────────────────────────────────────────
+@login_required
 def affiliate_register(request):
     """
     Professional 4-step affiliate application wizard.
@@ -80,22 +81,8 @@ def affiliate_register(request):
     if request.method == 'POST':
         errors = []
 
-        # ── Step 1: Account ─────────────────────────────────────────────────
-        if not request.user.is_authenticated:
-            username = request.POST.get('username', '').strip()
-            email    = request.POST.get('email', '').strip()
-            password = request.POST.get('password', '').strip()
-
-            if not username:
-                errors.append("Username is required.")
-            elif DjangoUser.objects.filter(username=username).exists():
-                errors.append(f"Username '{username}' is already taken.")
-            if not email:
-                errors.append("Email address is required.")
-            elif DjangoUser.objects.filter(email=email).exists():
-                errors.append("An account with this email already exists.")
-            if not password or len(password) < 8:
-                errors.append("Password must be at least 8 characters.")
+        # User MUST be authenticated now
+        user = request.user
 
         # ── Step 2: Promotion Profile ────────────────────────────────────────
         full_name        = request.POST.get('full_name', '').strip()
@@ -156,7 +143,7 @@ def affiliate_register(request):
         if errors:
             for e in errors:
                 messages.error(request, e)
-            return render(request, 'affiliatemarketing/register.html', {
+            return render(request, 'affiliatemarketing/apply.html', {
                 'post': request.POST,
                 'settings': settings_obj,
                 'active_page': 'affiliate',
@@ -165,12 +152,7 @@ def affiliate_register(request):
         # ── Create User + Affiliate ───────────────────────────────────────────
         try:
             with transaction.atomic():
-                if request.user.is_authenticated:
-                    user = request.user
-                else:
-                    user = DjangoUser.objects.create_user(
-                        username=username, email=email, password=password
-                    )
+                user = request.user
 
                 affiliate = Affiliate(
                     user=user,
@@ -186,9 +168,7 @@ def affiliate_register(request):
                 affiliate.set_payout_details(payout_method, payout_data)
                 affiliate.save()
 
-                if not request.user.is_authenticated:
-                    from django.contrib.auth import login as auth_login
-                    auth_login(request, user)
+                # User is already logged in
 
                 if settings_obj.auto_approve_affiliates:
                     messages.success(request, "🎉 Your partner account is now active! Start sharing your referral link.")
@@ -200,7 +180,7 @@ def affiliate_register(request):
         except Exception as e:
             messages.error(request, f"Registration error: {str(e)}")
 
-    return render(request, 'affiliatemarketing/register.html', {
+    return render(request, 'affiliatemarketing/apply.html', {
         'active_page': 'affiliate',
         'settings': settings_obj,
     })
