@@ -148,7 +148,8 @@ class RegisterView(CreateView):
                 pass
 
         from django.contrib.auth import login as auth_login
-        auth_login(self.request, user)
+        # Specify backend to avoid ValueError when multiple backends are configured
+        auth_login(self.request, user, backend='core.backends.EmailOrUsernameBackend')
         
         messages.success(self.request, "Account created successfully! Please select your plan.")
         return redirect('subscription')

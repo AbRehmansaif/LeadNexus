@@ -20,7 +20,7 @@ class UserProfileInline(admin.StackedInline):
     verbose_name_plural = 'Membership & Quotas'
     fieldsets = (
         ('Status', {
-            'fields': ('membership_status', 'is_verified', 'admin_notes')
+            'fields': ('membership_status', 'is_verified', 'referred_by', 'admin_notes')
         }),
         ('Quotas', {
             'fields': (('job_limit_monthly', 'linkedin_limit_monthly', 'smtp_limit', 'email_outreach_limit_monthly'), ('jobs_this_month_count', 'linkedin_this_month_count', 'emails_this_month_count'), 'max_websites_per_search', 'has_sent_80_percent_alert'),
@@ -81,8 +81,8 @@ admin.site.register(User, UserAdmin)
 
 @admin.register(UserProfile)
 class UserProfileAdmin(admin.ModelAdmin):
-    list_display = ('user', 'membership_status', 'is_paid', 'jobs_this_month_count', 'emails_this_month_count', 'has_sent_80_percent_alert')
-    list_filter = ('membership_status', 'is_paid', 'has_sent_80_percent_alert')
+    list_display = ('user', 'membership_status', 'referred_by', 'is_paid', 'jobs_this_month_count', 'emails_this_month_count', 'has_sent_80_percent_alert')
+    list_filter = ('membership_status', 'is_paid', 'referred_by', 'has_sent_80_percent_alert')
     search_fields = ('user__username', 'user__email')
     fieldsets = UserProfileInline.fieldsets
 
