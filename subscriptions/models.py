@@ -16,6 +16,7 @@ class PlanFeature(models.Model):
 class SubscriptionPlan(models.Model):
     name = models.CharField(max_length=100, help_text="e.g. 'INITIATE', 'PROFESSIONAL'")
     badge = models.CharField(max_length=100, blank=True, null=True, help_text="e.g. 'MOST POWERFUL'")
+    short_description = models.CharField(max_length=200, blank=True, null=True, default="For growing teams", help_text="Text below the price")
     monthly_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     yearly_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True, help_text="Price per month when billed annually")
     is_custom_pricing = models.BooleanField(default=False, help_text="Check if price should just say CUSTOM")
