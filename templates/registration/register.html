@@ -327,8 +327,9 @@
                 </div>
                 {% endif %}
 
-                <form method="POST" novalidate>
+                <form method="POST" id="authForm" novalidate>
                     {% csrf_token %}
+                    <input type="hidden" name="next" value="{{ request.GET.next }}">
                     
                     {% for field in form %}
                     <div class="input-group">

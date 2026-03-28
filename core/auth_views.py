@@ -152,6 +152,12 @@ class RegisterView(CreateView):
         auth_login(self.request, user, backend='core.backends.EmailOrUsernameBackend')
         
         messages.success(self.request, "Account created successfully! Please select your plan.")
+        
+        # ── Redirect Logic (Respect 'next' for Affiliates) ──
+        next_url = self.request.GET.get('next') or self.request.POST.get('next')
+        if next_url:
+            return redirect(next_url)
+            
         return redirect('subscription')
 
     def get_context_data(self, **kwargs):

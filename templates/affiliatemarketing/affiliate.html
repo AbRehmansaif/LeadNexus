@@ -1118,7 +1118,7 @@ input[type=range]::-moz-range-thumb {
             </p>
             <div style="display:flex; flex-direction:column; gap:14px; align-items:center;">
                 <div style="display:flex; gap:14px; flex-wrap:wrap; justify-content:center;">
-                    <a href="{% url 'affiliate-apply' %}" class="btn btn-gold" style="font-size:1.05rem; height:58px; padding:0 40px;">
+                    <a href="{% if user.is_authenticated %}{% url 'affiliate-dashboard' %}{% else %}{% url 'register' %}?next={% url 'affiliate-dashboard' %}{% endif %}" class="btn btn-gold" style="font-size:1.05rem; height:58px; padding:0 40px;">
                         <i data-lucide="rocket" style="width:18px;height:18px;"></i>
                         Join the Affiliate Program — Free
                     </a>
@@ -1151,7 +1151,7 @@ input[type=range]::-moz-range-thumb {
     <div class="ab-text">
         <strong>LeadNexus Affiliate Program</strong> — Earn <strong>{{ settings.commission_rate|floatformat:0 }}% recurring commission</strong>. Free to join.
     </div>
-    <a href="{% url 'affiliate-apply' %}" class="btn btn-gold" style="height:42px; font-size:0.88rem; padding:0 20px;">
+    <a href="{% if user.is_authenticated %}{% url 'affiliate-dashboard' %}{% else %}{% url 'register' %}?next={% url 'affiliate-dashboard' %}{% endif %}" class="btn btn-gold" style="height:42px; font-size:0.88rem; padding:0 20px;">
         <i data-lucide="rocket" style="width:15px;height:15px;"></i> Join Free Now
     </a>
 </div>
