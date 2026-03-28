@@ -135,41 +135,6 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for row in plan_rows %}
-                    <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
-                        <td style="padding: 13px 16px; color: var(--text-muted);">{{ row.name }}</td>
-                        
-                        <td style="text-align: center; padding: 13px 16px; color: #fff;">
-                            {% if row.free_value|lower == "yes" or row.free_value|lower == "true" or row.free_value == "✔" %}
-                                <span style="color: var(--accent-green);">✔</span>
-                            {% elif row.free_value|lower == "no" or row.free_value|lower == "false" or row.free_value == "✘" %}
-                                <span style="opacity: 0.3;">✘</span>
-                            {% else %}
-                                {{ row.free_value }}
-                            {% endif %}
-                        </td>
-                        
-                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-purple); font-weight: 600; background: rgba(139,92,246,0.04);">
-                            {% if row.pro_value|lower == "yes" or row.pro_value|lower == "true" or row.pro_value == "✔" %}
-                                <span style="color: var(--accent-green);">✔</span>
-                            {% elif row.pro_value|lower == "no" or row.pro_value|lower == "false" or row.pro_value == "✘" %}
-                                <span style="opacity: 0.3;">✘</span>
-                            {% else %}
-                                {{ row.pro_value }}
-                            {% endif %}
-                        </td>
-                        
-                        <td style="text-align: center; padding: 13px 16px; color: var(--accent-amber);">
-                            {% if row.enterprise_value|lower == "yes" or row.enterprise_value|lower == "true" or row.enterprise_value == "✔" %}
-                                <span style="color: var(--accent-green);">✔</span>
-                            {% elif row.enterprise_value|lower == "no" or row.enterprise_value|lower == "false" or row.enterprise_value == "✘" %}
-                                <span style="opacity: 0.3;">✘</span>
-                            {% else %}
-                                {{ row.enterprise_value }}
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
                     <!-- Hardcoded comparison rows -->
                     <tr style="border-bottom: 1px solid rgba(255,255,255,0.04);">
                         <td style="padding: 13px 16px; color: var(--text-muted);">Web Scrape Jobs / mo</td>
@@ -225,7 +190,6 @@
                         <td style="text-align: center; padding: 13px 16px; font-size: 0.8rem; color: var(--accent-purple); font-weight: 600; background: rgba(139,92,246,0.04);">Priority Email</td>
                         <td style="text-align: center; padding: 13px 16px; font-size: 0.8rem; color: var(--accent-amber);">Dedicated Manager</td>
                     </tr>
-                    {% endfor %}
                 </tbody>
             </table>
         </div>

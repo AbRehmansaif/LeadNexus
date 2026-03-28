@@ -430,21 +430,9 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
                     <p style="color:#94a3b8; margin-bottom:24px; margin-top:8px; font-size:0.85rem;">{{ plan.short_description|default:"For growing teams" }}</p>
 
                 <ul class="p-features">
-                    {% if plan_rows %}
-                        {% for row in plan_rows %}
-                        <li><i data-lucide="check"></i> {{ row.name }}: 
-                            <strong style="color:#fff; margin-left:4px;">
-                            {% if forloop.parentloop.counter0 == 0 %}{{ row.free_value }}
-                            {% elif forloop.parentloop.counter0 == 1 %}{{ row.pro_value }}
-                            {% else %}{{ row.enterprise_value }}{% endif %}
-                            </strong>
-                        </li>
-                        {% endfor %}
-                    {% else %}
-                        {% for feature in plan.get_features_list %}
-                        <li><i data-lucide="check"></i> {{ feature }}</li>
-                        {% endfor %}
-                    {% endif %}
+                    {% for feature in plan.get_features_list %}
+                    <li><i data-lucide="check"></i> {{ feature }}</li>
+                    {% endfor %}
                 </ul>
                 <a href="{% url 'register' %}" class="l-btn {% if plan.is_featured %}l-btn-primary{% else %}l-btn-secondary{% endif %}" style="margin-top:auto;">{{ plan.btn_text }}</a>
             </div>

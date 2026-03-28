@@ -1,17 +1,5 @@
 from django.db import models
 
-class PlanFeature(models.Model):
-    name = models.CharField(max_length=200, help_text="e.g. 'Web Scrape Jobs / mo'")
-    free_value = models.CharField(max_length=100, help_text="e.g. '150' or 'yes' or 'no'")
-    pro_value = models.CharField(max_length=100, help_text="e.g. '1000' or 'yes' or 'no'")
-    enterprise_value = models.CharField(max_length=100, help_text="e.g. 'Unlimited' or 'yes' or 'no'")
-    order = models.PositiveIntegerField(default=0, help_text="Order in which it appears in the table")
-
-    class Meta:
-        ordering = ['order']
-
-    def __str__(self):
-        return self.name
 
 class SubscriptionPlan(models.Model):
     name = models.CharField(max_length=100, help_text="e.g. 'INITIATE', 'PROFESSIONAL'")
