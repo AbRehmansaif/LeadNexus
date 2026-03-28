@@ -32,6 +32,22 @@ class SubscriptionPlan(models.Model):
     def __str__(self):
         return self.name
 
+    @property
+    def yearly_price_per_month(self):
+        """Returns the monthly cost equivalent when billed annually."""
+        if self.yearly_price and self.monthly_price and self.yearly_price > self.monthly_price:
+            return round(self.yearly_price / 12)
+        return int(self.yearly_price) if self.yearly_price else 0
+
+    @property
+    def billed_annually_text(self):
+        """Returns the text showing the total annual billing amount."""
+        if self.yearly_price and self.monthly_price and self.yearly_price > self.monthly_price:
+            return f"Billed annually at ${int(self.yearly_price)}"
+        if self.yearly_price:
+            return f"Billed annually at ${int(self.yearly_price)}"
+        return ""
+
     def get_features_list(self):
         return [f.strip() for f in self.features.split('\n') if f.strip()]
 

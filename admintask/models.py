@@ -13,6 +13,9 @@ class GlobalSettings(models.Model):
     # Dashboard Monthly Targets
     mrr_target = models.DecimalField(max_digits=12, decimal_places=2, default=55000.00, help_text="Monthly Revenue target for the dashboard.")
     registrations_target = models.PositiveIntegerField(default=1000, help_text="Monthly New Registrations target for the dashboard.")
+    
+    # Billing & Pricing 
+    annual_discount_percentage = models.PositiveIntegerField(default=20, help_text="Percentage discount shown on the annual billing switch (e.g. 20 for 'SAVE 20%').")
 
     class Meta:
         verbose_name = "Global System Setting"
