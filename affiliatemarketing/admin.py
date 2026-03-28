@@ -153,15 +153,15 @@ class AffiliateAdmin(admin.ModelAdmin):
             return format_html('<span style="color:#6b7280;">No payout account configured.</span>')
 
         table_rows = ''.join(
-            f'<tr><td style="padding:8px 12px;color:#9ca3af;font-weight:600;border-bottom:1px solid #1e2d47;white-space:nowrap;">{k}</td>'
-            f'<td style="padding:8px 12px;color:#fff;font-weight:700;border-bottom:1px solid #1e2d47;font-family:monospace;">{v}</td></tr>'
+            f'<tr><td style="padding:8px 12px;color:#475569;font-weight:600;border-bottom:1px solid #e2e8f0;white-space:nowrap;">{k}</td>'
+            f'<td style="padding:8px 12px;color:#000;font-weight:700;border-bottom:1px solid #e2e8f0;font-family:monospace;">{v}</td></tr>'
             for k, v in rows
         )
         return format_html(
-            '<div style="background:#0f172a;border:1px solid #1e2d47;border-radius:10px;overflow:hidden;max-width:520px;">'
-            '<div style="background:#1e2d47;padding:8px 14px;font-size:0.72rem;font-weight:800;color:#60a5fa;text-transform:uppercase;letter-spacing:0.06em;">'
+            '<div style="background:#fff;border:1px solid #cbd5e1;border-radius:10px;overflow:hidden;max-width:520px;">'
+            '<div style="background:#1e2d47;padding:8px 14px;font-size:0.72rem;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:0.06em;">'
             '🔓 Decrypted — For Admin Use Only</div>'
-            '<table style="width:100%;border-collapse:collapse;">{}</table></div>',
+            '<table style="width:100%;border-collapse:collapse;background:#fff;">{}</table></div>',
             format_html(table_rows)
         )
 
@@ -329,16 +329,16 @@ class PayoutRequestAdmin(admin.ModelAdmin):
                     ('Details', snap.get('secondary', '—'))]
 
         table_rows = ''.join(
-            f'<tr><td style="padding:8px 14px;color:#9ca3af;font-weight:600;border-bottom:1px solid #1e2d47;white-space:nowrap;">{k}</td>'
-            f'<td style="padding:8px 14px;color:#fff;font-weight:700;border-bottom:1px solid #1e2d47;font-family:monospace;">{v}</td></tr>'
+            f'<tr><td style="padding:8px 14px;color:#475569;font-weight:600;border-bottom:1px solid #e2e8f0;white-space:nowrap;">{k}</td>'
+            f'<td style="padding:8px 14px;color:#000;font-weight:700;border-bottom:1px solid #e2e8f0;font-family:monospace;">{v}</td></tr>'
             for k, v in rows
         )
         return format_html(
-            '<div style="background:#0f172a;border:2px solid #7c3aed;border-radius:10px;overflow:hidden;max-width:560px;">'
-            '<div style="background:#1e0a47;padding:10px 14px;font-size:0.72rem;font-weight:800;color:#c4b5fd;text-transform:uppercase;letter-spacing:0.06em;">'
+            '<div style="background:#fff;border:2px solid #7c3aed;border-radius:10px;overflow:hidden;max-width:560px;">'
+            '<div style="background:#1e0a47;padding:10px 14px;font-size:0.72rem;font-weight:800;color:#fff;text-transform:uppercase;letter-spacing:0.06em;">'
             '🔓 Verified Transfer Details — Use these to process payment</div>'
-            '<table style="width:100%;border-collapse:collapse;">{}</table>'
-            '<div style="padding:10px 14px;font-size:0.72rem;color:#475569;border-top:1px solid #1e2d47;">'
+            '<table style="width:100%;border-collapse:collapse;background:#fff;">{}</table>'
+            '<div style="background:#f8fafc;padding:10px 14px;font-size:0.72rem;color:#ef4444;border-top:1px solid #e2e8f0;font-weight:700;">'
             '⚠ Only accept account details from this panel. Never process transfers based on email requests.</div></div>',
             format_html(table_rows)
         )

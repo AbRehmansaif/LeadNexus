@@ -166,7 +166,7 @@ textarea.f-input { resize: vertical; min-height: 100px; }
 
 <div class="reg-head">
     <h1>LeadNexus Partner Application</h1>
-    <p>Manual review within 24–48 hours. All payment details are AES-256 encrypted.</p>
+    <p>Review within 48 hours. All payment details are encrypted.</p>
 </div>
 
 <!-- Progress Bar -->
@@ -305,13 +305,13 @@ textarea.f-input { resize: vertical; min-height: 100px; }
         <!-- ══ STEP 3: PAYOUT METHOD ══ -->
         <div class="step-panel" id="s3">
             <div class="s-title">Payout Account Setup</div>
-            <div class="s-sub">Select your preferred payment method. All account details are AES-256 encrypted before storage and never shared with third parties.</div>
+            <div class="s-sub">Select your preferred payment method. All account details are encrypted before storage and never shared with third parties.</div>
 
             <div class="info-box amber" style="margin-bottom:24px;">
                 <div class="info-box-icon">🔐</div>
                 <div class="info-box-text">
                     <h4 style="color:#fbbf24;">Bank-Grade Encryption</h4>
-                    <p>Your account details are encrypted using Fernet (AES-128-CBC) before being stored. Even database administrators cannot read your raw payment information.</p>
+                    <p>Your account details are encrypted before being stored. Even database administrators cannot read your raw payment information.</p>
                 </div>
             </div>
 
@@ -420,7 +420,7 @@ textarea.f-input { resize: vertical; min-height: 100px; }
         <!-- ══ STEP 4: REVIEW & SUBMIT ══ -->
         <div class="step-panel" id="s4">
             <div class="s-title">Review & Submit</div>
-            <div class="s-sub">Confirm all details before submitting. Manual review takes 24–48 hours.</div>
+            <div class="s-sub">Confirm all details before submitting. Review within 48 hours.</div>
 
             <div class="r-section">
                 <div class="r-section-label">Account Identity</div>
@@ -444,7 +444,7 @@ textarea.f-input { resize: vertical; min-height: 100px; }
             </div>
 
             <div class="r-section">
-                <div class="r-section-label">Payout Method <span class="lock-badge"><i data-lucide="lock" style="width:10px;height:10px;"></i> AES-256 Encrypted</span></div>
+                <div class="r-section-label">Payout Method <span class="lock-badge"><i data-lucide="lock" style="width:10px;height:10px;"></i> Encrypted</span></div>
                 <div class="r-row"><span class="r-key">Method</span><span class="r-val" id="rv-pm">—</span></div>
                 <div class="r-row"><span class="r-key">Details</span><span class="r-val" id="rv-pd" style="max-width:300px;font-family:monospace;font-size:0.78rem;">—</span></div>
             </div>
@@ -457,7 +457,7 @@ textarea.f-input { resize: vertical; min-height: 100px; }
                 3. Partner must not use spam, deceptive advertising, or misleading claims to promote LeadNexus.<br>
                 4. Applications are manually reviewed. Approval is not guaranteed and decisions are final unless appealed within 7 days.<br>
                 5. Commission payments are sent exclusively to the registered payout account. Account changes require admin re-verification.<br>
-                6. All payout account details are encrypted using AES-256 and stored securely. LeadNexus will never request your PIN, password, or OTP.<br>
+                6. All payout account details are encrypted and stored securely. LeadNexus will never request your PIN, password, or OTP.<br>
                 7. Minimum payout threshold: {{ settings.minimum_payout }}. Processing time: 3–10 business days based on method.<br>
                 8. LeadNexus reserves the right to modify commission rates with 30 days notice to active partners.
             </div>
@@ -481,7 +481,7 @@ textarea.f-input { resize: vertical; min-height: 100px; }
         <i data-lucide="shield-check" style="width:13px;height:13px;color:#7c3aed;"></i> Application reviewed within 48 hours
     </span>
     <span style="font-size:0.73rem;color:#334155;display:flex;align-items:center;gap:6px;">
-        <i data-lucide="lock" style="width:13px;height:13px;color:#10b981;"></i> Payment details AES-256 encrypted
+        <i data-lucide="lock" style="width:13px;height:13px;color:#10b981;"></i> Payment details encrypted
     </span>
     <span style="font-size:0.73rem;color:#334155;display:flex;align-items:center;gap:6px;">
         <i data-lucide="refresh-cw" style="width:13px;height:13px;color:#6366f1;"></i> {{ settings.commission_rate }}% recurring per conversion
