@@ -112,6 +112,12 @@ body, html {
     background-clip: text;
     -webkit-text-fill-color: transparent;
 }
+.text-gradient-blue {
+    background: linear-gradient(135deg, #7dd3fc 0%, #0ea5e9 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
 
 /* UI Components */
 .pill-badge {
@@ -432,6 +438,62 @@ body, html {
 }
 .card p { color: #94a3b8; line-height: 1.6; font-size: 0.95rem; margin: 0; }
 
+/* Process Steps */
+.process-grid {
+    display: grid;
+    grid-template-columns: repeat(1, 1fr);
+    gap: 0;
+    margin-top: 60px;
+}
+@media(min-width: 768px) {
+    .process-grid { grid-template-columns: repeat(4, 1fr); }
+}
+.process-step {
+    padding: 0 24px;
+    text-align: center;
+    position: relative;
+    margin-bottom: 40px;
+}
+@media(min-width: 768px) {
+    .process-step:not(:last-child)::after {
+        content: "";
+        position: absolute;
+        top: 20%;
+        right: 0;
+        width: 1px;
+        height: 60%;
+        background: rgba(255,255,255,0.05);
+    }
+}
+.step-num {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    background: rgba(var(--p-rgb), 0.1);
+    border: 1px solid rgba(var(--p-rgb), 0.2);
+    color: #a78bfa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    font-weight: 800;
+    margin: 0 auto 24px;
+    box-shadow: 0 0 15px rgba(var(--p-rgb), 0.1);
+}
+.process-step h3 {
+    font-size: 1.2rem;
+    font-weight: 900;
+    color: #fff;
+    margin-bottom: 16px;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+}
+.process-step p {
+    font-size: 0.9rem;
+    color: #64748b;
+    line-height: 1.5;
+}
+
 /* Pricing Area */
 .pricing-grid {
     display: grid; grid-template-columns: 1fr; gap: 20px;
@@ -677,7 +739,42 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
         </div>
     </section>
 
-    <!-- 3. PRICING (DJANGO DYNAMIC + FALLBACKS) -->
+    <!-- 3. HOW IT WORKS / PROCESS -->
+    <section id="process" class="section landing-container" style="border-top: 1px solid rgba(255,255,255,0.03); border-bottom: 1px solid rgba(255,255,255,0.03);">
+        <div class="section-header">
+            <span class="eyebrow">Simple 4-Step Process</span>
+            <h2 class="h-section">
+                From Zero to Pipeline<br/>
+                <span class="text-gradient-blue">in Minutes</span>
+            </h2>
+            <p class="h-subtitle">
+                LeadNexus collapses a full outbound sales workflow into four simple steps any team can execute.
+            </p>
+        </div>
+        
+        <div class="process-grid">
+            <div class="process-step">
+                <div class="step-num">1</div>
+                <h3>Define Your Target</h3>
+                <p>Enter keywords, industries, job titles, or paste a list of target domains to focus the engine.</p>
+            </div>
+            <div class="process-step">
+                <div class="step-num">2</div>
+                <h3>Extract & Verify Leads</h3>
+                <p>LeadNexus crawls the web to surface verified corporate emails, phone numbers, and decision-maker profiles.</p>
+            </div>
+            <div class="process-step">
+                <div class="step-num">3</div>
+                <h3>Build Your Campaign</h3>
+                <p>Write a sequence, personalize with AI, configure your SMTP accounts, and set sending schedules.</p>
+            </div>
+            <div class="process-step">
+                <div class="step-num">4</div>
+                <h3>Launch & Scale</h3>
+                <p>Campaigns run automatically. Monitor opens, replies, and conversions from a single dashboard.</p>
+            </div>
+        </div>
+    </section>
     <section id="pricing" class="section landing-container">
         <div class="section-header">
             <h2 class="h-section">Transparent Scaling</h2>
