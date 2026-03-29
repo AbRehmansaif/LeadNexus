@@ -1,41 +1,300 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}LeadNexus — Best B2B Lead Generation & Outreach Automation{% endblock %}
+{% block title %}LeadNexus — #1 B2B Lead Generation & Cold Email Outreach Automation Tool{% endblock %}
 
-{% block meta_description %}LeadNexus is the ultimate autonomous growth engine for B2B lead generation. Extract high intent data, verify business emails, and automate your outreach to get more meetings. Start scaling your business today.{% endblock %}
+{% block meta_description %}LeadNexus is the best B2B lead generation software. Find verified business emails, automate cold email campaigns with SMTP rotation, and close more deals. Try free — no credit card required.{% endblock %}
 
-{% block meta_keywords %}B2B lead generation, email outreach automation, sales intelligence platform, autonomous growth engine, LeadNexus, business email finder, revenue scaling{% endblock %}
+{% block meta_keywords %}
+B2B lead generation, lead generation tool, lead generation software, best lead generation tool, lead generation platform, B2B lead generation tool, B2B lead generation software, B2B lead generation platform, B2B lead finder, B2B leads finder, find B2B leads, B2B contact finder, business lead generation, business leads finder, sales lead generation, sales leads software, sales prospecting tool, sales prospecting software, sales intelligence platform, sales intelligence tool, B2B sales tool, B2B sales software, B2B sales automation,
+cold email outreach, cold email software, cold email tool, cold email platform, cold email automation, cold email automation tool, cold email automation software, cold email campaign, cold email campaign tool, cold email campaign software, automated cold email, cold outreach tool, cold outreach software, cold outreach automation, cold outreach platform, best cold email tool, best cold email software,
+email lead generation, email lead generation tool, email lead generation software, email lead generation platform, find business emails, find verified emails, find corporate emails, business email finder, corporate email finder, email finder tool, email finder software, email extractor, email scraper, email scraper tool, B2B email finder, B2B email extractor,
+email verification, email verification tool, email verification software, email verifier, bulk email verifier, email validator, email validation tool, verify business emails, email bounce checker,
+email campaign, email campaign tool, email campaign software, email campaign automation, email campaign management, automated email campaign, email outreach, email outreach tool, email outreach software, email outreach automation, email outreach platform, outreach automation, outreach automation tool, outreach automation software,
+campaign management, campaign management tool, campaign management software, campaign management platform, campaign analytics, email campaign analytics, outreach campaign management, sales campaign management,
+SMTP rotation, SMTP rotation tool, SMTP email sender, multiple SMTP accounts, SMTP management, email deliverability tool, email deliverability software, inbox placement, email sender reputation, email warmup tool,
+leads finding, find leads online, find leads automatically, lead scraper, lead scraping tool, web scraper for leads, website lead extractor, keyword lead generation, domain lead extraction, lead extraction tool, lead extraction software, automated lead generation, automated lead finder, automated leads,
+LeadNexus, getleadnexus, leadnexus review, leadnexus pricing, leadnexus alternative, leadnexus vs apollo, leadnexus vs hunter, leadnexus vs instantly, leadnexus vs lemlist,
+apollo alternative, hunter.io alternative, instantly alternative, lemlist alternative, snov.io alternative, apollo.io competitor, best apollo alternative, best hunter alternative, cheap apollo alternative, affordable lead generation tool,
+reply detection, intelligent reply detection, email reply tracker, email open rate tracker, email click tracker, email tracking software, email tracking tool,
+agency lead generation, lead generation for agencies, lead generation for founders, lead generation for startups, lead generation for sales teams, lead generation for small business, lead generation for marketers, B2B marketing automation, growth hacking tool, revenue scaling tool, pipeline generation tool, outbound sales tool, outbound sales automation, outbound sales software. {% endblock %}
 
-{% block og_title %}LeadNexus — High-Intent B2B Lead Generation & Outreach{% endblock %}
-{% block og_description %}Autonomous growth engine for B2B lead generation. Extract high intent data and automate your outreach to get more meetings.{% endblock %}
+{% block og_title %}LeadNexus — #1 B2B Lead Generation & Cold Email Automation Tool{% endblock %}
+{% block og_description %}Find verified B2B leads, automate cold email campaigns with SMTP rotation, and close more deals faster. All-in-one sales outreach platform. Start free today.{% endblock %}
 
-{% block twitter_title %}LeadNexus — High-Intent B2B Lead Generation & Outreach{% endblock %}
-{% block twitter_description %}Autonomous growth engine for B2B lead generation. Extract high intent data and automate your outreach to get more meetings.{% endblock %}
+{% block twitter_title %}LeadNexus — #1 B2B Lead Generation & Cold Email Automation Tool{% endblock %}
+{% block twitter_description %}Find verified B2B leads, automate cold email campaigns with SMTP rotation, and close more deals faster. All-in-one sales outreach platform. Start free today.{% endblock %}
 
 {% block extra_css %}
-<!-- Structured Data (JSON-LD) for SEO -->
+
+<!-- ═══════════════════════════════════════════════════
+     SEO: Canonical & Robots
+════════════════════════════════════════════════════ -->
+<link rel="canonical" href="https://getleadnexus.com/">
+<meta name="robots" content="index, follow">
+
+<!-- ═══════════════════════════════════════════════════
+     SEO: Open Graph — Facebook, LinkedIn, WhatsApp
+════════════════════════════════════════════════════ -->
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://getleadnexus.com/">
+<meta property="og:site_name" content="LeadNexus">
+<meta property="og:image" content="https://getleadnexus.com/static/img/og-cover.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="LeadNexus — B2B Lead Generation & Cold Email Outreach Automation Platform">
+<meta property="og:locale" content="en_US">
+
+<!-- ═══════════════════════════════════════════════════
+     SEO: Twitter Card
+════════════════════════════════════════════════════ -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@leadnexus">
+<meta name="twitter:image" content="https://getleadnexus.com/static/img/og-cover.png">
+<meta name="twitter:image:alt" content="LeadNexus — B2B Lead Generation & Cold Email Outreach Platform">
+
+<!-- ═══════════════════════════════════════════════════
+     SEO: Extra Meta Signals
+════════════════════════════════════════════════════ -->
+<meta name="author" content="LeadNexus">
+<meta name="theme-color" content="#8b5cf6">
+<meta name="application-name" content="LeadNexus">
+<meta name="rating" content="general">
+<meta name="language" content="English">
+<meta name="revisit-after" content="7 days">
+<meta name="category" content="B2B Lead Generation, Cold Email Outreach, Campaign Management, Sales Automation, Email Verification">
+<meta name="classification" content="Business Software, Sales Tools, Marketing Automation">
+<meta name="coverage" content="Worldwide">
+<meta name="target" content="Sales Teams, Growth Marketers, Agency Owners, Founders, B2B Companies">
+
+<!-- ═══════════════════════════════════════════════════
+     SEO: JSON-LD — SoftwareApplication
+════════════════════════════════════════════════════ -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "name": "LeadNexus",
+  "url": "https://getleadnexus.com",
+  "logo": "https://getleadnexus.com/static/img/logo.png",
   "operatingSystem": "Web",
   "applicationCategory": "BusinessApplication",
+  "applicationSubCategory": "B2B Lead Generation & Cold Email Outreach Automation",
+  "description": "LeadNexus is an all-in-one B2B lead generation and cold email outreach automation platform. Find verified business emails, automate cold email campaigns with SMTP rotation, manage campaign analytics, and close more deals faster.",
+  "screenshot": "https://getleadnexus.com/static/img/dashboard-screenshot.png",
+  "featureList": [
+    "B2B Lead Generation",
+    "Cold Email Automation",
+    "Email Verification",
+    "SMTP Rotation & Deliverability",
+    "Campaign Analytics & Tracking",
+    "Intelligent Reply Detection",
+    "Affiliate & Referral System",
+    "Lead Scraping from Web & Keywords",
+    "Campaign Management Dashboard"
+  ],
   "offers": {
-    "@type": "Offer",
-    "price": "99.00",
-    "priceCurrency": "USD"
-  },
-  "description": "Enterprise-grade B2B lead generation and outreach automation platform.",
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.9",
-    "reviewCount": "1250"
+    "@type": "AggregateOffer",
+    "lowPrice": "99.00",
+    "highPrice": "299.00",
+    "priceCurrency": "USD",
+    "offerCount": "4"
   }
 }
 </script>
+
+<!-- ═══════════════════════════════════════════════════
+     SEO: JSON-LD — Organization
+════════════════════════════════════════════════════ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "LeadNexus",
+  "url": "https://getleadnexus.com",
+  "logo": {
+    "@type": "ImageObject",
+    "url": "https://getleadnexus.com/static/img/logo.png",
+    "width": 200,
+    "height": 60
+  },
+  "description": "LeadNexus is an all-in-one B2B lead generation and cold email outreach automation platform for sales teams, marketers, and founders.",
+  "foundingDate": "2024",
+  "contactPoint": {
+    "@type": "ContactPoint",
+    "email": "contactleadnexus@gmail.com",
+    "contactType": "customer support",
+    "availableLanguage": "English"
+  },
+  "sameAs": [
+    "https://www.linkedin.com/company/leadnexus",
+    "https://twitter.com/leadnexus",
+    "https://www.facebook.com/leadnexus"
+  ]
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════════
+     SEO: JSON-LD — WebSite
+════════════════════════════════════════════════════ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "LeadNexus",
+  "url": "https://getleadnexus.com",
+  "description": "B2B Lead Generation, Cold Email Outreach Automation, Email Verification & Campaign Management Platform",
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": {
+      "@type": "EntryPoint",
+      "urlTemplate": "https://getleadnexus.com/search?q={search_term_string}"
+    },
+    "query-input": "required name=search_term_string"
+  }
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════════
+     SEO: JSON-LD — FAQ Page (Shows expanded answers in Google)
+════════════════════════════════════════════════════ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is LeadNexus and who is it for?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "LeadNexus is an all-in-one B2B lead generation and cold email outreach automation platform. It is built for sales teams, growth marketers, agency owners, and founders who need to find verified business contacts and run automated cold email campaigns without using multiple expensive tools."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How does LeadNexus find and verify B2B leads?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "LeadNexus uses a multi-threaded web crawling engine. You provide target keywords, industries, or a list of domains and the platform automatically discovers, extracts, and verifies corporate emails, phone numbers, and company profiles so you only contact real deliverable leads."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does LeadNexus automate cold email campaigns?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. LeadNexus features full SMTP account management with rotation, load balancing, daily send limit controls, and business-hours scheduling to keep your sender reputation healthy and ensure emails land in inboxes."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Is LeadNexus built for email deliverability and scale?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. LeadNexus is built with inbox placement as a priority. Automated SMTP rotation, spam-word avoidance, and warmup strategies ensure maximum deliverability across all major email providers at scale."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What makes LeadNexus different from Apollo or Hunter.io?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Unlike Apollo or Hunter.io which rely on static databases, LeadNexus actively crawls the live web for fresh targeted data. LeadNexus also includes a built-in cold email automation engine with SMTP rotation, which Hunter.io does not offer."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Does LeadNexus have an affiliate or referral program?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. LeadNexus includes a built-in affiliate and referral system. You can earn recurring commissions by referring other businesses to the platform. Payouts and tracking are managed automatically inside your dashboard."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I try LeadNexus for free?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Yes. LeadNexus offers a free trial with no credit card required. You can register, explore the platform, and run your first lead extraction and cold email campaign before committing to any paid plan."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the best B2B lead generation tool?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "LeadNexus is one of the best B2B lead generation tools available. It combines live web crawling for fresh leads, email verification, cold email automation with SMTP rotation, campaign analytics, and reply detection all in one platform."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I automate cold email outreach?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "With LeadNexus you can automate cold email outreach by importing your verified leads, writing an email sequence, connecting your SMTP accounts, and scheduling campaigns. LeadNexus handles rotation, timing, and tracking automatically."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What is email lead generation?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Email lead generation is the process of finding and collecting verified business email addresses of potential customers and then contacting them through targeted cold email campaigns. LeadNexus automates this entire process from finding leads to sending emails and tracking replies."
+      }
+    }
+  ]
+}
+</script>
+
+<!-- ═══════════════════════════════════════════════════
+     SEO: JSON-LD — BreadcrumbList
+════════════════════════════════════════════════════ -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://getleadnexus.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Features",
+      "item": "https://getleadnexus.com/#features"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Pricing",
+      "item": "https://getleadnexus.com/#pricing"
+    },
+    {
+      "@type": "ListItem",
+      "position": 4,
+      "name": "FAQ",
+      "item": "https://getleadnexus.com/#faq"
+    },
+    {
+      "@type": "ListItem",
+      "position": 5,
+      "name": "Contact",
+      "item": "https://getleadnexus.com/#contact"
+    }
+  ]
+}
+</script>
+
+<!-- Lucide Icons -->
 <script src="https://unpkg.com/lucide@latest"></script>
+
+<style>
+<!-- YOUR EXISTING CSS STAYS HERE - DO NOT TOUCH ANYTHING BELOW THIS LINE -->
+</script>
 <style>
 /* ──────────────────────────────────────────────────────────
    LANDING PAGE NEW ARCHITECTURE - Fully Mobile Native
