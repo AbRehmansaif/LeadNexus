@@ -551,6 +551,69 @@ body, html {
     border-radius: var(--radius-lg);
     padding: 32px 20px;
 }
+
+/* FAQ Accordion */
+.faq-list {
+    max-width: 900px;
+    margin: 40px auto 0;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+.faq-item {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 20px;
+    padding: 0 32px;
+    transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+    overflow: hidden;
+}
+.faq-item:hover {
+    background: rgba(255,255,255,0.04);
+    border-color: rgba(255,255,255,0.1);
+    transform: translateY(-2px);
+}
+.faq-item.open {
+    background: rgba(var(--p-rgb), 0.05) !important;
+    border-color: rgba(var(--p-rgb), 0.3);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+}
+.faq-q {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 1.15rem;
+    font-weight: 800;
+    text-align: left;
+    cursor: pointer;
+    transition: var(--transition);
+}
+.faq-q:hover { color: #a78bfa; }
+.faq-q i {
+    width: 20px; height: 20px;
+    color: #64748b;
+    transition: transform 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.faq-item.open .faq-q i { transform: rotate(135deg); color: #8b5cf6; }
+.faq-a {
+    padding-bottom: 32px;
+    color: #94a3b8;
+    line-height: 1.7;
+    font-size: 1.05rem;
+    display: none;
+    animation: fadeIn 0.4s ease-out;
+}
+.faq-item.open .faq-a { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
 @media(min-width: 900px) {
     .contact-grid { grid-template-columns: 1fr 1.2fr; padding: 60px; gap: 60px; }
 }
@@ -856,6 +919,81 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
         </div>
     </section>
 
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         7. FAQ (SEO GOLD — Featured Snippets)
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section id="faq" class="section landing-container" aria-labelledby="faq-heading">
+        <div class="section-header">
+            <span class="eyebrow">Frequently Asked Questions</span>
+            <h2 class="h-section" id="faq-heading">Everything About<br><span class="text-gradient-purple">LeadNexus</span></h2>
+        </div>
+        <div class="faq-list">
+            <div class="faq-item open">
+                <button class="faq-q" onclick="toggleFaqItem(this)" aria-expanded="true">
+                    What is LeadNexus and who is it for?
+                    <i data-lucide="plus"></i>
+                </button>
+                <div class="faq-a">
+                    LeadNexus is an all-in-one B2B lead generation and cold email outreach automation platform. It's built for sales teams, growth marketers, agency owners, and founders who need to find verified business contacts and engage them through automated, high-deliverability email campaigns — without stitching together multiple expensive tools.
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q" onclick="toggleFaqItem(this)" aria-expanded="false">
+                    How does LeadNexus find and verify B2B leads?
+                    <i data-lucide="plus"></i>
+                </button>
+                <div class="faq-a">
+                    LeadNexus uses a multi-threaded web crawling engine and dedicated domain intelligence infrastructure. You provide target keywords, industries, or a list of domains. The platform automatically discovers, extracts, and verifies corporate emails, phone numbers, and company profiles — so you only contact real, deliverable leads.
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q" onclick="toggleFaqItem(this)" aria-expanded="false">
+                    Does LeadNexus automate cold email campaigns?
+                    <i data-lucide="plus"></i>
+                </button>
+                <div class="faq-a">
+                    Yes. Once you have your leads, you can launch automated cold email sequences directly from LeadNexus. The platform features full SMTP account management with rotation, load balancing, daily send limit controls, and business-hours scheduling. This keeps your sender reputation healthy and ensures your emails land in inboxes.
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q" onclick="toggleFaqItem(this)" aria-expanded="false">
+                    Is LeadNexus built for scale and deliverability?
+                    <i data-lucide="plus"></i>
+                </button>
+                <div class="faq-a">
+                    Absolutely. LeadNexus is architected with inbox placement as a priority. From automated SMTP rotation to intelligent warmup strategies and spam-word avoidance, every campaign is tuned to achieve maximum deliverability across all major email providers at scale.
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q" onclick="toggleFaqItem(this)" aria-expanded="false">
+                    What makes LeadNexus different from Apollo or Hunter.io?
+                    <i data-lucide="plus"></i>
+                </button>
+                <div class="faq-a">
+                    Unlike Apollo or Hunter.io which are primarily databases, LeadNexus actively crawls the live web for fresh, targeted data — meaning you're not limited to a static database that goes stale. And unlike Hunter.io, LeadNexus also includes a full cold email automation engine with SMTP rotation built-in.
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q" onclick="toggleFaqItem(this)" aria-expanded="false">
+                    Does LeadNexus have an affiliate or referral program?
+                    <i data-lucide="plus"></i>
+                </button>
+                <div class="faq-a">
+                    Yes! LeadNexus includes a built-in affiliate and referral system. You can earn recurring commissions by referring other businesses to the platform. Payouts and tracking are managed automatically inside your dashboard.
+                </div>
+            </div>
+            <div class="faq-item">
+                <button class="faq-q" onclick="toggleFaqItem(this)" aria-expanded="false">
+                    Can I try LeadNexus before paying?
+                    <i data-lucide="plus"></i>
+                </button>
+                <div class="faq-a">
+                    Yes. LeadNexus offers a free trial with no credit card required. You can register, explore the platform, and run your first lead extraction and email campaign before committing to a paid plan.
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- 4. CONTACT FORM -->
     <section id="contact" class="section landing-container" style="padding-bottom:120px;">
         <div class="contact-grid" style="align-items: center;">
@@ -1020,6 +1158,17 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
             }
         });
     });
+
+    // FAQ Accordion Logic
+    window.toggleFaqItem = function(btn) {
+        const item = btn.parentElement;
+        const isOpen = item.classList.contains('open');
+        document.querySelectorAll('.faq-item').forEach(el => el.classList.remove('open'));
+        if (!isOpen) item.classList.add('open');
+        
+        // Toggle aria attributes
+        btn.setAttribute('aria-expanded', !isOpen);
+    };
 
     // Pricing Toggle Logic
     window.togglePricing = function() {
