@@ -248,13 +248,61 @@
 
         <!-- ── Footer ──────────────────────────────────────── -->
         <footer class="footer">
+            <style>
+                .footer-brand p {
+                    color: #94a3b8;
+                    font-size: 0.95rem;
+                    line-height: 1.6;
+                    margin-bottom: 24px;
+                }
+                .footer-social {
+                    display: flex;
+                    gap: 16px;
+                    margin-top: 24px;
+                }
+                .social-link {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    width: 40px;
+                    height: 40px;
+                    border-radius: 10px;
+                    background: rgba(255,255,255,0.03);
+                    border: 1px solid rgba(255,255,255,0.05);
+                    color: #94a3b8;
+                    transition: all 0.3s ease;
+                }
+                .social-link:hover {
+                    background: rgba(var(--p-rgb, 139, 92, 246), 0.1);
+                    border-color: rgba(var(--p-rgb, 139, 92, 246), 0.4);
+                    color: #fff;
+                    transform: translateY(-3px);
+                }
+            </style>
             <div class="container">
                 <div class="footer-grid">
                     <div class="footer-brand">
                         <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" class="footer-logo">
-                        <p>The ultimate autonomous growth engine for B2B lead generation and high precision outreach. Scale your revenue with mathematical certainty.</p>
-                        <div class="footer-social" style="margin-top: 24px;">
-                            <a href="#" aria-label="LinkedIn"><i data-lucide="linkedin" style="width:18px; height:18px;"></i></a>
+                        <p>
+                            The all in one B2B lead generation and cold email outreach automation platform.<br>
+                            Find verified leads, automate campaigns, and scale revenue, all in one place.
+                        </p>
+                        <div class="footer-social">
+                            {% if global_settings.linkedin_url %}
+                            <a href="{{ global_settings.linkedin_url }}" target="_blank" aria-label="LinkedIn" class="social-link"><i data-lucide="linkedin" style="width:20px; height:20px;"></i></a>
+                            {% endif %}
+                            {% if global_settings.instagram_url %}
+                            <a href="{{ global_settings.instagram_url }}" target="_blank" aria-label="Instagram" class="social-link"><i data-lucide="instagram" style="width:20px; height:20px;"></i></a>
+                            {% endif %}
+                            {% if global_settings.facebook_url %}
+                            <a href="{{ global_settings.facebook_url }}" target="_blank" aria-label="Facebook" class="social-link"><i data-lucide="facebook" style="width:20px; height:20px;"></i></a>
+                            {% endif %}
+                            {% if global_settings.twitter_x_url %}
+                            <a href="{{ global_settings.twitter_x_url }}" target="_blank" aria-label="X (Twitter)" class="social-link"><i data-lucide="twitter" style="width:20px; height:20px;"></i></a>
+                            {% endif %}
+                            {% if global_settings.whatsapp_number %}
+                            <a href="https://wa.me/{{ global_settings.whatsapp_number|urlencode }}" target="_blank" aria-label="WhatsApp" class="social-link"><i data-lucide="message-circle" style="width:20px; height:20px;"></i></a>
+                            {% endif %}
                         </div>
                     </div>
                     

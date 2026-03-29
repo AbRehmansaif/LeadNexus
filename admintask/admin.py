@@ -9,7 +9,7 @@ class GlobalSettingsAdmin(admin.ModelAdmin):
             'fields': ('maintenance_mode', 'registrations_enabled')
         }),
         ('Landing Page Info', {
-            'fields': ('contact_email', 'whatsapp_number')
+            'fields': ('contact_email', 'whatsapp_number', 'linkedin_url', 'instagram_url', 'facebook_url', 'twitter_x_url')
         }),
         ('Performance Targets', {
             'fields': ('mrr_target', 'registrations_target')

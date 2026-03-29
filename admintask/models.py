@@ -9,6 +9,12 @@ class GlobalSettings(models.Model):
     # Contact Information for Landing Page
     contact_email = models.EmailField(default="sales@leadnexus.ai", help_text="Public contact email displayed on the landing page.")
     whatsapp_number = models.CharField(max_length=20, default="+1234567890", help_text="WhatsApp number with country code (e.g. +1234567890) for the chat button.")
+    
+    # Social Media Links
+    linkedin_url = models.URLField(blank=True, null=True, help_text="LinkedIn page URL.")
+    instagram_url = models.URLField(blank=True, null=True, help_text="Instagram profile URL.")
+    facebook_url = models.URLField(blank=True, null=True, help_text="Facebook page URL.")
+    twitter_x_url = models.URLField(blank=True, null=True, help_text="X (Twitter) profile URL.")
 
     # Dashboard Monthly Targets
     mrr_target = models.DecimalField(max_digits=12, decimal_places=2, default=55000.00, help_text="Monthly Revenue target for the dashboard.")
