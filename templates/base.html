@@ -5,31 +5,108 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- SEO & Meta Metadata -->
-    <meta name="description" content="{% block meta_description %}LeadNexus — Enterprise-grade B2B lead generation and outreach automation. Extract high-intent data, verify emails, and scale your growth with high precision.{% endblock %}">
-    <meta name="keywords" content="{% block meta_keywords %}lead generation, B2B sales automation, email outreach, business intelligence, growth hacking, sales intelligence, email verification, LeadNexus{% endblock %}">
+    <!-- ═══════════════════════════════════════════
+         SEO: Core Meta Tags
+    ═══════════════════════════════════════════ -->
+    <title>{% block title %}LeadNexus — #1 B2B Lead Generation & Cold Email Outreach Tool{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}LeadNexus is the best B2B lead generation software. Find verified business emails, automate cold email campaigns with SMTP rotation, and close more deals. Try free — no credit card required.{% endblock %}">
+    <meta name="keywords" content="{% block meta_keywords %}B2B lead generation, lead generation tool, cold email outreach, email lead generation, find business emails, email campaign automation, sales leads finder, SMTP rotation, email verification tool, campaign management software, LeadNexus{% endblock %}">
     <meta name="robots" content="{% block meta_robots %}index, follow{% endblock %}">
-    
-    <!-- Open Graph / Facebook -->
+    <meta name="author" content="LeadNexus">
+    <meta name="theme-color" content="#8b5cf6">
+    <meta name="application-name" content="LeadNexus">
+    <meta name="rating" content="general">
+    <meta name="language" content="English">
+    <meta name="revisit-after" content="7 days">
+    <meta name="coverage" content="Worldwide">
+    <meta name="target" content="Sales Teams, Growth Marketers, Agency Owners, Founders, B2B Companies">
+    <meta name="category" content="B2B Lead Generation, Cold Email Outreach, Campaign Management, Sales Automation">
+
+    <!-- ═══════════════════════════════════════════
+         SEO: Canonical URL
+    ═══════════════════════════════════════════ -->
+    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+
+    <!-- ═══════════════════════════════════════════
+         SEO: Open Graph — Facebook, LinkedIn, WhatsApp
+    ═══════════════════════════════════════════ -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="{{ request.build_absolute_uri }}">
-    <meta property="og:title" content="{% block og_title %}LeadNexus — Enterprise B2B Lead Generation{% endblock %}">
-    <meta property="og:description" content="{% block og_description %}Extract high-intent data, verify emails, and scale your growth with high precision.{% endblock %}">
-    <meta property="og:image" content="{% static 'logo.png' %}">
+    <meta property="og:site_name" content="LeadNexus">
+    <meta property="og:title" content="{% block og_title %}LeadNexus — #1 B2B Lead Generation & Cold Email Outreach Tool{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Find verified B2B leads, automate cold email campaigns with SMTP rotation, and close more deals faster. All-in-one sales outreach platform. Start free today.{% endblock %}">
+    <meta property="og:image" content="{% block og_image %}{% static 'img/og-cover.png' %}{% endblock %}">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    <meta property="og:image:alt" content="LeadNexus — B2B Lead Generation & Cold Email Outreach Automation Platform">
+    <meta property="og:locale" content="en_US">
 
-    <!-- Twitter -->
-    <meta property="twitter:card" content="summary_large_image">
-    <meta property="twitter:url" content="{{ request.build_absolute_uri }}">
-    <meta property="twitter:title" content="{% block twitter_title %}LeadNexus — Enterprise B2B Lead Generation{% endblock %}">
-    <meta property="twitter:description" content="{% block twitter_description %}Extract high-intent data, verify emails, and scale your growth with high precision.{% endblock %}">
-    <meta property="twitter:image" content="{% static 'logo.png' %}">
+    <!-- ═══════════════════════════════════════════
+         SEO: Twitter Card
+    ═══════════════════════════════════════════ -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="{{ request.build_absolute_uri }}">
+    <meta name="twitter:site" content="@leadnexus">
+    <meta name="twitter:title" content="{% block twitter_title %}LeadNexus — #1 B2B Lead Generation & Cold Email Outreach Tool{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Find verified B2B leads, automate cold email campaigns with SMTP rotation, and close more deals faster. Start free today.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{% static 'img/og-cover.png' %}{% endblock %}">
+    <meta name="twitter:image:alt" content="LeadNexus — B2B Lead Generation Platform">
 
-    <title>{% block title %}LeadNexus{% endblock %}</title>
-    <link rel="canonical" href="{% block canonical_url %}{{ request.build_absolute_uri }}{% endblock %}">
+    <!-- ═══════════════════════════════════════════
+         SEO: JSON-LD — Organization (Global, on every page)
+    ═══════════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Organization",
+      "name": "LeadNexus",
+      "url": "https://getleadnexus.com",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://getleadnexus.com/static/img/logo.png",
+        "width": 200,
+        "height": 60
+      },
+      "description": "LeadNexus is an all-in-one B2B lead generation and cold email outreach automation platform for sales teams, marketers, agencies, and founders.",
+      "foundingDate": "2024",
+      "contactPoint": {
+        "@type": "ContactPoint",
+        "email": "contactleadnexus@gmail.com",
+        "contactType": "customer support",
+        "availableLanguage": "English"
+      },
+      "sameAs": [
+        "https://www.linkedin.com/company/leadnexus",
+        "https://twitter.com/leadnexus",
+        "https://www.facebook.com/leadnexus"
+      ]
+    }
+    </script>
+
+    <!-- ═══════════════════════════════════════════
+         SEO: JSON-LD — WebSite (Sitelinks Search Box)
+    ═══════════════════════════════════════════ -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "LeadNexus",
+      "url": "https://getleadnexus.com",
+      "description": "B2B Lead Generation, Cold Email Outreach Automation, Email Verification & Campaign Management Platform"
+    }
+    </script>
+
+    <!-- ═══════════════════════════════════════════
+         Assets
+    ═══════════════════════════════════════════ -->
     <link rel="icon" href="{% static 'logo_svg.png' %}">
+    <link rel="apple-touch-icon" href="{% static 'img/apple-touch-icon.png' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
+
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Page Specific CSS / SEO (injected per page) -->
     {% block extra_css %}{% endblock %}
 </head>
 <body>
