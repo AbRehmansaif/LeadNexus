@@ -308,3 +308,8 @@ CELERY_BEAT_SCHEDULE = {
         'schedule': crontab(hour=9, minute=0),
     },
 }
+
+# ==========================================================
+# CUSTOM ERROR VIEWS
+# ==========================================================
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'

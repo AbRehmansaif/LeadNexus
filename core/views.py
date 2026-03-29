@@ -11,6 +11,7 @@ import logging
 from io import StringIO
 
 from django.http import HttpResponse
+from django.shortcuts import render
 from django.utils import timezone
 
 from rest_framework import status
@@ -613,3 +614,17 @@ def dashboard_stats(request):
             'failed':    kw_failed,
         },
     })
+
+# ═══════════════════════════════════════════════════════════════════
+#  ERROR HANDLERS
+# ═══════════════════════════════════════════════════════════════════
+
+def csrf_failure(request, reason=""):
+    """
+    Custom CSRF failure view for a premium SaaS feel.
+    Instead of a dry 403 error, we show a themed troubleshooting page.
+    """
+    return render(request, "errors/403_csrf.html", {
+        "reason": reason,
+        "active_page": "error",
+    }, status=403)

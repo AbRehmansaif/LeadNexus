@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+{% load static %}
+{% block title %}Security Verification Required — LeadNexus{% endblock %}
+
+{% block extra_css %}
+<style>
+.error-wrap {
+    min-height: 80vh; display: flex; align-items: center; justify-content: center;
+    padding: 40px 24px; background: #020617; margin: -20px;
+}
+.error-card {
+    max-width: 500px; width: 100%; text-align: center;
+    background: rgba(15,23,42,0.8); border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 32px; padding: 60px 40px;
+    backdrop-filter: blur(20px); box-shadow: 0 40px 100px rgba(0,0,0,0.6);
+}
+.error-icon-box {
+    width: 80px; height: 80px; border-radius: 24px;
+    background: rgba(239,68,68,0.1); border: 1px solid rgba(239,68,68,0.2);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 32px; color: #f87171;
+}
+.error-h1 { font-size: 2rem; font-weight: 800; color: #fff; letter-spacing: -0.03em; margin-bottom: 12px; }
+.error-p { color: #94a3b8; font-size: 1rem; line-height: 1.6; margin-bottom: 32px; }
+
+.troubleshoot {
+    background: rgba(0,0,0,0.2); border-radius: 16px; padding: 20px;
+    text-align: left; margin-bottom: 32px; border: 1px solid rgba(255,255,255,0.03);
+}
+.troubleshoot h4 { font-size: 0.75rem; font-weight: 800; color: #475569; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; }
+.troubleshoot ul { list-style: none; padding: 0; margin: 0; }
+.troubleshoot li { font-size: 0.88rem; color: #64748b; margin-bottom: 8px; display: flex; gap: 10px; }
+.troubleshoot li::before { content: '•'; color: #7c3aed; font-weight: bold; }
+
+.btn-retry {
+    display: inline-flex; align-items: center; gap: 10px;
+    background: linear-gradient(135deg, #7c3aed, #6366f1);
+    color: #fff; text-decoration: none; padding: 14px 32px;
+    border-radius: 14px; font-weight: 800; transition: all 0.3s;
+    box-shadow: 0 10px 25px rgba(124,58,237,0.4);
+}
+.btn-retry:hover { transform: translateY(-2px); box-shadow: 0 15px 35px rgba(124,58,237,0.6); color: #fff; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="error-wrap">
+    <div class="error-card">
+        <div class="error-icon-box">
+            <i data-lucide="shield-alert" style="width:40px; height:40px;"></i>
+        </div>
+        <h1 class="error-h1">Verification Expired</h1>
+        <p class="error-p">For your security, your session token has expired or is invalid. This often happens if the page was left open for too long or opened in multiple tabs.</p>
+        
+        <div class="troubleshoot">
+            <h4>How to fix this:</h4>
+            <ul>
+                <li>Refresh the page and try again.</li>
+                <li>Ensure cookies are enabled in your browser.</li>
+                <li>Clear browser cache if the issue persists.</li>
+            </ul>
+        </div>
+
+        <a href="javascript:history.back()" class="btn-retry">
+            <i data-lucide="refresh-cw" style="width:18px; height:18px;"></i>
+            Retry Verification
+        </a>
+        
+        <div style="margin-top: 24px;">
+            <a href="{% url 'landing' %}" style="color: #475569; font-size: 0.85rem; text-decoration: none;">Return to Home Screen</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

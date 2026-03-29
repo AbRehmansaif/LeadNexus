@@ -108,14 +108,17 @@ body, html {
     align-items: center;
     gap: 8px;
     background: rgba(var(--p-rgb), 0.1);
-    border: 1px solid rgba(var(--p-rgb), 0.2);
-    padding: 8px 16px;
+    border: 1px solid rgba(var(--p-rgb), 0.3);
+    padding: 10px 20px;
     border-radius: 100px;
-    font-size: 0.85rem;
+    font-size: 0.8rem;
     font-weight: 700;
     color: #c4b5fd;
-    margin-bottom: 32px;
-    white-space: nowrap; /* Prevent wrap in badge */
+    margin-bottom: 40px;
+    white-space: nowrap;
+    letter-spacing: 0.02em;
+    backdrop-filter: blur(8px);
+    box-shadow: 0 0 20px rgba(var(--p-rgb), 0.1);
 }
 
 .l-btn {
@@ -163,17 +166,52 @@ body, html {
 /* Hero Section */
 .hero {
     position: relative;
-    padding: 140px 0 80px;
+    padding: 120px 0 80px;
     text-align: center;
+    background-image: 
+        linear-gradient(rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.8)),
+        linear-gradient(to right, rgba(255,255,255,0.03) 1px, transparent 1px);
+    background-size: 100% 100%, 80px 100%;
+    background-position: center;
 }
 .hero-bg {
     position: absolute;
-    top: -100px; left: 50%;
-    transform: translateX(-50%);
-    width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(var(--p-rgb),0.2) 0%, transparent 60%);
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(var(--p-rgb),0.15) 0%, transparent 70%);
     z-index: -1;
     pointer-events: none;
+}
+.h-title {
+    font-size: clamp(2.5rem, 10vw, 6.5rem);
+    font-weight: 950;
+    line-height: 0.9;
+    letter-spacing: -0.05em;
+    color: #fff;
+    margin: 0 0 24px 0;
+    text-transform: uppercase;
+}
+.h-title .line-sm {
+    font-size: clamp(1.5rem, 5vw, 3.5rem);
+    display: block;
+    margin-bottom: 10px;
+}
+.h-title .line-md {
+    font-size: clamp(0.9rem, 2.5vw, 1.5rem);
+    display: block;
+    margin-bottom: 0;
+    color: #94a3b8;
+    letter-spacing: 0.1em;
+    font-weight: 700;
+    opacity: 0.8;
+}
+.h-subtitle {
+    font-size: clamp(1rem, 3vw, 1.25rem);
+    color: #94a3b8;
+    line-height: 1.6;
+    max-width: 800px;
+    margin: 0 auto;
 }
 .hero-btns {
     display: flex;
@@ -338,38 +376,44 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
 <main class="landing-wrap">
 
     <!-- 1. HERO -->
-    <section class="hero landing-container">
-        <div class="hero-bg"></div>
-        <div class="pill-badge">
-            <i data-lucide="zap"></i> V1.1 is Live
-        </div>
-        <h1 class="h-title">
-            Turn Intent into<br/>
-            <span class="text-gradient-purple">Market Dominance</span>
-        </h1>
-        <p class="h-subtitle">
-            LeadNexus is the autonomous growth engine. Stop chasing stale leads — locate intent and execute outreach with mathematical precision.
-        </p>
-        <div class="hero-btns">
-            {% if user.is_authenticated %}
-                <a href="{% url 'dashboard' %}" class="l-btn l-btn-primary" aria-label="Enter Operator Console">Enter Operator Console</a>
-            {% else %}
-                <a href="{% url 'login' %}" class="l-btn l-btn-primary" aria-label="Start scaling your revenue">Scale My Revenue</a>
-                <a href="#features" class="l-btn l-btn-secondary" aria-label="Explore our architecture">Explore Architecture</a>
-            {% endif %}
-        </div>
-
-        <div class="hero-dashboard">
-            <div class="dash-header">
-                <div class="dash-dot r"></div>
-                <div class="dash-dot y"></div>
-                <div class="dash-dot g"></div>
+    <section class="hero">
+        <div class="landing-container">
+            <div class="hero-bg"></div>
+            <div class="pill-badge">
+                <i data-lucide="zap"></i> V1.1 Now Live — Cold Email Engine Upgraded
             </div>
-            <div class="dash-body">
-                <div style="text-align:center;">
-                    <i data-lucide="cpu" style="width: 60px; height: 60px; color: #8b5cf6; opacity: 0.6; margin-bottom: 16px;"></i>
-                    <h2 style="color: #fff; font-size: clamp(1.2rem, 4vw, 2rem); font-weight: 900; letter-spacing: 0.2em; margin:0;">NEURAL CORE</h2>
-                    <p style="color: #64748b; font-size: 0.7rem; letter-spacing: 0.3em; margin-top:8px;">SYSTEMS OPERATIONAL</p>
+            <h1 class="h-title">
+                The #1 Platform<br/>
+                <span class="line-sm">for</span>
+                B2B Lead<br/>
+                <span class="text-gradient-purple" style="display:block; margin-bottom:10px;">Generation</span>
+                <span class="line-md">& Cold Email Outreach Automation</span>
+            </h1>
+            <p class="h-subtitle">
+                LeadNexus is the all in one B2B sales intelligence platform. Find verified leads, automate cold email campaigns with SMTP rotation, and close more deals, faster.
+            </p>
+
+            <div class="hero-btns">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'dashboard' %}" class="l-btn l-btn-primary" aria-label="Enter Operator Console">Enter Operator Console</a>
+                {% else %}
+                    <a href="{% url 'login' %}" class="l-btn l-btn-primary" aria-label="Start scaling your revenue">Scale My Revenue</a>
+                    <a href="#features" class="l-btn l-btn-secondary" aria-label="Explore our architecture">Explore Architecture</a>
+                {% endif %}
+            </div>
+
+            <div class="hero-dashboard">
+                <div class="dash-header">
+                    <div class="dash-dot r"></div>
+                    <div class="dash-dot y"></div>
+                    <div class="dash-dot g"></div>
+                </div>
+                <div class="dash-body">
+                    <div style="text-align:center;">
+                        <i data-lucide="cpu" style="width: 60px; height: 60px; color: #8b5cf6; opacity: 0.6; margin-bottom: 16px;"></i>
+                        <h2 style="color: #fff; font-size: clamp(1.2rem, 4vw, 2rem); font-weight: 900; letter-spacing: 0.2em; margin:0;">NEURAL CORE</h2>
+                        <p style="color: #64748b; font-size: 0.7rem; letter-spacing: 0.3em; margin-top:8px;">SYSTEMS OPERATIONAL</p>
+                    </div>
                 </div>
             </div>
         </div>
