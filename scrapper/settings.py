@@ -21,8 +21,8 @@ SITE_URL = os.getenv("SITE_URL", "http://127.0.0.1:8000")
 
 # Use a dynamic list for CSRF Trusted Origins (Crucial for Django 4.0+)
 CSRF_TRUSTED_ORIGINS = [
-    "http://leadnexus.difusionseo.com",
-    "https://www.leadnexus.difusionseo.com",
+    "https://getleadnexus.com",
+    "https://www.getleadnexus.com",
 ]
 if SITE_URL and SITE_URL not in CSRF_TRUSTED_ORIGINS:
     CSRF_TRUSTED_ORIGINS.append(SITE_URL)
@@ -243,7 +243,7 @@ EMAIL_PORT = int(os.getenv("EMAIL_PORT", 587))
 EMAIL_USE_TLS = os.getenv("EMAIL_USE_TLS", "True") == "True"
 EMAIL_HOST_USER = os.getenv("EMAIL_HOST_USER")
 EMAIL_HOST_PASSWORD = os.getenv("EMAIL_HOST_PASSWORD")
-DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "LeadNexus <noreply@leadnexus.pro>")
+DEFAULT_FROM_EMAIL = os.getenv("DEFAULT_FROM_EMAIL", "LeadNexus <noreply@getleadnexus.com>")
 
 # RECAPTCHA DISABLED
 # ==========================================================

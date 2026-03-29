@@ -332,7 +332,7 @@ function downloadPdf() {
     return;
   }
 
-  const websiteUrl = "https://leadnexus.difusionseo.com/";
+  const websiteUrl = "https://getleadnexus.com/";
   const navbarLogo = document.querySelector('.brand-logo-img');
   const logoSrc = navbarLogo?.src || `${websiteUrl}static/logo.png`;
 
@@ -365,7 +365,7 @@ function downloadPdf() {
         <div><b>Ref:</b> LN-${Math.floor(Date.now()/1000).toString(16).toUpperCase()}</div>
         <div>${new Date().toLocaleDateString()}</div>
         <div style="margin-top:6px; color:#7c3aed; font-weight:600;">
-          leadnexus.difusionseo.com
+          getleadnexus.com
         </div>
       </div>
     </div>
@@ -482,7 +482,7 @@ function downloadPdf() {
         • Send cold emails safely with AI strategies<br>
         • Manage multiple inboxes at scale<br>
         • Improve deliverability & avoid spam folders<br><br>
-        👉 Start now: <b>leadnexus.difusionseo.com</b>
+        👉 Start now: <b>getleadnexus.com</b>
       </div>
     </div>
   `;

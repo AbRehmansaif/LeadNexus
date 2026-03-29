@@ -245,7 +245,7 @@ class UserProfile(models.Model):
                                 </table>
 
                                 <div style="text-align: center; margin: 40px 0;">
-                                    <a href="https://leadnexus.difusionseo.com/subscription/" 
+                                    <a href="https://getleadnexus.com/subscription/" 
                                        style="background-color: #8b5cf6; color: #ffffff; padding: 15px 35px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
                                         Scale My Infrastructure
                                     </a>
@@ -260,7 +260,7 @@ class UserProfile(models.Model):
                     </body>
                     </html>
                     """
-                    send_mail(subject, "Your LeadNexus quota is at 80%. Upgrade now to avoid interruption: https://leadnexus.difusionseo.com/subscription/", settings.DEFAULT_FROM_EMAIL, [u_email], html_message=html_message, fail_silently=True)
+                    send_mail(subject, "Your LeadNexus quota is at 80%. Upgrade now to avoid interruption: https://getleadnexus.com/subscription/", settings.DEFAULT_FROM_EMAIL, [u_email], html_message=html_message, fail_silently=True)
                 except Exception:
                     pass
 

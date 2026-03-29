@@ -84,7 +84,7 @@ class RegisterView(CreateView):
                             </p>
 
                             <div style="text-align: center; margin: 40px 0;">
-                                <a href="https://saqetawasul.store/login/" 
+                                <a href="https://getleadnexus.com/login/" 
                                    style="background-color: #8b5cf6; color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
                                     Initialize Operator Dashboard
                                 </a>
@@ -111,7 +111,7 @@ class RegisterView(CreateView):
                     f"Hi {u_username},\n\n"
                     "Welcome to LeadNexus! We are thrilled to have you onboard.\n\n"
                     "LeadNexus is your ultimate autonomous growth engine.\n\n"
-                    "Login here: https://saqetawasul.store/login/\n\n"
+                    "Login here: https://getleadnexus.com/login/\n\n"
                     "The LeadNexus Team"
                 )
 
@@ -344,7 +344,7 @@ class CustomPasswordResetConfirmView(View):
                                 </div>
 
                                 <div style="text-align: center; margin: 35px 0;">
-                                    <a href="https://leadnexus.difusionseo.com/login/" 
+                                    <a href="https://getleadnexus.com/login/" 
                                        style="background-color: #10b981; color: #ffffff; padding: 12px 30px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">
                                         Login to Dashboard
                                     </a>
@@ -352,7 +352,7 @@ class CustomPasswordResetConfirmView(View):
 
                                 <p style="color: #8b949e; font-size: 13px; border-top: 1px solid #30363d; padding-top: 20px; line-height: 1.6;">
                                     If you did not perform this update, please contact our security team immediately: <b style="color: #ffffff;">{support_email}</b><br>
-                                    and immediately reset your password here: <a href="https://leadnexus.difusionseo.com/password_reset/" style="color: #10b981; text-decoration: none;">LeadNexus Security Portal</a>
+                                    and immediately reset your password here: <a href="https://getleadnexus.com/password_reset/" style="color: #10b981; text-decoration: none;">LeadNexus Security Portal</a>
                                 </p>
                             </div>
                             
@@ -371,9 +371,9 @@ class CustomPasswordResetConfirmView(View):
                         f"- IP Address: {client_ip}\n"
                         f"- Device: {client_device}\n\n"
                         "You can now login using your new credentials.\n\n"
-                        "Login here: https://leadnexus.difusionseo.com/login/\n\n"
+                        "Login here: https://getleadnexus.com/login/\n\n"
                         f"If you did not perform this update, please contact our security team immediately: {support_email}\n"
-                        "And immediately reset your password here: https://leadnexus.difusionseo.com/password_reset/\n\n"
+                        "And immediately reset your password here: https://getleadnexus.com/password_reset/\n\n"
                         "LeadNexus Security Team"
                     )
                     send_mail(
