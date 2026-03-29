@@ -19,7 +19,10 @@ function getCookie(name) {
 }
 
 // Set correctly in apiCall
-let csrfToken = null;
+// CSRF Token helper (for Django POST requests)
+function getCsrfToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
+}
 
 // ── API helper ────────────────────────────────────────────
 async function apiCall(url, method = 'GET', body = null) {
@@ -173,7 +176,7 @@ function initBulkWebsiteScraper() {
             const res = await fetch('/api/jobs/bulk/', {
                 method: 'POST',
                 headers: {
-                    'X-CSRFToken': csrfToken
+                    'X-CSRFToken': getCsrfToken()
                 },
                 body: formData
             });
@@ -409,7 +412,7 @@ function deleteWebsiteJob(jobId) {
             try {
                 await fetch(`/api/jobs/${jobId}/delete/`, {
                     method: 'DELETE',
-                    headers: { 'X-CSRFToken': csrfToken },
+                    headers: { 'X-CSRFToken': getCsrfToken() },
                 });
                 window.location.href = '/jobs/';
             } catch (err) {
@@ -430,7 +433,7 @@ function deleteLinkedInJob(jobId) {
             try {
                 await fetch(`/api/linkedin/jobs/${jobId}/delete/`, {
                     method: 'DELETE',
-                    headers: { 'X-CSRFToken': csrfToken },
+                    headers: { 'X-CSRFToken': getCsrfToken() },
                 });
                 window.location.href = '/jobs/';
             } catch (err) {
