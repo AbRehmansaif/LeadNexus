@@ -617,6 +617,33 @@ body, html {
 @media(min-width: 900px) {
     .contact-grid { grid-template-columns: 1fr 1.2fr; padding: 60px; gap: 60px; }
 }
+
+/* Final CTA Banner */
+.cta-banner {
+    margin: 80px 0;
+    padding: 80px 24px;
+    background: linear-gradient(135deg, rgba(var(--p-rgb), 0.1) 0%, rgba(0,0,0,0.4) 100%);
+    border: 1px solid rgba(var(--p-rgb), 0.2);
+    border-radius: 32px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+}
+.cta-banner::before {
+    content: "";
+    position: absolute;
+    top: -50%; left: -50%; width: 200%; height: 200%;
+    background: radial-gradient(circle at center, rgba(var(--p-rgb), 0.05), transparent 60%);
+    pointer-events: none;
+}
+.cta-banner .h-section { margin-bottom: 24px; }
+.cta-banner .h-subtitle { max-width: 600px; margin: 0 auto 40px; }
+.cta-footer-text {
+    margin-top: 24px;
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+}
 .form-group { margin-bottom: 16px; position: relative; }
 .form-input {
     width: 100%; height: 52px;
@@ -916,6 +943,30 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
                 <a href="#contact" class="l-btn l-btn-secondary" style="margin-top:auto;">Contact Architects</a>
             </div>
             {% endfor %}
+        </div>
+    </section>
+
+    <!-- ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+         6. FINAL CTA
+    ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ -->
+    <section class="section landing-container">
+        <div class="cta-banner">
+            <span class="eyebrow">Start Today — Free Trial</span>
+            <h2 class="h-section">
+                Ready to Fill Your<br/>
+                <span class="text-gradient-purple">Pipeline with LeadNexus?</span>
+            </h2>
+            <p class="h-subtitle">
+                Join 2,000+ B2B teams using LeadNexus to find verified leads and close deals faster with automated cold outreach.
+            </p>
+            <div style="display: flex; justify-content: center;">
+                <a href="{% url 'register' %}" class="l-btn l-btn-primary" style="padding: 18px 40px; font-size: 1.1rem; box-shadow: 0 10px 30px rgba(var(--p-rgb), 0.3);">
+                    <i data-lucide="rocket"></i> Start My Free Trial Now
+                </a>
+            </div>
+            <div class="cta-footer-text">
+                No credit card required · Cancel anytime · 2-minute setup
+            </div>
         </div>
     </section>
 
