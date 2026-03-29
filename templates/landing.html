@@ -87,11 +87,22 @@ body, html {
     margin: 0 auto;
 }
 .h-section {
-    font-size: clamp(2rem, 6vw, 3rem);
-    font-weight: 900;
+    font-size: clamp(2rem, 6vw, 4.5rem);
+    font-weight: 950;
     color: #fff;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.04em;
+    margin-bottom: 24px;
+    line-height: 1.1;
+    text-transform: uppercase;
+}
+.eyebrow {
+    color: #8b5cf6;
+    font-weight: 800;
+    font-size: 0.8rem;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
     margin-bottom: 16px;
+    display: block;
 }
 
 /* Gradients */
@@ -382,31 +393,44 @@ body, html {
 .grid-3 {
     display: grid;
     grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 24px;
 }
-@media(min-width: 768px) { .grid-3 { grid-template-columns: repeat(3, 1fr); gap: 24px; } }
+@media(min-width: 768px) { .grid-3 { grid-template-columns: repeat(2, 1fr); } }
+@media(min-width: 1024px) { .grid-3 { grid-template-columns: repeat(3, 1fr); } }
 
 .card {
     background: rgba(255,255,255,0.02);
     border: 1px solid rgba(255,255,255,0.05);
-    border-radius: var(--radius-md);
-    padding: 32px 24px;
+    border-radius: 20px;
+    padding: 40px 32px;
     transition: var(--transition);
+    position: relative;
+    overflow: hidden;
 }
 .card:hover {
     background: rgba(255,255,255,0.04);
     border-color: rgba(var(--p-rgb), 0.3);
+    transform: translateY(-5px);
 }
 .card-icon {
-    width: 48px; height: 48px;
+    width: 44px; height: 44px;
     border-radius: 12px;
     background: rgba(var(--p-rgb), 0.1);
+    border: 1px solid rgba(var(--p-rgb), 0.2);
     color: #a78bfa;
     display: flex; align-items: center; justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 24px;
 }
-.card h3 { font-size: 1.3rem; color: #fff; font-weight: 800; margin-bottom: 12px; }
-.card p { color: #94a3b8; line-height: 1.5; font-size: 0.95rem; margin: 0; }
+.card h3 { 
+    font-size: 1.4rem; 
+    color: #fff; 
+    font-weight: 900; 
+    margin-bottom: 16px; 
+    text-transform: uppercase;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+}
+.card p { color: #94a3b8; line-height: 1.6; font-size: 0.95rem; margin: 0; }
 
 /* Pricing Area */
 .pricing-grid {
@@ -610,24 +634,45 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
     <!-- 2. CAPABILITIES / FEATURES -->
     <section id="features" class="section landing-container">
         <div class="section-header">
-            <h2 class="h-section">Unfair Advantage</h2>
-            <p class="h-subtitle">Outpace competitors using live signals instead of stale databases.</p>
+            <span class="eyebrow">Core Platform Capabilities</span>
+            <h2 class="h-section">
+                Everything You Need to<br/>
+                <span class="text-gradient-purple">Dominate B2B Outreach</span>
+            </h2>
+            <p class="h-subtitle" style="max-width: 700px; margin: 0 auto;">
+                One platform replacing five tools: lead finder, email verifier, campaign performance engine, deliverability manager, and unified response tracking.
+            </p>
         </div>
         <div class="grid-3">
             <div class="card">
-                <div class="card-icon"><i data-lucide="network"></i></div>
-                <h3>Identity Mapping</h3>
-                <p>Map entire professional hierarchies and reveal the hidden decision-makers in any enterprise org-chart instantly.</p>
+                <div class="card-icon"><i data-lucide="search"></i></div>
+                <h3>Web & Keyword Lead Intelligence</h3>
+                <p>Input target keywords or domain lists. Our multi-threaded crawler extracts verified corporate emails, phone numbers, and social profiles at scale — no manual research needed.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="bar-chart-3"></i></div>
+                <h3>Advanced Campaign Analytics</h3>
+                <p>Gain total visibility into your outreach. Monitor open rates, link clicks, and detailed conversion metrics in real-time to understand exactly what resonates with your prospects.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="send"></i></div>
+                <h3>Automated Cold Email Campaigns</h3>
+                <p>Transition leads directly into automated campaigns. Personalize at scale with merge fields, AI-generated openers, and business-hours scheduling for maximum reply rates.</p>
             </div>
             <div class="card">
                 <div class="card-icon"><i data-lucide="shield-check"></i></div>
-                <h3>Domain Fortress</h3>
-                <p>Advanced reputation shielding automatically rotates delivery paths to maintain perfect sender health.</p>
+                <h3>SMTP Rotation & Deliverability</h3>
+                <p>Manage unlimited SMTP accounts with automatic load balancing and daily send limits. Maintain inbox placement and protect sender reputation across all campaigns.</p>
             </div>
             <div class="card">
-                <div class="card-icon"><i data-lucide="cpu"></i></div>
-                <h3>Neural Context</h3>
-                <p>Every outreach is custom-woven with hyper-relevant context, creating responses bots can't match.</p>
+                <div class="card-icon"><i data-lucide="at-sign"></i></div>
+                <h3>Email Verification Engine</h3>
+                <p>Verify every email address before sending. Reduce bounce rates, protect deliverability scores, and ensure your outreach reaches real, active inboxes every time.</p>
+            </div>
+            <div class="card">
+                <div class="card-icon"><i data-lucide="message-square"></i></div>
+                <h3>Intelligent Reply Detection</h3>
+                <p>Automatically detect and categorize every incoming response. Separate positive signals from OOO replies and direct inquiries, so you can focus only on High-Intent leads.</p>
             </div>
         </div>
     </section>
