@@ -145,22 +145,47 @@ body, html {
 .l-btn-primary {
     background: #8b5cf6;
     color: #fff;
-    box-shadow: 0 4px 20px rgba(var(--p-rgb), 0.4);
+    box-shadow: 0 4px 20px rgba(var(--p-rgb), 0.3), 0 0 20px rgba(var(--p-rgb), 0.2);
+    gap: 12px;
 }
 .l-btn-primary:hover {
     background: #7c3aed;
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px rgba(var(--p-rgb), 0.6);
+    box-shadow: 0 8px 30px rgba(var(--p-rgb), 0.5), 0 0 40px rgba(var(--p-rgb), 0.3);
     color: #fff;
 }
 .l-btn-secondary {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.08);
     color: #fff;
+    gap: 12px;
 }
 .l-btn-secondary:hover {
-    background: rgba(255,255,255,0.1);
+    background: rgba(255,255,255,0.08);
+    border-color: rgba(255,255,255,0.2);
     color: #fff;
+}
+
+/* Trust Badges */
+.trust-badges {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 24px;
+    margin-top: 32px;
+}
+.trust-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+}
+.trust-item i {
+    color: #475569;
+    width: 18px;
+    height: 18px;
 }
 
 /* Hero Section */
@@ -395,11 +420,27 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
 
             <div class="hero-btns">
                 {% if user.is_authenticated %}
-                    <a href="{% url 'dashboard' %}" class="l-btn l-btn-primary" aria-label="Enter Operator Console">Enter Operator Console</a>
+                    <a href="{% url 'dashboard' %}" class="l-btn l-btn-primary" aria-label="Enter Operator Console">
+                        <i data-lucide="layout-grid"></i> Enter Dashboard
+                    </a>
                 {% else %}
-                    <a href="{% url 'login' %}" class="l-btn l-btn-primary" aria-label="Start scaling your revenue">Scale My Revenue</a>
-                    <a href="#features" class="l-btn l-btn-secondary" aria-label="Explore our architecture">Explore Architecture</a>
+                    <a href="{% url 'register' %}" class="l-btn l-btn-primary" aria-label="Start scaling your revenue">
+                        <i data-lucide="rocket"></i> Start Free Trial — No Card Needed
+                    </a>
+                    <a href="#features" class="l-btn l-btn-secondary" aria-label="Explore our architecture">See How It Works</a>
                 {% endif %}
+            </div>
+
+            <div class="trust-badges">
+                <div class="trust-item">
+                    <i data-lucide="check-circle"></i> No credit card required
+                </div>
+                <div class="trust-item">
+                    <i data-lucide="check-circle"></i> 2,000+ active users
+                </div>
+                <div class="trust-item">
+                    <i data-lucide="check-circle"></i> 4.9 / 5 average rating
+                </div>
             </div>
 
             <div class="hero-dashboard">
