@@ -1047,14 +1047,19 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
 
     <!-- 4. CONTACT FORM -->
     <section id="contact" class="section landing-container" style="padding-bottom:120px;">
-        <div class="contact-grid" style="align-items: center;">
+        <div class="section-header">
+            <span class="eyebrow">Get In Touch</span>
+            <h2 class="h-section">
+                Talk to the<br/>
+                <span class="text-gradient-purple">LeadNexus Team</span>
+            </h2>
+            <p class="h-subtitle">Enterprise needs? Custom requirements? Our team responds within 24 hours.</p>
+        </div>
+
+        <div class="contact-grid" style="align-items: center; margin-top: 60px;">
             <!-- Left Side -->
             <div style="padding-right: 2rem;">
-                <div style="color: #a78bfa; font-weight: 800; font-size: 0.8rem; letter-spacing: 0.1em; text-transform: uppercase; margin-bottom: 12px;">CONTACT US</div>
-                <h2 style="font-size: clamp(2.5rem, 5vw, 4rem); font-weight: 900; color: #fff; line-height: 1.1; margin-bottom: 24px; letter-spacing:-0.03em;">Connect <br>with us</h2>
-                <p style="font-size: 1.1rem; color: #94a3b8; line-height: 1.6; max-width: 420px; margin-bottom: 48px;">
-                    Ready to deploy LeadNexus at scale? Or do you have special requirements for your neural network? Our commanders are standing by to assist your expansion.
-                </p>
+                <h3 style="color:#fff; font-size: 1.5rem; font-weight: 800; margin-bottom: 24px;">Direct Uplink</h3>
                 
                 <div style="display:flex; flex-direction:column; gap:24px;">
                     <div style="display:flex; align-items:center; gap:16px;">
@@ -1070,14 +1075,37 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
                     {% if global_settings.whatsapp_number %}
                     <a href="https://wa.me/{{ global_settings.whatsapp_number|urlencode }}" target="_blank" style="display:flex; align-items:center; gap:16px; text-decoration:none; transition:transform 0.2s ease;" onmouseover="this.style.transform='translateX(6px)'" onmouseout="this.style.transform='translateX(0)'">
                         <div style="width:56px; height:56px; border-radius:14px; background:rgba(37,211,102,0.1); border:1px solid rgba(37,211,102,0.2); display:flex; align-items:center; justify-content:center; color:#25d366; flex-shrink:0;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg>
+                            <i data-lucide="message-circle" style="width: 24px; height: 24px;"></i>
                         </div>
                         <div>
-                            <div style="color:#64748b; font-size:0.75rem; text-transform:uppercase; font-weight:800; letter-spacing:0.05em; margin-bottom:4px;">Chat with us</div>
-                            <div style="color:#fff; font-weight:700; font-size:1.1rem;">WhatsApp</div>
+                            <div style="color:#64748b; font-size:0.75rem; text-transform:uppercase; font-weight:800; letter-spacing:0.05em; margin-bottom:4px;">WHATSAPP</div>
+                            <div style="color:#22c55e; font-weight:700; font-size:1.1rem;">Chat with us directly</div>
                         </div>
                     </a>
                     {% endif %}
+                </div>
+
+                <!-- Why Choose LeadNexus Card -->
+                <div style="margin-top: 48px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+                    <div style="color: #a78bfa; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px;">Why Companies Choose LeadNexus</div>
+                    <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 16px;">
+                        <li style="display: flex; align-items: start; gap: 12px; color: #cbd5e1; font-size: 1rem;">
+                            <i data-lucide="check-circle-2" style="width: 20px; height: 20px; color: #22c55e; flex-shrink: 0; margin-top: 2px;"></i>
+                            All in one: leads + verification + campaigns
+                        </li>
+                        <li style="display: flex; align-items: start; gap: 12px; color: #cbd5e1; font-size: 1rem;">
+                            <i data-lucide="check-circle-2" style="width: 20px; height: 20px; color: #22c55e; flex-shrink: 0; margin-top: 2px;"></i>
+                            Live crawling, real time data
+                        </li>
+                        <li style="display: flex; align-items: start; gap: 12px; color: #cbd5e1; font-size: 1rem;">
+                            <i data-lucide="check-circle-2" style="width: 20px; height: 20px; color: #22c55e; flex-shrink: 0; margin-top: 2px;"></i>
+                            98.7% email deliverability with SMTP rotation
+                        </li>
+                        <li style="display: flex; align-items: start; gap: 12px; color: #cbd5e1; font-size: 1rem;">
+                            <i data-lucide="check-circle-2" style="width: 20px; height: 20px; color: #22c55e; flex-shrink: 0; margin-top: 2px;"></i>
+                            Built in affiliate & referral system
+                        </li>
+                    </ul>
                 </div>
             </div>
             
@@ -1118,7 +1146,7 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
                         <div id="errMessage" style="color:#ef4444; font-size:0.8rem; font-weight:600; margin-top:6px; margin-left:14px; display:none;"></div>
                     </div>
                     
-                    <button type="submit" id="contactBtn" style="width:100%; background:linear-gradient(90deg, #8b5cf6, #0ea5e9); color:#fff; border:none; padding:16px; border-radius:12px; font-weight:800; font-size:1.1rem; cursor:pointer; transition:all 0.3s ease; box-shadow:0 10px 20px rgba(139, 92, 246, 0.2);">Submit</button>
+                    <button type="submit" id="contactBtn" style="width:100%; background:linear-gradient(90deg, #8b5cf6, #0ea5e9); color:#fff; border:none; padding:16px; border-radius:12px; font-weight:800; font-size:1.1rem; cursor:pointer; transition:all 0.3s ease; box-shadow:0 10px 20px rgba(139, 92, 246, 0.2);">Send Message</button>
                     
                     <div id="contactSuccess" style="display:none; color:#22c55e; margin-top:20px; font-weight:600; text-align:center; background:rgba(34, 197, 94, 0.1); padding:16px; border-radius:12px; border:1px solid rgba(34, 197, 94, 0.2);">
                         <i data-lucide="check-circle" style="vertical-align:middle; margin-right:4px;"></i> Mission Control alerted. We'll deploy comms shortly.
