@@ -1,19 +1,48 @@
 from django.contrib.sitemaps import Sitemap
 from django.urls import reverse
+from datetime import date
+
 
 class StaticViewSitemap(Sitemap):
     priority = 1.0
     changefreq = 'daily'
+    protocol = 'https'
 
     def items(self):
-        return ['landing', 'login', 'register']
+        return [
+            'landing',
+            'login',
+            'register',
+        ]
 
     def location(self, item):
         return reverse(item)
 
+    def lastmod(self, item):
+        return date.today()
+
+
+class AffiliateViewSitemap(Sitemap):
+    priority = 0.9
+    changefreq = 'weekly'
+    protocol = 'https'
+
+    def items(self):
+        return [
+            'affiliatemarketing:affiliate',
+        ]
+
+    def location(self, item):
+        return reverse(item)
+
+    def lastmod(self, item):
+        return date.today()
+
+
 class SeoViewSitemap(Sitemap):
     priority = 0.9
     changefreq = 'weekly'
+    protocol = 'https'
 
     def items(self):
         return [
@@ -33,9 +62,14 @@ class SeoViewSitemap(Sitemap):
     def location(self, item):
         return reverse(item)
 
+    def lastmod(self, item):
+        return date.today()
+
+
 class ToolsViewSitemap(Sitemap):
     priority = 0.85
     changefreq = 'monthly'
+    protocol = 'https'
 
     def items(self):
         return [
@@ -50,3 +84,6 @@ class ToolsViewSitemap(Sitemap):
 
     def location(self, item):
         return reverse(item)
+
+    def lastmod(self, item):
+        return date(2025, 1, 1)

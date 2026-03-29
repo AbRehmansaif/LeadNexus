@@ -1,5 +1,5 @@
 """
-URL configuration for the scrapper project.
+URL configuration for the LeadNexus project.
 
 Two sections:
   /api/...    → REST API endpoints (JSON responses)
@@ -17,10 +17,11 @@ from core.auth_views import (
 from core import template_views
 from admintask import views as admintask_views
 from django.contrib.sitemaps.views import sitemap
-from scrapper.sitemaps import StaticViewSitemap, SeoViewSitemap, ToolsViewSitemap
+from scrapper.sitemaps import StaticViewSitemap, AffiliateViewSitemap, SeoViewSitemap, ToolsViewSitemap
 
 sitemaps = {
     'static': StaticViewSitemap,
+    'affiliate': AffiliateViewSitemap,
     'seo': SeoViewSitemap,
     'tools': ToolsViewSitemap,
 }
@@ -51,6 +52,7 @@ urlpatterns = [
     path('reset/done/', auth_views.PasswordResetCompleteView.as_view(
         template_name='registration/password_reset_complete.html'
     ), name='password_reset_complete'),
+
     # ── Django Admin ───────────────────────────────────────
     path('admin/', admin.site.urls),
     path('admin-intelligence/', include('admintask.urls')),
@@ -72,6 +74,12 @@ urlpatterns = [
     path('linkedin-job/<int:pk>/', template_views.linkedin_job_detail,  name='linkedin-job-detail'),
     path('keyword-job/<int:pk>/',  template_views.keyword_job_detail,   name='keyword-job-detail'),
 
+    # ── Contact Us ──────────────────────────────────────────
+    path('contact-us/', include('contactus.urls', namespace='contactus')),
+
+    # ── Affiliate ──────────────────────────────────────────────────
+    path('affiliate/', include('affiliatemarketing.urls')),
+
     # ── SEO Marketing Pages ──────────────────────────────
     path('', include('seo.urls')),
     
@@ -81,9 +89,6 @@ urlpatterns = [
     # ── Robots.txt ──────────────────────────────────────────
     path('robots.txt', robots_txt_view, name='robots-txt'),
 
-    # ── Contact Us ──────────────────────────────────────────
-    path('contact-us/', include('contactus.urls', namespace='contactus')),
-    path('affiliate/', include('affiliatemarketing.urls')),
 ]
 
 from django.conf import settings

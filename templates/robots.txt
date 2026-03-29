@@ -1,5 +1,16 @@
 User-agent: *
 Allow: /
+
+# ── Core Public Pages ──────────────────────────
+Allow: /
+Allow: /login/
+Allow: /register/
+Allow: /affiliate/
+Allow: /contact-us/
+Allow: /sitemap.xml
+Allow: /robots.txt
+
+# ── SEO Landing Pages ──────────────────────────
 Allow: /email-automation-tool/
 Allow: /cold-email-automation/
 Allow: /email-automation-for-sales/
@@ -11,11 +22,20 @@ Allow: /email-automation-for-saas/
 Allow: /email-automation-for-startups/
 Allow: /lead-generation-email-tool/
 Allow: /outreach-automation/
-Allow: /tools/
-Allow: /login/
-Allow: /register/
 
+# ── Free Tools Pages ───────────────────────────
+Allow: /tools/
+Allow: /tools/markdown-to-html/
+Allow: /tools/excel-to-csv/
+Allow: /tools/utm-link-builder/
+Allow: /tools/dns-config-generator/
+Allow: /tools/cold-email-roi-calculator/
+Allow: /tools/email-spam-word-checker/
+Allow: /tools/email-warmup-calculator/
+
+# ── Block Private Pages ────────────────────────
 Disallow: /admin/
+Disallow: /admin-intelligence/
 Disallow: /dashboard/
 Disallow: /profile/
 Disallow: /api/
@@ -29,5 +49,10 @@ Disallow: /webintelligence/
 Disallow: /profinder/
 Disallow: /subscription/
 Disallow: /password_reset/
+Disallow: /reset/
+Disallow: /affiliate/dashboard/
+Disallow: /affiliate/withdraw/
+Disallow: /affiliate/admin/
 
-Sitemap: https://leadnexus.difusionseo.com/sitemap.xml
+# ── Sitemap ────────────────────────────────────
+Sitemap: https://getleadnexus.com/sitemap.xml
