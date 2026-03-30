@@ -402,7 +402,7 @@ def check_single_account_replies(cred_id):
                 else:
                     body_lower = msg.get_payload(decode=True).decode().lower()
 
-                unsub_keywords = ['unsubscribe', 'stop', 'remove', 'take me off', 'no thanks']
+                unsub_keywords = ['unsubscribe', 'remove me', 'opt out', 'take me off your list']
                 is_unsub_request = any(kw in body_lower for kw in unsub_keywords)
 
                 with transaction.atomic():

@@ -365,48 +365,87 @@ def track_open(request, recipient_id):
 def unsubscribe(request, recipient_id):
     """
     View to handle formal unsubscribe requests via link.
+    Now includes a confirmation step to prevent automated link scanners/bots 
+    from accidentally unsubscribing recipients.
     """
-    try:
-        with transaction.atomic():
-            recipient = Recipient.objects.select_for_update().get(id=recipient_id)
-            if not recipient.is_unsubscribed:
-                recipient.is_unsubscribed = True
-                recipient.unsubscribed_at = timezone.now()
-                recipient.status = 'unsubscribed'
-                recipient.save(update_fields=['is_unsubscribed', 'unsubscribed_at', 'status'])
-                
-                # Invalidate cache
-                cache.delete(f"campaign_stats_{recipient.campaign_id}")
-                
-        # Get the 'From Name' from the last delivery log if possible
-        last_log = recipient.delivery_logs.order_by('-sent_at').first()
-        from_name = last_log.smtp_used.from_name if (last_log and last_log.smtp_used and last_log.smtp_used.from_name) else "the sender"
+    recipient = get_object_or_404(Recipient, id=recipient_id)
+    
+    # Handle the actual unsubscription via POST (manual user click)
+    if request.method == 'POST':
+        try:
+            with transaction.atomic():
+                # Re-fetch with lock for atomic update
+                r = Recipient.objects.select_for_update().get(id=recipient_id)
+                if not r.is_unsubscribed:
+                    r.is_unsubscribed = True
+                    r.unsubscribed_at = timezone.now()
+                    r.status = 'unsubscribed'
+                    r.save(update_fields=['is_unsubscribed', 'unsubscribed_at', 'status'])
+                    
+                    # Invalidate cache
+                    cache.delete(f"campaign_stats_{r.campaign_id}")
+                    
+            # Get the 'From Name' for the success page
+            last_log = recipient.delivery_logs.order_by('-sent_at').first()
+            from_name = last_log.smtp_used.from_name if (last_log and last_log.smtp_used and last_log.smtp_used.from_name) else "the sender"
 
-        html_content = f"""
-        <html>
-        <head>
-            <title>Unsubscribed from emails</title>
-            <style>
-                body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: #ffffff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
-                .card {{ background: #161b22; border: 1px solid #30363d; padding: 40px; border-radius: 12px; text-align: center; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }}
-                h1 {{ color: #8b5cf6; margin-top: 0; }}
-                p {{ color: #8b949e; line-height: 1.6; }}
-                .icon {{ font-size: 48px; margin-bottom: 20px; color: #10b981; }}
-            </style>
-        </head>
-        <body>
-            <div class="card">
-                <div class="icon">✓</div>
-                <h1>Unsubscribed</h1>
-                <p>You have been successfully removed from this campaign. You will no longer receive automated follow-ups from <b>{from_name}</b>.</p>
-                <p style="font-size: 0.8rem; margin-top: 20px;">Safe Unsubscribe Protocol Initiated</p>
-            </div>
-        </body>
-        </html>
-        """
-        return HttpResponse(html_content)
-    except Recipient.DoesNotExist:
-        return HttpResponse("Invalid unsubscribe link.", status=404)
+            success_html = f"""
+            <html>
+            <head>
+                <title>Unsubscribed from emails</title>
+                <style>
+                    body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: #ffffff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
+                    .card {{ background: #161b22; border: 1px solid #30363d; padding: 40px; border-radius: 12px; text-align: center; max-width: 400px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }}
+                    h1 {{ color: #10b981; margin-top: 0; }}
+                    p {{ color: #8b949e; line-height: 1.6; }}
+                    .icon {{ font-size: 48px; margin-bottom: 20px; color: #10b981; }}
+                </style>
+            </head>
+            <body>
+                <div class="card">
+                    <div class="icon">✓</div>
+                    <h1>Unsubscribed</h1>
+                    <p>You have been successfully removed from this campaign. You will no longer receive automated follow-ups from <b>{from_name}</b>.</p>
+                </div>
+            </body>
+            </html>
+            """
+            return HttpResponse(success_html)
+        except Exception as e:
+            return HttpResponse(f"An error occurred: {str(e)}", status=500)
+
+    # GET Request: Show confirmation page (Stops bots/scanners)
+    last_log = recipient.delivery_logs.order_by('-sent_at').first()
+    from_email = last_log.smtp_used.from_email if (last_log and last_log.smtp_used) else "the sender"
+    
+    confirm_html = f"""
+    <html>
+    <head>
+        <title>Confirm Unsubscribe</title>
+        <style>
+            body {{ font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #0d1117; color: #ffffff; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }}
+            .card {{ background: #161b22; border: 1px solid #30363d; padding: 40px; border-radius: 12px; text-align: center; max-width: 450px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }}
+            h1 {{ color: #8b5cf6; margin-top: 0; font-size: 24px; }}
+            p {{ color: #8b949e; line-height: 1.6; margin-bottom: 30px; }}
+            .btn {{ background: #ef4444; color: white; border: none; padding: 12px 30px; border-radius: 8px; cursor: pointer; font-weight: bold; font-size: 16px; transition: background 0.2s; text-decoration: none; display: inline-block; }}
+            .btn:hover {{ background: #dc2626; }}
+            .cancel {{ color: #8b949e; text-decoration: none; display: block; margin-top: 20px; font-size: 14px; }}
+        </style>
+    </head>
+    <body>
+        <div class="card">
+            <h1>Stop Receiving Emails?</h1>
+            <p>Are you sure you want to unsubscribe from communications sent via <b>{from_email}</b>?</p>
+            <form method="POST">
+                <input type="hidden" name="recipient_id" value="{recipient_id}">
+                <button type="submit" class="btn">Confirm Unsubscribe</button>
+            </form>
+            <p class="cancel">If you didn't mean to click this, you can simply close this window.</p>
+        </div>
+    </body>
+    </html>
+    """
+    return HttpResponse(confirm_html)
 
 @decorators.api_view(['GET'])
 @decorators.permission_classes([permissions.IsAuthenticated])
