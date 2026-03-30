@@ -161,9 +161,15 @@ schedule.db
 broker/
 queue/
 
-############################################
 # MONITORING (Flower)
 ############################################
 flower.db
 flower.pid
 flower.log
+
+############################################
+# SPECIFIC LOCAL MIGRATIONS
+############################################
+*0030_userprofile_plan_alter*.py
+*0005_subscriptionplan_has_c*.py
+*0006_subscriptionplan_max_*.py
