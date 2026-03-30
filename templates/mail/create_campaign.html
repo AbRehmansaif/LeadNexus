@@ -59,7 +59,7 @@ document.getElementById('addFollowupBtn').addEventListener('click', () => {
 
             <div class="form-group">
                 <label class="form-label">Subject Line</label>
-                <input type="text" class="form-control step-subject" oninput="updateStrategyAdvice(this)" placeholder="(Leave blank to use Step 1 subject)">
+                <input type="text" class="form-control step-subject" id="step_subject_${stepIdx}" oninput="updateStrategyAdvice(this)" placeholder="(Leave blank to use Step 1 subject)">
                 <div class="strategy-advice" style="margin-top: 6px; font-size: 0.75rem; display: block;">
                     <div class="advice-same" style="color: #10b981; display: flex; align-items: center; gap: 4px;">
                         <i data-lucide="check-circle" style="width:12px; height:12px;"></i> 
@@ -74,7 +74,15 @@ document.getElementById('addFollowupBtn').addEventListener('click', () => {
 
             <div class="form-group">
                 <label class="form-label">Follow-up Payload</label>
-                <textarea class="form-control step-body payload-area" placeholder="Just following up on my previous email..."></textarea>
+                <textarea class="form-control step-body payload-area" id="step_body_${stepIdx}" placeholder="Just following up on my previous email..."></textarea>
+                <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 8px; gap: 8px;">
+                    <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" target="_blank" class="btn btn-sm" style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; text-decoration: none;">
+                        <i data-lucide="external-link" style="width:12px; height:12px;"></i> Advanced Checker
+                    </a>
+                    <button type="button" class="btn btn-sm" onclick="analyzeSpamScore('step_body_${stepIdx}', 'step_subject_${stepIdx}')" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                        <i data-lucide="shield-check" style="width:12px; height: 12px;"></i> Detect Spam
+                    </button>
+                </div>
             </div>
 
             <!-- A/B Testing Toggle Option for Follow-up -->
@@ -93,11 +101,19 @@ document.getElementById('addFollowupBtn').addEventListener('click', () => {
                     </h4>
                     <div class="form-group">
                         <label class="form-label" style="font-size: 0.7rem;">Variant B Subject</label>
-                        <input type="text" class="form-control step-subject-b" placeholder="Variant B Subject (or leave blank for A)">
+                        <input type="text" class="form-control step-subject-b" id="step_subject_b_${stepIdx}" placeholder="Variant B Subject (or leave blank for A)">
                     </div>
                     <div class="form-group" style="margin-bottom: 0;">
                         <label class="form-label" style="font-size: 0.7rem;">Variant B Payload</label>
-                        <textarea class="form-control step-body-b payload-area" style="min-height: 80px;" placeholder="Try a different follow-up angle..."></textarea>
+                        <textarea class="form-control step-body-b payload-area" id="step_body_b_${stepIdx}" style="min-height: 80px;" placeholder="Try a different follow-up angle..."></textarea>
+                        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 8px; gap: 8px;">
+                            <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" target="_blank" class="btn btn-sm" style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; text-decoration: none;">
+                                <i data-lucide="external-link" style="width:12px; height:12px;"></i> Advanced Checker
+                            </a>
+                            <button type="button" class="btn btn-sm" onclick="analyzeSpamScore('step_body_b_${stepIdx}', 'step_subject_b_${stepIdx}')" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                <i data-lucide="shield-check" style="width:12px; height: 12px;"></i> Check Variant B Spam
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -320,6 +336,73 @@ if (scheduledAtInput) {
             this.focus();
         }
     });
+}
+// ── Spam Detection Intelligence ──────────────────────────
+const SPAM_DICTIONARY = [
+    'free', '100%', 'money', 'cash', 'win', 'winner', 'urgent', 'act now', 'limited time',
+    'guarantee', 'risk-free', 'opt-out', 'remove', 'click here', 'congratulations',
+    'make money', 'earn extra', 'income', 'debt', 'loans', 'credit card', 'mortgage'
+];
+
+function analyzeSpamScore(bodyId, subjectId) {
+    const body = document.getElementById(bodyId).value;
+    const subject = document.getElementById(subjectId).value;
+    
+    if (!body && !subject) {
+        showNotification('Enter some content first to run the analysis.', 'info');
+        return;
+    }
+    
+    const fullText = (subject + " " + body).toLowerCase();
+    const foundKeywords = SPAM_DICTIONARY.filter(word => {
+        const regex = new RegExp(`\\b${word}\\b`, 'i');
+        return regex.test(fullText);
+    });
+    
+    // Calculate Score
+    let score = 100;
+    score -= (foundKeywords.length * 12);
+    
+    // Complexity/Link checks
+    const links = fullText.match(/https?:\/\/[^\s]+/gi) || [];
+    if (links.length > 2) score -= 15;
+    
+    const caps = (fullText.match(/[A-Z]{4,}/g) || []).length;
+    if (caps > 3) score -= 10;
+    
+    score = Math.max(0, Math.min(100, score));
+    
+    let color = "#10b981";
+    let status = "Excellent";
+    let icon = "shield-check";
+    
+    if (score < 40) {
+        color = "#ef4444";
+        status = "High Risk / Spam Trap";
+        icon = "alert-octagon";
+    } else if (score < 80) {
+        color = "#f59e0b";
+        status = "Moderate Risk";
+        icon = "alert-triangle";
+    }
+    
+    const matchText = foundKeywords.length > 0 
+        ? `<div style="margin-top:8px; font-size:12px; opacity:0.8;">Flagged: ${foundKeywords.join(', ')}</div>` 
+        : "";
+
+    // Professional HTML notification
+    const resultHtml = `
+        <div style="text-align: left;">
+            <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 5px;">
+                <b style="font-size: 16px;">Score: ${score}/100</b>
+                <span style="background: ${color}; color: white; padding: 2px 8px; border-radius: 4px; font-size: 11px; font-weight: bold;">${status}</span>
+            </div>
+            <div style="font-size: 13px;">${score > 80 ? 'Your email looks clean and ready for inboxes.' : 'Your email contains potential spam triggers. Consider rephrasing.'}</div>
+            ${matchText}
+        </div>
+    `;
+    
+    showNotification(resultHtml, score > 60 ? 'success' : 'error');
 }
 </script>
 {% endblock %}

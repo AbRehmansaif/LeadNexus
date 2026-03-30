@@ -10,7 +10,7 @@ from django.contrib.auth.hashers import make_password
 import random
 import string
 from .forms import ProfessionalRegisterForm, EmailAuthenticationForm
-from .models import PasswordResetCode
+from .models import PasswordResetCode, EmailVerificationCode
 from admintask.models import GlobalSettings
 from threading import Thread
 
@@ -40,62 +40,47 @@ class RegisterView(CreateView):
     success_url = reverse_lazy('login')
 
     def form_valid(self, form):
-        response = super().form_valid(form)
-        user = self.object
+        user = form.save(commit=False)
+        user.is_active = False # Deactivate until email is verified
+        user.save()
         
-        # ── Send Professional Welcome Email (Async) ──
-        def send_professional_welcome(u_email, u_username):
+        # ── Generate Professional Verification Code ──
+        verification_code = ''.join(random.choices(string.digits, k=6))
+        EmailVerificationCode.objects.create(user=user, code=verification_code)
+        
+        # ── Send Professional Verification Email (Async) ──
+        def send_professional_verification(u_email, u_username, u_code):
             try:
-                subject = "Welcome to LeadNexus - Your B2B Growth Engine"
+                subject = f"{u_code} is your LeadNexus Verification Code"
                 
-                # HTML Version — Premium SaaS Design integrating requested content
                 html_message = f"""
                 <html>
                 <body style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #0d1117; color: #ffffff; padding: 40px; margin: 0;">
                     <div style="max-width: 600px; margin: 0 auto; background: #161b22; border: 1px solid #30363d; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
                         <div style="background: #8b5cf6; padding: 30px; text-align: center;">
-                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; letter-spacing: 1px;">LEADNEXUS</h1>
-                            <p style="color: rgba(255,255,255,0.8); margin-top: 5px;">Autonomous Growth Engine</p>
+                            <h1 style="color: #ffffff; margin: 0; font-size: 28px; letter-spacing: 1px;">VERIFICATION REQUIRED</h1>
                         </div>
                         
-                        <div style="padding: 40px;">
+                        <div style="padding: 40px; text-align: center;">
                             <h2 style="color: #ffffff; font-size: 22px;">Hi {u_username},</h2>
-                            <p style="line-height: 1.6; color: #8b949e; font-size: 16px;">Welcome to LeadNexus! We are thrilled to have you onboard.</p>
+                            <p style="line-height: 1.6; color: #8b949e; font-size: 16px;">Welcome to LeadNexus! To initialize your autonomous growth protocols, we need to verify your email identity.</p>
                             
-                            <p style="line-height: 1.6; color: #8b949e;">LeadNexus is your ultimate autonomous growth engine for B2B lead generation and high precision outreach. With your account now active, you have full access to our powerful tools designed to scale your revenue.</p>
-
-                            <div style="margin: 30px 0; background: rgba(139, 92, 246, 0.05); border-left: 4px solid #8b5cf6; padding: 25px; border-radius: 8px;">
-                                <h3 style="color: #8b5cf6; margin-top: 0; font-size: 17px; margin-bottom: 15px;">Here is what you can do right now:</h3>
-                                <ul style="list-style: none; padding: 0; color: #8b949e; font-size: 14px;">
-                                    <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                                        <span style="color: #8b5cf6; margin-right: 10px;">⚡</span> Extract verified B2B contacts instantly.
-                                    </li>
-                                    <li style="margin-bottom: 12px; display: flex; align-items: start;">
-                                        <span style="color: #8b5cf6; margin-right: 10px;">⚡</span> Automate your personalized cold email outreach.
-                                    </li>
-                                    <li style="display: flex; align-items: start;">
-                                        <span style="color: #8b5cf6; margin-right: 10px;">⚡</span> Track your campaign success securely from your dashboard.
-                                    </li>
-                                </ul>
+                            <div style="margin: 30px auto; background: rgba(139, 92, 246, 0.05); border: 1px dashed #8b5cf6; padding: 30px; border-radius: 12px; display: inline-block;">
+                                <span style="font-family: 'Courier New', monospace; font-size: 42px; font-weight: 800; color: #8b5cf6; letter-spacing: 8px;">{u_code}</span>
                             </div>
+                            
+                            <p style="line-height: 1.6; color: #8b949e; font-size: 14px;">This security code will expire in 24 hours. Enter it in the registration portal to activate your operator account.</p>
 
-                            <p style="color: #8b949e; margin-bottom: 30px;">
-                                Your Registered Email: <b style="color: #ffffff;">{u_email}</b>
-                            </p>
-
-                            <div style="text-align: center; margin: 40px 0;">
-                                <a href="https://getleadnexus.com/login/" 
-                                   style="background-color: #8b5cf6; color: #ffffff; padding: 18px 40px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block; font-size: 16px; box-shadow: 0 4px 15px rgba(139, 92, 246, 0.4);">
-                                    Initialize Operator Dashboard
+                            <div style="text-align: center; margin: 30px 0;">
+                                <a href="https://getleadnexus.com/verify-email/" 
+                                   style="background-color: #8b5cf6; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                                    Verify Email Identity
                                 </a>
                             </div>
-
+ 
                             <p style="color: #8b949e; font-size: 14px; border-top: 1px solid #30363d; padding-top: 25px;">
-                                If you need any assistance setting up your first campaign, feel free to reply directly to this email.
+                                If you did not create a LeadNexus account, please disregard this transmission.
                             </p>
-                            
-                            <p style="color: #8b5cf6; font-weight: bold; margin-top: 25px; margin-bottom: 5px;">To your incredible growth,</p>
-                            <p style="color: #ffffff; margin-top: 0; font-weight: 600;">The LeadNexus Team</p>
                         </div>
                         
                         <div style="background: #21262d; padding: 25px; text-align: center; font-size: 12px; color: #8b949e; border-top: 1px solid #30363d;">
@@ -106,30 +91,20 @@ class RegisterView(CreateView):
                 </html>
                 """
                 
-                # Plain text version for fallback
                 plain_message = (
                     f"Hi {u_username},\n\n"
-                    "Welcome to LeadNexus! We are thrilled to have you onboard.\n\n"
-                    "LeadNexus is your ultimate autonomous growth engine.\n\n"
-                    "Login here: https://getleadnexus.com/login/\n\n"
+                    f"Welcome to LeadNexus! Your verification code is: {u_code}\n\n"
+                    "Enter this code in the portal to activate your account.\n\n"
                     "The LeadNexus Team"
                 )
 
-                send_mail(
-                    subject,
-                    plain_message,
-                    settings.DEFAULT_FROM_EMAIL,
-                    [u_email],
-                    html_message=html_message,
-                    fail_silently=True,
-                )
-            except Exception:
-                pass
+                send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [u_email], html_message=html_message, fail_silently=True)
+            except Exception: pass
 
-        Thread(target=send_professional_welcome, args=(user.email, user.username)).start()
+        Thread(target=send_professional_verification, args=(user.email, user.username, verification_code)).start()
         
         # ── Affiliate Referral Tracking ──
-        ref_code = self.request.session.pop('affiliate_ref', None)
+        ref_code = self.request.session.get('affiliate_ref')
         if ref_code:
             try:
                 from core.models import UserProfile
@@ -147,18 +122,9 @@ class RegisterView(CreateView):
             except Exception:
                 pass
 
-        from django.contrib.auth import login as auth_login
-        # Specify backend to avoid ValueError when multiple backends are configured
-        auth_login(self.request, user, backend='core.backends.EmailOrUsernameBackend')
-        
-        messages.success(self.request, "Account created successfully! Please select your plan.")
-        
-        # ── Redirect Logic (Respect 'next' for Affiliates) ──
-        next_url = self.request.GET.get('next') or self.request.POST.get('next')
-        if next_url:
-            return redirect(next_url)
-            
-        return redirect('subscription')
+        self.request.session['verify_email'] = user.email
+        messages.info(self.request, "Deployment Initialized: A 6-digit verification code has been dispatched to your email.")
+        return redirect('verify-email')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -179,6 +145,134 @@ class RegisterView(CreateView):
                 return redirect('register')
                 
         return super().dispatch(request, *args, **kwargs)
+
+class VerifyEmailView(View):
+    template_name = 'registration/verify_email.html'
+    
+    def get(self, request):
+        if not request.session.get('verify_email'):
+            return redirect('register')
+        return render(request, self.template_name)
+        
+    def post(self, request):
+        code = request.POST.get('code')
+        email = request.session.get('verify_email')
+        
+        if not email:
+            return redirect('register')
+            
+        try:
+            user = User.objects.get(email=email)
+            verify_code = EmailVerificationCode.objects.filter(user=user, code=code).last()
+            
+            if verify_code and verify_code.is_valid():
+                verify_code.is_used = True
+                verify_code.save()
+                
+                user.is_active = True
+                user.save()
+                
+                # Check for profile and mark as verified
+                from core.models import UserProfile
+                profile, _ = UserProfile.objects.get_or_create(user=user)
+                profile.is_verified = True
+                profile.save()
+
+                # Automated Login
+                from django.contrib.auth import login as auth_login
+                auth_login(self.request, user, backend='core.backends.EmailOrUsernameBackend')
+                
+                # Handle Affiliate increment now that they are verified users
+                ref_code = self.request.session.pop('affiliate_ref', None)
+                if ref_code:
+                    from affiliatemarketing.models import Affiliate
+                    Affiliate.objects.filter(referral_code=ref_code, status='active').update(total_signups=models.F('total_signups') + 1)
+
+                del request.session['verify_email']
+                messages.success(self.request, "Account Identity Verified! Welcome to the LeadNexus network.")
+                return redirect('subscription')
+            else:
+                messages.error(request, "Invalid or expired verification code.")
+        except User.DoesNotExist:
+            return redirect('register')
+            
+        return render(request, self.template_name)
+
+class ResendVerificationCodeView(View):
+    def get(self, request):
+        email = request.session.get('verify_email')
+        if not email:
+            return redirect('register')
+            
+        try:
+            user = User.objects.get(email=email)
+            if user.is_active:
+                messages.error(request, "This account is already active. Please login.")
+                return redirect('login')
+                
+            # ── Generate Professional Verification Code ──
+            verification_code = ''.join(random.choices(string.digits, k=6))
+            EmailVerificationCode.objects.create(user=user, code=verification_code)
+            
+            # ── Send Professional Verification Email (Async) ──
+            def send_professional_verification(u_email, u_username, u_code):
+                try:
+                    subject = f"{u_code} is your LeadNexus Verification Code"
+                    
+                    html_message = f"""
+                    <html>
+                    <body style="font-family: 'Segoe UI', Arial, sans-serif; background-color: #0d1117; color: #ffffff; padding: 40px; margin: 0;">
+                        <div style="max-width: 600px; margin: 0 auto; background: #161b22; border: 1px solid #30363d; border-radius: 16px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+                            <div style="background: #8b5cf6; padding: 30px; text-align: center;">
+                                <h1 style="color: #ffffff; margin: 0; font-size: 28px; letter-spacing: 1px;">VERIFICATION REQUIRED</h1>
+                            </div>
+                            
+                            <div style="padding: 40px; text-align: center;">
+                                <h2 style="color: #ffffff; font-size: 22px;">Hi {u_username},</h2>
+                                <p style="line-height: 1.6; color: #8b949e; font-size: 16px;">We received a request to resend your LeadNexus access code. Enter it below to activate your account.</p>
+                                
+                                <div style="margin: 30px auto; background: rgba(139, 92, 246, 0.05); border: 1px dashed #8b5cf6; padding: 30px; border-radius: 12px; display: inline-block;">
+                                    <span style="font-family: 'Courier New', monospace; font-size: 42px; font-weight: 800; color: #8b5cf6; letter-spacing: 8px;">{u_code}</span>
+                                </div>
+                                
+                                <p style="line-height: 1.6; color: #8b949e; font-size: 14px;">This security code will expire in 24 hours. Enter it in the registration portal to activate your operator account.</p>
+
+                                <div style="text-align: center; margin: 30px 0;">
+                                    <a href="https://getleadnexus.com/verify-email/" 
+                                       style="background-color: #8b5cf6; color: #ffffff; padding: 14px 30px; text-decoration: none; border-radius: 8px; font-weight: bold; display: inline-block;">
+                                        Verify Email Identity
+                                    </a>
+                                </div>
+    
+                                <p style="color: #8b949e; font-size: 14px; border-top: 1px solid #30363d; padding-top: 25px;">
+                                    If you did not create a LeadNexus account, please disregard this transmission.
+                                </p>
+                            </div>
+                            
+                            <div style="background: #21262d; padding: 25px; text-align: center; font-size: 12px; color: #8b949e; border-top: 1px solid #30363d;">
+                                &copy; 2026 LeadNexus. All rights reserved.
+                            </div>
+                        </div>
+                    </body>
+                    </html>
+                    """
+                    
+                    plain_message = (
+                        f"Hi {u_username},\n\n"
+                        f"Your LeadNexus verification code is: {u_code}\n\n"
+                        "Enter this code in the portal to activate your account.\n\n"
+                        "The LeadNexus Team"
+                    )
+
+                    send_mail(subject, plain_message, settings.DEFAULT_FROM_EMAIL, [u_email], html_message=html_message, fail_silently=True)
+                except Exception: pass
+
+            Thread(target=send_professional_verification, args=(user.email, user.username, verification_code)).start()
+            messages.success(request, "Code Redispatched: A fresh 6-digit code has been queued for your email.")
+            return redirect('verify-email')
+            
+        except User.DoesNotExist:
+            return redirect('register')
 
 class RequestPasswordResetView(auth_views.PasswordResetView):
     template_name = 'registration/password_reset_form.html'

@@ -288,6 +288,18 @@ class PasswordResetCode(models.Model):
         return not self.is_used and timezone.now() <= expiration_time
 
 
+class EmailVerificationCode(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+    is_used = models.BooleanField(default=False)
+
+    def is_valid(self):
+        # Code valid for 24 hours
+        expiration_time = self.created_at + timezone.timedelta(hours=24)
+        return not self.is_used and timezone.now() <= expiration_time
+
+
 class LinkedInAccount(models.Model):
     """Stores LinkedIn credentials for a user."""
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='linkedin_accounts')

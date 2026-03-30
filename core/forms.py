@@ -50,3 +50,10 @@ class EmailAuthenticationForm(AuthenticationForm):
                 self.confirm_login_allowed(self.user_cache)
 
         return self.cleaned_data
+
+    def confirm_login_allowed(self, user):
+        if not user.is_active:
+            raise ValidationError(
+                "This operator account is currently in 'Inactive' status. Please verify your email identity to gain access.",
+                code='inactive',
+            )
