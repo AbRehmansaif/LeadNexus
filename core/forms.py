@@ -54,6 +54,6 @@ class EmailAuthenticationForm(AuthenticationForm):
     def confirm_login_allowed(self, user):
         if not user.is_active:
             raise ValidationError(
-                "This operator account is currently in 'Inactive' status. Please verify your email identity to gain access.",
+                "This operator account is currently in 'Inactive' status. If you haven't verified your identity yet, please visit the Verify Identity portal to complete your onboarding.",
                 code='inactive',
             )

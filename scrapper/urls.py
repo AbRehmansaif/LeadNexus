@@ -13,7 +13,7 @@ from django.contrib.auth import views as auth_views
 from core.auth_views import (
     LoginView, RegisterView, RequestPasswordResetView, 
     VerifyResetCodeView, CustomPasswordResetConfirmView,
-    VerifyEmailView, ResendVerificationCodeView
+    VerifyEmailView, ResendVerificationCodeView, VerifyRequestView
 )
 from core import template_views
 from admintask import views as admintask_views
@@ -40,6 +40,7 @@ urlpatterns = [
     path('register/', RegisterView.as_view(), name='register'),
     path('verify-email/', VerifyEmailView.as_view(), name='verify-email'),
     path('resend-verification/', ResendVerificationCodeView.as_view(), name='resend-verification'),
+    path('verify-request/', VerifyRequestView.as_view(), name='verify-request'),
     
     # Password Reset (Custom Code-based Flow)
     path('password_reset/', RequestPasswordResetView.as_view(), name='password_reset'),

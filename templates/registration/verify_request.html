@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Account Verification — LeadNexus</title>
+    <title>Request Verification — LeadNexus</title>
     <link rel="icon" href="{% static 'logo_svg.png' %}">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
@@ -65,43 +65,30 @@
             text-align: center;
         }
 
-        .verify-icon {
-            width: 80px; height: 80px;
-            background: rgba(var(--p-rgb), 0.1);
-            border: 1px solid rgba(var(--p-rgb), 0.2);
-            border-radius: 24px;
-            display: flex; align-items: center; justify-content: center;
-            color: var(--brand-primary);
-            margin: 0 auto 32px;
-            box-shadow: 0 0 30px rgba(var(--p-rgb), 0.2);
-        }
-
         .brand-logo { height: 48px; margin-bottom: 32px; filter: drop-shadow(0 0 15px rgba(var(--p-rgb), 0.4)); }
 
         .form-header h2 { font-size: 2rem; font-weight: 800; margin-bottom: 12px; letter-spacing: -0.02em; }
-        .form-header p { color: var(--text-dim); font-size: 1.05rem; line-height: 1.6; margin-bottom: 40px; }
+        .form-header p { color: var(--text-dim); font-size: 1rem; line-height: 1.6; margin-bottom: 40px; }
 
-        .code-input {
-            width: 100%; height: 72px;
-            background: rgba(0, 0, 0, 0.4);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px;
-            color: #fff; font-size: 2.5rem; font-weight: 800;
-            text-align: center; letter-spacing: 0.4em;
-            transition: all 0.3s; margin-bottom: 32px;
+        .form-group { text-align: left; margin-bottom: 24px; position: relative; }
+        .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: var(--text-dim); margin-bottom: 8px; margin-left: 4px; text-transform: uppercase; letter-spacing: 0.05em; }
+        
+        .auth-input {
+            width: 100%; height: 56px;
+            background: rgba(0,0,0,0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 0 20px; color: #fff;
+            transition: all 0.3s; font-size: 1rem;
         }
 
-        .code-input:focus {
-            outline: none; border-color: var(--brand-primary);
-            background: rgba(var(--p-rgb), 0.05);
-            box-shadow: 0 0 0 4px rgba(var(--p-rgb), 0.1);
-        }
+        .auth-input:focus { outline: none; border-color: var(--brand-primary); background: rgba(var(--p-rgb), 0.05); box-shadow: 0 0 0 4px rgba(var(--p-rgb), 0.1); }
 
         .submit-btn {
             width: 100%; height: 56px;
             background: linear-gradient(135deg, var(--brand-primary), var(--brand-secondary));
             border: none; border-radius: 12px;
-            color: #fff; font-size: 1.15rem; font-weight: 700;
+            color: #fff; font-size: 1.1rem; font-weight: 700;
             cursor: pointer; transition: all 0.3s;
             display: flex; align-items: center; justify-content: center; gap: 12px;
             box-shadow: 0 10px 30px -5px rgba(var(--p-rgb), 0.4);
@@ -109,28 +96,9 @@
 
         .submit-btn:hover { transform: translateY(-2px); filter: brightness(1.1); }
 
-        .error-msg {
-            background: rgba(239, 68, 68, 0.1);
-            color: #fca5a5; padding: 12px; border-radius: 12px;
-            font-size: 0.85rem; margin-bottom: 24px;
-            display: flex; align-items: center; gap: 10px;
-        }
+        .info-msg { background: rgba(59, 130, 246, 0.1); color: #93c5fd; padding: 12px; border-radius: 12px; font-size: 0.85rem; margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
 
-        .info-msg {
-            background: rgba(59, 130, 246, 0.1);
-            color: #93c5fd; padding: 12px; border-radius: 12px;
-            font-size: 0.85rem; margin-bottom: 24px;
-            display: flex; align-items: center; gap: 10px;
-        }
-
-        @keyframes cardIn {
-            from { opacity: 0; transform: translateY(30px) scale(0.95); }
-            to { opacity: 1; transform: translateY(0) scale(1); }
-        }
-
-        @media (max-width: 540px) {
-            .auth-card { border-radius: 0; border: none; padding: 40px 24px; background: transparent; box-shadow: none; backdrop-filter: none; }
-        }
+        @keyframes cardIn { from { opacity: 0; transform: translateY(30px) scale(0.95); } to { opacity: 1; transform: translateY(0) scale(1); } }
 
         /* ── Neural Cursor ────────────────────────────────── */
         .cursor-dot, .cursor-outline {
@@ -174,21 +142,19 @@
     <div class="bg-grid"></div>
 
     <div class="auth-card">
-        <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" class="brand-logo">
-        
-        <div class="verify-icon">
-            <i data-lucide="shield-check" style="width: 40px; height: 40px;"></i>
-        </div>
+        <a href="{% url 'landing' %}">
+            <img src="{% static 'logo.png' %}" alt="LeadNexus Logo" class="brand-logo">
+        </a>
 
         <div class="form-header">
-            <h2>Account Verify</h2>
-            <p>Your operator ID is almost ready. Enter the verification code sent to your email.</p>
+            <h2>Verify Identity</h2>
+            <p>Locked out? Enter your registered email to receive a new activation key.</p>
         </div>
 
         {% if messages %}
             {% for message in messages %}
-                <div class="{% if message.tags == 'error' %}error-msg{% else %}info-msg{% endif %}">
-                    <i data-lucide="{% if message.tags == 'error' %}octagon-alert{% else %}info{% endif %}" style="width: 16px; height: 16px;"></i>
+                <div class="info-msg">
+                    <i data-lucide="info" style="width: 16px; height: 16px;"></i>
                     {{ message }}
                 </div>
             {% endfor %}
@@ -196,17 +162,19 @@
 
         <form method="POST">
             {% csrf_token %}
-            <input type="text" name="code" class="code-input" maxlength="6" placeholder="000000" pattern="\d{6}" required autofocus>
+            <div class="form-group">
+                <label class="form-label">Operator Email</label>
+                <input type="email" name="email" class="auth-input" placeholder="operator@leadnexus.pro" required autofocus>
+            </div>
 
-            <button type="submit" class="submit-btn" id="submitBtn">
-                <span>Configure Account</span>
-                <i data-lucide="zap" style="width: 20px; height: 20px;"></i>
+            <button type="submit" class="submit-btn">
+                <span>Dispatch Code</span>
+                <i data-lucide="send" style="width: 18px; height: 18px;"></i>
             </button>
         </form>
 
         <div style="margin-top: 32px; color: var(--text-dim); font-size: 0.9rem;">
-            Didn't receive the transmission? <br>
-            <a href="{% url 'resend-verification' %}" style="color: #fff; text-decoration: none; font-weight: 700;">Resend Code</a> or <a href="{% url 'register' %}" style="color: var(--text-dim); text-decoration: underline;">Re-register</a>.
+            Remembered your access? <a href="{% url 'login' %}" style="color: #fff; text-decoration: none; font-weight: 700;">Back to Login</a>
         </div>
     </div>
 
@@ -215,7 +183,7 @@
 
     <script>
         lucide.createIcons();
-        
+
         // Neural Cursor Logic
         const dot = document.querySelector('.cursor-dot');
         const outline = document.querySelector('.cursor-outline');
