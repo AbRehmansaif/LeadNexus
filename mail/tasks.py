@@ -154,7 +154,7 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             # Build connection & headers (no side effects yet)
             connection = get_connection(
                 host=creds.host, port=creds.port,
-                username=creds.username, password=creds.password,
+                username=creds.username, password=creds.decrypted_password,
                 use_tls=creds.use_tls, use_ssl=creds.use_ssl
             )
             domain = creds.from_email.split('@')[-1]
@@ -372,7 +372,7 @@ def check_single_account_replies(cred_id):
         cred = SMTPCredential.objects.get(id=cred_id)
         imap_host = cred.host.replace('smtp', 'imap')
         mail = imaplib.IMAP4_SSL(imap_host)
-        mail.login(cred.username, cred.password)
+        mail.login(cred.username, cred.decrypted_password)
         mail.select("inbox")
 
         date_since = (timezone.now() - timedelta(days=7)).strftime("%d-%b-%Y")

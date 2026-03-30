@@ -14,6 +14,7 @@ from .tasks import trigger_followup_task, check_for_replies, _mark_failed
 # Remove the old ModelSerializer import if it's redundant
 from django.core.mail import get_connection
 from django.views.decorators.clickjacking import xframe_options_exempt
+from core.encryption import decrypt_password
 
 class SMTPCredentialSerializer(serializers.ModelSerializer):
     class Meta:
@@ -109,7 +110,7 @@ class SMTPCredentialViewSet(viewsets.ModelViewSet):
                 host=data.get('host'),
                 port=data.get('port'),
                 username=data.get('username'),
-                password=data.get('password'),
+                password=decrypt_password(data.get('password')),
                 use_tls=data.get('use_tls'),
                 use_ssl=data.get('use_ssl'),
                 timeout=10

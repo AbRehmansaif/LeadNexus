@@ -54,6 +54,19 @@ class SMTPCredential(models.Model):
             self.is_active = False
         self.save()
 
+    def save(self, *args, **kwargs):
+        """Automatically encrypt the password before saving to DB."""
+        from core.encryption import encrypt_password
+        if self.password and not self.password.startswith('gAAAA'):
+            self.password = encrypt_password(self.password)
+        super().save(*args, **kwargs)
+
+    @property
+    def decrypted_password(self):
+        """Securely retrieves the decrypted password for SMTP connection."""
+        from core.encryption import decrypt_password
+        return decrypt_password(self.password)
+
     def __str__(self):
         return f"{self.name} ({self.from_email})"
 
