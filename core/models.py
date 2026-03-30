@@ -107,6 +107,13 @@ class UserProfile(models.Model):
     default_send_window_end = models.TimeField(null=True, blank=True, default="17:00")
     default_work_days = models.JSONField(default=list, blank=True)
     
+    def get_membership_status_display(self):
+        """Returns the display name for the current membership status."""
+        if self.plan:
+            return self.plan.name
+        status_map = dict(self.MEMBERSHIP_CHOICES)
+        return status_map.get(self.membership_status, self.membership_status.title() if self.membership_status else 'Unknown')
+
     def __str__(self):
         return f"Profile for {self.user.username} ({self.get_membership_status_display()})"
 
