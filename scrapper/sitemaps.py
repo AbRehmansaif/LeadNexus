@@ -13,6 +13,8 @@ class StaticViewSitemap(Sitemap):
             'landing',
             'login',
             'register',
+            'privacy-policy',
+            'terms-of-service',
         ]
 
     def location(self, item):
@@ -29,7 +31,7 @@ class AffiliateViewSitemap(Sitemap):
 
     def items(self):
         return [
-            'affiliatemarketing:affiliate',
+            'affiliate-landing',
         ]
 
     def location(self, item):
