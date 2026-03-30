@@ -112,18 +112,25 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             if not creds:
                 return f"Failed: No active SMTP account available for {recipient.email}"
 
-            # Render body template
+            # Render body template and convert to professional HTML
+            from django.utils.html import linebreaks
+            
             tmpl = Template(step_body)
             context_data = {
                 'name': recipient.name or recipient.email.split('@')[0],
                 'email': recipient.email,
             }
             context_data.update(recipient.custom_data)
-            rendered_body = tmpl.render(Context(context_data))
+            
+            # Step 1: Substitution
+            interim_body = tmpl.render(Context(context_data))
+            # Step 2: SaaS-level Text to HTML (Spacing, Paragraphs, Gaps)
+            rendered_body = linebreaks(interim_body)
 
             # Tracking Pixel
             # Logic: Use user's tracking_domain if set, otherwise fallback to SITE_URL.
             # Ensure the domain ends up with a valid protocol (https preferred) and no trailing slash.
+            profile = campaign.user.profile
             tracking_base = profile.tracking_domain or settings.SITE_URL
             
             if tracking_base:
