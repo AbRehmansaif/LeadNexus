@@ -21,7 +21,8 @@ class UserProfile(models.Model):
     ]
 
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    membership_status = models.CharField(max_length=20, choices=MEMBERSHIP_CHOICES, default='free')
+    plan = models.ForeignKey('subscriptions.SubscriptionPlan', on_delete=models.SET_NULL, null=True, blank=True, help_text="The active dynamic plan for this user")
+    membership_status = models.CharField(max_length=20, default='free', help_text="Legacy status field - synchronized with plan name")
     is_verified = models.BooleanField(default=False)
     
     # SaaS Quotas (Credit System)
@@ -52,53 +53,45 @@ class UserProfile(models.Model):
     last_payment_date = models.DateTimeField(null=True, blank=True)
     subscription_end_date = models.DateTimeField(null=True, blank=True)
 
-    # Plan Configuration Definitions
-    PLAN_CONFIG = {
-        'free': {
-            'job_limit': 100,
-            'linkedin_limit': 0,
-            'smtp_limit': 1,
-            'outreach_limit': 100,
-            'max_search_results': 10,
-        },
-        'pro': {
-            'job_limit': 1000,
-            'linkedin_limit': 500,
-            'smtp_limit': 10,
-            'outreach_limit': 10000,
-            'max_search_results': 50,
-        },
-        'enterprise': {
-            'job_limit': 99999,
-            'linkedin_limit': 99999,
-            'smtp_limit': 100,
-            'outreach_limit': 1000000,
-            'max_search_results': 100,
-        }
-    }
-
     def apply_plan_limits(self):
-        """Sets the quota fields according to the current membership_status."""
-        config = self.PLAN_CONFIG.get(self.membership_status)
-        if config:
-            self.job_limit_monthly = config['job_limit']
-            self.linkedin_limit_monthly = config['linkedin_limit']
-            self.smtp_limit = config['smtp_limit']
-            self.email_outreach_limit_monthly = config['outreach_limit']
-            self.max_websites_per_search = config['max_search_results']
-            # Also sync is_paid flag for convenience
-            if self.membership_status in ['pro', 'enterprise']:
+        """Sets the quota fields according to the current linked plan."""
+        plan = self.plan
+        
+        # Fallback if no plan is linked yet
+        if not plan:
+            from subscriptions.models import SubscriptionPlan
+            # Try to get the first plan (likely Free) as default
+            plan = SubscriptionPlan.objects.filter(order=0).first()
+            if plan:
+                self.plan = plan
+        
+        if plan:
+            self.job_limit_monthly = plan.job_limit
+            self.linkedin_limit_monthly = plan.linkedin_limit
+            self.smtp_limit = plan.smtp_limit
+            self.email_outreach_limit_monthly = plan.outreach_limit
+            self.max_websites_per_search = plan.max_websites_per_search
+            
+            # Sync membership_status string for legacy compatibility
+            self.membership_status = plan.name.lower()
+            
+            # Sync is_paid flag for convenience
+            # We assume anything with a price > 0 is a paid plan
+            if plan.monthly_price and plan.monthly_price > 0:
                 self.is_paid = True
             else:
                 self.is_paid = False
 
     def save(self, *args, **kwargs):
-        # If this is a new profile OR the status has changed compared to DB
+        # If this is a new profile OR the plan has changed
         if not self.pk:
             self.apply_plan_limits()
         else:
-            old_instance = UserProfile.objects.filter(pk=self.pk).first()
-            if old_instance and old_instance.membership_status != self.membership_status:
+            try:
+                old_instance = UserProfile.objects.get(pk=self.pk)
+                if old_instance.plan != self.plan:
+                    self.apply_plan_limits()
+            except UserProfile.DoesNotExist:
                 self.apply_plan_limits()
         
         super().save(*args, **kwargs)
