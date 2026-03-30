@@ -360,6 +360,12 @@
                     </div>
                     {% endfor %}
 
+                    <div style="font-size: 0.7rem; color: var(--text-muted); text-align: center; margin: 16px 0 12px; line-height: 1.5;">
+                        By registering, you agree to our <br>
+                        <a href="{% url 'terms-of-service' %}" target="_blank" style="color: var(--brand-primary); text-decoration: none;">Terms of Service</a> and 
+                        <a href="{% url 'privacy-policy' %}" target="_blank" style="color: var(--brand-primary); text-decoration: none;">Privacy Policy</a>.
+                    </div>
+
                     <button type="submit" class="submit-btn">
                         <span>Register</span>
                         <i data-lucide="chevron-right" style="width: 20px; height: 20px;"></i>

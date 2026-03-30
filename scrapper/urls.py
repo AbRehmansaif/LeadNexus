@@ -9,6 +9,7 @@ import os
 from django.contrib import admin
 from django.http import HttpResponse
 from django.urls import path, include, reverse_lazy
+from django.views.generic import TemplateView
 from django.contrib.auth import views as auth_views
 from core.auth_views import (
     LoginView, RegisterView, RequestPasswordResetView, 
@@ -81,7 +82,11 @@ urlpatterns = [
     # ── Contact Us ──────────────────────────────────────────
     path('contact-us/', include('contactus.urls', namespace='contactus')),
 
-    # ── Affiliate ──────────────────────────────────────────────────
+    # ── Legal Pages ─────────────────────────────────────────
+    path('privacy-policy/', TemplateView.as_view(template_name='shared/privacy_policy.html'), name='privacy-policy'),
+    path('terms-of-service/', TemplateView.as_view(template_name='shared/terms_of_service.html'), name='terms-of-service'),
+
+    # ── Affiliate ───────────────────────────────────────────
     path('affiliate/', include('affiliatemarketing.urls')),
 
     # ── SEO Marketing Pages ──────────────────────────────

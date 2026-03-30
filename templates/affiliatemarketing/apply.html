@@ -337,7 +337,7 @@ textarea.f-input { resize: vertical; min-height: 100px; }
             </div>
             <label class="check-row" style="margin-bottom:24px;">
                 <input type="checkbox" name="declaration" class="check-box" id="declCb">
-                <span style="font-size:0.84rem;color:#94a3b8;">I agree to the Partner Program Terms & Conditions.</span>
+                <span style="font-size:0.84rem;color:#94a3b8;">I agree to the <a href="{% url 'terms-of-service' %}" target="_blank" style="color:var(--brand-primary);text-decoration:none;">Terms of Service</a>, <a href="{% url 'privacy-policy' %}" target="_blank" style="color:var(--brand-primary);text-decoration:none;">Privacy Policy</a>, and Partner Program rules.</span>
             </label>
 
             <div class="nav-btns">

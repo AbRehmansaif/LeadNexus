@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% block title %}Privacy Policy | LeadNexus{% endblock %}
+
+{% block content %}
+<section class="section" style="padding-top: 120px;">
+    <div class="container" style="max-width: 800px;">
+        <h1 class="section-title" style="text-align: left;">Privacy Policy</h1>
+        <p class="section-desc" style="text-align: left; margin-bottom: 0;">Last Updated: {% now "F j, Y" %}</p>
+        
+        <div class="card" style="padding: 40px; margin-top: 40px;">
+            <p>Welcome to LeadNexus. We respect your privacy and are committed to protecting your personal data. This Privacy Policy outlines how we collect, use, and safeguard your information when you use our B2B lead generation and cold email outreach automation platform.</p>
+
+            <h3 style="margin-top: 30px; font-size: 1.25rem;">1. Data We Collect</h3>
+            <p>We may collect the following types of data:</p>
+            <ul style="margin-left: 20px; line-height: 1.8; color: var(--text-muted);">
+                <li><strong>Account Information:</strong> Name, email address, password, and billing details.</li>
+                <li><strong>Usage Data:</strong> Information on how you interact with our platform, including logs, and IP addresses.</li>
+                <li><strong>Outreach Data:</strong> Data related to your campaigns, SMTP integrations, and prospect lists.</li>
+            </ul>
+
+            <h3 style="margin-top: 30px; font-size: 1.25rem;">2. How We Use Your Data</h3>
+            <p>Your data is strictly used to:</p>
+            <ul style="margin-left: 20px; line-height: 1.8; color: var(--text-muted);">
+                <li>Provide, operate, and maintain LeadNexus.</li>
+                <li>Process transactions and send related billing information.</li>
+                <li>Improve our lead and outreach algorithms.</li>
+                <li>Communicate with you regarding updates, support, and marketing (which you can opt out of).</li>
+            </ul>
+
+            <h3 style="margin-top: 30px; font-size: 1.25rem;">3. Data Security</h3>
+            <p>We implement industry standard security measures, including encryption for stored SMTP credentials and secure API communications, to ensure your data is protected from unauthorized access or disclosure.</p>
+
+            <h3 style="margin-top: 30px; font-size: 1.25rem;">4. Your Rights</h3>
+            <p>You have the right to access, update, or delete your personal information at any time. You can manage your preferences through your account settings or by contacting our support team.</p>
+
+            <h3 style="margin-top: 30px; font-size: 1.25rem;">5. Contact Us</h3>
+            <p>If you have any questions about this Privacy Policy, please contact us via our support channels or through our Contact Us page.</p>
+        </div>
+    </div>
+</section>
+{% endblock %}
