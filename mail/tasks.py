@@ -392,43 +392,67 @@ def check_single_account_replies(cred_id):
 
             raw_email = data[0][1]
             msg = email.message_from_bytes(raw_email)
+            from_header = msg.get('From', '').lower()
             in_reply_to = msg.get('In-Reply-To')
             references = msg.get('References', '')
 
             log = SentEmailLog.objects.filter(
                 Q(message_id=in_reply_to) | Q(message_id__in=references.split())
-            ).first()
+            ).select_related('recipient').first()
 
-            if log and not log.recipient.is_replied:
-                body_lower = ""
-                if msg.is_multipart():
-                    for part in msg.walk():
-                        if part.get_content_type() == "text/plain":
+            # CRITICAL SECURITY FIX: Ensure the reply is actually FROM the lead.
+            # If the IMAP inbox contains sent emails (Steps 2, 3 etc.), they will match the message_id
+            # of previous steps, but the 'From' address will be our own account.
+            if not log or log.recipient.is_replied or log.recipient.is_unsubscribed:
+                continue
+
+            lead_email = log.recipient.email.lower()
+            from_addr = email.utils.parseaddr(from_header)[1].lower()
+            
+            if from_addr != lead_email:
+                # If the 'From' address doesn't exactly match the lead's email,
+                # it's either our own follow-up (Sent mail in Inbox) or a notification.
+                continue
+
+            # Process the body
+            body_lower = ""
+            if msg.is_multipart():
+                for part in msg.walk():
+                    if part.get_content_type() == "text/plain":
+                        try:
                             body_lower = part.get_payload(decode=True).decode().lower()
-                            break
-                else:
+                        except:
+                            body_lower = ""
+                        break
+            else:
+                try:
                     body_lower = msg.get_payload(decode=True).decode().lower()
+                except:
+                    body_lower = ""
 
-                unsub_keywords = ['unsubscribe', 'remove me', 'opt out', 'take me off your list']
-                is_unsub_request = any(kw in body_lower for kw in unsub_keywords)
+            # Specific keywords that indicate an manual unsubscription request.
+            # We EXCLUDE 'unsubscribe' itself because it appears in our own footer
+            # which is often included in the quoted history of a real reply.
+            unsub_keywords = ['remove me', 'opt out', 'take me off your list', 'stop emails', 'don\'t email', 'unsubscribe me']
+            is_unsub_request = any(kw in body_lower for kw in unsub_keywords)
 
-                with transaction.atomic():
-                    r = Recipient.objects.select_for_update().get(id=log.recipient.id)
+            with transaction.atomic():
+                r = Recipient.objects.select_for_update().get(id=log.recipient.id)
 
-                    if is_unsub_request:
-                        r.is_unsubscribed = True
-                        r.unsubscribed_at = timezone.now()
-                        r.status = 'unsubscribed'
-                        logger.info(f"Unsubscribe detected: {r.email}")
-                    else:
-                        r.is_replied = True
-                        r.replied_at = timezone.now()
-                        r.status = 'replied'
-                        EmailCampaign.objects.filter(id=r.campaign.id).update(reply_count=F('reply_count') + 1)
-                        logger.info(f"Reply detected: {r.email}")
+                if is_unsub_request:
+                    r.is_unsubscribed = True
+                    r.unsubscribed_at = timezone.now()
+                    r.status = 'unsubscribed'
+                    logger.info(f"Unsubscribe detected: {r.email}")
+                else:
+                    r.is_replied = True
+                    r.replied_at = timezone.now()
+                    r.status = 'replied'
+                    EmailCampaign.objects.filter(id=r.campaign.id).update(reply_count=F('reply_count') + 1)
+                    logger.info(f"Reply detected: {r.email}")
 
-                    r.save()
-                    cache.delete(f"campaign_stats_{r.campaign.id}")
+                r.save()
+                cache.delete(f"campaign_stats_{r.campaign.id}")
 
         mail.close()
         mail.logout()
