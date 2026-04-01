@@ -1137,7 +1137,7 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
             <div style="display:flex; justify-content:center; align-items:center; gap:16px; margin-top:32px; font-weight:600; font-size:0.95rem; height:40px;">
                 <span id="label-monthly" style="color:#fff; transition:0.3s;">Monthly</span>
                 <label style="position:relative; display:inline-flex; align-items:center; width:52px; height:28px; cursor:pointer; margin:0;">
-                    <input type="checkbox" id="pricing-toggle" onchange="togglePricing()" style="opacity:0; width:0; height:0; position:absolute;">
+                    <input type="checkbox" id="pricing-toggle" aria-label="Toggle pricing" onchange="togglePricing()" style="opacity:0; width:0; height:0; position:absolute;">
                     <span style="position:absolute; inset:0; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); border-radius:30px; transition:0.3s;">
                         <span id="toggle-slider" style="position:absolute; width:20px; height:20px; left:4px; top:3px; background:#8b5cf6; border-radius:50%; transition:transform 0.3s cubic-bezier(0.4, 0, 0.2, 1); box-shadow:0 0 10px rgba(139,92,246,0.6);"></span>
                     </span>
@@ -1151,7 +1151,7 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
             {% for plan in subscription_plans %}
             <div class="p-card {% if plan.is_featured %}popular{% endif %}">
                 {% if plan.badge %}<div class="p-badge">{{ plan.badge }}</div>{% endif %}
-                <div class="p-name">{{ plan.name }}</div>
+                <h3 class="p-name" style="margin-top:0;">{{ plan.name }}</h3>
 
                     <div class="p-price" style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                         <div>$<span class="price-val" data-monthly="{{ plan.monthly_price|floatformat:0 }}" data-yearly="{{ plan.yearly_price_per_month|floatformat:0 }}">{{ plan.monthly_price|floatformat:0 }}</span><span>/mo</span></div>
@@ -1174,7 +1174,7 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
             {% empty %}
             <!-- STATIC FALLBACK if missing database -->
             <div class="p-card">
-                <div class="p-name">Initiate</div>
+                <h3 class="p-name">Initiate</h3>
                 <div class="p-price">$<span class="price-val" data-monthly="99" data-yearly="79">99</span><span>/mo</span></div>
                 <ul class="p-features">
                     <li><i data-lucide="check"></i> 150 Jobs / mo</li>
@@ -1184,7 +1184,7 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
             </div>
             <div class="p-card popular">
                 <div class="p-badge">Most Popular</div>
-                <div class="p-name">Professional</div>
+                <h3 class="p-name">Professional</h3>
                 <div class="p-price">$<span class="price-val" data-monthly="299" data-yearly="239">299</span><span>/mo</span></div>
                 <ul class="p-features">
                     <li><i data-lucide="check"></i> 1,000 Jobs / mo</li>
@@ -1194,7 +1194,7 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
                 <a href="{% url 'register' %}" class="l-btn l-btn-primary" style="margin-top:auto;">Scale Growth Now</a>
             </div>
             <div class="p-card">
-                <div class="p-name">Enterprise</div>
+                <h3 class="p-name">Enterprise</h3>
                 <div class="p-price" style="font-size: 2.2rem; line-height: 1.4;">Custom</div>
                 <ul class="p-features">
                     <li><i data-lucide="check"></i> Unlimited Operations</li>
@@ -1333,7 +1333,7 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
                     </div>
                     
                     {% if global_settings.whatsapp_number %}
-                    <a href="https://wa.me/{{ global_settings.whatsapp_number|urlencode }}" target="_blank" style="display:flex; align-items:center; gap:16px; text-decoration:none; transition:transform 0.2s ease;" onmouseover="this.style.transform='translateX(6px)'" onmouseout="this.style.transform='translateX(0)'">
+                    <a href="https://wa.me/{{ global_settings.whatsapp_number|urlencode }}" target="_blank" aria-label="Chat on WhatsApp" style="display:flex; align-items:center; gap:16px; text-decoration:none; transition:transform 0.2s ease;" onmouseover="this.style.transform='translateX(6px)'" onmouseout="this.style.transform='translateX(0)'">
                         <div style="width:56px; height:56px; border-radius:14px; background:rgba(37,211,102,0.1); border:1px solid rgba(37,211,102,0.2); display:flex; align-items:center; justify-content:center; color:#25d366; flex-shrink:0;">
                             <i data-lucide="message-circle" style="width: 24px; height: 24px;"></i>
                         </div>
@@ -1347,7 +1347,7 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
 
                 <!-- Why Choose LeadNexus Card -->
                 <div style="margin-top: 48px; background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05); border-radius: 20px; padding: 32px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
-                    <div style="color: #a78bfa; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 20px;">Why Companies Choose LeadNexus</div>
+                    <h3 style="color: #a78bfa; font-size: 0.75rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin: 0 0 20px 0;">Why Companies Choose LeadNexus</h3>
                     <ul style="list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 16px;">
                         <li style="display: flex; align-items: start; gap: 12px; color: #cbd5e1; font-size: 1rem;">
                             <i data-lucide="check-circle-2" style="width: 20px; height: 20px; color: #22c55e; flex-shrink: 0; margin-top: 2px;"></i>
@@ -1420,7 +1420,7 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
 
 {% if global_settings.whatsapp_number %}
 <!-- WhatsApp Floating Widget -->
-<a href="https://wa.me/{{ global_settings.whatsapp_number|urlencode }}" target="_blank" class="whatsapp-float">
+<a href="https://wa.me/{{ global_settings.whatsapp_number|urlencode }}" target="_blank" class="whatsapp-float" aria-label="Chat on WhatsApp">
     <i data-lucide="message-circle" style="width: 28px; height: 28px;"></i>
 </a>
 <style>
