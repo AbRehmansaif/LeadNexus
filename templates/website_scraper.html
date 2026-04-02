@@ -1,5 +1,7 @@
 {% extends "base.html" %}
 {% block title %}Web Intelligence — LeadNexus{% endblock %}
+{% block meta_robots %}noindex, nofollow{% endblock %}
+{% block canonical_url %}{{ request.scheme }}://{{ request.get_host }}{% url 'webintelligence' %}{% endblock %}
 
 {% block content %}
 <!-- Page Header -->

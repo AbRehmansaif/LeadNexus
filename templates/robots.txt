@@ -1,5 +1,23 @@
 User-agent: *
-Allow: /
+Disallow: /admin/
+Disallow: /admin-intelligence/
+Disallow: /dashboard/
+Disallow: /profile/
+Disallow: /api/
+Disallow: /mail/api/
+Disallow: /mail/track/
+Disallow: /jobs/
+Disallow: /website-job/
+Disallow: /linkedin-job/
+Disallow: /keyword-job/
+Disallow: /webintelligence/
+Disallow: /profinder/
+Disallow: /subscription/
+Disallow: /password_reset/
+Disallow: /reset/
+Disallow: /affiliate/dashboard/
+Disallow: /affiliate/withdraw/
+Disallow: /affiliate/admin/
 
 # ── Core Public Pages ──────────────────────────
 Allow: /
@@ -9,6 +27,8 @@ Allow: /affiliate/
 Allow: /contact-us/
 Allow: /sitemap.xml
 Allow: /robots.txt
+Allow: /privacy-policy/
+Allow: /terms-of-service/
 
 # ── SEO Landing Pages ──────────────────────────
 Allow: /email-automation-tool/
@@ -32,27 +52,6 @@ Allow: /tools/dns-config-generator/
 Allow: /tools/cold-email-roi-calculator/
 Allow: /tools/email-spam-word-checker/
 Allow: /tools/email-warmup-calculator/
-
-# ── Block Private Pages ────────────────────────
-Disallow: /admin/
-Disallow: /admin-intelligence/
-Disallow: /dashboard/
-Disallow: /profile/
-Disallow: /api/
-Disallow: /mail/api/
-Disallow: /mail/track/
-Disallow: /jobs/
-Disallow: /website-job/
-Disallow: /linkedin-job/
-Disallow: /keyword-job/
-Disallow: /webintelligence/
-Disallow: /profinder/
-Disallow: /subscription/
-Disallow: /password_reset/
-Disallow: /reset/
-Disallow: /affiliate/dashboard/
-Disallow: /affiliate/withdraw/
-Disallow: /affiliate/admin/
 
 # ── Sitemap ────────────────────────────────────
 Sitemap: https://getleadnexus.com/sitemap.xml
