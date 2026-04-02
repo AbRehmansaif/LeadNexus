@@ -386,7 +386,9 @@ def check_single_account_replies(cred_id):
         _, messages = mail.search(None, f'(SINCE "{date_since}")')
 
         for msg_num in messages[0].split():
-            _, data = mail.fetch(msg_num, '(RFC822)')
+            # Use BODY.PEEK instead of (RFC822) to prevent IMAP from marking 
+            # the email as 'Seen/Read' in the user's actual inbox.
+            _, data = mail.fetch(msg_num, '(BODY.PEEK[])')
             if not data or not data[0]:
                 continue
 

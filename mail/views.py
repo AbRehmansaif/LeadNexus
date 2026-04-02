@@ -329,32 +329,74 @@ class RecipientViewSet(viewsets.ReadOnlyModelViewSet):
 
 def track_open(request, recipient_id):
     """
-    View to track email opens using a 1x1 pixel.
+    Enhanced view to track email opens using a 1x1 pixel.
+    Includes filtering for bots, scanners, and the sender's own session 
+    to significantly reduce false positives.
     """
+    # 1. Ignore HEAD requests (common for scanners/pre-fetchers)
+    if request.method == "HEAD":
+        return HttpResponse(status=204)
+
+    # 2. Extract metadata
+    ua = request.META.get('HTTP_USER_AGENT', '').lower()
+    ip = request.META.get('REMOTE_ADDR', '')
+    purpose = request.META.get('HTTP_X_PURPOSE', '').lower()
+    moz_purpose = request.META.get('HTTP_X_MOZ', '').lower()
+    
+    # 3. Known Bot/Scanner/Pre-fetch Filtering
+    # Common strings used by security scanners, link pre-fetchers, and bots
+    bot_keywords = [
+        'bot', 'spider', 'crawl', 'scanner', 'security', 'preview', 
+        'transcoder', 'headless', 'inspect', 'discovery', 'validator',
+        'office', 'microsoft', 'google-http-client', 'bing', 'yahoo', 
+        'facebookexternalhit', 'slackbot', 'discordbot', 'whatsapp',
+        'apple-pubsub', 'embedly', 'bitlybot'
+    ]
+    
+    is_bot = any(keyword in ua for keyword in bot_keywords)
+    
+    # Pre-fetch detection
+    if purpose == 'preview' or moz_purpose == 'prefetch' or 'prefetch' in ua:
+        is_bot = True
+    
+    # Note: We do NOT skip 'google' entirely because Gmail uses a proxy
+    # for real human opens. but we can skip specific Google crawlers.
+    if "googlebot" in ua or "adsbot-google" in ua:
+        is_bot = True
+
     try:
-        recipient = Recipient.objects.get(id=recipient_id)
+        recipient = Recipient.objects.select_related('campaign').get(id=recipient_id)
         
-        if not recipient.is_opened:
-            recipient.is_opened = True
-            recipient.opened_at = timezone.now()
+        # 4. Skip tracking if:
+        # - It's a known bot
+        # - The request comes from the sender themselves (if logged in to the platform)
+        is_sender = False
+        if request.user.is_authenticated and request.user.id == recipient.campaign.user_id:
+            is_sender = True
             
-            # ATOMIC UPDATES (Essential for 1000+ users)
-            # Use F() expressions to prevent race conditions
-            campaign = recipient.campaign
-            EmailCampaign.objects.filter(id=campaign.id).update(
-                open_count=F('open_count') + 1
-            )
+        if not is_bot and not is_sender:
+            if not recipient.is_opened:
+                recipient.is_opened = True
+                recipient.opened_at = timezone.now()
+                
+                # ATOMIC UPDATES
+                campaign = recipient.campaign
+                EmailCampaign.objects.filter(id=campaign.id).update(
+                    open_count=F('open_count') + 1
+                )
+                
+                # Invalidate cache for this campaign
+                cache.delete(f"campaign_stats_{campaign.id}")
             
-            # Invalidate cache for this campaign
-            cache.delete(f"campaign_stats_{campaign.id}")
-        
-        recipient.open_count = (recipient.open_count or 0) + 1
-        recipient.save(update_fields=['is_opened', 'opened_at', 'open_count'])
+            # Record every single open increment (even if already marked is_opened)
+            # but only if it's not a bot/sender
+            recipient.open_count = (recipient.open_count or 0) + 1
+            recipient.save(update_fields=['is_opened', 'opened_at', 'open_count'])
         
     except Recipient.DoesNotExist:
         pass
         
-    # Always return the GIF, even if recipient not found
+    # Always return the GIF, even if recipient not found or hit was filtered
     pixel_data = b'\x47\x49\x46\x38\x39\x61\x01\x00\x01\x00\x80\x00\x00\x00\x00\x00\xff\xff\xff\x21\xf9\x04\x01\x00\x00\x00\x00\x2c\x00\x00\x00\x00\x01\x00\x01\x00\x00\x02\x02\x44\x01\x00\x3b'
     response = HttpResponse(pixel_data, content_type='image/gif')
     response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
