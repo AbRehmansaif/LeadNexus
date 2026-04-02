@@ -921,18 +921,98 @@ body, html {
     position: absolute; left: 16px; top: 14px; color: #64748b; width: 18px; height: 18px;
 }
 textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
+
+/* Announcement Bar */
+.announcement-bar {
+    position: fixed;
+    top: -120px;
+    left: 0;
+    width: 100%;
+    z-index: 999;
+    background: rgba(2, 6, 23, 0.95);
+    backdrop-filter: blur(16px);
+    border-bottom: 1px solid rgba(139, 92, 246, 0.4);
+    padding: 10px 20px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    transition: top 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+}
+.announcement-bar.visible {
+    top: 72px;
+}
+.announcement-content {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+.announcement-prefix {
+    color: #a78bfa;
+    font-weight: 800;
+    text-transform: uppercase;
+    font-size: 0.7rem;
+    letter-spacing: 0.15em;
+}
+.announcement-text {
+    color: #f8fafc;
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+.announcement-text .highlight {
+    color: #8b5cf6;
+    font-weight: 700;
+}
+.announcement-btn {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: #fff;
+    padding: 7px 18px;
+    border-radius: 12px;
+    font-weight: 800;
+    text-decoration: none;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+}
+.announcement-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(139, 92, 246, 0.5);
+    color: #fff;
+}
+@media (max-width: 640px) {
+    .announcement-bar { flex-direction: column; gap: 8px; padding: 12px; border-bottom-width: 1px; }
+    .announcement-prefix { display: block; width: 100%; text-align: center; }
+}
 </style>
 {% endblock %}
 
 {% block content %}
 <main class="landing-wrap">
 
+    <!-- Free Trial Announcement Bar (Sticky on Scroll) -->
+    <div id="registerBanner" class="announcement-bar">
+        <div class="announcement-content">
+            <span class="announcement-prefix">LeadNexus Early Access —</span>
+            <span class="announcement-text">Unlock <span class="highlight">full platform features</span> for free. No credit card required.</span>
+        </div>
+        <a href="{% url 'register' %}" class="announcement-btn">
+            <i data-lucide="sparkles" style="width:14px;"></i> Register Free Now
+        </a>
+    </div>
+
     <!-- 1. HERO -->
     <section class="hero">
         <div class="landing-container">
             <div class="hero-bg"></div>
             <div class="pill-badge">
-                <i data-lucide="zap"></i> V1.1 Now Live — Cold Email Engine Upgraded
+                <i data-lucide="zap"></i> Power up your business with AI
             </div>
             <h1 class="h-title">
                 The #1 Platform<br/>
@@ -1425,6 +1505,16 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
 <script>
     // Initialize Icons
     if (window.lucide) { lucide.createIcons(); }
+
+    // Register Banner Scroll Logic
+    const banner = document.getElementById('registerBanner');
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 400) {
+            banner.classList.add('visible');
+        } else {
+            banner.classList.remove('visible');
+        }
+    });
 
     // Smooth Scroll & Auto-Close Mobile Menu (Supports absolute paths like /#features)
     document.querySelectorAll('a[href*="#"]').forEach(anchor => {
