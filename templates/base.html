@@ -572,38 +572,6 @@
             }
         });
 
-        // Neural Cursor Logic (Global)
-        const dot = document.querySelector('.cursor-dot');
-        const outline = document.querySelector('.cursor-outline');
-
-        if (dot && outline) {
-            window.addEventListener('mousemove', (e) => {
-                const posX = e.clientX;
-                const posY = e.clientY;
-
-                requestAnimationFrame(() => {
-                    dot.style.transform = `translate3d(${posX}px, ${posY}px, 0) translate(-50%, -50%)`;
-                    
-                    outline.animate({
-                        transform: `translate3d(${posX}px, ${posY}px, 0) translate(-50%, -50%)`
-                    }, { duration: 100, fill: "forwards", easing: "ease-out" });
-                    
-                    if (dot.style.opacity === '0' || dot.style.opacity === '') {
-                        dot.style.opacity = '1';
-                        outline.style.opacity = '1';
-                    }
-                });
-            });
-
-            const hoverables = document.querySelectorAll('a, button, input, .feature-item, label, .card, .stat-card, .profile-circle');
-            hoverables.forEach(el => {
-                el.addEventListener('mouseenter', () => document.body.classList.add('cursor-hover'));
-                el.addEventListener('mouseleave', () => document.body.classList.remove('cursor-hover'));
-            });
-
-            document.addEventListener('mousedown', () => document.body.classList.add('cursor-click'));
-            document.addEventListener('mouseup', () => document.body.classList.remove('cursor-click'));
-        }
     </script>
     <div class="cursor-dot"></div>
     <div class="cursor-outline"></div>
