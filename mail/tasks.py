@@ -376,7 +376,11 @@ def send_campaign_emails(campaign_id, step_number=1):
 
     if not recipients.exists():
         if step_number == 1:
-            campaign.status = 'completed'
+            has_active_or_pending = Recipient.objects.filter(campaign_id=campaign_id, status__in=['active', 'pending']).exists()
+            if not has_active_or_pending:
+                campaign.status = 'completed'
+            else:
+                campaign.status = 'running'
             campaign.save(update_fields=['status'])
         return "No recipients found"
 
