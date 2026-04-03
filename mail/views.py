@@ -564,24 +564,76 @@ def email_dedup_tool_process(request):
     Processes an uploaded CSV file entirely in-memory.
     Cross-references each email against all previously sent Recipient records
     for the current user's campaigns.
-    
-    Returns JSON with:
-      - already_sent: list of {email, campaign_name} for duplicates
-      - clean_emails: list of rows that were NOT previously contacted
-      - original_rows: all rows with a 'previously_sent' and 'campaign_name' annotation
+
+    Security layers:
+      1. Login required (decorator)
+      2. CSRF token (Django middleware)
+      3. POST-only method enforcement
+      4. File size hard cap (5 MB)
+      5. MIME type validation
+      6. File extension check (with path traversal protection)
+      7. Filename length and character sanitization
+      8. Per-user rate limiting (10 requests / minute)
+      9. Max column count cap (50 columns)
+     10. Max row count cap (100,000 rows)
+     11. Per-cell email field length cap (320 chars, RFC 5321 max)
+
     Nothing is stored to disk or database.
     """
     if request.method != 'POST':
-        return JsonResponse({'error': 'POST required'}, status=405)
+        return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
+    # ── Layer 1: Rate Limiting ────────────────────────────────────────────────
+    # Allow max 10 upload-process requests per user per 60 seconds.
+    rate_key = f'dedup_rate_{request.user.id}'
+    request_count = cache.get(rate_key, 0)
+    if request_count >= 10:
+        return JsonResponse(
+            {'error': 'Too many requests. Please wait a moment before uploading again.'},
+            status=429
+        )
+    cache.set(rate_key, request_count + 1, timeout=60)
+
+    # ── Layer 2: File Presence ────────────────────────────────────────────────
     csv_file = request.FILES.get('csv_file')
     if not csv_file:
-        return JsonResponse({'error': 'No file uploaded'}, status=400)
+        return JsonResponse({'error': 'No file was uploaded.'}, status=400)
 
-    if not csv_file.name.endswith('.csv'):
-        return JsonResponse({'error': 'Please upload a valid .csv file'}, status=400)
+    # ── Layer 3: File Size Cap (5 MB) ─────────────────────────────────────────
+    MAX_FILE_SIZE = 5 * 1024 * 1024  # 5 MB
+    if csv_file.size > MAX_FILE_SIZE:
+        return JsonResponse(
+            {'error': f'File is too large ({csv_file.size // (1024*1024)} MB). Maximum allowed size is 5 MB.'},
+            status=400
+        )
 
-    # Read CSV fully in memory
+    # ── Layer 4: Filename Sanitization ────────────────────────────────────────
+    # Prevent path traversal attacks (e.g. ../../etc/passwd)
+    import os, re
+    raw_name = os.path.basename(csv_file.name or '')
+    if len(raw_name) > 255:
+        return JsonResponse({'error': 'Filename is too long.'}, status=400)
+    if not re.match(r'^[\w\s\-\.]+$', raw_name):
+        return JsonResponse({'error': 'Filename contains invalid characters.'}, status=400)
+
+    # ── Layer 5: File Extension Check ─────────────────────────────────────────
+    if not raw_name.lower().endswith('.csv'):
+        return JsonResponse({'error': 'Only .csv files are accepted.'}, status=400)
+
+    # ── Layer 6: MIME Type Validation ─────────────────────────────────────────
+    ALLOWED_MIME_TYPES = {
+        'text/csv',
+        'text/plain',
+        'application/csv',
+        'application/vnd.ms-excel',  # some older Excel exports
+    }
+    if csv_file.content_type and csv_file.content_type.split(';')[0].strip() not in ALLOWED_MIME_TYPES:
+        return JsonResponse(
+            {'error': 'Invalid file type. Please upload a plain CSV file.'},
+            status=400
+        )
+
+    # ── Layer 7: Read & Decode ────────────────────────────────────────────────
     try:
         try:
             content = csv_file.read().decode('utf-8')
@@ -589,19 +641,36 @@ def email_dedup_tool_process(request):
             csv_file.seek(0)
             content = csv_file.read().decode('latin-1')
     except Exception:
-        return JsonResponse({'error': 'Could not read file. Ensure it is a valid CSV.'}, status=400)
+        return JsonResponse({'error': 'Could not read the file. Please ensure it is a valid CSV.'}, status=400)
 
+    # ── Layer 8: Parse CSV Structure ─────────────────────────────────────────
     try:
         reader = csv.DictReader(io.StringIO(content))
         rows = list(reader)
         fieldnames = reader.fieldnames or []
     except Exception:
-        return JsonResponse({'error': 'Failed to parse CSV structure.'}, status=400)
+        return JsonResponse({'error': 'Failed to read the file structure. Please check your CSV format.'}, status=400)
 
     if not rows:
-        return JsonResponse({'error': 'The CSV file appears to be empty.'}, status=400)
+        return JsonResponse({'error': 'The uploaded file appears to be empty.'}, status=400)
 
-    # Detect the email column (case-insensitive)
+    # ── Layer 9: Column Count Cap (prevents memory bombs via wide CSVs) ───────
+    MAX_COLUMNS = 50
+    if len(fieldnames) > MAX_COLUMNS:
+        return JsonResponse(
+            {'error': f'Your file has too many columns ({len(fieldnames)}). Maximum allowed is {MAX_COLUMNS}.'},
+            status=400
+        )
+
+    # ── Layer 10: Row Count Cap ───────────────────────────────────────────────
+    MAX_ROWS = 100_000
+    if len(rows) > MAX_ROWS:
+        return JsonResponse(
+            {'error': f'Your file has too many rows ({len(rows):,}). Maximum allowed is {MAX_ROWS:,} per upload.'},
+            status=400
+        )
+
+    # ── Detect Email Column (case-insensitive) ────────────────────────────────
     email_col = None
     for col in fieldnames:
         if col.strip().lower() == 'email':
@@ -609,7 +678,11 @@ def email_dedup_tool_process(request):
             break
 
     if not email_col:
-        return JsonResponse({'error': 'No "email" column found. Please ensure your CSV has a column named "email".'}, status=400)
+        return JsonResponse(
+            {'error': 'No "email" column found. Please ensure your CSV has a column named "email".'},
+            status=400
+        )
+
 
     # Build a lookup map: email (lowercased) → list of campaign names sent to
     # Only look at the current user's campaigns
@@ -645,6 +718,10 @@ def email_dedup_tool_process(request):
         raw_email = row.get(email_col, '').strip()
         if not raw_email:
             continue
+
+        # ── Layer 11: Email Field Length Cap (RFC 5321 max = 320 chars) ───────
+        if len(raw_email) > 320:
+            continue  # silently skip malformed oversized cells
 
         valid_email_count += 1
 
