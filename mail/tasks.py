@@ -56,6 +56,10 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             # Guard: already processed or in a terminal state for this step
             if recipient.is_replied or recipient.is_unsubscribed or campaign.status == 'paused':
                 return f"Skipped: {recipient.email} (Replied, Unsubscribed, or Paused)"
+                
+            # CRITICAL GUARD: Prevent duplicate transmissions if button clicked multiple times
+            if recipient.current_step_index >= step_number:
+                return f"Skipped: {recipient.email} (Already safely received Step {step_number})"
 
             # Business Hours Check — use apply_async NOT self.retry so we
             # don't burn the precious max_retries=3 SMTP error budget.
