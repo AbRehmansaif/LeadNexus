@@ -71,7 +71,15 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
 
             if campaign.send_window_start and campaign.send_window_end:
                 current_time = local_now.time()
-                if not (campaign.send_window_start <= current_time <= campaign.send_window_end):
+                start_time = campaign.send_window_start
+                end_time = campaign.send_window_end
+                
+                if start_time <= end_time:
+                    in_window = start_time <= current_time <= end_time
+                else:
+                    in_window = current_time >= start_time or current_time <= end_time
+                    
+                if not in_window:
                     send_single_email_task.apply_async(
                         args=[recipient_id, step_number, cred_id],
                         countdown=3600  # retry in 1 hour
@@ -101,16 +109,42 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             profile = campaign.user.profile
             if not profile.can_send_email():
                 logger.warning(f"Quota exceeded for {campaign.user.username}, skipping {recipient.email}")
-                return f"Skipped: {recipient.email} (Monthly email quota exceeded)"
+                recipient.status = 'failed'
+                recipient.error_message = "Monthly email quota exceeded"
+                recipient.save(update_fields=['status', 'error_message'])
+                
+                EmailCampaign.objects.filter(id=campaign.id).update(failed_count=F('failed_count') + 1)
+                cache.delete(f"campaign_stats_{campaign.id}")
+                if not Recipient.objects.filter(campaign_id=campaign.id, status__in=['active', 'pending']).exclude(id=recipient.id).exists():
+                    EmailCampaign.objects.filter(id=campaign.id).update(status='completed')
+                return f"Failed: {recipient.email} (Monthly email quota exceeded)"
 
             # SMTP Selection
             if cred_id:
-                creds = SMTPCredential.objects.filter(id=cred_id, is_active=True).first()
-            else:
-                creds = SMTPCredential.objects.filter(user=campaign.user, is_active=True).order_by('?').first()
+                creds = SMTPCredential.objects.filter(id=cred_id).first()
+                if creds:
+                    creds.check_and_reset_limit()
+                if creds and not creds.is_active:
+                    creds = None
+            
+            if not creds:
+                all_creds = SMTPCredential.objects.filter(user=campaign.user)
+                for c in all_creds:
+                    c.check_and_reset_limit()
+                creds = all_creds.filter(is_active=True).order_by('?').first()
 
             if not creds:
-                return f"Failed: No active SMTP account available for {recipient.email}"
+                from datetime import datetime, time as dt_time, timedelta
+                now_time = timezone.now()
+                tomorrow = now_time.date() + timedelta(days=1)
+                midnight = timezone.make_aware(datetime.combine(tomorrow, dt_time.min))
+                wait_seconds = max(60, (midnight - now_time).total_seconds() + 300)
+                
+                send_single_email_task.apply_async(
+                    args=[recipient_id, step_number, None],
+                    countdown=wait_seconds
+                )
+                return f"Deferred: {recipient.email} — SMTP daily limit hit, retrying tomorrow"
 
             # Render body template and convert to professional HTML
             from django.utils.html import linebreaks
@@ -350,18 +384,29 @@ def send_campaign_emails(campaign_id, step_number=1):
     campaign.save(update_fields=['status'])
 
     # 2. Setup Rotation Pool
-    active_smtp = list(SMTPCredential.objects.filter(user=campaign.user, is_active=True))
-    if not active_smtp:
-        return "No active SMTP accounts"
+    all_smtp = list(SMTPCredential.objects.filter(user=campaign.user))
+    if not all_smtp:
+        recipients.update(status='failed', error_message='No SMTP accounts configured')
+        campaign.sync_stats_from_db()
+        campaign.refresh_from_db()
+        if not Recipient.objects.filter(campaign_id=campaign_id, status__in=['active', 'pending']).exists():
+            campaign.status = 'completed'
+            campaign.save(update_fields=['status'])
+        return "No SMTP accounts configured"
+
+    for c in all_smtp:
+        c.check_and_reset_limit()
+        
+    active_smtp = [c for c in all_smtp if c.is_active]
 
     gap = max(1, campaign.gap_seconds)
 
     # 3. Dispatch independent tasks with Countdown
     recipients_list = list(recipients)
     for i, recipient in enumerate(recipients_list):
-        target_creds = active_smtp[i % len(active_smtp)]
+        target_creds_id = active_smtp[i % len(active_smtp)].id if active_smtp else None
         send_single_email_task.apply_async(
-            args=[recipient.id, step_number, target_creds.id],
+            args=[recipient.id, step_number, target_creds_id],
             countdown=i * gap
         )
 
