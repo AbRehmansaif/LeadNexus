@@ -10,6 +10,9 @@
             <i data-lucide="refresh-cw" style="width:16px;height:16px;margin-right:8px;"></i> Check for New Replies
         </button>
         <a href="{% url 'mail-campaign-create' %}" class="btn btn-primary">Launch Growth Campaign</a>
+        <a href="{% url 'mail-email-dedup' %}" class="btn btn-secondary">
+            <i data-lucide="filter" style="width:16px;height:16px;margin-right:8px;"></i> Dedup Email List
+        </a>
         <a href="{% url 'mail-smtp-settings' %}" class="btn btn-secondary">Manage Delivery Infrastructure</a>
     </div>
 </div>

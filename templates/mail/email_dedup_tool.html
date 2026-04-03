@@ -1,0 +1,500 @@
+{% extends "base.html" %}
+{% block title %}Email Deduplication Tool — LeadNexus{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <div>
+        <h1 class="page-title">
+            <i data-lucide="filter" style="width:26px; height:26px; color: var(--accent-purple); margin-right: 10px;"></i>
+            Email Deduplication Engine
+        </h1>
+        <p class="page-subtitle">Upload your CSV and instantly remove leads you've already contacted across any campaign.</p>
+    </div>
+    <div class="header-actions">
+        <a href="{% url 'mail-dashboard' %}" class="btn btn-secondary">
+            <i data-lucide="arrow-left" style="width:16px;height:16px;margin-right:8px;"></i> Back to Campaigns
+        </a>
+    </div>
+</div>
+
+<!-- Privacy Banner -->
+<div style="display: flex; align-items: center; gap: 12px; padding: 14px 20px; background: rgba(16,185,129,0.07); border: 1px solid rgba(16,185,129,0.25); border-radius: 10px; margin-bottom: 12px;">
+    <i data-lucide="shield-check" style="width:20px;height:20px;color:var(--accent-green);flex-shrink:0;"></i>
+    <p style="margin:0;font-size:0.85rem;color:var(--text-muted);">
+        <strong style="color:var(--accent-green);">Your data stays private.</strong>
+        We never store or keep any part of your uploaded file. Once the check is done, your results are held
+        temporarily in your own browser, closing this tab wipes everything completely.
+        Nothing is saved on our end, ever.
+    </p>
+</div>
+
+<!-- Session storage status banner (shown dynamically) -->
+<div id="sessionBanner" style="display:none;align-items:center;gap:12px;padding:12px 20px;border-radius:10px;margin-bottom:24px;font-size:0.85rem;"></div>
+
+<!-- Upload Card -->
+<div class="card" id="uploadCard" style="margin-bottom: 24px;">
+    <div class="card-header">
+        <h2 class="card-title">
+            <i data-lucide="upload-cloud" style="width:20px;height:20px;margin-right:8px;"></i>
+            Step 1, Upload Your Lead List
+        </h2>
+    </div>
+    <div style="padding: 32px; text-align: center;">
+        <div id="dropZone" 
+             style="border: 2px dashed var(--border); border-radius: 16px; padding: 60px 32px; cursor: pointer; transition: all 0.3s; position: relative;"
+             onclick="document.getElementById('csvInput').click()"
+             ondrop="handleDrop(event)" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)">
+            <input type="file" id="csvInput" accept=".csv" style="display:none;" onchange="handleFileSelect(this)">
+            <div id="dropZoneContent">
+                <i data-lucide="file-text" style="width:48px;height:48px;color:var(--accent-purple);margin-bottom:16px;"></i>
+                <h3 style="margin:0 0 8px;font-size:1.1rem;">Drop your CSV file here</h3>
+                <p style="margin:0;color:var(--text-muted);font-size:0.9rem;">or click to browse — requires an <code>email</code> column</p>
+            </div>
+            <div id="fileSelectedInfo" style="display:none;">
+                <i data-lucide="check-circle" style="width:48px;height:48px;color:var(--accent-green);margin-bottom:16px;"></i>
+                <h3 id="fileNameDisplay" style="margin:0 0 8px;font-size:1.1rem;color:var(--accent-green);"></h3>
+                <p style="margin:0;color:var(--text-muted);font-size:0.9rem;">Click to change file</p>
+            </div>
+        </div>
+
+        <button id="analyzeBtn" onclick="analyzeCSV()" class="btn btn-primary" 
+                style="margin-top:24px;padding:14px 40px;font-size:1rem;display:none;">
+            <i data-lucide="zap" style="width:18px;height:18px;margin-right:8px;"></i>
+            Analyze &amp; Deduplicate
+        </button>
+
+        <!-- Loader -->
+        <div id="loader" style="display:none;margin-top:24px;text-align:center;">
+            <div style="width:44px;height:44px;border:3px solid var(--border);border-top-color:var(--accent-purple);border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto 12px;"></div>
+            <p style="color:var(--text-muted);font-size:0.9rem;">Cross-referencing against your campaign history...</p>
+        </div>
+    </div>
+</div>
+
+<!-- Results Section (hidden until analysis) -->
+<div id="resultsSection" style="display:none;">
+
+    <!-- Summary Stats -->
+    <div class="stats-grid" style="margin-bottom:24px;">
+        <div class="stat-card purple">
+            <div class="stat-label">Total Uploaded</div>
+            <div class="stat-value" id="statTotal">0</div>
+            <div class="stat-sub">Leads in your CSV</div>
+        </div>
+        <div class="stat-card green">
+            <div class="stat-label">Clean &amp; Fresh</div>
+            <div class="stat-value" id="statClean" style="color:var(--accent-green);">0</div>
+            <div class="stat-sub">Never contacted</div>
+        </div>
+        <div class="stat-card amber">
+            <div class="stat-label">Already Contacted</div>
+            <div class="stat-value" id="statDupes" style="color:#f59e0b;">0</div>
+            <div class="stat-sub">Across all campaigns</div>
+        </div>
+        <div class="stat-card blue">
+            <div class="stat-label">Removal Rate</div>
+            <div class="stat-value" id="statRate" style="color:var(--accent-blue);">0%</div>
+            <div class="stat-sub">Duplicate percentage</div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="card" style="margin-bottom:24px;">
+        <div style="padding:24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;">
+            <div style="flex:1;min-width:200px;">
+                <h3 style="margin:0 0 4px;font-size:1rem;">Download Results</h3>
+                <p style="margin:0;color:var(--text-muted);font-size:0.85rem;">Pick what you want to export — all data lives only in your session.</p>
+            </div>
+            <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                <button onclick="downloadClean()" class="btn btn-primary" id="downloadCleanBtn">
+                    <i data-lucide="download" style="width:16px;height:16px;margin-right:8px;"></i>
+                    Download Clean List Only
+                </button>
+                <button onclick="downloadAll()" class="btn btn-secondary">
+                    <i data-lucide="file-down" style="width:16px;height:16px;margin-right:8px;"></i>
+                    Download Full Annotated CSV
+                </button>
+                <button onclick="resetTool()" class="btn btn-secondary">
+                    <i data-lucide="refresh-cw" style="width:16px;height:16px;margin-right:8px;"></i>
+                    Upload New File
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Table: Already Contacted (shown at top) -->
+    <div class="card" id="alreadySentCard" style="margin-bottom:24px;border-left:3px solid #f59e0b;">
+        <div class="card-header">
+            <h2 class="card-title" style="color:#f59e0b;">
+                <i data-lucide="alert-triangle" style="width:20px;height:20px;margin-right:8px;"></i>
+                Already Contacted Leads
+                <span id="dupeCountBadge" class="badge" style="margin-left:10px;background:rgba(245,158,11,0.15);color:#f59e0b;font-size:0.8rem;"></span>
+            </h2>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th style="width:50px;">#</th>
+                        <th>Email Address</th>
+                        <th>Previously Sent Via Campaign(s)</th>
+                    </tr>
+                </thead>
+                <tbody id="alreadySentTable">
+                </tbody>
+            </table>
+        </div>
+        <div id="alreadySentEmpty" style="display:none;padding:32px;text-align:center;color:var(--accent-green);">
+            <i data-lucide="party-popper" style="width:40px;height:40px;margin-bottom:12px;"></i>
+            <p style="margin:0;font-weight:700;">Zero duplicates found! Your entire list is fresh.</p>
+        </div>
+    </div>
+
+    <!-- Table: Clean Leads Preview -->
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title" style="color:var(--accent-green);">
+                <i data-lucide="check-circle-2" style="width:20px;height:20px;margin-right:8px;"></i>
+                Fresh Leads (Never Contacted)
+                <span id="cleanCountBadge" class="badge" style="margin-left:10px;background:rgba(16,185,129,0.15);color:var(--accent-green);font-size:0.8rem;"></span>
+            </h2>
+        </div>
+        <div class="table-wrapper" style="max-height:400px;overflow-y:auto;">
+            <table class="data-table">
+                <thead id="cleanTableHead">
+                </thead>
+                <tbody id="cleanTable">
+                </tbody>
+            </table>
+        </div>
+        <div id="cleanEmpty" style="display:none;padding:32px;text-align:center;color:var(--text-muted);">
+            <i data-lucide="inbox" style="width:40px;height:40px;margin-bottom:12px;"></i>
+            <p style="margin:0;">All uploaded leads were already contacted.</p>
+        </div>
+        <!-- "Showing X of Y" note for large lists -->
+        <div id="cleanPreviewNote" style="display:none;padding:12px 20px;font-size:0.8rem;color:var(--text-muted);border-top:1px solid var(--border);">
+            <i data-lucide="info" style="width:14px;height:14px;margin-right:6px;vertical-align:middle;"></i>
+            Preview limited to first 200 rows. Download the full CSV for the complete list.
+        </div>
+    </div>
+
+</div>
+
+<script>
+// ─── Constants ────────────────────────────────────────────────
+const SESSION_KEY = 'leadnexus_dedup_result';
+
+// ─── State ───────────────────────────────────────────────────
+let analysisResult = null;
+
+// ─── sessionStorage Helpers ───────────────────────────────────
+/**
+ * Try to save data to sessionStorage.
+ * Returns 'saved' | 'too_large' | 'unavailable'
+ */
+function trySaveSession(data) {
+    try {
+        const serialized = JSON.stringify(data);
+        // Pre-check approximate size (1 char ≈ 2 bytes in UTF-16, sessionStorage limit ≈ 5MB)
+        const estimatedBytes = new Blob([serialized]).size;
+        if (estimatedBytes > 4.5 * 1024 * 1024) {
+            // Proactively skip — too close to the 5MB browser limit
+            return 'too_large';
+        }
+        sessionStorage.setItem(SESSION_KEY, serialized);
+        return 'saved';
+    } catch (e) {
+        // QuotaExceededError — browser rejected the write
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+            return 'too_large';
+        }
+        // sessionStorage completely unavailable (private browsing in some browsers)
+        return 'unavailable';
+    }
+}
+
+function loadSession() {
+    try {
+        const raw = sessionStorage.getItem(SESSION_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) {
+        return null;
+    }
+}
+
+function clearSession() {
+    try { sessionStorage.removeItem(SESSION_KEY); } catch (e) {}
+}
+
+/**
+ * Show the dynamic session banner below the privacy note.
+ * type: 'restored' | 'saved' | 'too_large' | 'unavailable'
+ */
+function showSessionBanner(type) {
+    const banner = document.getElementById('sessionBanner');
+    const configs = {
+        restored: {
+            bg: 'rgba(139,92,246,0.08)',
+            border: 'rgba(139,92,246,0.25)',
+            color: 'var(--accent-purple)',
+            icon: 'history',
+            text: '<strong>Results automatically restored.</strong> Your last check was remembered by this browser tab. You can download your files or start a fresh check anytime.',
+            action: `<button onclick="resetTool()" style="margin-left:auto;padding:6px 14px;background:rgba(139,92,246,0.15);border:1px solid rgba(139,92,246,0.3);color:var(--accent-purple);border-radius:6px;cursor:pointer;font-size:0.8rem;white-space:nowrap;">Clear &amp; Start Fresh</button>`
+        },
+        saved: {
+            bg: 'rgba(16,185,129,0.07)',
+            border: 'rgba(16,185,129,0.25)',
+            color: 'var(--accent-green)',
+            icon: 'save',
+            text: '<strong>Your results are saved for this session.</strong> If you refresh the page, everything will still be here waiting for you. Just close the tab when you are done and it all disappears automatically.',
+            action: ''
+        },
+        too_large: {
+            bg: 'rgba(245,158,11,0.07)',
+            border: 'rgba(245,158,11,0.3)',
+            color: '#f59e0b',
+            icon: 'alert-triangle',
+            text: '<strong>Your file is extra large, so results cannot be remembered across a refresh.</strong> Everything is working perfectly — just make sure to download your files before leaving or refreshing this page.',
+            action: ''
+        },
+        unavailable: {
+            bg: 'rgba(100,100,100,0.08)',
+            border: 'rgba(100,100,100,0.2)',
+            color: 'var(--text-muted)',
+            icon: 'info',
+            text: '<strong>This browser window cannot remember your results across a refresh.</strong> Everything is working fine — we recommend downloading your results right away to keep them safe.',
+            action: ''
+        }
+    };
+
+    const cfg = configs[type];
+    if (!cfg) return;
+
+    banner.style.cssText = `display:flex;align-items:center;gap:12px;padding:12px 20px;border-radius:10px;margin-bottom:24px;font-size:0.85rem;background:${cfg.bg};border:1px solid ${cfg.border};color:var(--text-muted);`;
+    banner.innerHTML = `
+        <i data-lucide="${cfg.icon}" style="width:18px;height:18px;color:${cfg.color};flex-shrink:0;"></i>
+        <span style="flex:1;">${cfg.text}</span>
+        ${cfg.action}
+    `;
+    lucide.createIcons();
+}
+
+// ─── On Page Load — attempt restore ──────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+    const saved = loadSession();
+    if (saved) {
+        analysisResult = saved;
+        renderResults(saved, true);  // true = restored from session
+        showSessionBanner('restored');
+    }
+});
+
+// ─── Drag & Drop ─────────────────────────────────────────────
+function handleDragOver(e) {
+    e.preventDefault();
+    document.getElementById('dropZone').style.borderColor = 'var(--accent-purple)';
+    document.getElementById('dropZone').style.background = 'rgba(139,92,246,0.06)';
+}
+function handleDragLeave(e) {
+    document.getElementById('dropZone').style.borderColor = 'var(--border)';
+    document.getElementById('dropZone').style.background = '';
+}
+function handleDrop(e) {
+    e.preventDefault();
+    handleDragLeave(e);
+    const file = e.dataTransfer.files[0];
+    if (file) loadFile(file);
+}
+function handleFileSelect(input) {
+    if (input.files[0]) loadFile(input.files[0]);
+}
+function loadFile(file) {
+    if (!file.name.endsWith('.csv')) {
+        showNotification('Please upload a .csv file only.', 'error');
+        return;
+    }
+    document.getElementById('dropZoneContent').style.display = 'none';
+    document.getElementById('fileSelectedInfo').style.display = 'block';
+    document.getElementById('fileNameDisplay').textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    document.getElementById('analyzeBtn').style.display = 'inline-flex';
+    window._pendingFile = file;
+}
+
+// ─── Analyze ─────────────────────────────────────────────────
+async function analyzeCSV() {
+    if (!window._pendingFile) return;
+
+    document.getElementById('analyzeBtn').style.display = 'none';
+    document.getElementById('loader').style.display = 'block';
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('sessionBanner').style.display = 'none';
+
+    const formData = new FormData();
+    formData.append('csv_file', window._pendingFile);
+
+    try {
+        const res = await fetch("{% url 'mail-email-dedup-process' %}", {
+            method: 'POST',
+            headers: { 'X-CSRFToken': '{{ csrf_token }}' },
+            body: formData,
+        });
+
+        const data = await res.json();
+        document.getElementById('loader').style.display = 'none';
+
+        if (!data.success) {
+            showNotification(data.error || 'Analysis failed.', 'error');
+            document.getElementById('analyzeBtn').style.display = 'inline-flex';
+            return;
+        }
+
+        analysisResult = data;
+
+        // ── Try to persist to sessionStorage ──────────────────
+        const saveStatus = trySaveSession(data);
+        renderResults(data, false);
+        showSessionBanner(saveStatus === 'saved' ? 'saved' : saveStatus);
+
+    } catch (err) {
+        document.getElementById('loader').style.display = 'none';
+        document.getElementById('analyzeBtn').style.display = 'inline-flex';
+        showNotification('Network error during analysis.', 'error');
+    }
+}
+
+// ─── Render ──────────────────────────────────────────────────
+function renderResults(data, isRestored = false) {
+    // Stats
+    document.getElementById('statTotal').textContent = data.total_uploaded;
+    document.getElementById('statClean').textContent = data.clean_count;
+    document.getElementById('statDupes').textContent = data.already_sent_count;
+    const rate = data.total_uploaded > 0 ? Math.round((data.already_sent_count / data.total_uploaded) * 100) : 0;
+    document.getElementById('statRate').textContent = rate + '%';
+    document.getElementById('dupeCountBadge').textContent = data.already_sent_count + ' leads';
+    document.getElementById('cleanCountBadge').textContent = data.clean_count + ' leads';
+
+    // Already sent table
+    const sentBody = document.getElementById('alreadySentTable');
+    sentBody.innerHTML = '';
+    if (data.already_sent.length === 0) {
+        document.getElementById('alreadySentEmpty').style.display = 'block';
+    } else {
+        document.getElementById('alreadySentEmpty').style.display = 'none';
+        data.already_sent.forEach((item, i) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="color:var(--text-muted);font-size:0.8rem;">${i + 1}</td>
+                <td style="font-weight:600;">${escHtml(item.email)}</td>
+                <td>
+                    ${item.campaigns.split(',').map(c => `<span class="badge" style="background:rgba(245,158,11,0.1);color:#f59e0b;border:1px solid rgba(245,158,11,0.2);margin:2px;font-size:0.75rem;">${escHtml(c.trim())}</span>`).join('')}
+                </td>`;
+            sentBody.appendChild(tr);
+        });
+    }
+
+    // Clean table (preview max 200 rows)
+    const cleanHead = document.getElementById('cleanTableHead');
+    const cleanBody = document.getElementById('cleanTable');
+    cleanHead.innerHTML = '';
+    cleanBody.innerHTML = '';
+
+    if (data.clean_count === 0) {
+        document.getElementById('cleanEmpty').style.display = 'block';
+    } else {
+        document.getElementById('cleanEmpty').style.display = 'none';
+        const tr = document.createElement('tr');
+        data.clean_fieldnames.forEach(col => {
+            const th = document.createElement('th');
+            th.textContent = col;
+            tr.appendChild(th);
+        });
+        cleanHead.appendChild(tr);
+
+        const preview = data.clean_rows.slice(0, 200);
+        preview.forEach(row => {
+            const tr = document.createElement('tr');
+            data.clean_fieldnames.forEach(col => {
+                const td = document.createElement('td');
+                td.textContent = row[col] || '';
+                tr.appendChild(td);
+            });
+            cleanBody.appendChild(tr);
+        });
+        if (data.clean_rows.length > 200) {
+            document.getElementById('cleanPreviewNote').style.display = 'block';
+        }
+    }
+
+    // Show the upload zone in "file loaded" state when restoring
+    if (isRestored) {
+        document.getElementById('dropZoneContent').style.display = 'none';
+        document.getElementById('fileSelectedInfo').style.display = 'block';
+        document.getElementById('fileNameDisplay').textContent = `Restored from previous session`;
+    }
+
+    document.getElementById('resultsSection').style.display = 'block';
+    if (!isRestored) {
+        document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
+    }
+    lucide.createIcons();
+}
+
+// ─── Download Clean Only ──────────────────────────────────────
+function downloadClean() {
+    if (!analysisResult) return;
+    triggerDownload(analysisResult.clean_fieldnames, analysisResult.clean_rows, 'clean_leads.csv');
+}
+
+// ─── Download Full Annotated ──────────────────────────────────
+function downloadAll() {
+    if (!analysisResult) return;
+    const allFieldnames = [...analysisResult.all_fieldnames, 'previously_sent', 'campaign_names'];
+    const annotated = analysisResult.all_rows.map(r => {
+        const copy = {...r};
+        copy['previously_sent'] = r['_previously_sent'];
+        copy['campaign_names'] = r['_campaign_names'];
+        delete copy['_previously_sent'];
+        delete copy['_campaign_names'];
+        return copy;
+    });
+    triggerDownload(allFieldnames, annotated, 'full_annotated_leads.csv');
+}
+
+function triggerDownload(fieldnames, rows, filename) {
+    const escape = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+    const header = fieldnames.map(escape).join(',');
+    const body = rows.map(row => fieldnames.map(f => escape(row[f] ?? '')).join(',')).join('\n');
+    const blob = new Blob([header + '\n' + body], { type: 'text/csv' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+    showNotification(`${filename} downloaded successfully.`, 'success');
+}
+
+// ─── Reset ───────────────────────────────────────────────────
+function resetTool() {
+    clearSession();   // wipe sessionStorage
+    analysisResult = null;
+    window._pendingFile = null;
+    document.getElementById('resultsSection').style.display = 'none';
+    document.getElementById('sessionBanner').style.display = 'none';
+    document.getElementById('fileSelectedInfo').style.display = 'none';
+    document.getElementById('dropZoneContent').style.display = 'block';
+    document.getElementById('analyzeBtn').style.display = 'none';
+    document.getElementById('csvInput').value = '';
+    document.getElementById('uploadCard').scrollIntoView({ behavior: 'smooth' });
+    showNotification('Session cleared. Ready for a new file.', 'info');
+}
+
+function escHtml(str) {
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+</script>
+
+<style>
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+{% endblock %}

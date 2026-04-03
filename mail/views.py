@@ -2,8 +2,9 @@ import csv
 import io
 import json
 from django.db import transaction
-from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404, render
+from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.core.cache import cache
 from django.db.models import F
@@ -11,7 +12,6 @@ from rest_framework import viewsets, status, decorators, permissions, serializer
 from rest_framework.response import Response
 from .models import SMTPCredential, EmailCampaign, Recipient, CampaignStep, SentEmailLog
 from .tasks import trigger_followup_task, check_for_replies, _mark_failed
-# Remove the old ModelSerializer import if it's redundant
 from django.core.mail import get_connection
 from django.views.decorators.clickjacking import xframe_options_exempt
 from core.encryption import decrypt_password
@@ -549,4 +549,161 @@ def download_campaign_csv(request, pk):
 
         writer.writerow(row)
 
+    return response
+
+
+@login_required
+def email_dedup_tool_page(request):
+    """Renders the Email Deduplication Tool page."""
+    return render(request, 'mail/email_dedup_tool.html', {'active_page': 'campaigns'})
+
+
+@login_required
+def email_dedup_tool_process(request):
+    """
+    Processes an uploaded CSV file entirely in-memory.
+    Cross-references each email against all previously sent Recipient records
+    for the current user's campaigns.
+    
+    Returns JSON with:
+      - already_sent: list of {email, campaign_name} for duplicates
+      - clean_emails: list of rows that were NOT previously contacted
+      - original_rows: all rows with a 'previously_sent' and 'campaign_name' annotation
+    Nothing is stored to disk or database.
+    """
+    if request.method != 'POST':
+        return JsonResponse({'error': 'POST required'}, status=405)
+
+    csv_file = request.FILES.get('csv_file')
+    if not csv_file:
+        return JsonResponse({'error': 'No file uploaded'}, status=400)
+
+    if not csv_file.name.endswith('.csv'):
+        return JsonResponse({'error': 'Please upload a valid .csv file'}, status=400)
+
+    # Read CSV fully in memory
+    try:
+        try:
+            content = csv_file.read().decode('utf-8')
+        except UnicodeDecodeError:
+            csv_file.seek(0)
+            content = csv_file.read().decode('latin-1')
+    except Exception:
+        return JsonResponse({'error': 'Could not read file. Ensure it is a valid CSV.'}, status=400)
+
+    try:
+        reader = csv.DictReader(io.StringIO(content))
+        rows = list(reader)
+        fieldnames = reader.fieldnames or []
+    except Exception:
+        return JsonResponse({'error': 'Failed to parse CSV structure.'}, status=400)
+
+    if not rows:
+        return JsonResponse({'error': 'The CSV file appears to be empty.'}, status=400)
+
+    # Detect the email column (case-insensitive)
+    email_col = None
+    for col in fieldnames:
+        if col.strip().lower() == 'email':
+            email_col = col
+            break
+
+    if not email_col:
+        return JsonResponse({'error': 'No "email" column found. Please ensure your CSV has a column named "email".'}, status=400)
+
+    # Build a lookup map: email (lowercased) → list of campaign names sent to
+    # Only look at the current user's campaigns
+    sent_records = (
+        Recipient.objects
+        .filter(
+            campaign__user=request.user,
+            status__in=['active', 'replied', 'completed', 'unsubscribed', 'failed']
+        )
+        .exclude(current_step_index=0)
+        .select_related('campaign')
+        .values('email', 'campaign__name')
+    )
+
+    sent_map = {}  # {lowercase_email: [campaign_name, ...]}
+    for record in sent_records:
+        key = record['email'].strip().lower()
+        camp_name = record['campaign__name'] or 'Unknown Campaign'
+        if key not in sent_map:
+            sent_map[key] = []
+        if camp_name not in sent_map[key]:
+            sent_map[key].append(camp_name)
+
+    # Annotate every row
+    already_sent = []   # summary list for the table
+    clean_rows = []     # rows NOT previously contacted
+    annotated_rows = [] # ALL rows with annotation
+
+    seen_in_file = set()  # deduplicate within the uploaded file itself
+    valid_email_count = 0  # count only rows that had a real email address
+
+    for row in rows:
+        raw_email = row.get(email_col, '').strip()
+        if not raw_email:
+            continue
+
+        valid_email_count += 1
+
+        lower_email = raw_email.lower()
+        campaigns_used = sent_map.get(lower_email, [])
+        was_sent = bool(campaigns_used)
+        campaign_names_str = ', '.join(campaigns_used) if campaigns_used else ''
+
+        annotated_row = dict(row)
+        annotated_row['_previously_sent'] = 'YES' if was_sent else 'NO'
+        annotated_row['_campaign_names'] = campaign_names_str
+        annotated_rows.append(annotated_row)
+
+        if was_sent:
+            if lower_email not in seen_in_file:
+                already_sent.append({
+                    'email': raw_email,
+                    'campaigns': campaign_names_str,
+                })
+        else:
+            clean_rows.append(row)
+
+        seen_in_file.add(lower_email)
+
+    return JsonResponse({
+        'success': True,
+        'total_uploaded': valid_email_count,
+        'already_sent_count': len(already_sent),
+        'clean_count': len(clean_rows),
+        'already_sent': already_sent,
+        'clean_fieldnames': fieldnames,
+        'clean_rows': clean_rows,
+        'all_fieldnames': fieldnames,
+        'all_rows': annotated_rows,
+    })
+
+
+@login_required
+def email_dedup_download(request):
+    """
+    Streams a filtered clean CSV (no previously contacted leads) back to the browser.
+    All data is constructed in-memory from POST JSON — nothing stored.
+    """
+    if request.method != 'POST':
+        return HttpResponse(status=405)
+
+    try:
+        payload = json.loads(request.body)
+        fieldnames = payload.get('fieldnames', [])
+        rows = payload.get('rows', [])
+    except (json.JSONDecodeError, Exception):
+        return HttpResponse('Invalid payload', status=400)
+
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=fieldnames, extrasaction='ignore')
+    writer.writeheader()
+    for row in rows:
+        writer.writerow(row)
+
+    response = HttpResponse(output.getvalue(), content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="clean_leads.csv"'
     return response
