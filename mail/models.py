@@ -186,12 +186,13 @@ class CampaignStep(models.Model):
 class Recipient(models.Model):
     """Tracks a lead's journey through a campaign."""
     STATUS_CHOICES = [
-        ('pending', 'Pending'),   # Not yet sent Step 1
-        ('active', 'Active'),     # In sequence
-        ('replied', 'Replied'),   # Automatically stopped
-        ('completed', 'Completed'), # Finished all steps
+        ('pending', 'Pending'),
+        ('active', 'Active'),
+        ('replied', 'Replied'),
+        ('completed', 'Completed'),
         ('failed', 'Failed'),
         ('unsubscribed', 'Unsubscribed'),
+        ('sending', 'Sending...'),
     ]
 
     campaign = models.ForeignKey(EmailCampaign, related_name='recipients', on_delete=models.CASCADE)
@@ -217,6 +218,9 @@ class Recipient(models.Model):
 
     is_unsubscribed = models.BooleanField(default=False, db_index=True)
     unsubscribed_at = models.DateTimeField(blank=True, null=True)
+
+    class Meta:
+        unique_together = ('campaign', 'email')
 
     def __str__(self):
         return f"{self.email} ({self.campaign.name})"

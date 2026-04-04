@@ -57,9 +57,26 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             if recipient.is_replied or recipient.is_unsubscribed or campaign.status == 'paused':
                 return f"Skipped: {recipient.email} (Replied, Unsubscribed, or Paused)"
                 
-            # CRITICAL GUARD: Prevent duplicate transmissions if button clicked multiple times
-            if recipient.current_step_index >= step_number:
-                return f"Skipped: {recipient.email} (Already safely received Step {step_number})"
+            # CRITICAL GUARD: Prevent duplicate transmissions at the ADDRESS level (not just row level)
+            address_already_sent = Recipient.objects.filter(
+                campaign_id=campaign.id, 
+                email__iexact=recipient.email, 
+                current_step_index__gte=step_number
+            ).exclude(id=recipient.id).exists()
+
+            if recipient.current_step_index >= step_number or address_already_sent or recipient.status == 'sending':
+                # If we skipped because of a different row, mark THIS row as completed/active too
+                # to stop it from appearing in future dispatcher loops.
+                if address_already_sent and recipient.status == 'pending':
+                    recipient.status = 'completed' if step_number >= (campaign.steps.count() or 1) else 'active'
+                    recipient.current_step_index = step_number
+                    recipient.save(update_fields=['status', 'current_step_index'])
+                
+                return f"Skipped: {recipient.email} (Already received or sending Step {step_number})"
+
+            # Pre-send Lockdown (Commit this before releasing lock)
+            recipient.status = 'sending'
+            recipient.save(update_fields=['status'])
 
             # Business Hours Check — use apply_async NOT self.retry so we
             # don't burn the precious max_retries=3 SMTP error budget.

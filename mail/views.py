@@ -245,6 +245,7 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
             )
 
         recipient_list = []
+        seen_emails = set()
 
         # 2. Process Recipients from CSV file
         if 'csv_file' in request.FILES:
@@ -268,7 +269,8 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
                 reader = csv.DictReader(io_string)
                 for row in reader:
                     email = row.get('email') or row.get('Email')
-                    if email:
+                    if email and email not in seen_emails:
+                        seen_emails.add(email)
                         recipient_list.append(Recipient(
                             campaign=campaign,
                             email=email,
@@ -290,7 +292,8 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
         if isinstance(manual_recipients, list):
             for r in manual_recipients:
                 email = r.get('email')
-                if email:
+                if email and email not in seen_emails:
+                    seen_emails.add(email)
                     recipient_list.append(Recipient(
                         campaign=campaign,
                         email=email,
