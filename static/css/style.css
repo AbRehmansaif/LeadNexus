@@ -1442,7 +1442,7 @@ select.form-control {
     }
 
     .navbar-header {
-        height: 72px;
+        height: 80px;
         width: 100%;
         padding: 0 24px;
         display: flex;
@@ -1453,8 +1453,11 @@ select.form-control {
     }
 
     .brand-logo-img {
-        height: 58px !important;
-        margin-left: -12px;
+        height: 62px !important;
+        transform: scale(1.4);
+        transform-origin: left center;
+        margin-left: 15px;
+        filter: drop-shadow(0 0 12px rgba(139, 92, 246, 0.4));
     }
 
     .mobile-menu-toggle {
@@ -1474,11 +1477,11 @@ select.form-control {
     /* The new Off-Canvas Mobile Menu */
     .navbar-menu {
         position: fixed;
-        top: 72px;
+        top: 80px;
         left: 0;
         right: 0;
         bottom: 0;
-        height: calc(100vh - 72px);
+        height: calc(100vh - 80px);
         background: rgba(10, 14, 26, 0.98);
         backdrop-filter: blur(30px);
         -webkit-backdrop-filter: blur(30px);

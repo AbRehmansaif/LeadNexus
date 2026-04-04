@@ -941,7 +941,7 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 .announcement-bar.visible {
-    top: 72px;
+    top: 80px;
 }
 .announcement-content {
     display: flex;
@@ -987,8 +987,10 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
     color: #fff;
 }
 @media (max-width: 640px) {
-    .announcement-bar { flex-direction: column; gap: 8px; padding: 12px; border-bottom-width: 1px; }
-    .announcement-prefix { display: block; width: 100%; text-align: center; }
+    .announcement-bar { flex-direction: column; gap: 8px; padding: 10px; border-bottom-width: 1px; }
+    .announcement-prefix { font-size: 0.55rem; text-align: center; margin-bottom: -4px; }
+    .announcement-text { font-size: 0.5rem; text-align: center; line-height: 1.3; }
+    .announcement-btn { padding: 5px 12px; font-size: 0.65rem; width: auto; }
 }
 </style>
 {% endblock %}
@@ -1882,8 +1884,13 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
         }
 
         @media (max-width: 640px) {
-            .floating-chat-widget { bottom: 20px; right: 20px; }
-            .chat-cta-bubble { max-width: 220px; }
+            .floating-chat-widget { bottom: 15px; right: 15px; gap: 10px; }
+            .chat-cta-bubble { max-width: 180px; padding: 12px 14px; border-radius: 14px; }
+            .bubble-text { font-size: 0.75rem; }
+            .bubble-logo-container { width: 30px; height: 30px; }
+            .bubble-logo-container img { width: 18px; height: 18px; }
+            .chat-trigger-btn { width: 50px; height: 50px; }
+            .chat-trigger-btn i { width: 24px; height: 24px; }
         }
         @keyframes spin { 100% { transform: rotate(360deg); } }
         .spin { animation: spin 1s linear infinite; }
