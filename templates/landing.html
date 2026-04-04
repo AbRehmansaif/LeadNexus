@@ -424,7 +424,7 @@ body, html {
 /* Hero Section */
 .hero {
     position: relative;
-    padding: 120px 0 80px;
+    padding: 65px 0 80px;
     text-align: center;
     background-image: 
         linear-gradient(rgba(2, 6, 23, 0.8), rgba(2, 6, 23, 0.8)),
@@ -441,12 +441,21 @@ body, html {
     z-index: -1;
     pointer-events: none;
 }
-.h-title {
-    font-size: clamp(2.5rem, 10vw, 6.5rem);
+.brand-title {
+    font-size: clamp(3rem, 12vw, 8rem);
     font-weight: 950;
-    line-height: 0.9;
-    letter-spacing: -0.05em;
+    line-height: 0.8;
+    letter-spacing: -0.06em;
     color: #fff;
+    margin: 0 0 10px 0;
+    text-transform: uppercase;
+}
+.h-title {
+    font-size: clamp(1.5rem, 6vw, 4rem);
+    font-weight: 950;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: rgba(255,255,255,0.7);
     margin: 0 0 24px 0;
     text-transform: uppercase;
 }
@@ -897,7 +906,7 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
     box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 .announcement-bar.visible {
-    top: 80px;
+    top: 70px;
 }
 .announcement-content {
     display: flex;
@@ -972,13 +981,14 @@ textarea.form-input { height: 140px; padding-top: 14px; resize: vertical; }
             <div class="pill-badge">
                 <i data-lucide="zap"></i> Power up your business with AI
             </div>
-            <h1 class="h-title">
+            <h1 class="brand-title">LeadNexus</h1>
+            <h2 class="h-title">
                 The #1 Platform<br/>
-                <span class="line-sm">for</span>
-                B2B Lead<br/>
-                <span class="text-gradient-purple" style="display:block; margin-bottom:10px;">Generation</span>
+                <span class="line-sm" style="font-size: 0.5em; vertical-align: middle; margin: 10px 0; opacity: 0.6;"></span>
+                for B2B Lead<br/>
+                <span class="text-gradient-purple" style="display:block; margin-bottom:10px; font-size: 1.6em;">Generation</span>
                 <span class="line-md">& Cold Email Outreach Automation</span>
-            </h1>
+            </h2>
             <p class="h-subtitle">
                 LeadNexus is the all in one B2B sales intelligence platform. Find verified leads, automate cold email campaigns with SMTP rotation, and close more deals, faster.
             </p>
