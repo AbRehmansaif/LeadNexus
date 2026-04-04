@@ -726,6 +726,61 @@ def _apply_operation(op_type, op, rows, fieldnames):
         if col_a in fieldnames and col_b in fieldnames:
             rows = [r for r in rows if not (text_a in r.get(col_a, '').lower() and text_b in r.get(col_b, '').lower())]
 
+    elif op_type == 'case_correction':
+        col = op.get('column', '')
+        if col in fieldnames:
+            rows = [{**r, col: str(r.get(col, '')).strip().title()} for r in rows]
+
+    elif op_type == 'company_highlighter':
+        source_col = op.get('column', '') # Can be email or website
+        target_col = op.get('target', 'company_name')
+        if target_col not in fieldnames:
+            fieldnames = fieldnames + [target_col]
+        new_rows = []
+        for r in rows:
+            val = r.get(source_col, '').strip()
+            domain = val.split('@')[-1] if '@' in val else val
+            m = DOMAIN_RE.search(domain)
+            if m:
+                clean_name = m.group(1).split('.')[0].title()
+                # Manual refinement: Remove generic words like 'get', 'use', 'try'
+                clean_name = re.sub(r'^(Get|Use|Try|The|My)\s*', '', clean_name, flags=re.I)
+                new_rows.append({**r, target_col: clean_name})
+            else:
+                new_rows.append({**r, target_col: ''})
+        rows = new_rows
+
+    elif op_type == 'title_sanitizer':
+        col = op.get('column', '')
+        if col in fieldnames:
+            new_rows = []
+            for r in rows:
+                val = r.get(col, '')
+                # Removes (Remote), [USA], "at Company", etc.
+                val = re.sub(r'\s*[\(\[].*?[\)\]]', '', val)
+                val = re.sub(r'\s+(at|for|by|@)\s+.*$', '', val, flags=re.I)
+                new_rows.append({**r, col: val.strip().title()})
+            rows = new_rows
+
+    elif op_type == 'first_name_extractor':
+        source = op.get('column', '')
+        target = op.get('target', 'first_name')
+        if source in fieldnames:
+            if target not in fieldnames:
+                fieldnames = fieldnames + [target]
+            rows = [{**r, target: r.get(source, '').split(' ')[0].strip().title()} for r in rows]
+
+    elif op_type == 'linkedin_cleaner':
+        col = op.get('column', '')
+        if col in fieldnames:
+            new_rows = []
+            for r in rows:
+                val = r.get(col, '')
+                # Strips trailing slashes and query params like ?miniProfileId
+                val = val.split('?')[0].rstrip('/')
+                new_rows.append({**r, col: val})
+            rows = new_rows
+
     else:
         raise ValueError(f'Unknown operation type: {op_type}')
 
