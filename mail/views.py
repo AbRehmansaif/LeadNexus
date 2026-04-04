@@ -555,7 +555,7 @@ def download_campaign_csv(request, pk):
 @login_required
 def email_dedup_tool_page(request):
     """Renders the Email Deduplication Tool page."""
-    return render(request, 'mail/email_dedup_tool.html', {'active_page': 'campaigns'})
+    return render(request, 'mail/email_dedup_tool.html', {'active_page': 'tools'})
 
 
 @login_required
