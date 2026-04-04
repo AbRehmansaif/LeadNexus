@@ -1023,6 +1023,12 @@ function renderPipeline() {
                     <i data-lucide="${op.def.icon}" style="width:14px;height:14px;color:${op.def.color};"></i>
                 </span>
                 <span class="op-label">${op.def.label}</span>
+                <button class="op-remove settings-btn" onclick="moveOpUp(${op.id})" title="Move Up" style="margin-right:4px; ${idx === 0 ? 'opacity:0.3; cursor:not-allowed;' : ''}">
+                    <i data-lucide="chevron-up" style="width:14px;height:14px;"></i>
+                </button>
+                <button class="op-remove settings-btn" onclick="moveOpDown(${op.id})" title="Move Down" style="margin-right:12px; ${idx === pipeline.length - 1 ? 'opacity:0.3; cursor:not-allowed;' : ''}">
+                    <i data-lucide="chevron-down" style="width:14px;height:14px;"></i>
+                </button>
                 <button class="op-remove settings-btn" onclick="toggleConfig(${op.id})" title="Configure">
                     <i data-lucide="settings-2" style="width:14px;height:14px;"></i>
                 </button>
@@ -1220,6 +1226,7 @@ function onDragStart(e, id) {
     dragSrcId = id;
     e.target.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', id);
 }
 function onDragEnd(e) { e.target.classList.remove('dragging'); dragSrcId = null; document.querySelectorAll('.op-card.drag-over').forEach(c => c.classList.remove('drag-over')); }
 function onDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; const card = e.target.closest('.op-card'); if (card) card.classList.add('drag-over'); }
@@ -1232,6 +1239,24 @@ function onDropOp(e, targetId) {
     if (srcIdx < 0 || tgtIdx < 0) return;
     const [moved] = pipeline.splice(srcIdx, 1);
     pipeline.splice(tgtIdx, 0, moved);
+    renderPipeline();
+    debouncePreview();
+}
+
+function moveOpUp(id) {
+    const idx = pipeline.findIndex(o => o.id === id);
+    if (idx <= 0) return;
+    const [moved] = pipeline.splice(idx, 1);
+    pipeline.splice(idx - 1, 0, moved);
+    renderPipeline();
+    debouncePreview();
+}
+
+function moveOpDown(id) {
+    const idx = pipeline.findIndex(o => o.id === id);
+    if (idx < 0 || idx >= pipeline.length - 1) return;
+    const [moved] = pipeline.splice(idx, 1);
+    pipeline.splice(idx + 1, 0, moved);
     renderPipeline();
     debouncePreview();
 }
