@@ -63,7 +63,7 @@ JUNK_DOMAINS_BLACKSET = {
 
 # Prefix Pattern: Catches any email starting with these words (local-part checks)
 JUNK_PREFIX_RE = re.compile(
-    r'^(?:example|info|contact|admin|support|sales|hello|test|demo|user|mail|office|service|team|'
+    r'^(?:example|test|demo|user|mail|office|service|team|'
     r'noreply|no-reply|no_reply|donotreply|do-not-reply|dontreply|dummy|sample|client|business|company|'
     r'name|email|yourname|your|abc|xyz|webmaster|postmaster|hostmaster|root|abuse|security|privacy|'
     r'legal|compliance|administrator|web|website|cms|cpanel|panel|hosting|mailer-daemon|bounce|bounces|'
