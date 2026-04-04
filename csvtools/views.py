@@ -101,7 +101,7 @@ def cleaner_preview(request):
         'total_output_rows': len(rows),
         'columns': current_fieldnames,
         'raw_columns': list(fieldnames),
-        'preview': rows[:10],
+        'preview': rows[:5000],
         'col_stats': col_stats,
     })
 
@@ -284,20 +284,43 @@ def _apply_operation(op_type, op, rows, fieldnames):
         import csv
         import io
         values_csv = op.get('values_csv', '')
+        position   = op.get('position', 'bottom')
+        is_header  = op.get('is_header', False)
+        
         if values_csv.strip():
-            # parse as csv to handle quotes correctly
             try:
                 reader = csv.reader(io.StringIO(values_csv))
                 row_values = next(reader)
-            except StopIteration:
-                row_values = []
-            except Exception:
-                row_values = [values_csv]
+            except (StopIteration, Exception):
+                row_values = [v.strip() for v in values_csv.split(',')]
             
-            new_row = {}
-            for i, col in enumerate(fieldnames):
-                new_row[col] = row_values[i].strip() if i < len(row_values) else ''
-            rows.append(new_row)
+            if is_header:
+                # Rename all columns based on position
+                new_fieldnames = []
+                mapping = {} # old -> new
+                for i, old_col in enumerate(fieldnames):
+                    new_name = row_values[i].strip() if i < len(row_values) else f"Column_{i+1}"
+                    new_fieldnames.append(new_name)
+                    mapping[old_col] = new_name
+                
+                # Update all data rows to use the new keys
+                new_rows = []
+                for r in rows:
+                    new_row = {mapping.get(k, k): v for k, v in r.items()}
+                    new_rows.append(new_row)
+                
+                rows = new_rows
+                fieldnames = new_fieldnames
+            else:
+                # Standard data insertion
+                new_row = {}
+                for i, col in enumerate(fieldnames):
+                    new_row[col] = row_values[i].strip() if i < len(row_values) else ''
+                
+                if position == 'top':
+                    rows.insert(0, new_row)
+                else:
+                    rows.append(new_row)
 
     elif op_type == 'sort_emails_first':
         col = op.get('column', 'email')
