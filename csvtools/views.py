@@ -21,8 +21,58 @@ ALLOWED_MIME    = {
     'text/csv', 'text/plain', 'application/csv',
     'application/vnd.ms-excel',
 }
+# ─── Data Scrubber Constants ──────────────────────────────────────────────────
 EMAIL_RE   = re.compile(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
 DOMAIN_RE  = re.compile(r'(?:https?://)?(?:www\.)?([a-zA-Z0-9\-]+(?:\.[a-zA-Z]{2,})+)')
+
+# Master Blacklist: Specific dummy emails provided by the user
+JUNK_EMAILS_BLACKSET = {
+    'example@domain.com', 'info@example.com', 'contact@example.com', 'admin@example.com',
+    'support@example.com', 'sales@example.com', 'hello@example.com', 'test@example.com',
+    'demo@example.com', 'user@example.com', 'mail@example.com', 'office@example.com',
+    'service@example.com', 'team@example.com', 'noreply@example.com', 'no-reply@example.com',
+    'dummy@example.com', 'sample@example.com', 'client@example.com', 'business@example.com',
+    'company@example.com', 'name@domain.com', 'email@domain.com', 'yourname@domain.com',
+    'your@email.com', 'abc@domain.com', 'xyz@domain.com', 'test123@example.com',
+    'user123@example.com', 'webmaster@domain.com', 'postmaster@domain.com', 'hostmaster@domain.com',
+    'root@domain.com', 'abuse@domain.com', 'security@domain.com', 'privacy@domain.com',
+    'legal@domain.com', 'compliance@domain.com', 'administrator@domain.com', 'web@domain.com',
+    'website@domain.com', 'cms@domain.com', 'cpanel@domain.com', 'panel@domain.com',
+    'hosting@domain.com', 'no_reply@domain.com', 'donotreply@domain.com', 'do-not-reply@domain.com',
+    'dontreply@domain.com', 'mailer-daemon@domain.com', 'bounce@domain.com', 'returns@domain.com',
+    'notifications@domain.com', 'notification@domain.com', 'notify@domain.com', 'alerts@domain.com',
+    'updates@domain.com', 'system@domain.com', 'server@domain.com', 'robot@domain.com',
+    'bot@domain.com', 'automated@domain.com', 'auto@domain.com', 'autoresponder@domain.com',
+    'mailer@domain.com', 'noreply@notifications.domain.com', 'system@notifications.domain.com',
+    'mail@notifications.domain.com', 'test@test.com', 'test@domain.com', 'demo@domain.com',
+    'sample@domain.com', 'fake@domain.com', 'spam@domain.com', 'trash@domain.com',
+    'temp@domain.com', 'temporary@domain.com', 'tempmail@domain.com', 'disposable@domain.com',
+    'throwaway@domain.com', 'unknown@domain.com', 'none@domain.com', 'null@domain.com',
+    'blank@domain.com', 'noemail@domain.com', 'noemail@noemail.com', 'temp@mail.com',
+    'fake@mail.com', 'user@user.com', 'email@email.com', 'contact@domain.com',
+    'info@domain.com', 'admin@site.com', 'test@mail.com', 'hello@site.com',
+    'support@site.com', 'asd@domain.com', 'qwe@domain.com', 'abc123@domain.com',
+    '123@domain.com', 'test@test123.com', 'apollo@apollo.io'
+}
+
+# Master Blacklist: Generic domains often used for dummy data
+JUNK_DOMAINS_BLACKSET = {
+    'domain.com', 'example.com', 'test.com', 'none.com', 'null.com', 'dummy.com',
+    'fake.com', 'sample.com', 'company.com', 'noemail.com', 'noemail.io', 'test.io'
+}
+
+# Prefix Pattern: Catches any email starting with these words (local-part checks)
+JUNK_PREFIX_RE = re.compile(
+    r'^(?:example|info|contact|admin|support|sales|hello|test|demo|user|mail|office|service|team|'
+    r'noreply|no-reply|no_reply|donotreply|do-not-reply|dontreply|dummy|sample|client|business|company|'
+    r'name|email|yourname|your|abc|xyz|webmaster|postmaster|hostmaster|root|abuse|security|privacy|'
+    r'legal|compliance|administrator|web|website|cms|cpanel|panel|hosting|mailer-daemon|bounce|bounces|'
+    r'return|returns|complaints|notifications|notification|notify|alerts|updates|system|server|robot|bot|'
+    r'automated|automation|auto|autoresponder|mailer|maildaemon|dev|help|helpdesk|billing|accounts|'
+    r'finance|customerservice|unknown|none|null|blank|noemail|nobody|noone|asd|qwe|abc123|123|111|1234|'
+    r'temp|temporary|tempmail|disposable|throwaway|fake|spam|trash|apollo|'
+    r'temp\d*|test\d*|user\d*|abc\d*)', re.I
+)
 
 
 # ─── Pages ───────────────────────────────────────────────────────────────────
@@ -360,7 +410,28 @@ def _apply_operation(op_type, op, rows, fieldnames):
 
     elif op_type == 'remove_invalid_emails':
         col = op.get('column', 'email')
-        rows = [r for r in rows if EMAIL_RE.match(r.get(col, '').strip())]
+        new_rows = []
+        for r in rows:
+            email = r.get(col, '').strip().lower()
+            if not EMAIL_RE.match(email):
+                continue
+            
+            # Layer 1: Check exact junk email blacklist
+            if email in JUNK_EMAILS_BLACKSET:
+                continue
+            
+            # Layer 2: Check junk domain blacklist
+            domain = email.split('@')[-1]
+            if domain in JUNK_DOMAINS_BLACKSET:
+                continue
+            
+            # Layer 3: Check junk prefix regex (local-part)
+            local_part = email.split('@')[0]
+            if JUNK_PREFIX_RE.match(local_part):
+                continue
+                
+            new_rows.append(r)
+        rows = new_rows
 
     elif op_type == 'keep_only_domain':
         col = op.get('column', 'website')
