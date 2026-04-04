@@ -85,21 +85,23 @@ def cleaner_preview(request):
             'is_pii': email_count > 0 or phone_count > 0,
         }
 
-    # Apply pipeline to a preview sample (20 rows)
-    preview_rows = merged_rows[:20]
-    preview_fields = list(fieldnames)
+    # Apply pipeline to calculate final counts and get preview sample
+    # Note: We apply it to ALL rows to get accurate counts of what's being filtered
+    rows = list(merged_rows)
+    current_fieldnames = list(fieldnames)
     for op in pipeline:
         try:
-            preview_rows, preview_fields = _apply_operation(op.get('type'), op, preview_rows, preview_fields)
+            rows, current_fieldnames = _apply_operation(op.get('type'), op, rows, current_fieldnames)
         except:
             continue
 
     return JsonResponse({
         'success': True,
-        'total_rows': len(merged_rows),
-        'columns': preview_fields,
+        'total_input_rows': len(merged_rows),
+        'total_output_rows': len(rows),
+        'columns': current_fieldnames,
         'raw_columns': list(fieldnames),
-        'preview': preview_rows[:10],
+        'preview': rows[:10],
         'col_stats': col_stats,
     })
 
@@ -291,6 +293,11 @@ def _apply_operation(op_type, op, rows, fieldnames):
         reverse   = (direction == 'desc')
         rows = sorted(rows, key=lambda r: r.get(col, '').lower(), reverse=reverse)
 
+    elif op_type == 'sort_filled_first':
+        col = op.get('column', '')
+        # Sort key: 0 if value exists (comes first), 1 if empty (comes last)
+        rows = sorted(rows, key=lambda r: 0 if r.get(col, '').strip() else 1)
+
     elif op_type == 'extract_domain':
         source = op.get('source', 'email')
         target = op.get('target', 'domain')
@@ -356,6 +363,29 @@ def _apply_operation(op_type, op, rows, fieldnames):
             new_rows.append({**r, target: merged_val})
         rows = new_rows
 
+    elif op_type == 'selective_extract':
+        col       = op.get('column', '')
+        mode      = op.get('mode', 'domain')
+        separator = op.get('separator', ' — ')
+        if col in fieldnames:
+            new_rows = []
+            for r in rows:
+                val = str(r.get(col, '')).strip()
+                result = val
+                if mode == 'domain':
+                    m = DOMAIN_RE.search(val)
+                    result = m.group(1).lower() if m else val
+                elif mode == 'email':
+                    # Simple inline email extraction for dirty strings
+                    m = re.search(r'([^\s@]+@[^\s@]+\.[^\s@]+)', val)
+                    result = m.group(1).lower() if m else val
+                elif mode == 'before':
+                    result = val.split(separator)[0].strip() if separator in val else val
+                elif mode == 'after':
+                    result = val.split(separator)[-1].strip() if separator in val else val
+                new_rows.append({**r, col: result})
+            rows = new_rows
+
     elif op_type == 'rename_column':
         old_name = op.get('column', '')
         new_name = op.get('new_name', '').strip()
@@ -366,14 +396,26 @@ def _apply_operation(op_type, op, rows, fieldnames):
     elif op_type == 'remove_rows_containing':
         col  = op.get('column', '')
         text = op.get('text', '').lower()
+        mode = op.get('mode', 'all')
+        exact = op.get('exact', False)
         if col in fieldnames and text:
-            rows = [r for r in rows if text not in r.get(col, '').lower()]
+            new_rows = []
+            removed = 0
+            for r in rows:
+                val = str(r.get(col, '')).lower()
+                matches = (val == text) if exact else (text in val)
+                if matches and (mode == 'all' or removed < 1):
+                    removed += 1
+                else:
+                    new_rows.append(r)
+            rows = new_rows
 
     elif op_type == 'keep_rows_containing':
         col  = op.get('column', '')
         text = op.get('text', '').lower()
+        exact = op.get('exact', False)
         if col in fieldnames and text:
-            rows = [r for r in rows if text in r.get(col, '').lower()]
+            rows = [r for r in rows if (str(r.get(col, '')).lower() == text if exact else text in str(r.get(col, '')).lower())]
 
     # ── Extended operations ────────────────────────────────────────────────
 

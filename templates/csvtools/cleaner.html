@@ -512,6 +512,7 @@
                         <button class="op-add-btn" onclick="addOp('keep_rows_containing')"><span class="op-icon" style="background:#064e3b;color:#10b981;"><i data-lucide="list-checks"></i></span> Keep Matches</button>
                         <button class="op-add-btn" onclick="addOp('remove_rows_containing')"><span class="op-icon" style="background:#451a1a;color:#ef4444;"><i data-lucide="filter-x"></i></span> Drop Matches</button>
                         <button class="op-add-btn" onclick="addOp('sort_by_column')"><span class="op-icon" style="background:#064e3b;color:#10b981;"><i data-lucide="arrow-up-down"></i></span> Sort By</button>
+                        <button class="op-add-btn" onclick="addOp('sort_filled_first')"><span class="op-icon" style="background:#064e3b;color:#10b981;"><i data-lucide="list-ordered"></i></span> Filled to Top</button>
                     </div>
                 </div>
 
@@ -521,6 +522,7 @@
                         <button class="op-add-btn" onclick="addOp('find_replace')"><span class="op-icon" style="background:#172554;color:#3b82f6;"><i data-lucide="replace"></i></span> Find/Replace</button>
                         <button class="op-add-btn" onclick="addOp('titlecase')"><span class="op-icon" style="background:#083344;color:#06b6d4;"><i data-lucide="type"></i></span> Title Case</button>
                         <button class="op-add-btn" onclick="addOp('phone_normalize')"><span class="op-icon" style="background:#2e1065;color:#8b5cf6;"><i data-lucide="phone"></i></span> Fix Phones</button>
+                        <button class="op-add-btn" onclick="addOp('selective_extract')"><span class="op-icon" style="background:#083344;color:#06b6d4;"><i data-lucide="scissors"></i></span> Selective Extract</button>
                     </div>
                 </div>
 
@@ -567,7 +569,11 @@
                 <i data-lucide="table-2" style="width:18px;height:18px;margin-right:8px;color:var(--accent-green);"></i> Step 4: Live Processing Preview
                 <span id="previewMeta" style="font-size:0.75rem; color:var(--text-muted); font-weight:400; margin-left:10px;"></span>
             </h2>
-            <span id="previewBadge" style="display:none; padding:4px 12px; font-size:0.75rem; background:rgba(16,185,129,0.1); color:var(--accent-green); border-radius:20px; font-weight:700;"></span>
+            <div style="display:flex; gap:10px;">
+                <span id="totalBadge" style="display:none; padding:4px 12px; font-size:0.75rem; background:rgba(59, 130, 246, 0.1); color:#3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); border-radius:20px; font-weight:700;"></span>
+                <span id="removedBadge" style="display:none; padding:4px 12px; font-size:0.75rem; background:rgba(239, 68, 68, 0.1); color:#ef4444; border: 1px solid rgba(239,68,68,0.2); border-radius:20px; font-weight:700;"></span>
+                <span id="previewBadge" style="display:none; padding:4px 12px; font-size:0.75rem; background:rgba(16,185,129,0.1); color:var(--accent-green); border-radius:20px; font-weight:700;"></span>
+            </div>
         </div>
         <div style="padding:0;">
             <div id="previewContent" style="padding:60px; text-align:center; color:var(--text-muted);">
@@ -633,6 +639,7 @@ const OP_DEFS = {
     keep_rows_containing:  { label: 'Keep Rows Containing',    color: '#10b981', iconBg: 'rgba(16,185,129,0.1)',   icon: 'list-checks' },
     sort_emails_first:     { label: 'Emails to Top',            color: '#10b981', iconBg: 'rgba(16,185,129,0.1)', icon: 'arrow-up-to-line' },
     sort_by_column:        { label: 'Sort by Column',           color: '#10b981', iconBg: 'rgba(16,185,129,0.1)', icon: 'arrow-up-down' },
+    sort_filled_first:     { label: 'Prioritize Filled',        color: '#10b981', iconBg: 'rgba(16,185,129,0.1)', icon: 'list-ordered' },
     extract_domain:        { label: 'Extract Domain',           color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.1)', icon: 'globe' },
     keep_only_domain:      { label: 'Keep Only Domain',         color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.1)', icon: 'link' },
     find_replace:          { label: 'Find & Replace',           color: '#3b82f6', iconBg: 'rgba(59,130,246,0.1)', icon: 'replace' },
@@ -648,6 +655,7 @@ const OP_DEFS = {
     add_column:            { label: 'Add a Column',             color: '#10b981', iconBg: 'rgba(16,185,129,0.1)', icon: 'plus-square' },
     rename_column:         { label: 'Rename a Column',          color: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', icon: 'pencil' },
     merge_columns:         { label: 'Merge Columns',            color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.1)', icon: 'combine' },
+    selective_extract:     { label: 'Selective Extract',        color: '#06b6d4', iconBg: 'rgba(6,182,212,0.1)',  icon: 'scissors' },
     number_rows:           { label: 'Add Row Numbers',          color: '#10b981', iconBg: 'rgba(16,185,129,0.1)', icon: 'hash' },
     remove_empty_columns:  { label: 'Remove Empty Columns',    color: '#ef4444', iconBg: 'rgba(239,68,68,0.1)',  icon: 'trash' },
     limit_rows:            { label: 'Limit Row Count',          color: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', icon: 'list-end' },
@@ -741,10 +749,27 @@ async function loadPreview() {
         refreshAllColPickers();
         renderPreviewTable(data);
         renderColStats();
-        document.getElementById('previewBadge').style.display = 'inline';
-        document.getElementById('previewBadge').textContent = `${data.total_rows.toLocaleString()} records`;
+        
+        const removed = data.total_input_rows - data.total_output_rows;
+        
+        const tBadge = document.getElementById('totalBadge');
+        tBadge.style.display = 'inline-block';
+        tBadge.textContent = `${data.total_input_rows.toLocaleString()} source records`;
+
+        const badge = document.getElementById('previewBadge');
+        badge.style.display = 'inline-block';
+        badge.textContent = `${data.total_output_rows.toLocaleString()} cleaned`;
+
+        const rBadge = document.getElementById('removedBadge');
+        if (removed > 0) {
+            rBadge.style.display = 'inline-block';
+            rBadge.textContent = `${removed.toLocaleString()} removed`;
+        } else {
+            rBadge.style.display = 'none';
+        }
+
         document.getElementById('previewMeta').textContent = `(${data.columns.length} columns)`;
-        updateStatus('active', 'Data Ready', `${data.total_rows.toLocaleString()} records loaded`);
+        updateStatus('active', 'Data Ready', `${data.total_output_rows.toLocaleString()} valid records`);
         updateRunBtn();
     } catch(e) {
         content.innerHTML = errHtml('Network error. Please try again.');
@@ -783,7 +808,9 @@ function renderColStats() {
 function resetPreview() {
     document.getElementById('previewContent').innerHTML =
         '<div style="padding:40px; text-align:center;"><i data-lucide="file-up" style="width:32px;height:32px;margin-bottom:12px;opacity:0.3;"></i><p style="margin:0;font-size:0.9rem;color:var(--text-muted);">Upload data to see a live processing sample.</p></div>';
+    document.getElementById('totalBadge').style.display = 'none';
     document.getElementById('previewBadge').style.display = 'none';
+    document.getElementById('removedBadge').style.display = 'none';
     document.getElementById('previewMeta').textContent = '';
     lucide.createIcons();
 }
@@ -826,6 +853,7 @@ function getDefaultConfig(type) {
         remove_duplicates:     { columns: [] },
         sort_emails_first:     { column: 'email' },
         sort_by_column:        { column: detectedCols[0] || '', direction: 'asc' },
+        sort_filled_first:     { column: detectedCols[0] || '' },
         extract_domain:        { source: 'email', target: 'domain' },
         remove_invalid_emails: { column: 'email' },
         keep_only_domain:      { column: 'website' },
@@ -836,9 +864,10 @@ function getDefaultConfig(type) {
         lowercase:             { column: detectedCols[0] || '' },
         uppercase:             { column: detectedCols[0] || '' },
         merge_columns:         { columns: [], separator: ' ', target: 'merged' },
+        selective_extract:     { column: detectedCols[0] || '', mode: 'domain', separator: ' — ' },
         rename_column:         { column: detectedCols[0] || '', new_name: '' },
-        remove_rows_containing:{ column: detectedCols[0] || '', text: '' },
-        keep_rows_containing:  { column: detectedCols[0] || '', text: '' },
+        remove_rows_containing:{ column: detectedCols[0] || '', text: '', mode: 'all', exact: false },
+        keep_rows_containing:  { column: detectedCols[0] || '', text: '', exact: false },
         titlecase:             { column: detectedCols[0] || '' },
         remove_special_chars:  { column: detectedCols[0] || '' },
         phone_normalize:       { column: detectedCols[0] || '', format: 'digits' },
@@ -903,8 +932,12 @@ function renderPipeline() {
 function toggleConfig(id) { document.getElementById(`cfg-${id}`).classList.toggle('open'); }
 
 function buildConfigUI(op) {
-    const colOptions = detectedCols.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
-    const dirOptions = `<option value="asc">A → Z (Ascending)</option><option value="desc">Z → A (Descending)</option>`;
+    const opts = (sel) => detectedCols.map(c => `<option value="${escHtml(c)}" ${c===sel?'selected':''}>${escHtml(c)}</option>`).join('');
+    const dirHtml = (sel) => `
+        <option value="asc" ${sel==='asc'?'selected':''}>A → Z (Ascending)</option>
+        <option value="desc" ${sel==='desc'?'selected':''}>Z → A (Descending)</option>
+    `;
+
     switch (op.type) {
         case 'remove_duplicates':
             return `<label>Deduplicate based on which columns?</label>
@@ -918,17 +951,19 @@ function buildConfigUI(op) {
                     </div>
                     <button class="apply-config-btn" onclick="debouncePreview()">Apply Selection</button>`;
         case 'sort_emails_first': case 'remove_invalid_emails':
-            return `<label>Email column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>`;
+            return `<label>Email column</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>`;
         case 'sort_by_column':
-            return `<label>Column to sort by</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
-                    <label>Direction</label><select onchange="updateConfig(${op.id},'direction',this.value)">${dirOptions}</select>`;
+            return `<label>Column to sort by</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>
+                    <label>Direction</label><select onchange="updateConfig(${op.id},'direction',this.value)">${dirHtml(op.config.direction)}</select>`;
+        case 'sort_filled_first':
+            return `<label>Column to prioritize (filled rows first)</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>`;
         case 'extract_domain':
             return `<label>Source column (email or URL)</label><select onchange="updateConfig(${op.id},'source',this.value)">${colOptions}</select>
                     <label>Output column name</label><input type="text" placeholder="domain" value="${escHtml(op.config.target||'domain')}" oninput="updateConfig(${op.id},'target',this.value)">`;
         case 'keep_only_domain': case 'remove_column': case 'lowercase': case 'uppercase':
-            return `<label>Column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>`;
+            return `<label>Column</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>`;
         case 'find_replace':
-            return `<label>In column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
+            return `<label>In column</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>
                     <label>Find text</label><input type="text" placeholder="Text to find" value="${escHtml(op.config.find||'')}" oninput="updateConfig(${op.id},'find',this.value)">
                     <label>Replace with</label><input type="text" placeholder="Leave blank to delete" value="${escHtml(op.config.replace||'')}" oninput="updateConfig(${op.id},'replace',this.value)">`;
         case 'filter_columns':
@@ -946,7 +981,7 @@ function buildConfigUI(op) {
             return `<label>New column name</label><input type="text" placeholder="Column name" value="${escHtml(op.config.name||'')}" oninput="updateConfig(${op.id},'name',this.value)">
                     <label>Default value</label><input type="text" placeholder="Leave blank for empty" value="${escHtml(op.config.value||'')}" oninput="updateConfig(${op.id},'value',this.value)">`;
         case 'rename_column':
-            return `<label>Column to rename</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
+            return `<label>Column to rename</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>
                     <label>New name</label><input type="text" placeholder="New column name" value="${escHtml(op.config.new_name||'')}" oninput="updateConfig(${op.id},'new_name',this.value)">`;
         case 'merge_columns':
             return `<label>Select columns to merge:</label>
@@ -960,13 +995,37 @@ function buildConfigUI(op) {
                     </div>
                     <label style="margin-top:8px;">Separator</label><input type="text" placeholder="Space" value="${escHtml(op.config.separator||' ')}" oninput="updateConfig(${op.id},'separator',this.value)">
                     <label>Output column name</label><input type="text" placeholder="merged" value="${escHtml(op.config.target||'merged')}" oninput="updateConfig(${op.id},'target',this.value)">`;
-        case 'remove_rows_containing': case 'keep_rows_containing':
-            return `<label>In column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
-                    <label>Text to match (case-insensitive)</label><input type="text" placeholder="e.g. spam, @gmail.com" value="${escHtml(op.config.text||'')}" oninput="updateConfig(${op.id},'text',this.value)">`;
+        case 'remove_rows_containing':
+            return `
+                <label>In column</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>
+                <label>Find what?</label><input type="text" placeholder="e.g. spam, @gmail.com" value="${escHtml(op.config.text||'')}" oninput="updateConfig(${op.id},'text',this.value)">
+                
+                <div style="display:flex; gap:12px; margin-top:12px; padding: 10px; background: rgba(0,0,0,0.2); border-radius:10px;">
+                    <div style="flex:1;">
+                        <label style="margin:0; font-size:0.7rem; opacity:0.6;">Cleaning Mode</label>
+                        <select onchange="updateConfig(${op.id},'mode',this.value)" style="margin-top:4px;">
+                            <option value="all" ${op.config.mode==='all'?'selected':''}>Drop ALL matches</option>
+                            <option value="first" ${op.config.mode==='first'?'selected':''}>Drop only 1 by 1 (First)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <label style="display:flex; align-items:center; gap:8px; margin-top:12px; cursor:pointer; font-size:0.8rem; font-weight:700;">
+                    <input type="checkbox" ${op.config.exact?'checked':''} onchange="updateConfig(${op.id},'exact',this.checked)">
+                    Match exactly (case-insensitive)
+                </label>`;
+        case 'keep_rows_containing':
+            return `
+                <label>In column</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>
+                <label>Keep if value contains:</label><input type="text" placeholder="e.g. @gmail.com" value="${escHtml(op.config.text||'')}" oninput="updateConfig(${op.id},'text',this.value)">
+                <label style="display:flex; align-items:center; gap:8px; margin-top:12px; cursor:pointer;">
+                    <input type="checkbox" ${op.config.exact?'checked':''} onchange="updateConfig(${op.id},'exact',this.checked)">
+                    Match exactly
+                </label>`;
         case 'titlecase': case 'remove_special_chars':
-            return `<label>Column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>`;
+            return `<label>Column</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>`;
         case 'phone_normalize':
-            return `<label>Phone column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
+            return `<label>Phone column</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>
                     <label>Output format</label>
                     <select onchange="updateConfig(${op.id},'format',this.value)">
                         <option value="digits">Digits only (e.g. 14155551234)</option>
@@ -974,13 +1033,28 @@ function buildConfigUI(op) {
                         <option value="international">International (e.g. +14155551234)</option>
                     </select>`;
         case 'fill_empty':
-            return `<label>Column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
+            return `<label>Column</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>
                     <label>Fill empty cells with</label><input type="text" placeholder="e.g. N/A, Unknown" value="${escHtml(op.config.value||'')}" oninput="updateConfig(${op.id},'value',this.value)">`;
         case 'split_column':
-            return `<label>Column to split</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
+            return `<label>Column to split</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>
                     <label>Delimiter character</label><input type="text" placeholder=", or space or |" value="${escHtml(op.config.delimiter||',')}" oninput="updateConfig(${op.id},'delimiter',this.value)">
                     <label>First part → column name</label><input type="text" placeholder="e.g. first_name" value="${escHtml(op.config.col_a||'')}" oninput="updateConfig(${op.id},'col_a',this.value)">
                     <label>Second part → column name</label><input type="text" placeholder="e.g. last_name" value="${escHtml(op.config.col_b||'')}" oninput="updateConfig(${op.id},'col_b',this.value)">`;
+        case 'selective_extract':
+            return `
+                <label>Column to clean</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>
+                <label>Extraction Strategy</label>
+                <select onchange="updateConfig(${op.id},'mode',this.value); refreshOpConfig(${op.id})">
+                    <option value="domain" ${op.config.mode==='domain'?'selected':''}>Keep ONLY Domain (Auto-Detect)</option>
+                    <option value="email" ${op.config.mode==='email'?'selected':''}>Keep ONLY Email (Auto-Detect)</option>
+                    <option value="before" ${op.config.mode==='before'?'selected':''}>Keep EVERYTHING BEFORE separator</option>
+                    <option value="after" ${op.config.mode==='after'?'selected':''}>Keep EVERYTHING AFTER separator</option>
+                </select>
+                ${ (op.config.mode === 'before' || op.config.mode === 'after') ? `
+                    <label style="margin-top:12px;">Separator character(s)</label>
+                    <input type="text" value="${escAttr(op.config.separator || ' — ')}" oninput="updateConfig(${op.id},'separator',this.value)" placeholder="e.g. — or ,">
+                ` : '' }
+            `;
         case 'number_rows':
             return `<label>Column name for row numbers</label><input type="text" placeholder="#" value="${escHtml(op.config.column||'#')}" oninput="updateConfig(${op.id},'column',this.value)">
                     <label>Start numbering from</label><input type="text" placeholder="1" value="${escHtml(String(op.config.start||'1'))}" oninput="updateConfig(${op.id},'start',parseInt(this.value)||1)">`;
@@ -999,6 +1073,12 @@ function updateConfig(id, key, value) {
         op.config[key] = value; 
         debouncePreview();
     }
+}
+function refreshOpConfig(id) {
+    const op = pipeline.find(o => o.id === id);
+    if (!op) return;
+    const cfgEl = document.getElementById(`cfg-${op.id}`);
+    if (cfgEl) cfgEl.innerHTML = buildConfigUI(op);
 }
 
 function toggleDedup(id, col) {
