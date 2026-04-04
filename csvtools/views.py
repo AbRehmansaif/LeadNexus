@@ -280,6 +280,25 @@ def _apply_operation(op_type, op, rows, fieldnames):
             fieldnames = fieldnames + [col]
         rows = [{**r, col: r.get(col, value)} for r in rows]
 
+    elif op_type == 'add_custom_row':
+        import csv
+        import io
+        values_csv = op.get('values_csv', '')
+        if values_csv.strip():
+            # parse as csv to handle quotes correctly
+            try:
+                reader = csv.reader(io.StringIO(values_csv))
+                row_values = next(reader)
+            except StopIteration:
+                row_values = []
+            except Exception:
+                row_values = [values_csv]
+            
+            new_row = {}
+            for i, col in enumerate(fieldnames):
+                new_row[col] = row_values[i].strip() if i < len(row_values) else ''
+            rows.append(new_row)
+
     elif op_type == 'sort_emails_first':
         col = op.get('column', 'email')
         def has_email(r):

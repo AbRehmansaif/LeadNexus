@@ -601,6 +601,7 @@
                 <button class="op-tab active" onclick="switchOpTab(this, 'clean')"><i data-lucide="sparkles" style="width:12px;height:12px;margin-right:6px;"></i> Clean </button>
                 <button class="op-tab" onclick="switchOpTab(this, 'filter')"><i data-lucide="filter" style="width:12px;height:12px;margin-right:6px;"></i> Filter </button>
                 <button class="op-tab" onclick="switchOpTab(this, 'transform')"><i data-lucide="zap" style="width:12px;height:12px;margin-right:6px;"></i> Transform </button>
+                <button class="op-tab" onclick="switchOpTab(this, 'structure')"><i data-lucide="layout-template" style="width:12px;height:12px;margin-right:6px;"></i> Structure </button>
                 <button class="op-tab" onclick="switchOpTab(this, 'presets')" style="background:rgba(139,92,246,0.05); color:var(--accent-purple);"><i data-lucide="zap" style="width:12px;height:12px;margin-right:6px;"></i> Presets </button>
             </div>
 
@@ -631,6 +632,17 @@
                         <button class="op-add-btn" onclick="addOp('titlecase')"><span class="op-icon" style="background:#083344;color:#06b6d4;"><i data-lucide="type"></i></span> Title Case</button>
                         <button class="op-add-btn" onclick="addOp('phone_normalize')"><span class="op-icon" style="background:#2e1065;color:#8b5cf6;"><i data-lucide="phone"></i></span> Fix Phones</button>
                         <button class="op-add-btn" onclick="addOp('selective_extract')"><span class="op-icon" style="background:#083344;color:#06b6d4;"><i data-lucide="scissors"></i></span> Selective Extract</button>
+                    </div>
+                </div>
+
+                <div id="tab-structure" class="op-tab-content">
+                    <div class="op-add-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:12px;">
+                        <button class="op-add-btn" onclick="addOp('add_column')"><span class="op-icon" style="background:#064e3b;color:#10b981;"><i data-lucide="plus-square"></i></span> Add Column</button>
+                        <button class="op-add-btn" onclick="addOp('add_custom_row')"><span class="op-icon" style="background:#064e3b;color:#10b981;"><i data-lucide="list-plus"></i></span> Add Custom Row</button>
+                        <button class="op-add-btn" onclick="addOp('remove_column')"><span class="op-icon" style="background:#451a1a;color:#ef4444;"><i data-lucide="minus-square"></i></span> Remove Column</button>
+                        <button class="op-add-btn" onclick="addOp('rename_column')"><span class="op-icon" style="background:#42210b;color:#f59e0b;"><i data-lucide="pencil"></i></span> Rename Column</button>
+                        <button class="op-add-btn" onclick="addOp('merge_columns')"><span class="op-icon" style="background:#2e1065;color:#8b5cf6;"><i data-lucide="combine"></i></span> Merge Columns</button>
+                        <button class="op-add-btn" onclick="addOp('split_column')"><span class="op-icon" style="background:#172554;color:#3b82f6;"><i data-lucide="split"></i></span> Split Column</button>
                     </div>
                 </div>
 
@@ -761,6 +773,7 @@ const OP_DEFS = {
     filter_columns:        { label: 'Select Columns to Keep',  color: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', icon: 'columns' },
     remove_column:         { label: 'Remove a Column',          color: '#ef4444', iconBg: 'rgba(239,68,68,0.1)',  icon: 'minus-square' },
     add_column:            { label: 'Add a Column',             color: '#10b981', iconBg: 'rgba(16,185,129,0.1)', icon: 'plus-square' },
+    add_custom_row:        { label: 'Add a Custom Row',         color: '#10b981', iconBg: 'rgba(16,185,129,0.1)', icon: 'list-plus' },
     rename_column:         { label: 'Rename a Column',          color: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', icon: 'pencil' },
     merge_columns:         { label: 'Merge Columns',            color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.1)', icon: 'combine' },
     selective_extract:     { label: 'Selective Extract',        color: '#06b6d4', iconBg: 'rgba(6,182,212,0.1)',  icon: 'scissors' },
@@ -971,6 +984,7 @@ function getDefaultConfig(type) {
         filter_columns:        { keep: [...detectedCols] },
         remove_column:         { column: detectedCols[0] || '' },
         add_column:            { name: '', value: '' },
+        add_custom_row:        { values_csv: '' },
         lowercase:             { column: detectedCols[0] || '' },
         uppercase:             { column: detectedCols[0] || '' },
         merge_columns:         { columns: [], separator: ' ', target: 'merged' },
@@ -1096,6 +1110,11 @@ function buildConfigUI(op) {
         case 'add_column':
             return `<label>New column name</label><input type="text" placeholder="Column name" value="${escHtml(op.config.name||'')}" oninput="updateConfig(${op.id},'name',this.value)">
                     <label>Default value</label><input type="text" placeholder="Leave blank for empty" value="${escHtml(op.config.value||'')}" oninput="updateConfig(${op.id},'value',this.value)">`;
+        case 'add_custom_row':
+            return `
+                <label>Row Data (Comma-Separated Values)</label>
+                <input type="text" placeholder="e.g. John Doe, john@example.com, Active" value="${escAttr(op.config.values_csv||'')}" oninput="updateConfig(${op.id},'values_csv',this.value)">
+                <p style="font-size:0.75rem; color:var(--text-muted); margin:6px 0 0;">Enter values separated by commas. They will be appended as a new row at the bottom of the dataset.</p>`;
         case 'rename_column':
             return `<label>Column to rename</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>
                     <label>New name</label><input type="text" placeholder="New column name" value="${escHtml(op.config.new_name||'')}" oninput="updateConfig(${op.id},'new_name',this.value)">`;
