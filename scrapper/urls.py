@@ -91,6 +91,10 @@ urlpatterns = [
 
     # ── SEO Marketing Pages ──────────────────────────────
     path('', include('seo.urls')),
+
+    # ── CSV Data Cleaner Tool ─────────────────────────────
+    path('', include('csvtools.urls', namespace='csvtools')),
+
     
     # ── Sitemaps ──────────────────────────────────────────────
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),

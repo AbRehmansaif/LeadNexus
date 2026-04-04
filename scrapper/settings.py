@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     'contactus',
     'admintask',
     'affiliatemarketing',
+    'csvtools',
 ]
 
 MIDDLEWARE = [
@@ -327,4 +328,4 @@ CELERY_BEAT_SCHEDULE = {
 # ==========================================================
 # CUSTOM ERROR VIEWS
 # ==========================================================
-CSRF_FAILURE_VIEW = 'core.views.csrf_failure'
+CSRF_FAILURE_VIEW = 'core.views.csrf_failure'

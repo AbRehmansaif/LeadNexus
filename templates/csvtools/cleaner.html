@@ -1,0 +1,1078 @@
+{% extends "base.html" %}
+{% block title %}CSV Data Cleaner — LeadNexus{% endblock %}
+
+{% block content %}
+<style>
+/* ── Tool-specific styles ─────────────────────────────────── */
+:root {
+    --accent-purple-glow: rgba(139, 92, 246, 0.4);
+    --bg-workbench: #0f172a;
+}
+
+.workbench-layout {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    max-width: 1400px;
+    margin: 24px auto 60px;
+    width: 100%;
+}
+
+
+/* ── Operation Cards ── */
+.op-card {
+    background: rgba(30, 41, 59, 0.7);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    cursor: grab;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+}
+
+.op-card:hover {
+    border-color: var(--accent-purple);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.4), 0 0 15px var(--accent-purple-glow);
+}
+
+.op-card.dragging { opacity: 0.35; transform: scale(0.97); }
+
+.op-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.drag-handle { cursor: grab; color: var(--text-muted); opacity: 0.4; transition: opacity 0.2s; }
+.op-card:hover .drag-handle { opacity: 1; }
+
+.op-step-num {
+    color: var(--text-muted); font-size: 0.7rem; font-weight: 700;
+    min-width: 22px; display: flex; align-items: center; justify-content: center;
+    background: rgba(255,255,255,0.04); border-radius: 6px; padding: 2px 6px;
+}
+
+.op-icon { 
+    width: 32px; height: 32px; border-radius: 8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; 
+}
+
+.op-label {
+    font-size: 0.95rem;
+    font-weight: 600;
+    flex: 1;
+    color: var(--text-primary);
+}
+
+.op-remove { background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 4px; border-radius: 6px; transition: all 0.2s; }
+.op-remove:hover { color: #ef4444; background: rgba(239,68,68,0.1); }
+.op-remove.settings-btn:hover { color: var(--accent-purple); background: rgba(139,92,246,0.1); }
+
+.op-config {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+    display: none;
+}
+
+.op-config.open { display: block; animation: slideDown 0.3s ease-out; }
+
+@keyframes slideDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.op-config label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    display: block;
+    font-weight: 500;
+}
+
+.op-config select, .op-config input {
+    width: 100%;
+    padding: 10px 12px;
+    background: var(--bg-input);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    outline: none;
+}
+
+.op-config select:focus, .op-config input:focus {
+    border-color: var(--accent-purple);
+}
+
+.col-checkboxes { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 4px; }
+.col-chip {
+    padding: 4px 10px; background: rgba(139,92,246,0.1); border: 1px solid rgba(139,92,246,0.2);
+    border-radius: 20px; font-size: 0.75rem; cursor: pointer; color: var(--accent-purple);
+    user-select: none; transition: all 0.2s;
+}
+.col-chip.selected { background: var(--accent-purple); color: #fff; border-color: var(--accent-purple); }
+
+/* ── Toolbox Buttons ── */
+.op-add-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    background: rgba(30, 41, 59, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 12px;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 500;
+    transition: all 0.2s;
+    width: 100%;
+    text-align: left;
+}
+
+.op-add-btn:hover {
+    border-color: var(--accent-purple);
+    background: rgba(139, 92, 246, 0.1);
+    transform: translateX(4px);
+}
+
+.op-add-btn .op-icon { width: 24px; height: 24px; border-radius: 6px; font-size: 12px; }
+
+/* ── Preview table ── */
+.preview-scroll {
+    overflow: auto;
+    max-height: 400px;
+    border-radius: 12px;
+    border: 1px solid var(--border);
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.82rem;
+}
+
+.preview-table th {
+    background: rgba(15, 23, 42, 0.95);
+    color: var(--accent-purple);
+    padding: 12px 16px;
+    text-align: left;
+    position: sticky;
+    top: 0;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    z-index: 10;
+}
+
+.preview-table td {
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* ── File Upload Area ── */
+.upload-zone {
+    border: 2px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: rgba(30, 41, 59, 0.3);
+}
+
+.upload-zone:hover {
+    border-color: var(--accent-purple);
+    background: rgba(139, 92, 246, 0.05);
+}
+
+.upload-zone.over {
+    border-color: var(--accent-cyan);
+    background: rgba(6, 182, 212, 0.05);
+}
+
+.file-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 14px;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    border-radius: 12px;
+    font-size: 0.8rem;
+    color: var(--accent-purple);
+}
+
+.file-chip button { background: none; border: none; color: var(--accent-purple); cursor: pointer; padding: 0; font-size: 1rem; line-height: 1; }
+
+/* ── Action Header (High Level Tools Style) ── */
+.workbench-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(12px);
+    padding: 16px 24px;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    margin-bottom: 24px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.header-status {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.status-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #64748b;
+}
+
+.status-dot.active {
+    background: var(--accent-green);
+    box-shadow: 0 0 10px var(--accent-green);
+}
+
+/* ── Filename Widget ── */
+.filename-widget {
+    display: flex;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 10px;
+    padding: 2px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.filename-widget input {
+    background: transparent;
+    border: none;
+    color: #fff;
+    padding: 8px 0;
+    font-size: 0.9rem;
+    font-weight: 600;
+    width: 150px;
+    outline: none;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner { width: 36px; height: 36px; border: 3px solid var(--border); border-top-color: var(--accent-purple); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 12px; }
+
+.section-divider { display: flex; align-items: center; gap: 12px; margin: 20px 0 14px; }
+.section-divider span { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); white-space: nowrap; font-weight: 700; }
+.section-divider::before, .section-divider::after { content: ''; flex: 1; height: 1px; background: rgba(255,255,255,0.05); }
+
+.col-stats-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; padding: 16px; }
+.col-stat-card {
+    background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 12px; padding: 14px; transition: all 0.2s;
+}
+.col-stat-name { font-size: 0.8rem; font-weight: 700; color: var(--text-primary); margin-bottom: 8px; }
+.col-stat-row { display: flex; justify-content: space-between; font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; }
+.col-stat-row .val { color: var(--text-secondary); font-weight: 600; }
+
+/* ── Operator Search ── */
+.op-search-wrap {
+    position: relative;
+    margin-bottom: 16px;
+}
+.op-search-wrap i {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #64748b;
+    width: 14px;
+    height: 14px;
+    pointer-events: none;
+}
+.op-search-input {
+    width: 100%;
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 10px 12px 10px 36px;
+    color: #fff;
+    font-size: 0.85rem;
+    font-weight: 500;
+    outline: none;
+    transition: all 0.2s;
+}
+.op-search-input:focus {
+    border-color: var(--accent-purple);
+    background: rgba(0, 0, 0, 0.3);
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.1);
+}
+.op-search-input::placeholder {
+    color: #475569;
+}
+#opLibrary {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+#opLibrary::-webkit-scrollbar { width: 4px; }
+#opLibrary::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+/* ── Operator Tabs ── */
+.op-tabs {
+    display: flex;
+    gap: 8px;
+    background: rgba(0,0,0,0.2);
+    padding: 4px;
+    border-radius: 12px;
+    margin-bottom: 16px;
+}
+.op-tab {
+    flex: 1;
+    padding: 8px 12px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    background: none;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+    white-space: nowrap;
+}
+.op-tab:hover { color: #fff; background: rgba(255,255,255,0.03); }
+.op-tab.active {
+    color: #fff;
+    background: var(--accent-purple);
+    box-shadow: 0 4px 12px rgba(139, 92, 246, 0.2);
+}
+.op-tab-content { display: none; }
+.op-tab-content.active { display: block; animation: tabFadeIn 0.3s ease-out; }
+@keyframes tabFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
+<div class="page-header" style="margin-bottom: 16px;">
+    <div>
+        <h1 class="page-title">
+            <i data-lucide="wand-2" style="width:26px;height:26px;color:var(--accent-purple);margin-right:10px;"></i>
+            Data Forge
+        </h1>
+        <p class="page-subtitle">Professional CSV processing engine. High-performance data cleaning and transformation.</p>
+    </div>
+    <div class="header-actions">
+        <a href="{% url 'mail-email-dedup' %}" class="btn btn-secondary btn-sm">
+            <i data-lucide="filter" style="width:14px;height:14px;margin-right:8px;"></i> Email Dedup
+        </a>
+    </div>
+</div>
+
+<!-- Premium Action Bar -->
+<div class="workbench-header">
+    <div class="header-status">
+        <div id="statusDot" class="status-dot"></div>
+        <div>
+            <div id="statusText" style="font-size:0.85rem; font-weight:700; color:#cbd5e1;">Awaiting Files</div>
+            <div id="statusSubtext" style="font-size:0.7rem; color:#64748b;">Ready to process</div>
+        </div>
+    </div>
+
+    <div style="display:flex; align-items:center; gap:20px;">
+        <div class="filename-widget">
+            <i data-lucide="file-edit" style="width:14px;height:14px;margin-right:10px;color:#64748b;"></i>
+            <input type="text" id="outputFilename" value="cleaned_data" placeholder="Filename">
+            <span style="color:#64748b; font-size:0.8rem; font-weight:700; margin-left:4px;">.csv</span>
+        </div>
+
+        <div style="display:flex; gap:10px;">
+            <button onclick="clearPipeline()" class="btn btn-secondary">
+                <i data-lucide="rotate-ccw" style="width:16px;height:16px;margin-right:8px;"></i> Clear
+            </button>
+            <button id="runBtn" onclick="runPipeline()" class="btn btn-primary" style="padding: 10px 24px; box-shadow: 0 0 20px var(--accent-purple-glow);" disabled>
+                <i data-lucide="zap" style="width:16px;height:16px;margin-right:8px;"></i> Run & Download
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="workbench-layout">
+
+    <!-- ── Step 1: Import Data ── -->
+    <div class="card">
+        <div class="card-header" style="justify-content:space-between; padding: 12px 24px;">
+            <h2 class="card-title" style="font-size:0.9rem;">
+                <i data-lucide="file-up" style="width:18px;height:18px;margin-right:8px;color:var(--accent-purple);"></i> Step 1: Import Source Files
+            </h2>
+            <div id="fileList" style="display:flex; flex-wrap:wrap; gap:10px;"></div>
+        </div>
+        <div style="padding:24px;">
+            <div id="dropZone" class="upload-zone" onclick="document.getElementById('fileInput').click()" 
+                 ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)"
+                 style="padding: 30px; border: 1px solid rgba(255,255,255,0.05); background: rgba(0,0,0,0.2);">
+                <input type="file" id="fileInput" multiple accept=".csv" style="display:none;" onchange="handleFiles(this.files)">
+                <div style="display:flex; align-items:center; justify-content:center; gap:24px;">
+                    <div style="background:rgba(139,92,246,0.1); width:50px; height:50px; border-radius:12px; display:flex; align-items:center; justify-content:center;">
+                        <i data-lucide="upload-cloud" style="width:28px;height:28px;color:var(--accent-purple);"></i>
+                    </div>
+                    <div style="text-align:left;">
+                        <p style="margin:0; font-weight:700; font-size:1.05rem; color: #fff;">Build your data forge</p>
+                        <p style="margin:4px 0 0; font-size:0.85rem; color:var(--text-muted);">Drop CSV files here or click to browse</p>
+                    </div>
+                    <div style="margin-left:auto; display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
+                        <span style="font-size:0.7rem; color:var(--text-muted); opacity:0.6;">Max 10 files • 10MB each</span>
+                        <button class="btn btn-secondary btn-sm" style="padding: 6px 16px;">Choose Files</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Step 2: Select Tools ── -->
+    <div class="card">
+        <div class="card-header" style="justify-content:space-between; padding: 12px 24px;">
+            <h2 class="card-title" style="font-size:0.9rem;">
+                <i data-lucide="layers" style="width:18px;height:18px;margin-right:8px;color:var(--accent-purple);"></i> Step 2: Select Operator Tools
+            </h2>
+            <div class="op-search-wrap" style="margin-bottom:0; width:260px;">
+                <i data-lucide="search"></i>
+                <input type="text" class="op-search-input" id="opSearch" placeholder="Search tools..." oninput="filterOps(this.value)" style="padding: 8px 12px 8px 36px; font-size:0.75rem;">
+            </div>
+        </div>
+        <div style="padding:16px;">
+            <div class="op-tabs" style="max-width: 800px;">
+                <button class="op-tab active" onclick="switchOpTab(this, 'clean')"><i data-lucide="sparkles" style="width:12px;height:12px;margin-right:6px;"></i> Clean </button>
+                <button class="op-tab" onclick="switchOpTab(this, 'filter')"><i data-lucide="filter" style="width:12px;height:12px;margin-right:6px;"></i> Filter </button>
+                <button class="op-tab" onclick="switchOpTab(this, 'transform')"><i data-lucide="zap" style="width:12px;height:12px;margin-right:6px;"></i> Transform </button>
+                <button class="op-tab" onclick="switchOpTab(this, 'presets')" style="background:rgba(139,92,246,0.05); color:var(--accent-purple);"><i data-lucide="zap" style="width:12px;height:12px;margin-right:6px;"></i> Presets </button>
+            </div>
+
+            <div id="opLibrary">
+                <div id="tab-clean" class="op-tab-content active">
+                    <div class="op-add-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:12px;">
+                        <button class="op-add-btn" onclick="addOp('remove_blank_rows')"><span class="op-icon" style="background:#451a1a;color:#ef4444;"><i data-lucide="trash-2"></i></span> Blank Rows</button>
+                        <button class="op-add-btn" onclick="addOp('trim_whitespace')"><span class="op-icon" style="background:#172554;color:#3b82f6;"><i data-lucide="scissors"></i></span> Trim Space</button>
+                        <button class="op-add-btn" onclick="addOp('remove_invalid_emails')"><span class="op-icon" style="background:#451a1a;color:#ef4444;"><i data-lucide="mail-x"></i></span> Invalid Emails</button>
+                        <button class="op-add-btn" onclick="addOp('remove_duplicates')"><span class="op-icon" style="background:#42210b;color:#f59e0b;"><i data-lucide="copy-x"></i></span> Duplicates</button>
+                    </div>
+                </div>
+
+                <div id="tab-filter" class="op-tab-content">
+                    <div class="op-add-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:12px;">
+                        <button class="op-add-btn" onclick="addOp('filter_columns')"><span class="op-icon" style="background:#42210b;color:#f59e0b;"><i data-lucide="columns"></i></span> Select Columns</button>
+                        <button class="op-add-btn" onclick="addOp('keep_rows_containing')"><span class="op-icon" style="background:#064e3b;color:#10b981;"><i data-lucide="list-checks"></i></span> Keep Matches</button>
+                        <button class="op-add-btn" onclick="addOp('remove_rows_containing')"><span class="op-icon" style="background:#451a1a;color:#ef4444;"><i data-lucide="filter-x"></i></span> Drop Matches</button>
+                        <button class="op-add-btn" onclick="addOp('sort_by_column')"><span class="op-icon" style="background:#064e3b;color:#10b981;"><i data-lucide="arrow-up-down"></i></span> Sort By</button>
+                    </div>
+                </div>
+
+                <div id="tab-transform" class="op-tab-content">
+                    <div class="op-add-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:12px;">
+                        <button class="op-add-btn" onclick="addOp('extract_domain')"><span class="op-icon" style="background:#2e1065;color:#8b5cf6;"><i data-lucide="globe"></i></span> Get Domain</button>
+                        <button class="op-add-btn" onclick="addOp('find_replace')"><span class="op-icon" style="background:#172554;color:#3b82f6;"><i data-lucide="replace"></i></span> Find/Replace</button>
+                        <button class="op-add-btn" onclick="addOp('titlecase')"><span class="op-icon" style="background:#083344;color:#06b6d4;"><i data-lucide="type"></i></span> Title Case</button>
+                        <button class="op-add-btn" onclick="addOp('phone_normalize')"><span class="op-icon" style="background:#2e1065;color:#8b5cf6;"><i data-lucide="phone"></i></span> Fix Phones</button>
+                    </div>
+                </div>
+
+                <div id="tab-presets" class="op-tab-content">
+                    <div class="op-add-list" style="display:grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap:12px;">
+                        <button class="op-add-btn" onclick="applyPreset('email_clean')" style="background:rgba(139,92,246,0.05); border: 1px solid rgba(139,92,246,0.2);">
+                            <span class="op-icon" style="background:rgba(139,92,246,0.2);color:var(--accent-purple);"><i data-lucide="mail-check"></i></span> Email Cleanup
+                        </button>
+                        <button class="op-add-btn" onclick="applyPreset('dedup_sort')" style="background:rgba(16,185,129,0.05); border: 1px solid rgba(16,185,129,0.2);">
+                            <span class="op-icon" style="background:rgba(16,185,129,0.2);color:var(--accent-green);"><i data-lucide="list-filter"></i></span> Dedup & Sort
+                        </button>
+                        <button class="op-add-btn" onclick="applyPreset('full_clean')" style="background:rgba(239,68,68,0.05); border: 1px solid rgba(239,68,68,0.2);">
+                            <span class="op-icon" style="background:rgba(239,68,68,0.2);color:#ef4444;border-radius:50%;"><i data-lucide="zap"></i></span> Full Clean
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ── Step 3: Configure Pipeline ── -->
+    <div class="card" style="min-height: 240px; display:flex; flex-direction:column;">
+        <div class="card-header" style="justify-content:space-between; border-bottom: 1px solid rgba(255,255,255,0.05);">
+            <h2 class="card-title" style="font-size:0.95rem;">
+                <i data-lucide="workflow" style="width:18px;height:18px;margin-right:8px;color:var(--accent-cyan);"></i> Step 3: Pipeline Flow
+                <span id="pipelineCountBadge" class="badge" style="margin-left:10px; background:var(--accent-purple); color:#fff; border-radius:10px; display:none;">0 steps</span>
+            </h2>
+            <div style="font-size:0.75rem; color:var(--text-muted);">Active transformations (Drag to reorder)</div>
+        </div>
+        <div style="padding:24px; flex:1;">
+            <div id="pipelineEmpty" style="text-align:center; padding:30px 0; color:var(--text-muted);">
+                <i data-lucide="mouse-pointer-2" style="width:32px;height:32px;opacity:0.2;margin-bottom:12px;"></i>
+                <p style="font-weight:700; font-size:1.1rem; margin-bottom:8px; color:var(--text-primary);">Pipeline Empty</p>
+                <p style="font-size:0.9rem; max-width:300px; margin:0 auto;">Add operators from the library above to build your processing sequence.</p>
+            </div>
+            <div id="pipelineList" style="max-width: 1000px; margin: 0 auto; padding-top:10px;"></div>
+        </div>
+    </div>
+
+    <!-- ── Step 4: Live Preview ── -->
+    <div class="card" id="previewCard">
+        <div class="card-header" style="justify-content:space-between; background: rgba(255,255,255,0.01);">
+            <h2 class="card-title" style="font-size:0.95rem;">
+                <i data-lucide="table-2" style="width:18px;height:18px;margin-right:8px;color:var(--accent-green);"></i> Step 4: Live Processing Preview
+                <span id="previewMeta" style="font-size:0.75rem; color:var(--text-muted); font-weight:400; margin-left:10px;"></span>
+            </h2>
+            <span id="previewBadge" style="display:none; padding:4px 12px; font-size:0.75rem; background:rgba(16,185,129,0.1); color:var(--accent-green); border-radius:20px; font-weight:700;"></span>
+        </div>
+        <div style="padding:0;">
+            <div id="previewContent" style="padding:60px; text-align:center; color:var(--text-muted);">
+                <i data-lucide="file-check" style="width:48px;height:48px;margin-bottom:16px;opacity:0.1;color:var(--accent-green);"></i>
+                <p style="margin:0;font-size:1rem;font-weight:600;">Awaiting Data Forge...</p>
+                <p style="margin:8px 0 0;font-size:0.85rem;opacity:0.6;">Upload a file to see real-time transformation results here.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="card" id="statsCard" style="display:none;">
+        <div class="card-header">
+            <h2 class="card-title" style="font-size:0.85rem;"><i data-lucide="bar-chart-3" style="width:16px;height:16px;margin-right:8px;"></i> Data Composition Analysis</h2>
+        </div>
+        <div class="col-stats-grid" id="statsContent"></div>
+    </div>
+
+    <!-- Processing Loader -->
+    <div id="runLoader" style="display:none; text-align:center; padding:40px;">
+        <div class="spinner" style="width:48px;height:48px;"></div>
+        <p style="margin-top:16px; font-weight:700; color:var(--accent-purple); font-size:1.1rem;">Forging your dataset...</p>
+        <p style="font-size:0.85rem; color:var(--text-muted);">Transforming records and generating results.</p>
+    </div>
+</div>
+
+<script>
+// ─── State ────────────────────────────────────────────────────────────────────
+let uploadedFiles  = [];
+let detectedCols   = [];
+let colStats       = {};
+let pipeline       = [];
+let opCounter      = 0;
+let dragSrcId      = null;
+let previewTimeout = null;
+
+const CSRF = '{{ csrf_token }}';
+
+function updateStatus(type, title, subtitle) {
+    const dot = document.getElementById('statusDot');
+    const txt = document.getElementById('statusText');
+    const sub = document.getElementById('statusSubtext');
+    
+    txt.textContent = title;
+    sub.textContent = subtitle;
+    
+    if (type === 'active') {
+        dot.classList.add('active');
+    } else {
+        dot.classList.remove('active');
+    }
+}
+
+
+// ─── Operation Definitions ───────────────────────────────────────────────────
+const OP_DEFS = {
+    remove_blank_rows:     { label: 'Remove Blank Rows',        color: '#ef4444', iconBg: 'rgba(239,68,68,0.1)',   icon: 'trash-2' },
+    trim_whitespace:       { label: 'Trim Whitespace',           color: '#3b82f6', iconBg: 'rgba(59,130,246,0.1)', icon: 'scissors' },
+    remove_invalid_emails: { label: 'Remove Invalid Emails',    color: '#ef4444', iconBg: 'rgba(239,68,68,0.1)',   icon: 'mail-x' },
+    remove_duplicates:     { label: 'Remove Duplicates',        color: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)',  icon: 'copy-x' },
+    remove_rows_containing:{ label: 'Remove Rows Containing',  color: '#ef4444', iconBg: 'rgba(239,68,68,0.1)',   icon: 'filter-x' },
+    keep_rows_containing:  { label: 'Keep Rows Containing',    color: '#10b981', iconBg: 'rgba(16,185,129,0.1)',   icon: 'list-checks' },
+    sort_emails_first:     { label: 'Emails to Top',            color: '#10b981', iconBg: 'rgba(16,185,129,0.1)', icon: 'arrow-up-to-line' },
+    sort_by_column:        { label: 'Sort by Column',           color: '#10b981', iconBg: 'rgba(16,185,129,0.1)', icon: 'arrow-up-down' },
+    extract_domain:        { label: 'Extract Domain',           color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.1)', icon: 'globe' },
+    keep_only_domain:      { label: 'Keep Only Domain',         color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.1)', icon: 'link' },
+    find_replace:          { label: 'Find & Replace',           color: '#3b82f6', iconBg: 'rgba(59,130,246,0.1)', icon: 'replace' },
+    lowercase:             { label: 'Lowercase Column',         color: '#06b6d4', iconBg: 'rgba(6,182,212,0.1)',  icon: 'case-lower' },
+    uppercase:             { label: 'Uppercase Column',         color: '#06b6d4', iconBg: 'rgba(6,182,212,0.1)',  icon: 'case-upper' },
+    titlecase:             { label: 'Title Case Column',        color: '#06b6d4', iconBg: 'rgba(6,182,212,0.1)',  icon: 'type' },
+    remove_special_chars:  { label: 'Remove Special Chars',    color: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', icon: 'eraser' },
+    phone_normalize:       { label: 'Normalize Phone Numbers',  color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.1)', icon: 'phone' },
+    fill_empty:            { label: 'Fill Empty Cells',         color: '#10b981', iconBg: 'rgba(16,185,129,0.1)', icon: 'square-pen' },
+    split_column:          { label: 'Split Column',             color: '#3b82f6', iconBg: 'rgba(59,130,246,0.1)', icon: 'split' },
+    filter_columns:        { label: 'Select Columns to Keep',  color: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', icon: 'columns' },
+    remove_column:         { label: 'Remove a Column',          color: '#ef4444', iconBg: 'rgba(239,68,68,0.1)',  icon: 'minus-square' },
+    add_column:            { label: 'Add a Column',             color: '#10b981', iconBg: 'rgba(16,185,129,0.1)', icon: 'plus-square' },
+    rename_column:         { label: 'Rename a Column',          color: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', icon: 'pencil' },
+    merge_columns:         { label: 'Merge Columns',            color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.1)', icon: 'combine' },
+    number_rows:           { label: 'Add Row Numbers',          color: '#10b981', iconBg: 'rgba(16,185,129,0.1)', icon: 'hash' },
+    remove_empty_columns:  { label: 'Remove Empty Columns',    color: '#ef4444', iconBg: 'rgba(239,68,68,0.1)',  icon: 'trash' },
+    limit_rows:            { label: 'Limit Row Count',          color: '#f59e0b', iconBg: 'rgba(245,158,11,0.1)', icon: 'list-end' },
+};
+
+// ─── File Handling ────────────────────────────────────────────────────────────
+function handleDragOver(e) { e.preventDefault(); document.getElementById('dropZone').classList.add('over'); }
+function handleDragLeave(e) { document.getElementById('dropZone').classList.remove('over'); }
+function handleDrop(e) { e.preventDefault(); handleDragLeave(e); handleFiles(e.dataTransfer.files); }
+
+function handleFiles(fileList) {
+    for (const f of fileList) {
+        if (!f.name.endsWith('.csv')) { showNotification(`"${f.name}" is not a CSV file.`, 'error'); continue; }
+        if (uploadedFiles.length >= 10) { showNotification('Maximum 10 files allowed.', 'error'); break; }
+        if (!uploadedFiles.find(x => x.name === f.name)) uploadedFiles.push(f);
+    }
+    renderFileList();
+    if (uploadedFiles.length) {
+        updateStatus('active', 'Loading Data...', `Processing ${uploadedFiles.length} file${uploadedFiles.length > 1 ? 's' : ''}`);
+        loadPreview();
+    }
+}
+
+function renderFileList() {
+    const el = document.getElementById('fileList');
+    if (!uploadedFiles.length) { el.style.display = 'none'; return; }
+    el.style.display = 'block';
+    el.innerHTML = uploadedFiles.map((f,i) => `
+        <span class="file-chip">
+            <i data-lucide="file-text" style="width:12px;height:12px;"></i>
+            ${escHtml(f.name)} <small style="opacity:0.6;">(${(f.size/1024).toFixed(0)} KB)</small>
+            <button onclick="removeFile(${i})" title="Remove">✕</button>
+        </span>
+    `).join('');
+    lucide.createIcons();
+    updateRunBtn();
+}
+
+function removeFile(idx) {
+    uploadedFiles.splice(idx, 1);
+    renderFileList();
+    if (!uploadedFiles.length) {
+        detectedCols = [];
+        colStats = {};
+        resetPreview();
+        document.getElementById('statsCard').style.display='none';
+        updateStatus('idle', 'Awaiting Files', 'Ready to process');
+    } else {
+        debouncePreview();
+    }
+}
+
+function debouncePreview() {
+    if (previewTimeout) clearTimeout(previewTimeout);
+    previewTimeout = setTimeout(() => {
+        loadPreview();
+    }, 600);
+}
+
+// ─── Preview ──────────────────────────────────────────────────────────────────
+async function loadPreview() {
+    if (!uploadedFiles.length) return;
+    const content = document.getElementById('previewContent');
+    const badge = document.getElementById('previewBadge');
+    
+    // Minimal overlay loader instead of clearing everything
+    const isInitial = content.innerHTML.includes('file-up') || content.innerHTML.includes('spinner');
+    if (isInitial) {
+        content.innerHTML = '<div style="padding:40px; text-align:center;"><div class="spinner"></div><p style="margin:0;color:var(--text-muted);font-size:0.85rem;">Forging preview...</p></div>';
+    }
+
+    const fd = new FormData();
+    uploadedFiles.forEach(f => fd.append('files', f));
+    fd.append('pipeline', JSON.stringify(pipeline.map(op => ({ type: op.type, ...op.config }))));
+
+    try {
+        const res  = await fetch("{% url 'csvtools:cleaner-preview' %}", {
+            method: 'POST', headers: { 'X-CSRFToken': CSRF }, body: fd,
+        });
+        const data = await res.json();
+        if (!data.success) { 
+            content.innerHTML = errHtml(data.error); 
+            updateStatus('idle', 'Upload Failed', 'Check file format');
+            return; 
+        }
+
+        detectedCols = data.columns;
+        colStats = data.col_stats || {};
+        refreshAllColPickers();
+        renderPreviewTable(data);
+        renderColStats();
+        document.getElementById('previewBadge').style.display = 'inline';
+        document.getElementById('previewBadge').textContent = `${data.total_rows.toLocaleString()} records`;
+        document.getElementById('previewMeta').textContent = `(${data.columns.length} columns)`;
+        updateStatus('active', 'Data Ready', `${data.total_rows.toLocaleString()} records loaded`);
+        updateRunBtn();
+    } catch(e) {
+        content.innerHTML = errHtml('Network error. Please try again.');
+        updateStatus('idle', 'Connection Error', 'Check your network');
+    }
+}
+
+function renderPreviewTable(data) {
+    const content = document.getElementById('previewContent');
+    if (!data.preview.length) { content.innerHTML = '<p style="text-align:center;color:var(--text-muted);">No data to preview.</p>'; return; }
+    const ths = data.columns.map(c => `<th>${escHtml(c)}</th>`).join('');
+    const trs = data.preview.map(row =>
+        `<tr>${data.columns.map(c => `<td title="${escHtml(row[c]||'')}">${escHtml(row[c]||'')}</td>`).join('')}</tr>`
+    ).join('');
+    content.innerHTML = `<div class="preview-scroll"><table class="preview-table"><thead><tr>${ths}</tr></thead><tbody>${trs}</tbody></table></div>`;
+}
+
+function renderColStats() {
+    const card = document.getElementById('statsCard');
+    const el = document.getElementById('statsContent');
+    if (!Object.keys(colStats).length) { card.style.display = 'none'; return; }
+    card.style.display = 'block';
+    el.innerHTML = detectedCols.map(col => {
+        const s = colStats[col] || {};
+        const fillPct = s.total ? Math.round((s.filled / s.total) * 100) : 0;
+        return `<div class="col-stat-card">
+            <div class="col-stat-name" title="${escHtml(col)}">${s.has_emails ? '📧 ' : ''}${escHtml(col)}</div>
+            <div class="col-stat-row"><span>Filled</span><span class="val">${fillPct}%</span></div>
+            <div class="col-stat-row"><span>Unique</span><span class="val">${(s.unique||0).toLocaleString()}</span></div>
+            <div class="col-stat-row"><span>Empty</span><span class="val">${(s.empty||0).toLocaleString()}</span></div>
+            ${s.email_count ? `<div class="col-stat-row"><span>Emails</span><span class="val" style="color:var(--accent-green);">${s.email_count.toLocaleString()}</span></div>` : ''}
+        </div>`;
+    }).join('');
+}
+
+function resetPreview() {
+    document.getElementById('previewContent').innerHTML =
+        '<div style="padding:40px; text-align:center;"><i data-lucide="file-up" style="width:32px;height:32px;margin-bottom:12px;opacity:0.3;"></i><p style="margin:0;font-size:0.9rem;color:var(--text-muted);">Upload data to see a live processing sample.</p></div>';
+    document.getElementById('previewBadge').style.display = 'none';
+    document.getElementById('previewMeta').textContent = '';
+    lucide.createIcons();
+}
+
+function switchOpTab(btn, tabId) {
+    document.querySelectorAll('.op-tab').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.op-tab-content').forEach(c => c.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById(`tab-${tabId}`).classList.add('active');
+}
+
+// ─── Op Search Filter ─────────────────────────────────────────────────────────
+function filterOps(query) {
+    const q = query.toLowerCase().trim();
+    document.querySelectorAll('#opLibrary .op-add-btn').forEach(btn => {
+        const text = btn.textContent.toLowerCase();
+        btn.style.display = (!q || text.includes(q)) ? 'flex' : 'none';
+    });
+    document.querySelectorAll('#opLibrary .section-divider').forEach(d => {
+        const list = d.nextElementSibling;
+        if (!list) return;
+        const visible = list.querySelectorAll('.op-add-btn[style*="flex"], .op-add-btn:not([style])');
+        d.style.display = visible.length ? 'flex' : 'none';
+    });
+}
+
+// ─── Pipeline ─────────────────────────────────────────────────────────────────
+function addOp(type) {
+    const def = OP_DEFS[type];
+    if (!def) return;
+    const id = ++opCounter;
+    const op = { id, type, def, config: getDefaultConfig(type) };
+    pipeline.push(op);
+    renderPipeline();
+    debouncePreview();
+}
+
+function getDefaultConfig(type) {
+    const defaults = {
+        remove_duplicates:     { columns: [] },
+        sort_emails_first:     { column: 'email' },
+        sort_by_column:        { column: detectedCols[0] || '', direction: 'asc' },
+        extract_domain:        { source: 'email', target: 'domain' },
+        remove_invalid_emails: { column: 'email' },
+        keep_only_domain:      { column: 'website' },
+        find_replace:          { column: detectedCols[0] || '', find: '', replace: '' },
+        filter_columns:        { keep: [...detectedCols] },
+        remove_column:         { column: detectedCols[0] || '' },
+        add_column:            { name: '', value: '' },
+        lowercase:             { column: detectedCols[0] || '' },
+        uppercase:             { column: detectedCols[0] || '' },
+        merge_columns:         { columns: [], separator: ' ', target: 'merged' },
+        rename_column:         { column: detectedCols[0] || '', new_name: '' },
+        remove_rows_containing:{ column: detectedCols[0] || '', text: '' },
+        keep_rows_containing:  { column: detectedCols[0] || '', text: '' },
+        titlecase:             { column: detectedCols[0] || '' },
+        remove_special_chars:  { column: detectedCols[0] || '' },
+        phone_normalize:       { column: detectedCols[0] || '', format: 'digits' },
+        fill_empty:            { column: detectedCols[0] || '', value: '' },
+        split_column:          { column: detectedCols[0] || '', delimiter: ',', col_a: '', col_b: '' },
+        number_rows:           { column: '#', start: 1 },
+        limit_rows:            { count: 1000 },
+    };
+    return defaults[type] || {};
+}
+
+function removeOp(id) {
+    pipeline = pipeline.filter(op => op.id !== id);
+    renderPipeline();
+    debouncePreview();
+}
+
+function renderPipeline() {
+    const list  = document.getElementById('pipelineList');
+    const empty = document.getElementById('pipelineEmpty');
+    const badge = document.getElementById('pipelineCountBadge');
+    
+    if (pipeline.length > 0) {
+        badge.style.display = 'inline';
+        badge.textContent = `${pipeline.length} step${pipeline.length !== 1 ? 's' : ''}`;
+        empty.style.display = 'none';
+    } else {
+        badge.style.display = 'none';
+        empty.style.display = 'block';
+        list.innerHTML = '';
+        updateRunBtn();
+        return;
+    }
+
+    list.innerHTML = pipeline.map((op, idx) => `
+        <div class="op-card" id="op-${op.id}" draggable="true"
+             ondragstart="onDragStart(event,${op.id})" ondragend="onDragEnd(event)"
+             ondragover="onDragOver(event)" ondrop="onDropOp(event,${op.id})">
+            <div class="op-card-header">
+                <span class="drag-handle"><i data-lucide="grip-vertical" style="width:14px;height:14px;"></i></span>
+                <span class="op-step-num">${idx + 1}</span>
+                <span class="op-icon" style="background:${op.def.iconBg};">
+                    <i data-lucide="${op.def.icon}" style="width:14px;height:14px;color:${op.def.color};"></i>
+                </span>
+                <span class="op-label">${op.def.label}</span>
+                <button class="op-remove settings-btn" onclick="toggleConfig(${op.id})" title="Configure">
+                    <i data-lucide="settings-2" style="width:14px;height:14px;"></i>
+                </button>
+                <button class="op-remove" onclick="removeOp(${op.id})" title="Remove">
+                    <i data-lucide="x" style="width:14px;height:14px;"></i>
+                </button>
+            </div>
+            <div class="op-config" id="cfg-${op.id}">
+                ${buildConfigUI(op)}
+            </div>
+        </div>
+    `).join('');
+    lucide.createIcons();
+    updateRunBtn();
+}
+
+function toggleConfig(id) { document.getElementById(`cfg-${id}`).classList.toggle('open'); }
+
+function buildConfigUI(op) {
+    const colOptions = detectedCols.map(c => `<option value="${escHtml(c)}">${escHtml(c)}</option>`).join('');
+    const dirOptions = `<option value="asc">A → Z (Ascending)</option><option value="desc">Z → A (Descending)</option>`;
+    switch (op.type) {
+        case 'remove_duplicates':
+            return `<label>Deduplicate based on which columns?</label>
+                    <div class="col-checkboxes" id="dedup-cols-${op.id}">
+                        ${detectedCols.map(c => `<span class="col-chip ${op.config.columns.includes(c)?'selected':''}" onclick="toggleDedup(${op.id},'${escAttr(c)}')">${escHtml(c)}</span>`).join('')}
+                    </div>
+                    <p style="margin:8px 0 0;font-size:0.75rem;color:var(--text-muted);">If none selected, all columns are used.</p>`;
+        case 'sort_emails_first': case 'remove_invalid_emails':
+            return `<label>Email column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>`;
+        case 'sort_by_column':
+            return `<label>Column to sort by</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
+                    <label>Direction</label><select onchange="updateConfig(${op.id},'direction',this.value)">${dirOptions}</select>`;
+        case 'extract_domain':
+            return `<label>Source column (email or URL)</label><select onchange="updateConfig(${op.id},'source',this.value)">${colOptions}</select>
+                    <label>Output column name</label><input type="text" placeholder="domain" value="${escHtml(op.config.target||'domain')}" oninput="updateConfig(${op.id},'target',this.value)">`;
+        case 'keep_only_domain': case 'remove_column': case 'lowercase': case 'uppercase':
+            return `<label>Column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>`;
+        case 'find_replace':
+            return `<label>In column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
+                    <label>Find text</label><input type="text" placeholder="Text to find" value="${escHtml(op.config.find||'')}" oninput="updateConfig(${op.id},'find',this.value)">
+                    <label>Replace with</label><input type="text" placeholder="Leave blank to delete" value="${escHtml(op.config.replace||'')}" oninput="updateConfig(${op.id},'replace',this.value)">`;
+        case 'filter_columns':
+            return `<label>Select columns to <strong>keep</strong>:</label>
+                    <div class="col-checkboxes" id="filter-cols-${op.id}">
+                        ${detectedCols.map(c => `<span class="col-chip ${op.config.keep.includes(c)?'selected':''}" onclick="toggleFilterCol(${op.id},'${escAttr(c)}')">${escHtml(c)}</span>`).join('')}
+                    </div>`;
+        case 'add_column':
+            return `<label>New column name</label><input type="text" placeholder="Column name" value="${escHtml(op.config.name||'')}" oninput="updateConfig(${op.id},'name',this.value)">
+                    <label>Default value</label><input type="text" placeholder="Leave blank for empty" value="${escHtml(op.config.value||'')}" oninput="updateConfig(${op.id},'value',this.value)">`;
+        case 'rename_column':
+            return `<label>Column to rename</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
+                    <label>New name</label><input type="text" placeholder="New column name" value="${escHtml(op.config.new_name||'')}" oninput="updateConfig(${op.id},'new_name',this.value)">`;
+        case 'merge_columns':
+            return `<label>Select columns to merge:</label>
+                    <div class="col-checkboxes" id="merge-cols-${op.id}">
+                        ${detectedCols.map(c => `<span class="col-chip ${(op.config.columns||[]).includes(c)?'selected':''}" onclick="toggleMergeCol(${op.id},'${escAttr(c)}')">${escHtml(c)}</span>`).join('')}
+                    </div>
+                    <label style="margin-top:8px;">Separator</label><input type="text" placeholder="Space" value="${escHtml(op.config.separator||' ')}" oninput="updateConfig(${op.id},'separator',this.value)">
+                    <label>Output column name</label><input type="text" placeholder="merged" value="${escHtml(op.config.target||'merged')}" oninput="updateConfig(${op.id},'target',this.value)">`;
+        case 'remove_rows_containing': case 'keep_rows_containing':
+            return `<label>In column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
+                    <label>Text to match (case-insensitive)</label><input type="text" placeholder="e.g. spam, @gmail.com" value="${escHtml(op.config.text||'')}" oninput="updateConfig(${op.id},'text',this.value)">`;
+        case 'titlecase': case 'remove_special_chars':
+            return `<label>Column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>`;
+        case 'phone_normalize':
+            return `<label>Phone column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
+                    <label>Output format</label>
+                    <select onchange="updateConfig(${op.id},'format',this.value)">
+                        <option value="digits">Digits only (e.g. 14155551234)</option>
+                        <option value="dashes">Dashes (e.g. 415-555-1234)</option>
+                        <option value="international">International (e.g. +14155551234)</option>
+                    </select>`;
+        case 'fill_empty':
+            return `<label>Column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
+                    <label>Fill empty cells with</label><input type="text" placeholder="e.g. N/A, Unknown" value="${escHtml(op.config.value||'')}" oninput="updateConfig(${op.id},'value',this.value)">`;
+        case 'split_column':
+            return `<label>Column to split</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>
+                    <label>Delimiter character</label><input type="text" placeholder=", or space or |" value="${escHtml(op.config.delimiter||',')}" oninput="updateConfig(${op.id},'delimiter',this.value)">
+                    <label>First part → column name</label><input type="text" placeholder="e.g. first_name" value="${escHtml(op.config.col_a||'')}" oninput="updateConfig(${op.id},'col_a',this.value)">
+                    <label>Second part → column name</label><input type="text" placeholder="e.g. last_name" value="${escHtml(op.config.col_b||'')}" oninput="updateConfig(${op.id},'col_b',this.value)">`;
+        case 'number_rows':
+            return `<label>Column name for row numbers</label><input type="text" placeholder="#" value="${escHtml(op.config.column||'#')}" oninput="updateConfig(${op.id},'column',this.value)">
+                    <label>Start numbering from</label><input type="text" placeholder="1" value="${escHtml(String(op.config.start||'1'))}" oninput="updateConfig(${op.id},'start',parseInt(this.value)||1)">`;
+        case 'limit_rows':
+            return `<label>Keep only the first N rows</label><input type="text" placeholder="1000" value="${escHtml(String(op.config.count||'1000'))}" oninput="updateConfig(${op.id},'count',parseInt(this.value)||1000)">`;
+        case 'remove_empty_columns':
+            return '<p style="font-size:0.8rem;color:var(--text-muted);margin:0;">Removes any column where every row is blank.</p>';
+        default:
+            return '<p style="font-size:0.8rem;color:var(--text-muted);margin:0;">No configuration needed.</p>';
+    }
+}
+
+function updateConfig(id, key, value) { 
+    const op = pipeline.find(o => o.id === id); 
+    if (op) {
+        op.config[key] = value; 
+        debouncePreview();
+    }
+}
+
+function toggleDedup(id, col) {
+    const op = pipeline.find(o => o.id === id); if (!op) return;
+    const idx = op.config.columns.indexOf(col);
+    if (idx === -1) op.config.columns.push(col); else op.config.columns.splice(idx, 1);
+    const chip = event.target.closest('.col-chip') || event.target;
+    chip.classList.toggle('selected');
+    debouncePreview();
+}
+function toggleFilterCol(id, col) {
+    const op = pipeline.find(o => o.id === id); if (!op) return;
+    const idx = op.config.keep.indexOf(col);
+    if (idx === -1) op.config.keep.push(col); else op.config.keep.splice(idx, 1);
+    const chip = event.target.closest('.col-chip') || event.target;
+    chip.classList.toggle('selected');
+    debouncePreview();
+}
+function toggleMergeCol(id, col) {
+    const op = pipeline.find(o => o.id === id); if (!op) return;
+    if (!op.config.columns) op.config.columns = [];
+    const idx = op.config.columns.indexOf(col);
+    if (idx === -1) op.config.columns.push(col); else op.config.columns.splice(idx, 1);
+    const chip = event.target.closest('.col-chip') || event.target;
+    chip.classList.toggle('selected');
+    debouncePreview();
+}
+function refreshAllColPickers() { if (pipeline.length) renderPipeline(); }
+
+// ─── Drag & Drop Reorder ─────────────────────────────────────────────────────
+function onDragStart(e, id) {
+    dragSrcId = id;
+    e.target.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+}
+function onDragEnd(e) { e.target.classList.remove('dragging'); dragSrcId = null; document.querySelectorAll('.op-card.drag-over').forEach(c => c.classList.remove('drag-over')); }
+function onDragOver(e) { e.preventDefault(); e.dataTransfer.dropEffect = 'move'; const card = e.target.closest('.op-card'); if (card) card.classList.add('drag-over'); }
+function onDropOp(e, targetId) {
+    e.preventDefault();
+    document.querySelectorAll('.op-card.drag-over').forEach(c => c.classList.remove('drag-over'));
+    if (dragSrcId === null || dragSrcId === targetId) return;
+    const srcIdx = pipeline.findIndex(o => o.id === dragSrcId);
+    const tgtIdx = pipeline.findIndex(o => o.id === targetId);
+    if (srcIdx < 0 || tgtIdx < 0) return;
+    const [moved] = pipeline.splice(srcIdx, 1);
+    pipeline.splice(tgtIdx, 0, moved);
+    renderPipeline();
+    debouncePreview();
+}
+
+// ─── Presets ──────────────────────────────────────────────────────────────────
+function applyPreset(preset) {
+    pipeline = []; opCounter = 0;
+    switch (preset) {
+        case 'email_clean':
+            addOp('trim_whitespace'); addOp('remove_blank_rows');
+            addOp('remove_invalid_emails'); addOp('remove_duplicates');
+            break;
+        case 'dedup_sort':
+            addOp('trim_whitespace'); addOp('remove_duplicates');
+            addOp('sort_by_column');
+            break;
+        case 'domain_extract':
+            addOp('trim_whitespace'); addOp('extract_domain');
+            addOp('remove_duplicates');
+            break;
+        case 'full_clean':
+            addOp('trim_whitespace'); addOp('remove_blank_rows');
+            addOp('remove_invalid_emails'); addOp('remove_duplicates');
+            addOp('extract_domain'); addOp('sort_emails_first');
+            break;
+    }
+    showNotification(`Preset applied with ${pipeline.length} operations.`, 'success');
+    debouncePreview();
+}
+
+// ─── Run Pipeline ────────────────────────────────────────────────────────────
+async function runPipeline() {
+    if (!uploadedFiles.length) { showNotification('Please upload at least one file first.', 'error'); return; }
+    const serverPipeline = pipeline.map(op => ({ type: op.type, ...op.config }));
+    
+    // UI state: Running
+    const runBtn = document.getElementById('runBtn');
+    const loader = document.getElementById('runLoader');
+    const preview = document.getElementById('previewCard');
+    const pipelineCard = document.getElementById('pipelineEmpty').closest('.card');
+    
+    runBtn.disabled = true;
+    loader.style.display = 'block';
+    preview.style.display = 'none';
+    pipelineCard.style.opacity = '0.3';
+    updateStatus('active', 'Processing Raw Data...', 'Forging your final dataset');
+
+    const fd = new FormData();
+    uploadedFiles.forEach(f => fd.append('files', f));
+    fd.append('pipeline', JSON.stringify(serverPipeline));
+    fd.append('filename', document.getElementById('outputFilename').value || 'cleaned_data');
+
+    try {
+        const res = await fetch("{% url 'csvtools:cleaner-process' %}", {
+            method: 'POST', headers: { 'X-CSRFToken': CSRF }, body: fd,
+        });
+        if (res.ok && res.headers.get('Content-Type')?.includes('text/csv')) {
+            const blob = await res.blob();
+            const url  = URL.createObjectURL(blob);
+            const a    = document.createElement('a');
+            const fname = (document.getElementById('outputFilename').value || 'cleaned_data').trim();
+            a.href     = url;
+            a.download = fname + '.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            showNotification(`${fname}.csv downloaded successfully.`, 'success');
+            updateStatus('active', 'Download Ready', `Processed ${uploadedFiles.length} files`);
+        } else {
+            const data = await res.json();
+            showNotification(data.error || 'Processing failed.', 'error');
+            updateStatus('idle', 'Process Failed', 'Internal engine error');
+        }
+    } catch(e) {
+        showNotification('Network error. Please try again.', 'error');
+        updateStatus('idle', 'Connection Error', 'Check network & retry');
+    } finally {
+        runBtn.disabled = false;
+        loader.style.display = 'none';
+        preview.style.display = 'block';
+        pipelineCard.style.opacity = '1';
+    }
+}
+
+function clearPipeline() { pipeline = []; opCounter = 0; renderPipeline(); showNotification('Pipeline cleared.', 'info'); }
+function updateRunBtn() { document.getElementById('runBtn').disabled = !(uploadedFiles.length > 0); }
+
+// ─── Helpers ─────────────────────────────────────────────────────────────────
+function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function escAttr(str) { return String(str||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+function errHtml(msg) {
+    return `<div style="text-align:center;padding:20px;color:#ef4444;">
+        <i data-lucide="alert-circle" style="width:28px;height:28px;margin-bottom:8px;"></i>
+        <p style="margin:0;">${escHtml(msg)}</p>
+    </div>`;
+}
+</script>
+{% endblock %}
