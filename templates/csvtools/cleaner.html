@@ -466,16 +466,44 @@
     </div>
     <div class="header-actions" style="display:flex; gap:12px;">
         <div style="font-size:0.75rem; color:var(--text-muted); font-weight:700; align-self:center; margin-right:8px; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:6px;">
-            <i data-lucide="star" style="width:12px; height:12px; color:var(--accent-purple);"></i> Free Toolkit
+            <i data-lucide="star" style="width:12px; height:12px; color:var(--accent-purple);"></i> Toolkit
         </div>
         <div class="btn-group" style="display:flex; border-radius:10px; overflow:hidden; border:1px solid rgba(255,255,255,0.05);">
-            <button onclick="applyQuickAction('domain_extract')" class="btn btn-secondary btn-sm" style="border:none; border-radius:0; padding: 8px 16px;" title="Extract domains from email column">
-                <i data-lucide="globe" style="width:14px;height:14px;margin-right:8px;color:var(--accent-cyan);"></i> Domain Scrub
-            </button>
-            <button onclick="applyQuickAction('crm_format')" class="btn btn-secondary btn-sm" style="border:none; border-left:1px solid rgba(255,255,255,0.05); border-radius:0; padding: 8px 16px;" title="Auto-format for popular CRMs">
-                <i data-lucide="check-square" style="width:14px;height:14px;margin-right:8px;color:var(--accent-green);"></i> CRM Fix
-            </button>
+            <a href="{% url 'seo:seo-tool-excel-to-csv' %}" class="btn btn-secondary btn-sm" style="border:none; border-radius:0; padding: 8px 16px;" title="Convert Excel files to CSV format">
+                <i data-lucide="file-spreadsheet" style="width:14px;height:14px;margin-right:8px;color:var(--accent-green);"></i> Excel to CSV
+            </a>
         </div>
+
+        <div style="position: relative; align-self: stretch;">
+            <button onclick="const m = document.getElementById('forgeToolsDropdown'); m.style.display = m.style.display === 'none' ? 'block' : 'none'; event.stopPropagation();" class="btn btn-secondary btn-sm" style="height: 100%; border: 1px solid rgba(255,255,255,0.05); border-radius: 10px; display: flex; align-items: center; gap: 8px;">
+                <i data-lucide="grid-3x3" style="width:14px;height:14px;color:var(--accent-blue);"></i> More Tools <i data-lucide="chevron-down" style="width:14px;height:14px;opacity:0.5;"></i>
+            </button>
+            <div id="forgeToolsDropdown" style="display: none; position: absolute; right: 0; top: calc(100% + 8px); background: #1e293b; border: 1px solid rgba(255,255,255,0.1); border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.5); z-index: 100; min-width: 260px; padding: 8px;" onclick="event.stopPropagation()">
+                <div style="padding: 8px 12px; font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Converters</div>
+                <a href="{% url 'seo:seo-tool-markdown-to-html' %}" style="display: block; padding: 8px 12px; color: var(--text-primary); text-decoration: none; font-size: 0.85rem; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Markdown ↔ HTML Converter</a>
+                <a href="{% url 'seo:seo-tool-excel-to-csv' %}" style="display: block; padding: 8px 12px; color: var(--text-primary); text-decoration: none; font-size: 0.85rem; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Excel → CSV Converter</a>
+                
+                <div style="margin: 6px 0; border-top: 1px solid rgba(255,255,255,0.05);"></div>
+                <div style="padding: 8px 12px; font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Email Health</div>
+                <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" style="display: block; padding: 8px 12px; color: var(--text-primary); text-decoration: none; font-size: 0.85rem; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Email Spam Checker</a>
+                <a href="{% url 'seo:seo-tool-email-warmup-calculator' %}" style="display: block; padding: 8px 12px; color: var(--text-primary); text-decoration: none; font-size: 0.85rem; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Email Warm Up Calculator</a>
+                <a href="{% url 'seo:seo-tool-dns-config-generator' %}" style="display: block; padding: 8px 12px; color: var(--text-primary); text-decoration: none; font-size: 0.85rem; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">SPF, DKIM & DMARC Generator</a>
+
+                <div style="margin: 6px 0; border-top: 1px solid rgba(255,255,255,0.05);"></div>
+                <div style="padding: 8px 12px; font-size: 0.65rem; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em;">Planners</div>
+                <a href="{% url 'seo:seo-tool-cold-email-roi-calculator' %}" style="display: block; padding: 8px 12px; color: var(--text-primary); text-decoration: none; font-size: 0.85rem; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">Cold Email ROI Calculator</a>
+                <a href="{% url 'seo:seo-tool-utm-link-builder' %}" style="display: block; padding: 8px 12px; color: var(--text-primary); text-decoration: none; font-size: 0.85rem; border-radius: 6px; transition: background 0.2s;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">UTM Link Builder</a>
+            </div>
+        </div>
+
+        <script>
+        document.addEventListener('click', function() {
+            const menu = document.getElementById('forgeToolsDropdown');
+            if(menu && menu.style.display === 'block') {
+                menu.style.display = 'none';
+            }
+        });
+        </script>
     </div>
 </div>
 
@@ -902,19 +930,7 @@ function switchOpTab(btn, tabId) {
     document.getElementById(`tab-${tabId}`).classList.add('active');
 }
 
-/**
- * Quick Actions: Automatically adds highly-used operators to the pipeline
- */
-function applyQuickAction(action) {
-    if (action === 'domain_extract') {
-        addOp('extract_domain');
-        showNotification('Domain Extraction added to pipeline', 'success');
-    } else if (action === 'crm_format') {
-        addOp('trim_whitespace');
-        addOp('remove_blank_rows');
-        showNotification('CRM Formatting steps (Trim & Clean) added', 'success');
-    }
-}
+
 
 // ─── Op Search Filter ─────────────────────────────────────────────────────────
 function filterOps(query) {
