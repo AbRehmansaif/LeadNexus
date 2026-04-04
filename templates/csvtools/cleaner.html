@@ -132,6 +132,26 @@
 }
 .col-chip.selected { background: var(--accent-purple); color: #fff; border-color: var(--accent-purple); }
 
+/* ── Professional Search & Input Design ── */
+.op-search-wrap { position: relative; display: flex; align-items: center; }
+.op-search-wrap i, .op-search-wrap svg { position: absolute; left: 12px; width: 14px; height: 14px; color: var(--text-muted); opacity: 0.5; pointer-events: none; }
+.op-search-input { 
+    width: 100%; height: 36px; background: rgba(0, 0, 0, 0.4) !important; 
+    border: 1px solid rgba(255, 255, 255, 0.08) !important; 
+    border-radius: 30px !important; padding: 0 16px 0 38px !important;
+    color: var(--text-primary) !important; font-size: 0.8rem !important; 
+    transition: all 0.2s; outline: none !important; margin:0 !important;
+}
+.op-search-input:focus { border-color: var(--accent-purple) !important; background: rgba(139, 92, 246, 0.05) !important; box-shadow: 0 0 15px rgba(139, 92, 246, 0.1); }
+
+.filename-widget { display: flex; align-items: center; gap: 8px; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 30px; padding: 0 16px; height: 38px; }
+.filename-widget input { 
+    background: none !important; border: none !important; color: #fff !important; 
+    font-size: 0.85rem !important; font-weight: 500; outline: none; padding: 0 !important; 
+    margin: 0 !important; width: 120px;
+}
+
+
 /* ── Column Picker Enhancements ── */
 .col-search-inner {
     width: 100%;
@@ -552,9 +572,9 @@
 
     <div style="display:flex; align-items:center; gap:20px;">
         <div class="filename-widget">
-            <i data-lucide="file-edit" style="width:14px;height:14px;margin-right:10px;color:#64748b;"></i>
+            <i data-lucide="file-edit" style="width:14px;height:14px;color:var(--text-muted);opacity:0.6;"></i>
             <input type="text" id="outputFilename" value="cleaned_data" placeholder="Filename">
-            <span style="color:#64748b; font-size:0.8rem; font-weight:700; margin-left:4px;">.csv</span>
+            <span style="color:var(--text-muted); font-size:0.75rem; font-weight:700; opacity:0.5;">.csv</span>
         </div>
 
         <div style="display:flex; gap:10px;">
@@ -606,9 +626,9 @@
             <h2 class="card-title" style="font-size:0.9rem;">
                 <i data-lucide="layers" style="width:18px;height:18px;margin-right:8px;color:var(--accent-purple);"></i> Step 2: Select Operator Tools
             </h2>
-            <div class="op-search-wrap" style="margin-bottom:0; width:260px;">
+            <div class="op-search-wrap" style="width:240px;">
                 <i data-lucide="search"></i>
-                <input type="text" class="op-search-input" id="opSearch" placeholder="Search tools..." oninput="filterOps(this.value)" style="padding: 8px 12px 8px 36px; font-size:0.75rem;">
+                <input type="text" class="op-search-input" id="opSearch" placeholder="Search for tools..." oninput="filterOps(this.value)">
             </div>
         </div>
         <div style="padding:16px;">
@@ -699,12 +719,22 @@
 
     <!-- ── Step 4: Live Preview ── -->
     <div class="card" id="previewCard">
-        <div class="card-header" style="justify-content:space-between; background: rgba(255,255,255,0.01);">
-            <h2 class="card-title" style="font-size:0.95rem;">
-                <i data-lucide="table-2" style="width:18px;height:18px;margin-right:8px;color:var(--accent-green);"></i> Step 4: Live Processing Preview
+        <div class="card-header" style="display:grid; grid-template-columns: 1fr auto 1fr; align-items:center; padding: 12px 24px; background: rgba(255,255,255,0.01);">
+            <!-- Left: Title -->
+            <h2 class="card-title" style="font-size:0.95rem; margin:0; display:flex; align-items:center;">
+                <i data-lucide="table-2" style="width:18px;height:18px;margin-right:8px;color:var(--accent-green);"></i> 
+                Step 4: Live Processing Preview
                 <span id="previewMeta" style="font-size:0.75rem; color:var(--text-muted); font-weight:400; margin-left:10px;"></span>
             </h2>
-            <div style="display:flex; gap:10px;">
+
+            <!-- Center: Data Search Engine -->
+            <div id="dataSearchWrap" class="op-search-wrap" style="display:none; width:340px;">
+                <i data-lucide="search"></i>
+                <input type="text" class="op-search-input" placeholder="Search across all records..." oninput="searchData(this.value)">
+            </div>
+
+            <!-- Right: Performance Badges -->
+            <div style="display:flex; gap:10px; justify-content:flex-end;">
                 <span id="totalBadge" style="display:none; padding:4px 12px; font-size:0.75rem; background:rgba(59, 130, 246, 0.1); color:#3b82f6; border: 1px solid rgba(59, 130, 246, 0.2); border-radius:20px; font-weight:700;"></span>
                 <span id="removedBadge" style="display:none; padding:4px 12px; font-size:0.75rem; background:rgba(239, 68, 68, 0.1); color:#ef4444; border: 1px solid rgba(239,68,68,0.2); border-radius:20px; font-weight:700;"></span>
                 <span id="previewBadge" style="display:none; padding:4px 12px; font-size:0.75rem; background:rgba(16,185,129,0.1); color:var(--accent-green); border-radius:20px; font-weight:700;"></span>
@@ -929,10 +959,13 @@ function renderPreviewTable(data) {
     
     if (!data.preview || !data.preview.length) { 
         content.innerHTML = '<p style="text-align:center;color:var(--text-muted);padding:40px;">No data to preview.</p>'; 
+        document.getElementById('dataSearchWrap').style.display = 'none';
         return; 
     }
     
+    document.getElementById('dataSearchWrap').style.display = 'flex';
     const tableColumns = data.columns.map(c => ({ title: c, field: c, headerSort: false }));
+
     
     // Reconstruct isolated dom wrapper
     content.innerHTML = '<div id="tabulator-preview" style="width:100%;"></div>';
@@ -947,6 +980,25 @@ function renderPreviewTable(data) {
         nestedFieldSeparator: false,
         placeholder: "No Data Found",
     });
+}
+
+function searchData(query) {
+    if (!previewTable) return;
+    if (!query) {
+        previewTable.clearFilter();
+        return;
+    }
+    
+    // Tabulator's multi-column search approach
+    const cols = previewTable.getColumns();
+    const filters = cols.map(c => ({
+        field: c.getField(),
+        type: "like",
+        value: query
+    }));
+    
+    // Use an OR filter across all columns
+    previewTable.setFilter([filters]);
 }
 
 function renderColStats() {
@@ -969,7 +1021,9 @@ function renderColStats() {
 
 function resetPreview() {
     if (previewTable) { previewTable.destroy(); previewTable = null; }
+    document.getElementById('dataSearchWrap').style.display = 'none';
     document.getElementById('previewContent').innerHTML =
+
         '<div style="padding:40px; text-align:center;"><i data-lucide="file-up" style="width:32px;height:32px;margin-bottom:12px;opacity:0.3;"></i><p style="margin:0;font-size:0.9rem;color:var(--text-muted);">Upload data to see a live processing sample.</p></div>';
     document.getElementById('totalBadge').style.display = 'none';
     document.getElementById('previewBadge').style.display = 'none';
