@@ -543,7 +543,7 @@
         </div>
 
         <div style="display:flex; gap:10px;">
-            <button onclick="clearPipeline()" class="btn btn-secondary">
+            <button onclick="clearAll()" class="btn btn-secondary">
                 <i data-lucide="rotate-ccw" style="width:16px;height:16px;margin-right:8px;"></i> Clear
             </button>
             <button id="runBtn" onclick="runPipeline()" class="btn btn-primary" style="padding: 10px 24px; box-shadow: 0 0 20px var(--accent-purple-glow);" disabled>
@@ -1315,7 +1315,21 @@ async function runPipeline() {
     }
 }
 
-function clearPipeline() { pipeline = []; opCounter = 0; renderPipeline(); showNotification('Pipeline cleared.', 'info'); }
+function clearAll() { 
+    pipeline = []; 
+    opCounter = 0; 
+    uploadedFiles = [];
+    detectedCols = [];
+    rawCols = [];
+    colStats = {};
+    document.getElementById('fileInput').value = '';
+    document.getElementById('statsCard').style.display = 'none';
+    renderPipeline(); 
+    renderFileList();
+    resetPreview();
+    updateStatus('idle', 'Awaiting Files', 'Ready to process');
+    showNotification('Workspace cleared completely.', 'info'); 
+}
 function updateRunBtn() { document.getElementById('runBtn').disabled = !(uploadedFiles.length > 0); }
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
