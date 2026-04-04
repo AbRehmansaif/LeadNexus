@@ -117,6 +117,53 @@
 }
 .col-chip.selected { background: var(--accent-purple); color: #fff; border-color: var(--accent-purple); }
 
+/* ── Column Picker Enhancements ── */
+.col-search-inner {
+    width: 100%;
+    padding: 8px 12px;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 8px;
+    color: #fff;
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+    outline: none;
+}
+.col-search-inner:focus { border-color: var(--accent-purple); }
+
+.selection-controls {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 12px;
+}
+.btn-link {
+    background: none;
+    border: none;
+    color: var(--accent-purple);
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+}
+.btn-link:hover { opacity: 1; text-decoration: underline; }
+
+.apply-config-btn {
+    margin-top: 16px;
+    width: 100%;
+    background: rgba(139, 92, 246, 0.1);
+    border: 1px solid rgba(139, 92, 246, 0.2);
+    color: var(--accent-purple);
+    padding: 10px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.apply-config-btn:hover { background: var(--accent-purple); color: #fff; }
+
 /* ── Toolbox Buttons ── */
 .op-add-btn {
     display: flex;
@@ -551,6 +598,7 @@
 // ─── State ────────────────────────────────────────────────────────────────────
 let uploadedFiles  = [];
 let detectedCols   = [];
+let rawCols        = [];
 let colStats       = {};
 let pipeline       = [];
 let opCounter      = 0;
@@ -643,6 +691,7 @@ function removeFile(idx) {
     renderFileList();
     if (!uploadedFiles.length) {
         detectedCols = [];
+        rawCols = [];
         colStats = {};
         resetPreview();
         document.getElementById('statsCard').style.display='none';
@@ -687,6 +736,7 @@ async function loadPreview() {
         }
 
         detectedCols = data.columns;
+        rawCols = data.raw_columns || [];
         colStats = data.col_stats || {};
         refreshAllColPickers();
         renderPreviewTable(data);
@@ -858,10 +908,15 @@ function buildConfigUI(op) {
     switch (op.type) {
         case 'remove_duplicates':
             return `<label>Deduplicate based on which columns?</label>
+                    <input type="text" class="col-search-inner" oninput="filterColChips(${op.id}, this.value)" placeholder="Search columns...">
+                    <div class="selection-controls">
+                        <button type="button" class="btn-link" onclick="bulkSelectCols(${op.id}, true, 'columns')">Select All</button>
+                        <button type="button" class="btn-link" onclick="bulkSelectCols(${op.id}, false, 'columns')">Clear All</button>
+                    </div>
                     <div class="col-checkboxes" id="dedup-cols-${op.id}">
                         ${detectedCols.map(c => `<span class="col-chip ${op.config.columns.includes(c)?'selected':''}" onclick="toggleDedup(${op.id},'${escAttr(c)}')">${escHtml(c)}</span>`).join('')}
                     </div>
-                    <p style="margin:8px 0 0;font-size:0.75rem;color:var(--text-muted);">If none selected, all columns are used.</p>`;
+                    <button class="apply-config-btn" onclick="debouncePreview()">Apply Selection</button>`;
         case 'sort_emails_first': case 'remove_invalid_emails':
             return `<label>Email column</label><select onchange="updateConfig(${op.id},'column',this.value)">${colOptions}</select>`;
         case 'sort_by_column':
@@ -878,9 +933,15 @@ function buildConfigUI(op) {
                     <label>Replace with</label><input type="text" placeholder="Leave blank to delete" value="${escHtml(op.config.replace||'')}" oninput="updateConfig(${op.id},'replace',this.value)">`;
         case 'filter_columns':
             return `<label>Select columns to <strong>keep</strong>:</label>
+                    <input type="text" class="col-search-inner" oninput="filterColChips(${op.id}, this.value)" placeholder="Search columns...">
+                    <div class="selection-controls">
+                        <button type="button" class="btn-link" onclick="bulkSelectCols(${op.id}, true, 'keep')">Keep All</button>
+                        <button type="button" class="btn-link" onclick="bulkSelectCols(${op.id}, false, 'keep')">Remove All</button>
+                    </div>
                     <div class="col-checkboxes" id="filter-cols-${op.id}">
-                        ${detectedCols.map(c => `<span class="col-chip ${op.config.keep.includes(c)?'selected':''}" onclick="toggleFilterCol(${op.id},'${escAttr(c)}')">${escHtml(c)}</span>`).join('')}
-                    </div>`;
+                        ${rawCols.map(c => `<span class="col-chip ${op.config.keep.includes(c)?'selected':''}" onclick="toggleFilterCol(${op.id},'${escAttr(c)}')">${escHtml(c)}</span>`).join('')}
+                    </div>
+                    <button class="apply-config-btn" onclick="debouncePreview()">Update Column View</button>`;
         case 'add_column':
             return `<label>New column name</label><input type="text" placeholder="Column name" value="${escHtml(op.config.name||'')}" oninput="updateConfig(${op.id},'name',this.value)">
                     <label>Default value</label><input type="text" placeholder="Leave blank for empty" value="${escHtml(op.config.value||'')}" oninput="updateConfig(${op.id},'value',this.value)">`;
@@ -889,6 +950,11 @@ function buildConfigUI(op) {
                     <label>New name</label><input type="text" placeholder="New column name" value="${escHtml(op.config.new_name||'')}" oninput="updateConfig(${op.id},'new_name',this.value)">`;
         case 'merge_columns':
             return `<label>Select columns to merge:</label>
+                    <input type="text" class="col-search-inner" oninput="filterColChips(${op.id}, this.value)" placeholder="Search columns...">
+                    <div class="selection-controls">
+                        <button type="button" class="btn-link" onclick="bulkSelectCols(${op.id}, true, 'columns')">Select All</button>
+                        <button type="button" class="btn-link" onclick="bulkSelectCols(${op.id}, false, 'columns')">Clear All</button>
+                    </div>
                     <div class="col-checkboxes" id="merge-cols-${op.id}">
                         ${detectedCols.map(c => `<span class="col-chip ${(op.config.columns||[]).includes(c)?'selected':''}" onclick="toggleMergeCol(${op.id},'${escAttr(c)}')">${escHtml(c)}</span>`).join('')}
                     </div>
@@ -941,7 +1007,6 @@ function toggleDedup(id, col) {
     if (idx === -1) op.config.columns.push(col); else op.config.columns.splice(idx, 1);
     const chip = event.target.closest('.col-chip') || event.target;
     chip.classList.toggle('selected');
-    debouncePreview();
 }
 function toggleFilterCol(id, col) {
     const op = pipeline.find(o => o.id === id); if (!op) return;
@@ -949,7 +1014,6 @@ function toggleFilterCol(id, col) {
     if (idx === -1) op.config.keep.push(col); else op.config.keep.splice(idx, 1);
     const chip = event.target.closest('.col-chip') || event.target;
     chip.classList.toggle('selected');
-    debouncePreview();
 }
 function toggleMergeCol(id, col) {
     const op = pipeline.find(o => o.id === id); if (!op) return;
@@ -958,7 +1022,6 @@ function toggleMergeCol(id, col) {
     if (idx === -1) op.config.columns.push(col); else op.config.columns.splice(idx, 1);
     const chip = event.target.closest('.col-chip') || event.target;
     chip.classList.toggle('selected');
-    debouncePreview();
 }
 function refreshAllColPickers() { if (pipeline.length) renderPipeline(); }
 
@@ -1068,6 +1131,43 @@ function updateRunBtn() { document.getElementById('runBtn').disabled = !(uploade
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 function escHtml(str) { return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function escAttr(str) { return String(str||'').replace(/'/g,"\\'").replace(/"/g,'&quot;'); }
+
+function filterColChips(id, query) {
+    const q = query.toLowerCase().trim();
+    const container = document.getElementById(`filter-cols-${id}`) || document.getElementById(`dedup-cols-${id}`) || document.getElementById(`merge-cols-${id}`);
+    if (!container) return;
+    container.querySelectorAll('.col-chip').forEach(chip => {
+        const text = chip.textContent.toLowerCase();
+        chip.style.display = (!q || text.includes(q)) ? 'inline-block' : 'none';
+    });
+}
+
+function bulkSelectCols(id, selectAll, configKey) {
+    const op = pipeline.find(o => o.id === id); if (!op) return;
+    const container = document.getElementById(`filter-cols-${id}`) || document.getElementById(`dedup-cols-${id}`) || document.getElementById(`merge-cols-${id}`);
+    if (!container) return;
+
+    if (selectAll) {
+        // Select all currently VISIBLE chips
+        container.querySelectorAll('.col-chip').forEach(chip => {
+            if (chip.style.display !== 'none') {
+                const col = chip.textContent.trim();
+                if (!op.config[configKey].includes(col)) op.config[configKey].push(col);
+                chip.classList.add('selected');
+            }
+        });
+    } else {
+        // Remove all currently VISIBLE chips
+        container.querySelectorAll('.col-chip').forEach(chip => {
+            if (chip.style.display !== 'none') {
+                const col = chip.textContent.trim();
+                const idx = op.config[configKey].indexOf(col);
+                if (idx !== -1) op.config[configKey].splice(idx, 1);
+                chip.classList.remove('selected');
+            }
+        });
+    }
+}
 function errHtml(msg) {
     return `<div style="text-align:center;padding:20px;color:#ef4444;">
         <i data-lucide="alert-circle" style="width:28px;height:28px;margin-bottom:8px;"></i>

@@ -98,6 +98,7 @@ def cleaner_preview(request):
         'success': True,
         'total_rows': len(merged_rows),
         'columns': preview_fields,
+        'raw_columns': list(fieldnames),
         'preview': preview_rows[:10],
         'col_stats': col_stats,
     })
