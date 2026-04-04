@@ -400,15 +400,69 @@
 .op-tab-content { display: none; }
 .op-tab-content.active { display: block; animation: tabFadeIn 0.3s ease-out; }
 @keyframes tabFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── Mobile Responsive Adjustments ── */
+@media (max-width: 768px) {
+    .page-header { flex-direction: column; align-items: flex-start; gap: 16px; }
+    .header-actions { width: 100%; }
+    .header-actions .btn { width: 100%; justify-content: center; }
+
+    .workbench-header { 
+        flex-direction: column; 
+        align-items: stretch; 
+        gap: 20px; 
+        padding: 16px;
+    }
+    .workbench-header > div:last-child { 
+        flex-direction: column; 
+        align-items: stretch; 
+        gap: 16px; 
+    }
+    .filename-widget { width: 100%; justify-content: center; }
+    .filename-widget input { flex: 1; min-width: 0; }
+    
+    .workbench-header button { width: 100%; }
+    #runBtn { order: -1; } /* Modern UX: Run button at top of actions on mobile */
+
+    .upload-zone > div { 
+        flex-direction: column !important; 
+        text-align: center; 
+        gap: 16px !important; 
+    }
+    .upload-zone > div > div:last-child { 
+        margin-left: 0 !important; 
+        align-items: center !important; 
+    }
+
+    .card-header { 
+        flex-direction: column; 
+        align-items: flex-start !important; 
+        gap: 12px; 
+    }
+    .op-search-wrap { width: 100% !important; }
+
+    .op-tabs { 
+        overflow-x: auto; 
+        max-width: 100% !important; 
+        padding-bottom: 4px;
+        -webkit-overflow-scrolling: touch;
+    }
+    .op-tab { flex: 0 0 auto; min-width: 100px; }
+
+    .preview-table { font-size: 0.75rem; }
+    .preview-table th, .preview-table td { padding: 8px 10px; }
+    
+    .stats-grid { grid-template-columns: 1fr; }
+}
 </style>
 
 <div class="page-header" style="margin-bottom: 16px;">
     <div>
         <h1 class="page-title">
             <i data-lucide="wand-2" style="width:26px;height:26px;color:var(--accent-purple);margin-right:10px;"></i>
-            Data Forge
+            Forge Nexus
         </h1>
-        <p class="page-subtitle">Professional CSV processing engine. High-performance data cleaning and transformation.</p>
+        <p class="page-subtitle">Professional CSV processing engine. High performance data cleaning and transformation.</p>
     </div>
     <div class="header-actions">
         <a href="{% url 'mail-email-dedup' %}" class="btn btn-secondary btn-sm">

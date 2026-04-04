@@ -1452,6 +1452,11 @@ select.form-control {
         position: relative;
     }
 
+    .brand-logo-img {
+        height: 58px !important;
+        margin-left: -12px;
+    }
+
     .mobile-menu-toggle {
         display: block;
         padding: 8px;
