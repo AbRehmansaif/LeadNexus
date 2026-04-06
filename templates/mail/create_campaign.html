@@ -37,11 +37,11 @@
     </div>
     {% endif %}
 
-<!-- CKEditor 5 (Open Source Build - No API Key Needed) -->
+<!-- CKEditor 5 (Premium Classic Build) -->
 <script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
 
 <style>
-/* CKEditor 5 Dark Theme Overrides */
+/* CKEditor 5 Premium Dark Theme */
 .ck-editor__editable {
     background-color: var(--bg-secondary) !important;
     color: var(--text-primary) !important;
@@ -65,57 +65,27 @@
     background-color: var(--accent-purple) !important;
     color: white !important;
 }
-/* Dropdown Visibility Fixes */
-.ck.ck-dropdown__panel {
-    background: var(--bg-primary) !important;
-    border: 1px solid var(--border) !important;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
-}
-.ck.ck-list {
-    background: var(--bg-primary) !important;
-}
-.ck.ck-list__item {
-    background: transparent !important;
-}
-.ck.ck-list__item .ck-button {
-    color: var(--text-primary) !important;
-    background: transparent !important;
-}
-/* Balloon/Popup Visibility Fixes (Links, Tables, etc.) */
+
+/* Balloon/Popup Visibility Fixes */
 .ck.ck-balloon-panel {
     background: var(--bg-primary) !important;
     border: 1px solid var(--border) !important;
 }
-.ck.ck-balloon-panel[class*="arrow_n"]::after {
-    border-bottom-color: var(--bg-primary) !important;
-}
-.ck.ck-balloon-panel[class*="arrow_s"]::after {
-    border-top-color: var(--bg-primary) !important;
-}
-
-.ck.ck-labeled-field-view__input-wrapper input, 
-.ck.ck-labeled-field-view__input-wrapper textarea {
+.ck.ck-labeled-field-view__input-wrapper input {
     background: var(--bg-secondary) !important;
     color: var(--text-primary) !important;
     border: 1px solid var(--border) !important;
 }
-
 .ck.ck-labeled-field-view .ck-label {
     background: var(--bg-primary) !important;
     color: var(--text-muted) !important;
     font-size: 11px !important;
 }
 
-.ck.ck-list__item .ck-button.ck-on {
-    background: var(--accent-purple) !important;
-    color: white !important;
-}
-
 /* Whitelabeling: Replace CKEditor branding with LeadNexus branding */
 .ck-powered-by {
     display: none !important;
     visibility: hidden !important;
-    opacity: 0 !important;
 }
 
 .ck.ck-editor__main {
@@ -130,20 +100,23 @@
     color: var(--accent-purple);
     font-size: 10px;
     font-weight: 700;
-    letter-spacing: 0.05em;
     text-transform: uppercase;
     pointer-events: none;
     opacity: 0.4;
-    transition: opacity 0.3s;
-}
-
-.ck.ck-editor__main:hover::after {
-    opacity: 0.8;
 }
 
 /* Reset Core Text to prevent white-on-white */
 .ck-reset_all, .ck-reset_all * {
     color: var(--text-primary) !important;
+}
+
+/* Dropdown visibility fix */
+.ck.ck-list {
+    background: var(--bg-primary) !important;
+}
+.ck.ck-list__item .ck-button:hover:not(.ck-disabled) {
+    background: var(--accent-purple) !important;
+    color: white !important;
 }
 </style>
 
@@ -151,11 +124,34 @@
 // Initialized editors storage
 const editors = {};
 
+// Custom Upload Adapter for LeadNexus (Converts images to Base64)
+class LeadNexusUploadAdapter {
+    constructor(loader) {
+        this.loader = loader;
+    }
+    upload() {
+        return this.loader.file.then(file => new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve({ default: reader.result });
+            reader.onerror = error => reject(error);
+            reader.readAsDataURL(file);
+        }));
+    }
+    abort() {}
+}
+
+function LeadNexusAdapterPlugin(editor) {
+    editor.plugins.get('FileRepository').createUploadAdapter = (loader) => {
+        return new LeadNexusUploadAdapter(loader);
+    };
+}
+
 async function initEditor(element) {
     try {
         const editor = await ClassicEditor.create(element, {
+            extraPlugins: [LeadNexusAdapterPlugin],
             toolbar: [
-                'heading', '|', 'bold', 'italic', 'link', 'insertTable', 'bulletedList', 'numberedList', 'blockQuote', 'undo', 'redo'
+                'heading', '|', 'bold', 'italic', 'link', 'uploadImage', 'insertTable', 'bulletedList', 'numberedList', 'blockQuote', 'undo', 'redo'
             ],
             table: {
                 contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
@@ -253,6 +249,42 @@ document.getElementById('addFollowupBtn').addEventListener('click', async () => 
     
     lucide.createIcons();
 });
+
+function insertMetricsTableById(id) {
+    const editor = editors[id];
+    if (editor) {
+        insertTableIntoCk(editor);
+    }
+}
+
+// Function to manually insert the table into the current focused CKEditor
+function insertTableIntoCk(editor) {
+    const tableHtml = `
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; border: 1px solid #999; margin-top: 20px;">
+  <thead>
+    <tr style="background-color: #a6a6a6; color: #111;">
+      <th style="padding: 10px; border: 1px solid #999; text-align: left; font-style: italic;">Sitio Web</th>
+      <th style="padding: 10px; border: 1px solid #999; text-align: center; font-style: italic;">DR</th>
+      <th style="padding: 10px; border: 1px solid #999; text-align: center; font-style: italic;">DA</th>
+      <th style="padding: 10px; border: 1px solid #999; text-align: center; font-style: italic;">PA</th>
+      <th style="padding: 10px; border: 1px solid #999; text-align: right; font-style: italic;">Tráfico</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 8px 10px; border: 1px solid #999;"><a href="https://{{ domain }}" style="color: #0b5394; text-decoration: underline; font-weight: bold;">{{ domain }}</a></td>
+      <td style="padding: 8px 10px; border: 1px solid #999; text-align: center;">{{ dr }}</td>
+      <td style="padding: 8px 10px; border: 1px solid #999; text-align: center;">{{ da }}</td>
+      <td style="padding: 8px 10px; border: 1px solid #999; text-align: center;">{{ pa }}</td>
+      <td style="padding: 8px 10px; border: 1px solid #999; text-align: right;">{{ traffic }}</td>
+    </tr>
+  </tbody>
+</table>`;
+    
+    const viewFragment = editor.data.processor.toView(tableHtml);
+    const modelFragment = editor.data.toModel(viewFragment);
+    editor.model.insertContent(modelFragment);
+}
 
 function insertMetricsTableById(id) {
     const editor = editors[id];
