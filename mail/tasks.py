@@ -179,8 +179,14 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             
             # Step 1: Substitution
             interim_body = tmpl.render(Context(context_data))
+            
             # Step 2: SaaS-level Text to HTML (Spacing, Paragraphs, Gaps)
-            rendered_body = linebreaks(interim_body)
+            # CRITICAL: If the user has provided a professional HTML layout (tables, divs),
+            # we skip linebreaks() to avoid mangling the structure with <br> tags.
+            if '<table>' in interim_body.lower() or '<div' in interim_body.lower():
+                rendered_body = interim_body
+            else:
+                rendered_body = linebreaks(interim_body)
 
             # Tracking Pixel
             # Logic: Use user's tracking_domain if set, otherwise fallback to SITE_URL.

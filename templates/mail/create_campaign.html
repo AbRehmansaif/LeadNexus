@@ -82,6 +82,9 @@ document.getElementById('addFollowupBtn').addEventListener('click', () => {
                     <button type="button" class="btn btn-sm" onclick="analyzeSpamScore('step_body_${stepIdx}', 'step_subject_${stepIdx}')" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
                         <i data-lucide="shield-check" style="width:12px; height: 12px;"></i> Detect Spam
                     </button>
+                    <button type="button" class="btn btn-sm" onclick="insertMetricsTable('step_body_${stepIdx}')" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); color: var(--accent-purple); padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                        <i data-lucide="table" style="width:12px; height: 12px;"></i> Insert Table
+                    </button>
                 </div>
             </div>
 
@@ -113,6 +116,9 @@ document.getElementById('addFollowupBtn').addEventListener('click', () => {
                             <button type="button" class="btn btn-sm" onclick="analyzeSpamScore('step_body_b_${stepIdx}', 'step_subject_b_${stepIdx}')" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
                                 <i data-lucide="shield-check" style="width:12px; height: 12px;"></i> Check Variant B Spam
                             </button>
+                            <button type="button" class="btn btn-sm" onclick="insertMetricsTable('step_body_b_${stepIdx}')" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); color: var(--accent-purple); padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                                <i data-lucide="table" style="width:12px; height: 12px;"></i> Insert Table
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -129,6 +135,45 @@ document.getElementById('addFollowupBtn').addEventListener('click', () => {
 function removeStep(idx) {
     const el = document.getElementById(`step_${idx}`);
     if (el) el.parentElement.remove(); // Remove the wrapper div
+}
+
+function insertMetricsTable(targetId) {
+    const textarea = document.getElementById(targetId);
+    if (!textarea) return;
+
+    const tableTemplate = `
+<table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; border: 1px solid #999; margin-top: 20px;">
+  <thead>
+    <tr style="background-color: #a6a6a6; color: #111;">
+      <th style="padding: 10px; border: 1px solid #999; text-align: left; font-style: italic;">Sitio Web</th>
+      <th style="padding: 10px; border: 1px solid #999; text-align: center; font-style: italic;">DR</th>
+      <th style="padding: 10px; border: 1px solid #999; text-align: center; font-style: italic;">DA</th>
+      <th style="padding: 10px; border: 1px solid #999; text-align: center; font-style: italic;">PA</th>
+      <th style="padding: 10px; border: 1px solid #999; text-align: right; font-style: italic;">Tráfico</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="padding: 8px 10px; border: 1px solid #999;"><a href="https://{{ domain }}" style="color: #0b5394; text-decoration: underline; font-weight: bold;">{{ domain }}</a></td>
+      <td style="padding: 8px 10px; border: 1px solid #999; text-align: center;">{{ dr }}</td>
+      <td style="padding: 8px 10px; border: 1px solid #999; text-align: center;">{{ da }}</td>
+      <td style="padding: 8px 10px; border: 1px solid #999; text-align: center;">{{ pa }}</td>
+      <td style="padding: 8px 10px; border: 1px solid #999; text-align: right;">{{ traffic }}</td>
+    </tr>
+  </tbody>
+</table>`;
+
+    const startPos = textarea.selectionStart;
+    const endPos = textarea.selectionEnd;
+    const currentVal = textarea.value;
+    
+    textarea.value = currentVal.substring(0, startPos) + tableTemplate + currentVal.substring(endPos);
+    
+    // Focus back and trigger input event for any auto-resize/validation
+    textarea.focus();
+    textarea.dispatchEvent(new Event('input'));
+    
+    showNotification('Table template inserted! Make sure your CSV columns match the placeholders.', 'success');
 }
 
 function updateStrategyAdvice(input) {
