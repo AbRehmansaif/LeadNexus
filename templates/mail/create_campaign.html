@@ -257,42 +257,6 @@ function insertMetricsTableById(id) {
     }
 }
 
-// Function to manually insert the table into the current focused CKEditor
-function insertTableIntoCk(editor) {
-    const tableHtml = `
-<table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; border: 1px solid #999; margin-top: 20px;">
-  <thead>
-    <tr style="background-color: #a6a6a6; color: #111;">
-      <th style="padding: 10px; border: 1px solid #999; text-align: left; font-style: italic;">Sitio Web</th>
-      <th style="padding: 10px; border: 1px solid #999; text-align: center; font-style: italic;">DR</th>
-      <th style="padding: 10px; border: 1px solid #999; text-align: center; font-style: italic;">DA</th>
-      <th style="padding: 10px; border: 1px solid #999; text-align: center; font-style: italic;">PA</th>
-      <th style="padding: 10px; border: 1px solid #999; text-align: right; font-style: italic;">Tráfico</th>
-    </tr>
-  </thead>
-  <tbody>
-    <tr>
-      <td style="padding: 8px 10px; border: 1px solid #999;"><a href="https://{{ domain }}" style="color: #0b5394; text-decoration: underline; font-weight: bold;">{{ domain }}</a></td>
-      <td style="padding: 8px 10px; border: 1px solid #999; text-align: center;">{{ dr }}</td>
-      <td style="padding: 8px 10px; border: 1px solid #999; text-align: center;">{{ da }}</td>
-      <td style="padding: 8px 10px; border: 1px solid #999; text-align: center;">{{ pa }}</td>
-      <td style="padding: 8px 10px; border: 1px solid #999; text-align: right;">{{ traffic }}</td>
-    </tr>
-  </tbody>
-</table>`;
-    
-    const viewFragment = editor.data.processor.toView(tableHtml);
-    const modelFragment = editor.data.toModel(viewFragment);
-    editor.model.insertContent(modelFragment);
-}
-
-function insertMetricsTableById(id) {
-    const editor = editors[id];
-    if (editor) {
-        insertTableIntoCk(editor);
-    }
-}
-
 async function removeStep(idx) {
     const el = document.getElementById(`step_${idx}`);
     if (el) {
@@ -305,29 +269,28 @@ async function removeStep(idx) {
     }
 }
 
-// Function to manually insert the table into the current focused CKEditor
 function insertTableIntoCk(editor) {
     const tableHtml = `
-<table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; border: 1px solid #999; margin-top: 20px;">
+<table border="1" cellpadding="12" cellspacing="0" style="width: 100%; border-collapse: collapse; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 13px; border: 1px solid #dddddd; margin-top: 20px;">
   <thead>
-    <tr style="background-color: #a6a6a6; color: #111;">
-      <th style="padding: 10px; border: 1px solid #999; text-align: left; font-style: italic;">Sitio Web</th>
-      <th style="padding: 10px; border: 1px solid #999; text-align: center; font-style: italic;">DR</th>
-      <th style="padding: 10px; border: 1px solid #999; text-align: center; font-style: italic;">DA</th>
-      <th style="padding: 10px; border: 1px solid #999; text-align: center; font-style: italic;">PA</th>
-      <th style="padding: 10px; border: 1px solid #999; text-align: right; font-style: italic;">Tráfico</th>
+    <tr style="background-color: #f8f9fa; color: #333333;">
+      <th style="padding: 12px; border: 1px solid #dddddd; text-align: left; font-weight: bold;">Sitio Web</th>
+      <th style="padding: 12px; border: 1px solid #dddddd; text-align: center; font-weight: bold;">DR</th>
+      <th style="padding: 12px; border: 1px solid #dddddd; text-align: center; font-weight: bold;">DA</th>
+      <th style="padding: 12px; border: 1px solid #dddddd; text-align: center; font-weight: bold;">PA</th>
+      <th style="padding: 12px; border: 1px solid #dddddd; text-align: right; font-weight: bold;">Tráfico</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td style="padding: 8px 10px; border: 1px solid #999;"><a href="https://{{ domain }}" style="color: #0b5394; text-decoration: underline; font-weight: bold;">{{ domain }}</a></td>
-      <td style="padding: 8px 10px; border: 1px solid #999; text-align: center;">{{ dr }}</td>
-      <td style="padding: 8px 10px; border: 1px solid #999; text-align: center;">{{ da }}</td>
-      <td style="padding: 8px 10px; border: 1px solid #999; text-align: center;">{{ pa }}</td>
-      <td style="padding: 8px 10px; border: 1px solid #999; text-align: right;">{{ traffic }}</td>
+      <td style="padding: 10px; border: 1px solid #dddddd;"><a href="https://{{ domain }}" style="color: #4f46e5; text-decoration: underline; font-weight: bold;">{{ domain }}</a></td>
+      <td style="padding: 10px; border: 1px solid #dddddd; text-align: center;">{{ dr }}</td>
+      <td style="padding: 10px; border: 1px solid #dddddd; text-align: center;">{{ da }}</td>
+      <td style="padding: 10px; border: 1px solid #dddddd; text-align: center;">{{ pa }}</td>
+      <td style="padding: 10px; border: 1px solid #dddddd; text-align: right;">{{ traffic }}</td>
     </tr>
   </tbody>
-</table>`;
+</table><p>&nbsp;</p>`;
     
     const viewFragment = editor.data.processor.toView(tableHtml);
     const modelFragment = editor.data.toModel(viewFragment);
