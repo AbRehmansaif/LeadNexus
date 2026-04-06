@@ -91,6 +91,10 @@ class EmailCampaign(models.Model):
     send_window_start = models.TimeField(null=True, blank=True, help_text="Starting hour (e.g., 09:00)")
     send_window_end = models.TimeField(null=True, blank=True, help_text="Ending hour (e.g., 17:00)")
     work_days = models.CharField(max_length=20, default='1,2,3,4,5', help_text="Comma separated days (1=Mon, 7=Sun)")
+    
+    # Attachment Support (Step 1 Fallback)
+    attachment = models.FileField(upload_to='campaign_attachments/', null=True, blank=True)
+    attachment_name = models.CharField(max_length=255, null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
@@ -175,6 +179,10 @@ class CampaignStep(models.Model):
     # A/B Testing Variants
     subject_b = models.CharField(max_length=255, null=True, blank=True, help_text="Alternate subject for A/B testing")
     body_b = models.TextField(null=True, blank=True, help_text="Alternate body for A/B testing")
+    
+    # Step-specific Attachment
+    attachment = models.FileField(upload_to='step_attachments/', null=True, blank=True)
+    attachment_name = models.CharField(max_length=255, null=True, blank=True)
 
     class Meta:
         ordering = ['step_number']

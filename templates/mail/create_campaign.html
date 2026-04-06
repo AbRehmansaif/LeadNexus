@@ -37,14 +37,159 @@
     </div>
     {% endif %}
 
+<!-- CKEditor 5 (Open Source Build - No API Key Needed) -->
+<script src="https://cdn.ckeditor.com/ckeditor5/40.0.0/classic/ckeditor.js"></script>
+
+<style>
+/* CKEditor 5 Dark Theme Overrides */
+.ck-editor__editable {
+    background-color: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border) !important;
+    min-height: 300px;
+}
+.ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) {
+    border-color: var(--border) !important;
+}
+.ck.ck-toolbar {
+    background-color: var(--bg-primary) !important;
+    border-color: var(--border) !important;
+}
+.ck.ck-button {
+    color: var(--text-primary) !important;
+}
+.ck.ck-button:hover {
+    background-color: rgba(255,255,255,0.08) !important;
+}
+.ck.ck-button.ck-on {
+    background-color: var(--accent-purple) !important;
+    color: white !important;
+}
+/* Dropdown Visibility Fixes */
+.ck.ck-dropdown__panel {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border) !important;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5) !important;
+}
+.ck.ck-list {
+    background: var(--bg-primary) !important;
+}
+.ck.ck-list__item {
+    background: transparent !important;
+}
+.ck.ck-list__item .ck-button {
+    color: var(--text-primary) !important;
+    background: transparent !important;
+}
+/* Balloon/Popup Visibility Fixes (Links, Tables, etc.) */
+.ck.ck-balloon-panel {
+    background: var(--bg-primary) !important;
+    border: 1px solid var(--border) !important;
+}
+.ck.ck-balloon-panel[class*="arrow_n"]::after {
+    border-bottom-color: var(--bg-primary) !important;
+}
+.ck.ck-balloon-panel[class*="arrow_s"]::after {
+    border-top-color: var(--bg-primary) !important;
+}
+
+.ck.ck-labeled-field-view__input-wrapper input, 
+.ck.ck-labeled-field-view__input-wrapper textarea {
+    background: var(--bg-secondary) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border) !important;
+}
+
+.ck.ck-labeled-field-view .ck-label {
+    background: var(--bg-primary) !important;
+    color: var(--text-muted) !important;
+    font-size: 11px !important;
+}
+
+.ck.ck-list__item .ck-button.ck-on {
+    background: var(--accent-purple) !important;
+    color: white !important;
+}
+
+/* Whitelabeling: Replace CKEditor branding with LeadNexus branding */
+.ck-powered-by {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+}
+
+.ck.ck-editor__main {
+    position: relative;
+}
+
+.ck.ck-editor__main::after {
+    content: "LeadNexus AI Editor";
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    color: var(--accent-purple);
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    pointer-events: none;
+    opacity: 0.4;
+    transition: opacity 0.3s;
+}
+
+.ck.ck-editor__main:hover::after {
+    opacity: 0.8;
+}
+
+/* Reset Core Text to prevent white-on-white */
+.ck-reset_all, .ck-reset_all * {
+    color: var(--text-primary) !important;
+}
+</style>
+
 <script>
+// Initialized editors storage
+const editors = {};
+
+async function initEditor(element) {
+    try {
+        const editor = await ClassicEditor.create(element, {
+            toolbar: [
+                'heading', '|', 'bold', 'italic', 'link', 'insertTable', 'bulletedList', 'numberedList', 'blockQuote', 'undo', 'redo'
+            ],
+            table: {
+                contentToolbar: ['tableColumn', 'tableRow', 'mergeTableCells']
+            }
+        });
+        
+        // Auto-sync to textarea for form submission
+        editor.model.document.on('change:data', () => {
+            element.value = editor.getData();
+        });
+        
+        // Store reference
+        editors[element.id || element.name || Math.random()] = editor;
+        return editor;
+    } catch (error) {
+        console.error('Editor initialization failed:', error);
+    }
+}
+
+// Global initialization
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.payload-area').forEach(async (el) => {
+        await initEditor(el);
+    });
+});
+
 let followupCount = 0;
 
-document.getElementById('addFollowupBtn').addEventListener('click', () => {
+document.getElementById('addFollowupBtn').addEventListener('click', async () => {
     followupCount++;
     const container = document.getElementById('followupContainer');
     const stepIdx = followupCount + 1;
     
+    // Create new elements manually to avoid innerHTML string replacement issues with editors
     const followupHtml = `
         <div class="form-section followup-step" id="step_${stepIdx}" style="border-left: 3px solid var(--accent-purple); padding-left: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
@@ -63,85 +208,74 @@ document.getElementById('addFollowupBtn').addEventListener('click', () => {
                 <div class="strategy-advice" style="margin-top: 6px; font-size: 0.75rem; display: block;">
                     <div class="advice-same" style="color: #10b981; display: flex; align-items: center; gap: 4px;">
                         <i data-lucide="check-circle" style="width:12px; height:12px;"></i> 
-                        <b>Threaded Strategy:</b> Using Step 1's subject keeps the conversation in one thread. Best for building on your previous message.
-                    </div>
-                    <div class="advice-new" style="color: #8b5cf6; display: flex; align-items: center; gap: 4px;">
-                        <i data-lucide="zap" style="width:12px; height:12px;"></i> 
-                        <b>New Hook Strategy:</b> A different subject line starts a new thread. Great for grabbing attention with a fresh angle if they ignored the first one.
+                        <b>Threaded Strategy:</b> Using Step 1's subject keeps the conversation in one thread.
                     </div>
                 </div>
             </div>
 
             <div class="form-group">
                 <label class="form-label">Follow-up Payload</label>
-                <textarea class="form-control step-body payload-area" id="step_body_${stepIdx}" placeholder="Just following up on my previous email..."></textarea>
-                <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 8px; gap: 8px;">
-                    <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" target="_blank" class="btn btn-sm" style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; text-decoration: none;">
-                        <i data-lucide="external-link" style="width:12px; height:12px;"></i> Advanced Checker
+                <div style="margin-bottom: 10px; display: flex; align-items: center; justify-content: flex-end; gap: 8px; flex-wrap: wrap;">
+                     <!-- Attachment Support -->
+                     <div style="margin-right: auto;">
+                        <input type="file" id="attachment_step_${stepIdx}" name="attachment_step_${stepIdx}" style="display: none;" onchange="updateFileLabel(this, 'attachmentLabelStep${stepIdx}')">
+                        <button type="button" class="btn btn-sm" onclick="document.getElementById('attachment_step_${stepIdx}').click()" style="background: rgba(var(--accent-purple-rgb), 0.05); border: 1px solid rgba(var(--accent-purple-rgb), 0.2); color: var(--accent-purple); padding: 4px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                            <i data-lucide="paperclip" style="width:12px; height: 12px;"></i> <span id="attachmentLabelStep${stepIdx}">Add File</span>
+                        </button>
+                    </div>
+
+                    <!-- Metrics Table -->
+                    <button type="button" class="btn btn-sm" onclick="insertMetricsTableById('step_body_${stepIdx}')" style="background: rgba(var(--accent-purple-rgb), 0.1); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">
+                        <i data-lucide="table" style="width:12px; height:12px; margin-right:4px;"></i> Insert Table
+                    </button>
+
+                    <!-- Spam Analysis -->
+                    <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" target="_blank" class="btn btn-sm" style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 4px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; text-decoration: none;">
+                        <i data-lucide="external-link" style="width:12px; height:12px;"></i> Advanced Tools
                     </a>
-                    <button type="button" class="btn btn-sm" onclick="analyzeSpamScore('step_body_${stepIdx}', 'step_subject_${stepIdx}')" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
+                    <button type="button" class="btn btn-sm" onclick="analyzeSpamScore('step_body_${stepIdx}', 'step_subject_${stepIdx}')" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 4px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
                         <i data-lucide="shield-check" style="width:12px; height: 12px;"></i> Detect Spam
                     </button>
-                    <button type="button" class="btn btn-sm" onclick="insertMetricsTable('step_body_${stepIdx}')" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); color: var(--accent-purple); padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                        <i data-lucide="table" style="width:12px; height: 12px;"></i> Insert Table
-                    </button>
                 </div>
+                <textarea class="form-control step-body payload-area" id="step_body_${stepIdx}" placeholder="Just following up on my previous email..."></textarea>
             </div>
-
-            <!-- A/B Testing Toggle Option for Follow-up -->
-            <div style="margin-top: 15px;">
-                <button type="button" class="btn btn-secondary btn-sm" onclick="this.style.display='none'; this.nextElementSibling.style.display='block'; lucide.createIcons();" style="background: rgba(59,130,246, 0.1); border: 1px dashed var(--accent-blue); color: var(--accent-blue);">
-                    <i data-lucide="layers" style="width:14px;height:14px;margin-right:6px;"></i> Add Step ${stepIdx} A/B Variant
-                </button>
-                <div class="ab-testing-box" style="display: none; margin-top: 15px; padding: 12px; background: rgba(59,130,246,0.03); border-radius: 8px; border: 1px dashed rgba(59,130,246,0.2); position: relative;">
-                    <!-- Close button -->
-                    <button type="button" class="btn" onclick="this.closest('.ab-testing-box').style.display='none'; this.closest('.ab-testing-box').previousElementSibling.style.display='inline-flex'; this.closest('.ab-testing-box').querySelectorAll('input, textarea').forEach(el=>el.value='');" style="position: absolute; top: 10px; right: 10px; background: rgba(255,255,255,0.05); border: 1px solid var(--border); border-radius: 6px; padding: 4px; color: var(--text-muted); cursor: pointer; display: flex; align-items: center; justify-content: center;" title="Remove A/B Variant">
-                        <i data-lucide="x" style="width: 12px; height: 12px;"></i>
-                    </button>
-                    
-                    <h4 style="font-size: 0.75rem; margin-top: 0; margin-bottom: 10px; color: var(--accent-blue); display: flex; align-items: center; gap: 6px;">
-                        <i data-lucide="layers" style="width:12px; height:12px;"></i> Step ${stepIdx} A/B Variant
-                    </h4>
-                    <div class="form-group">
-                        <label class="form-label" style="font-size: 0.7rem;">Variant B Subject</label>
-                        <input type="text" class="form-control step-subject-b" id="step_subject_b_${stepIdx}" placeholder="Variant B Subject (or leave blank for A)">
-                    </div>
-                    <div class="form-group" style="margin-bottom: 0;">
-                        <label class="form-label" style="font-size: 0.7rem;">Variant B Payload</label>
-                        <textarea class="form-control step-body-b payload-area" id="step_body_b_${stepIdx}" style="min-height: 80px;" placeholder="Try a different follow-up angle..."></textarea>
-                        <div style="display: flex; justify-content: flex-end; align-items: center; margin-top: 8px; gap: 8px;">
-                            <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" target="_blank" class="btn btn-sm" style="background: rgba(59, 130, 246, 0.05); border: 1px solid rgba(59, 130, 246, 0.2); color: #60a5fa; padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; text-decoration: none;">
-                                <i data-lucide="external-link" style="width:12px; height:12px;"></i> Advanced Checker
-                            </a>
-                            <button type="button" class="btn btn-sm" onclick="analyzeSpamScore('step_body_b_${stepIdx}', 'step_subject_b_${stepIdx}')" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                                <i data-lucide="shield-check" style="width:12px; height: 12px;"></i> Check Variant B Spam
-                            </button>
-                            <button type="button" class="btn btn-sm" onclick="insertMetricsTable('step_body_b_${stepIdx}')" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); color: var(--accent-purple); padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                                <i data-lucide="table" style="width:12px; height: 12px;"></i> Insert Table
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
+            <!-- A/B Testing Variant B (Simplified for now) -->
         </div>
     `;
     
     const div = document.createElement('div');
     div.innerHTML = followupHtml;
     container.appendChild(div);
+    
+    // Initialize Editor
+    const ta = div.querySelector(`#step_body_${stepIdx}`);
+    await initEditor(ta);
+    
     lucide.createIcons();
 });
 
-function removeStep(idx) {
-    const el = document.getElementById(`step_${idx}`);
-    if (el) el.parentElement.remove(); // Remove the wrapper div
+function insertMetricsTableById(id) {
+    const editor = editors[id];
+    if (editor) {
+        insertTableIntoCk(editor);
+    }
 }
 
-function insertMetricsTable(targetId) {
-    const textarea = document.getElementById(targetId);
-    if (!textarea) return;
+async function removeStep(idx) {
+    const el = document.getElementById(`step_${idx}`);
+    if (el) {
+        const ta = el.querySelector('.payload-area');
+        if (ta && editors[ta.id]) {
+            await editors[ta.id].destroy();
+            delete editors[ta.id];
+        }
+        el.parentElement.remove(); 
+    }
+}
 
-    const tableTemplate = `
+// Function to manually insert the table into the current focused CKEditor
+function insertTableIntoCk(editor) {
+    const tableHtml = `
 <table style="width: 100%; border-collapse: collapse; font-family: sans-serif; font-size: 13px; border: 1px solid #999; margin-top: 20px;">
   <thead>
     <tr style="background-color: #a6a6a6; color: #111;">
@@ -162,18 +296,10 @@ function insertMetricsTable(targetId) {
     </tr>
   </tbody>
 </table>`;
-
-    const startPos = textarea.selectionStart;
-    const endPos = textarea.selectionEnd;
-    const currentVal = textarea.value;
     
-    textarea.value = currentVal.substring(0, startPos) + tableTemplate + currentVal.substring(endPos);
-    
-    // Focus back and trigger input event for any auto-resize/validation
-    textarea.focus();
-    textarea.dispatchEvent(new Event('input'));
-    
-    showNotification('Table template inserted! Make sure your CSV columns match the placeholders.', 'success');
+    const viewFragment = editor.data.processor.toView(tableHtml);
+    const modelFragment = editor.data.toModel(viewFragment);
+    editor.model.insertContent(modelFragment);
 }
 
 function updateStrategyAdvice(input) {
@@ -194,6 +320,11 @@ function updateStrategyAdvice(input) {
 
 document.getElementById('campaignForm').addEventListener('submit', async (e) => {
     e.preventDefault();
+    
+    // Sync TinyMCE to textareas
+    if (window.tinymce) {
+        tinymce.triggerSave();
+    }
     
     // 1. Reset Errors
     document.querySelectorAll('.is-invalid').forEach(el => el.classList.remove('is-invalid'));
@@ -232,23 +363,23 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
     formData.append('body', body.value);
     formData.append('gap_seconds', document.getElementById('gap_seconds').value);
 
-    // Collect Sequences
-    const steps = [];
-    // Add Step 1 (Implicitly index 1)
-    steps.push({ 
-        step_number: 1, 
-        wait_days: 0, 
-        subject: subject.value, 
-        body: body.value,
-        subject_b: document.getElementById('subject_b').value || null,
-        body_b: document.getElementById('body_b').value || null
-    });
-    
+    // Handle Step 1 Attachment
+    const step1File = document.getElementById('attachment_step_1').files[0];
+    if (step1File) {
+        formData.append('attachment_step_1', step1File);
+    }
+
     document.querySelectorAll('.followup-step').forEach((el, index) => {
         const stepNum = index + 2;
         const sub = el.querySelector('.step-subject').value.trim();
         const subB = el.querySelector('.step-subject-b').value.trim();
         
+        // Handle Step Attachment
+        const stepFile = document.getElementById(`attachment_step_${stepNum}`).files[0];
+        if (stepFile) {
+            formData.append(`attachment_step_${stepNum}`, stepFile);
+        }
+
         steps.push({
             step_number: stepNum,
             wait_days: el.querySelector('.step-wait').value,

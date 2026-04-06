@@ -225,24 +225,34 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
         
         if steps_data:
             for s in steps_data:
-                CampaignStep.objects.create(
+                step_num = s.get('step_number')
+                step_obj = CampaignStep.objects.create(
                     campaign=campaign,
-                    step_number=s.get('step_number'),
+                    step_number=step_num,
                     wait_days=s.get('wait_days', 3),
                     subject=s.get('subject'),
                     body=s.get('body'),
                     subject_b=s.get('subject_b'),
                     body_b=s.get('body_b')
                 )
+                
+                # Attachment handling for this step
+                file_key = f'attachment_step_{step_num}'
+                if file_key in request.FILES:
+                    step_obj.attachment = request.FILES[file_key]
+                    step_obj.save(update_fields=['attachment'])
         else:
             # Fallback: Create Step 1 from basic campaign info
-            CampaignStep.objects.create(
+            step_obj = CampaignStep.objects.create(
                 campaign=campaign,
                 step_number=1,
                 wait_days=0,
                 subject=subject,
                 body=body
             )
+            if 'attachment_step_1' in request.FILES:
+                step_obj.attachment = request.FILES['attachment_step_1']
+                step_obj.save(update_fields=['attachment'])
 
         recipient_list = []
         seen_emails = set()

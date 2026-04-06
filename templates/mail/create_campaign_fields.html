@@ -2,7 +2,7 @@
                 <h3 class="form-section-title"><i data-lucide="mail" style="width:18px; height:18px;"></i> Step 1: Initial Outreach</h3>
                 <div class="form-group">
                     <label class="form-label" for="subject">Step 1 Subject Line</label>
-                    <input type="text" id="subject" name="subject" class="form-control" placeholder="The high-converting subject line" required>
+                    <input type="text" id="subject" name="subject" class="form-control" placeholder="The high converting subject line" required>
                     <div class="error-feedback">An email subject is mandatory for transmission.</div>
                 </div>
 
@@ -11,20 +11,42 @@
                     <textarea id="body" name="body" class="form-control payload-area" placeholder="Hello {% verbatim %}{{ name }}{% endverbatim %},\n\nYour message here..." required></textarea>
                     <div class="error-feedback">Transmission payload cannot be empty.</div>
                     <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 10px; gap: 10px;">
-                        <p class="form-help" style="margin: 0; flex: 1;">Use {% verbatim %}{{ name }}{% endverbatim %} and {% verbatim %}{{ email }}{% endverbatim %} for data injection.</p>
+                        <p class="form-help" style="margin: 0; flex: 1;">Use {% verbatim %}{{ name }}{% endverbatim %} and {% verbatim %}{{ email }}{% endverbatim %} for data injection. HTML tables are supported.</p>
                         <div style="display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;">
-                            <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" target="_blank" class="btn btn-sm" style="background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.4); color: #60a5fa; padding: 4px 12px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 6px; text-decoration: none; transition: all 0.2s;">
-                                <i data-lucide="external-link" style="width:13px; height:13px;"></i> Free Spam Remover Tool
-                            </a>
-                            <button type="button" class="btn btn-sm spam-check-btn" onclick="analyzeSpamScore('body', 'subject')" style="background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; color: #10b981; padding: 4px 12px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;">
-                                <i data-lucide="shield-check" style="width:13px; height:13px;"></i> Detect Spam Keywords
-                            </button>
-                            <button type="button" class="btn btn-sm" onclick="insertMetricsTable('body')" style="background: rgba(139, 92, 246, 0.1); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 4px 12px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;">
+                            <!-- Attachment Support -->
+                            <div style="margin-right: auto;">
+                                <input type="file" id="attachment_step_1" name="attachment_step_1" style="display: none;" onchange="updateFileLabel(this, 'attachmentLabelStep1')">
+                                <button type="button" class="btn btn-sm" onclick="document.getElementById('attachment_step_1').click()" style="background: rgba(var(--accent-purple-rgb), 0.05); border: 1px solid rgba(var(--accent-purple-rgb), 0.2); color: var(--accent-purple); padding: 4px 12px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
+                                    <i data-lucide="paperclip" style="width:13px; height:13px;"></i> <span id="attachmentLabelStep1">Add Attachment</span>
+                                </button>
+                            </div>
+
+                            <!-- Table Tool -->
+                            <button type="button" class="btn btn-sm" onclick="insertMetricsTableById('body')" style="background: rgba(var(--accent-purple-rgb), 0.1); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 4px 12px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 6px; cursor: pointer;">
                                 <i data-lucide="table" style="width:13px; height:13px;"></i> Insert Metrics Table
+                            </button>
+                            
+                            <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}" target="_blank" class="btn btn-sm" style="background: rgba(59, 130, 246, 0.08); border: 1px solid rgba(59, 130, 246, 0.3); color: #60a5fa; padding: 4px 12px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 6px; text-decoration: none; transition: all 0.2s;">
+                                <i data-lucide="external-link" style="width:13px; height:13px;"></i> Advanced Spam Checker
+                            </a>
+                            <button type="button" class="btn btn-sm spam-check-btn" onclick="analyzeSpamScore('body', 'subject')" style="background: rgba(16, 185, 129, 0.08); border: 1px solid #10b981; color: #10b981; padding: 4px 12px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 6px; cursor: pointer; transition: all 0.2s;">
+                                <i data-lucide="shield-check" style="width:13px; height:13px;"></i> Detect Spam
                             </button>
                         </div>
                     </div>
                 </div>
+<script>
+function updateFileLabel(input, labelId) {
+    const label = document.getElementById(labelId);
+    if (input.files && input.files[0]) {
+        const name = input.files[0].name;
+        label.textContent = name.length > 20 ? name.substring(0, 17) + '...' : name;
+        label.parentNode.style.background = 'rgba(16, 185, 129, 0.1)';
+        label.parentNode.style.borderColor = '#10b981';
+        label.parentNode.style.color = '#10b981';
+    }
+}
+</script>
 
                 <!-- A/B Testing Toggle Option -->
                 <div style="margin-top: 15px;">
@@ -47,14 +69,12 @@
                         </div>
                         <div class="form-group" style="margin-bottom: 0;">
                             <label class="form-label" for="body_b">Variant B Payload</label>
-                            <textarea id="body_b" name="body_b" class="form-control payload-area" placeholder="Try a different angle or call to action..."></textarea>
-                                <button type="button" class="btn btn-sm" onclick="analyzeSpamScore('body_b', 'subject_b')" style="background: rgba(16, 185, 129, 0.05); border: 1px solid rgba(16, 185, 129, 0.3); color: #10b981; padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                                    <i data-lucide="shield-check" style="width:12px; height: 12px;"></i> Check Variant B Spam
-                                </button>
-                                <button type="button" class="btn btn-sm" onclick="insertMetricsTable('body_b')" style="background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.3); color: var(--accent-purple); padding: 3px 10px; border-radius: 6px; font-size: 11px; display: flex; align-items: center; gap: 4px; cursor: pointer;">
-                                    <i data-lucide="table" style="width:12px; height: 12px;"></i> Insert Table Template
+                            <div style="margin-bottom: 10px; display: flex; justify-content: flex-end; gap: 8px;">
+                                <button type="button" class="btn btn-sm" onclick="insertMetricsTableById('body_b')" style="background: rgba(var(--accent-purple-rgb), 0.1); border: 1px solid var(--accent-purple); color: var(--accent-purple); padding: 4px 10px; border-radius: 6px; font-size: 11px; cursor: pointer;">
+                                    <i data-lucide="table" style="width:12px; height:12px; margin-right:4px;"></i> Insert Table Template
                                 </button>
                             </div>
+                            <textarea id="body_b" name="body_b" class="form-control payload-area" placeholder="Try a different angle or call to action..."></textarea>
                         </div>
                         <p class="form-help" style="margin-top: 10px; margin-bottom: 0;">If provided, LeadNexus will perform a 50/50 split test across your lead list.</p>
                     </div>

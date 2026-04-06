@@ -243,6 +243,23 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                 connection=connection, headers=headers
             )
             email_obj.content_subtype = "html"
+            
+            # ATTACHMENT PREREQUISITE: Ensure we have the right attachment from Step or Campaign
+            attachment_obj = None
+            if step and step.attachment:
+                attachment_obj = step.attachment
+                attachment_name = step.attachment_name
+            elif not step and campaign.attachment:
+                attachment_obj = campaign.attachment
+                attachment_name = campaign.attachment_name
+            
+            if attachment_obj:
+                try:
+                    # Professional attachment logic: reads binary content to support S3/Local uniformly
+                    f_name = attachment_name or attachment_obj.name.split('/')[-1]
+                    email_obj.attach(f_name, attachment_obj.read())
+                except Exception as e:
+                    logger.warning(f"Could not attach file for recipient {recipient_id}: {e}")
 
             # Capture IDs we need after the transaction closes
             campaign_id = campaign.id
