@@ -390,45 +390,42 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
     btn.innerHTML = 'Deploying Sequence...';
 
     const formData = new FormData();
-    formData.append('name', name.value);
-    formData.append('subject', subject.value);
-    formData.append('body', body.value);
+    formData.append('name', name.value.trim());
+    formData.append('subject', subject.value.trim());
+    formData.append('body', body.value); // CKEditor syncs to body textarea
     formData.append('gap_seconds', document.getElementById('gap_seconds').value);
 
-    // Handle Step 1 Attachment
-    const step1File = document.getElementById('attachment_step_1').files[0];
-    if (step1File) {
-        formData.append('attachment_step_1', step1File);
+    // Step 1 File
+    const step1FileInput = document.getElementById('attachment_step_1');
+    if (step1FileInput && step1FileInput.files && step1FileInput.files[0]) {
+        formData.append('attachment_step_1', step1FileInput.files[0]);
     }
 
+    const steps = [];
     document.querySelectorAll('.followup-step').forEach((el, index) => {
         const stepNum = index + 2;
         const sub = el.querySelector('.step-subject').value.trim();
         const subB = el.querySelector('.step-subject-b').value.trim();
         
-        // Handle Step Attachment
-        const stepFile = document.getElementById(`attachment_step_${stepNum}`).files[0];
-        if (stepFile) {
-            formData.append(`attachment_step_${stepNum}`, stepFile);
+        // Handle Step Attachment (Safe Check)
+        const stepFileInput = document.getElementById(`attachment_step_${stepNum}`);
+        if (stepFileInput && stepFileInput.files && stepFileInput.files[0]) {
+            formData.append(`attachment_step_${stepNum}`, stepFileInput.files[0]);
         }
 
         steps.push({
             step_number: stepNum,
             wait_days: el.querySelector('.step-wait').value,
-            // Fallback to primary subject if blank
             subject: sub || subject.value, 
             body: el.querySelector('.step-body').value,
-            // Fallback to the step's subject if variant B subject is blank
             subject_b: subB || sub || subject.value,
             body_b: el.querySelector('.step-body-b').value || null
         });
     });
     formData.append('steps', JSON.stringify(steps));
 
-    // Business Hours are now managed automatically via Profile Settings.
-
-
     if (csvFile) formData.append('csv_file', csvFile);
+    
     if (manualInput.value.trim()) {
         const recipients = manualInput.value.split('\n').map(line => {
             const parts = line.split(',').map(s => s.trim());
@@ -439,7 +436,6 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
 
     const scheduledAtInput = document.getElementById('scheduled_at');
     if (scheduledAtInput && scheduledAtInput.value) {
-        // Convert local time to UTC ISO string for robust cross-timezone scheduling
         const utcDate = new Date(scheduledAtInput.value).toISOString();
         formData.append('scheduled_at', utcDate);
         formData.append('status', 'scheduled');
