@@ -95,7 +95,12 @@
                         </td>
                         <td>{{ job.created_at|date:"M d, H:i" }}</td>
                         <td>
-                            <a href="/linkedin-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="/linkedin-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a>
+                                <a href="/api/export/linkedin/csv/?job_id={{ job.id }}" class="btn btn-secondary btn-sm" title="Download CSV">
+                                    <i data-lucide="download" style="width:14px; height:14px;"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -192,7 +197,12 @@
                         </td>
                         <td>{{ job.created_at|date:"M d, H:i" }}</td>
                         <td>
-                            <a href="/website-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="/website-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a>
+                                <a href="/api/export/csv/?job_id={{ job.id }}" class="btn btn-secondary btn-sm" title="Download CSV">
+                                    <i data-lucide="download" style="width:14px; height:14px;"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
@@ -277,7 +287,12 @@
                         </td>
                         <td>{{ job.created_at|date:"M d, H:i" }}</td>
                         <td>
-                            <a href="/keyword-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a>
+                            <div style="display: flex; gap: 8px;">
+                                <a href="/keyword-job/{{ job.id }}/" class="btn btn-secondary btn-sm">View →</a>
+                                <a href="{% url 'core:export-keyword-csv' %}?job_id={{ job.id }}" class="btn btn-secondary btn-sm" title="Download CSV">
+                                    <i data-lucide="download" style="width:14px; height:14px;"></i>
+                                </a>
+                            </div>
                         </td>
                     </tr>
                     {% endfor %}
