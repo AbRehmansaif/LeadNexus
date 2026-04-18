@@ -63,7 +63,7 @@
         <div class="btn-group">
             {% if results %}
             <button onclick="startCampaignFromWebsite()" class="btn btn-primary btn-sm"><i data-lucide="rocket" style="width:15px; height:15px; "></i> Start Campaign</button>
-            <a href="{% url 'core:export-keyword-csv' %}?job_id={{ job.id }}" class="btn btn-success btn-sm"><i data-lucide="download" style="width:15px; height:15px; "></i> Download CSV</a>
+            <a href="{% url 'core:export-keyword-csv' %}?job_id={{ job.id }}" class="btn btn-secondary btn-sm"><i data-lucide="file-text" style="width:15px; height:15px; "></i> Export CSV</a>
             {% endif %}
             <button onclick="deleteKeywordJob('{{ job.id }}')" class="btn btn-danger btn-sm">🗑 Delete</button>
         </div>
