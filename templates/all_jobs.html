@@ -10,11 +10,19 @@
 </div>
 
 <!-- Quick Actions -->
-<div class="btn-group" style="margin-bottom: 28px;">
-    <a href="/webintelligence/" class="btn btn-primary"><i data-lucide="globe" style="width:18px; height:18px; "></i> Launch Web Intelligence</a>
-    <a href="/profinder/" class="btn btn-primary"><i data-lucide="linkedin" style="width:18px; height:18px; "></i> Launch ProFinder Intelligence</a>
-    <a href="/api/export/csv/" class="btn btn-secondary"><i data-lucide="file-text" style="width:18px; height:18px; "></i> Export All Web Intelligence Data</a>
-    <a href="/api/export/linkedin/csv/" class="btn btn-secondary"><i data-lucide="file-text" style="width:18px; height:18px; "></i> Export All LinkedIn Prospect Data</a>
+<div class="header-flex" style="margin-bottom: 28px;">
+    <div class="btn-group">
+        <a href="/webintelligence/" class="btn btn-primary"><i data-lucide="globe" style="width:18px; height:18px; "></i> Launch Web Intelligence</a>
+        <a href="/profinder/" class="btn btn-primary"><i data-lucide="linkedin" style="width:18px; height:18px; "></i> Launch ProFinder Intelligence</a>
+    </div>
+    
+    <!-- Dynamic Bulk Export Button (Hidden by default) -->
+    <div id="bulk-action-container" style="display: none; transition: all 0.3s ease;">
+        <button id="bulk-export-btn" class="btn btn-secondary" style="background: var(--accent-purple); color: white; border: none; box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);">
+            <i data-lucide="download-cloud" style="width:18px; height:18px;"></i> 
+            Merge & Export Selected (<span id="selected-count">0</span>)
+        </button>
+    </div>
 </div>
 
 <!-- Job Tabs -->
@@ -38,6 +46,12 @@
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th style="width: 40px;">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" id="select-all-li">
+                                <span class="checkmark"></span>
+                            </label>
+                        </th>
                         <th>Outreach ID</th>
                         <th>Target Query</th>
                         <th>Prospects Processed</th>
@@ -50,7 +64,13 @@
                 </thead>
                 <tbody>
                     {% for job in linkedin_jobs %}
-                    <tr>
+                    <tr data-job-id="{{ job.id }}" data-type="linkedin">
+                        <td>
+                            <label class="custom-checkbox">
+                                <input type="checkbox" class="job-checkbox" value="{{ job.id }}">
+                                <span class="checkmark"></span>
+                            </label>
+                        </td>
                         <td>#{{ job.id }}</td>
                         <td class="cell-name">{{ job.niche|truncatechars:40 }}</td>
                         <td>{{ job.progress }} / {{ job.max_profiles }}</td>
@@ -125,6 +145,12 @@
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th style="width: 40px;">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" id="select-all-web">
+                                <span class="checkmark"></span>
+                            </label>
+                        </th>
                         <th>OutreachID</th>
                         <th>Domain</th>
                         <th>Contact Pages</th>
@@ -136,7 +162,13 @@
                 </thead>
                 <tbody>
                     {% for job in website_jobs %}
-                    <tr>
+                    <tr data-job-id="{{ job.id }}" data-type="web">
+                        <td>
+                            <label class="custom-checkbox">
+                                <input type="checkbox" class="job-checkbox" value="{{ job.id }}">
+                                <span class="checkmark"></span>
+                            </label>
+                        </td>
                         <td>#{{ job.id }}</td>
                         <td class="cell-url">{% if job.name %}{{ job.name|truncatechars:55 }}{% else %}{{ job.url|truncatechars:55 }}{% endif %}</td>
                         <td>
@@ -204,6 +236,12 @@
             <table class="data-table">
                 <thead>
                     <tr>
+                        <th style="width: 40px;">
+                            <label class="custom-checkbox">
+                                <input type="checkbox" id="select-all-kw">
+                                <span class="checkmark"></span>
+                            </label>
+                        </th>
                         <th>Outreach ID</th>
                         <th>Niche/Keyword</th>
                         <th>Websites Found</th>
@@ -215,7 +253,13 @@
                 </thead>
                 <tbody>
                     {% for job in keyword_jobs %}
-                    <tr>
+                    <tr data-job-id="{{ job.id }}" data-type="keyword">
+                        <td>
+                            <label class="custom-checkbox">
+                                <input type="checkbox" class="job-checkbox" value="{{ job.id }}">
+                                <span class="checkmark"></span>
+                            </label>
+                        </td>
                         <td>#{{ job.id }}</td>
                         <td class="cell-name">{{ job.niche|truncatechars:40 }}</td>
                         <td>{{ job.progress }} / {{ job.max_results }}</td>
@@ -276,4 +320,156 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Premium Checkbox Styling */
+    .custom-checkbox {
+        display: block;
+        position: relative;
+        padding-left: 20px;
+        cursor: pointer;
+        user-select: none;
+        height: 18px;
+    }
+    .custom-checkbox input {
+        position: absolute;
+        opacity: 0;
+        cursor: pointer;
+        height: 0;
+        width: 0;
+    }
+    .checkmark {
+        position: absolute;
+        top: 0;
+        left: 0;
+        height: 18px;
+        width: 18px;
+        background-color: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 4px;
+        transition: all 0.2s ease;
+    }
+    .custom-checkbox:hover input ~ .checkmark {
+        background-color: #334155;
+    }
+    .custom-checkbox input:checked ~ .checkmark {
+        background-color: var(--accent-purple);
+        border-color: var(--accent-purple);
+    }
+    .checkmark:after {
+        content: "";
+        position: absolute;
+        display: none;
+    }
+    .custom-checkbox input:checked ~ .checkmark:after {
+        display: block;
+    }
+    .custom-checkbox .checkmark:after {
+        left: 6px;
+        top: 2px;
+        width: 4px;
+        height: 8px;
+        border: solid white;
+        border-width: 0 2px 2px 0;
+        transform: rotate(45deg);
+    }
+
+    /* Selection Row Highlight */
+    tr.selected-row {
+        background: rgba(139, 92, 246, 0.05) !important;
+    }
+    
+    .header-flex {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    const bulkActionContainer = document.getElementById('bulk-action-container');
+    const bulkExportBtn = document.getElementById('bulk-export-btn');
+    const selectedCountSpan = document.getElementById('selected-count');
+    
+    function updateBulkUI() {
+        const activeTab = document.querySelector('.tab-content.active');
+        if (!activeTab) return;
+        
+        const checked = activeTab.querySelectorAll('.job-checkbox:checked');
+        const count = checked.length;
+        
+        if (count > 0) {
+            bulkActionContainer.style.display = 'block';
+            selectedCountSpan.innerText = count;
+        } else {
+            bulkActionContainer.style.display = 'none';
+        }
+    }
+
+    // Individual Checkbox Logic
+    document.querySelectorAll('.job-checkbox').forEach(cb => {
+        cb.addEventListener('change', (e) => {
+            const row = e.target.closest('tr');
+            if (e.target.checked) {
+                row.classList.add('selected-row');
+            } else {
+                row.classList.remove('selected-row');
+            }
+            updateBulkUI();
+        });
+    });
+
+    // Select All Logic
+    ['li', 'web', 'kw'].forEach(type => {
+        const master = document.getElementById(`select-all-${type}`);
+        if (!master) return;
+        
+        master.addEventListener('change', (e) => {
+            const table = e.target.closest('table');
+            const checkboxes = table.querySelectorAll('.job-checkbox');
+            checkboxes.forEach(cb => {
+                cb.checked = e.target.checked;
+                const row = cb.closest('tr');
+                if (cb.checked) row.classList.add('selected-row');
+                else row.classList.remove('selected-row');
+            });
+            updateBulkUI();
+        });
+    });
+
+    // Tab Change Logic
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            setTimeout(updateBulkUI, 50);
+        });
+    });
+
+    // Bulk Export Process
+    bulkExportBtn.addEventListener('click', () => {
+        const activeTab = document.querySelector('.tab-content.active');
+        const checked = activeTab.querySelectorAll('.job-checkbox:checked');
+        const ids = Array.from(checked).map(cb => cb.value).join(',');
+        
+        const type = activeTab.id; 
+        
+        let url = '';
+        if (type === 'websiteJobs') {
+            url = `/api/export/csv/?ids=${ids}`;
+        } else if (type === 'keywordJobs') {
+            url = `/api/export/keyword/csv/?ids=${ids}`;
+        } else if (type === 'linkedinJobs') {
+            url = `/api/export/linkedin/csv/?ids=${ids}`;
+        }
+        
+        if (url) {
+            window.location.href = url;
+        }
+    });
+});
+</script>
 {% endblock %}

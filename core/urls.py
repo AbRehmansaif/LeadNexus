@@ -47,6 +47,9 @@ urlpatterns = [
     path('export/linkedin/csv/',  views.export_linkedin_csv,  name='export-linkedin-csv'),
     path('export/linkedin/json/', views.export_linkedin_json, name='export-linkedin-json'),
 
+    # ── Exports (Keyword) ──────────────────────────────────────
+    path('export/keyword/csv/',   views.export_keyword_results_csv, name='export-keyword-csv'),
+
     # ── Dashboard ──────────────────────────────────────────────
     path('stats/', views.dashboard_stats, name='stats'),
 ]

@@ -424,6 +424,46 @@ def keyword_job_result(request, pk):
     return Response(ScrapedKeywordWebsiteSerializer(results, many=True).data)
 
 
+@api_view(['GET'])
+def export_keyword_results_csv(request):
+    """
+    GET /api/export/keyword/csv/?job_id=X
+    GET /api/export/keyword/csv/?ids=1,2,3
+    """
+    ids = request.query_params.get('ids')
+    job_id = request.query_params.get('job_id')
+    
+    qs = ScrapedKeywordWebsite.objects.filter(job__user=request.user).select_related('job').all()
+    
+    if ids:
+        id_list = [i.strip() for i in ids.split(',') if i.strip().isdigit()]
+        qs = qs.filter(job_id__in=id_list)
+        filename = "bulk_keyword_results.csv"
+    elif job_id:
+        qs = qs.filter(job_id=job_id)
+        filename = f"keyword_results_job_{job_id}.csv"
+    else:
+        return Response({'error': 'job_id or ids required'}, status=status.HTTP_400_BAD_REQUEST)
+
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
+
+    writer = csv.writer(response)
+    # Define common columns for niche results
+    writer.writerow([
+        'Job ID', 'Niche', 'Website URL', 'Email', 'Phone', 'Address',
+        'Facebook', 'Twitter', 'Instagram', 'LinkedIn', 'Found At'
+    ])
+    
+    for obj in qs:
+        writer.writerow([
+            obj.job_id, obj.job.niche, obj.website_url,
+            obj.email or '', obj.phone or '', obj.address or '',
+            obj.facebook or '', obj.twitter or '', obj.instagram or '', obj.linkedin or '',
+            obj.scraped_at.strftime('%Y-%m-%d %H:%M:%S')
+        ])
+    return response
+
 # ═══════════════════════════════════════════════════════════════════
 #  LINKEDIN CREDENTIALS — CRUD for accounts
 # ═══════════════════════════════════════════════════════════════════
@@ -454,16 +494,26 @@ class LinkedInAccountViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 def export_results_csv(request):
     """
-    GET /api/export/csv/           → all website results as CSV
-    GET /api/export/csv/?job_id=X  → single job
+    GET /api/export/csv/?job_id=X   → single job
+    GET /api/export/csv/?ids=1,2,3  → bulk multiple jobs (merges results)
     """
-    qs = ScrapedWebsite.objects.filter(job__user=request.user).select_related('job').all()
+    ids = request.query_params.get('ids')
     job_id = request.query_params.get('job_id')
-    if job_id:
+    
+    qs = ScrapedWebsite.objects.filter(job__user=request.user).select_related('job').all()
+    
+    if ids:
+        id_list = [i.strip() for i in ids.split(',') if i.strip().isdigit()]
+        qs = qs.filter(job_id__in=id_list)
+        filename = "bulk_scraped_websites.csv"
+    elif job_id:
         qs = qs.filter(job_id=job_id)
+        filename = f"scraped_websites_job_{job_id}.csv"
+    else:
+        return Response({'error': 'job_id or ids required'}, status=status.HTTP_400_BAD_REQUEST)
 
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="scraped_websites.csv"'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
     writer = csv.writer(response)
     writer.writerow([
@@ -483,34 +533,54 @@ def export_results_csv(request):
 
 @api_view(['GET'])
 def export_results_json(request):
-    """GET /api/export/json/"""
-    qs = ScrapedWebsite.objects.filter(job__user=request.user).select_related('job').all()
+    """GET /api/export/json/?ids=1,2,3 or ?job_id=X"""
+    ids = request.query_params.get('ids')
     job_id = request.query_params.get('job_id')
-    if job_id:
+    
+    qs = ScrapedWebsite.objects.filter(job__user=request.user).select_related('job').all()
+    
+    if ids:
+        id_list = [i.strip() for i in ids.split(',') if i.strip().isdigit()]
+        qs = qs.filter(job_id__in=id_list)
+        filename = "bulk_scraped_websites.json"
+    elif job_id:
         qs = qs.filter(job_id=job_id)
+        filename = f"scraped_websites_job_{job_id}.json"
+    else:
+        return Response({'error': 'job_id or ids required'}, status=status.HTTP_400_BAD_REQUEST)
 
     data = ScrapedWebsiteSerializer(qs, many=True).data
     response = HttpResponse(
         json.dumps(data, indent=2, default=str),
         content_type='application/json',
     )
-    response['Content-Disposition'] = 'attachment; filename="scraped_websites.json"'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
 
 @api_view(['GET'])
 def export_linkedin_csv(request):
     """
-    GET /api/export/linkedin/csv/            → all LinkedIn profiles as CSV
     GET /api/export/linkedin/csv/?job_id=X   → single job
+    GET /api/export/linkedin/csv/?ids=1,2,3  → bulk multiple jobs
     """
-    qs = ScrapedLinkedInProfile.objects.filter(job__user=request.user).select_related('job').all()
+    ids = request.query_params.get('ids')
     job_id = request.query_params.get('job_id')
-    if job_id:
+    
+    qs = ScrapedLinkedInProfile.objects.filter(job__user=request.user).select_related('job').all()
+    
+    if ids:
+        id_list = [i.strip() for i in ids.split(',') if i.strip().isdigit()]
+        qs = qs.filter(job_id__in=id_list)
+        filename = "bulk_linkedin_profiles.csv"
+    elif job_id:
         qs = qs.filter(job_id=job_id)
+        filename = f"linkedin_profiles_job_{job_id}.csv"
+    else:
+        return Response({'error': 'job_id or ids required'}, status=status.HTTP_400_BAD_REQUEST)
 
     response = HttpResponse(content_type='text/csv')
-    response['Content-Disposition'] = 'attachment; filename="linkedin_profiles.csv"'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
 
     writer = csv.writer(response)
     writer.writerow([
@@ -536,18 +606,28 @@ def export_linkedin_csv(request):
 
 @api_view(['GET'])
 def export_linkedin_json(request):
-    """GET /api/export/linkedin/json/"""
-    qs = ScrapedLinkedInProfile.objects.filter(job__user=request.user).select_related('job').all()
+    """GET /api/export/linkedin/json/?ids=1,2,3 or ?job_id=X"""
+    ids = request.query_params.get('ids')
     job_id = request.query_params.get('job_id')
-    if job_id:
+    
+    qs = ScrapedLinkedInProfile.objects.filter(job__user=request.user).select_related('job').all()
+    
+    if ids:
+        id_list = [i.strip() for i in ids.split(',') if i.strip().isdigit()]
+        qs = qs.filter(job_id__in=id_list)
+        filename = "bulk_linkedin_profiles.json"
+    elif job_id:
         qs = qs.filter(job_id=job_id)
+        filename = f"linkedin_profiles_job_{job_id}.json"
+    else:
+        return Response({'error': 'job_id or ids required'}, status=status.HTTP_400_BAD_REQUEST)
 
     data = ScrapedLinkedInProfileSerializer(qs, many=True).data
     response = HttpResponse(
         json.dumps(data, indent=2, default=str),
         content_type='application/json',
     )
-    response['Content-Disposition'] = 'attachment; filename="linkedin_profiles.json"'
+    response['Content-Disposition'] = f'attachment; filename="{filename}"'
     return response
 
 
