@@ -30,6 +30,10 @@ logger = logging.getLogger(__name__)
 DATA_DIR = os.path.join(settings.BASE_DIR.parent, 'data')
 os.makedirs(DATA_DIR, exist_ok=True)
 
+# Global lock to ensure only one scraping job execution at a time.
+# This prevents Chromium port conflicts (9222) and SQLite "database is locked" errors.
+SCRAPER_LOCK = threading.Lock()
+
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 #  1.  Website Scrape Job  (existing — give a URL)
@@ -37,96 +41,101 @@ os.makedirs(DATA_DIR, exist_ok=True)
 
 def run_scrape_job(job_id: int):
     """Execute a ScrapeJob (website-only scrape)."""
-    try:
-        job = ScrapeJob.objects.get(pk=job_id)
-    except ScrapeJob.DoesNotExist:
-        logger.error(f"ScrapeJob #{job_id} not found")
-        return
+    # Wait for other jobs to finish
+    with SCRAPER_LOCK:
+        try:
+            job = ScrapeJob.objects.get(pk=job_id)
+        except ScrapeJob.DoesNotExist:
+            logger.error(f"ScrapeJob #{job_id} not found")
+            return
 
-    job.status = 'running'
-    job.started_at = timezone.now()
-    job.save(update_fields=['status', 'started_at'])
+        # If job was cancelled while waiting in the queue
+        if job.status == 'cancelled':
+            logger.info(f"ScrapeJob #{job_id} was cancelled before it could start.")
+            return
 
-    # Job starts, we will increment usage PER DOMAIN inside the loop below
-    pass
+        job.status = 'running'
+        job.started_at = timezone.now()
+        job.save(update_fields=['status', 'started_at'])
 
-    try:
-        scraper = WebsiteScraper(timeout=15)
-        
-        urls_to_process = job.urls_to_scrape if job.urls_to_scrape else []
-        if job.url and job.url not in urls_to_process:
-            urls_to_process.append(job.url)
+        try:
+            scraper = WebsiteScraper(timeout=15)
             
-        for current_url in urls_to_process:
-            # --- Check for Pause/Cancel ---
-            job.refresh_from_db()
-            while job.status == 'paused':
-                import time
-                time.sleep(5)
+            urls_to_process = job.urls_to_scrape if job.urls_to_scrape else []
+            if job.url and job.url not in urls_to_process:
+                urls_to_process.append(job.url)
+                
+            for current_url in urls_to_process:
+                # --- Check for Pause/Cancel ---
                 job.refresh_from_db()
+                while job.status == 'paused':
+                    import time
+                    time.sleep(5)
+                    job.refresh_from_db()
 
-            if job.status == 'cancelled':
-                break
+                if job.status == 'cancelled':
+                    break
 
-            # --- SaaS Quota Check (Per Domain) ---
-            if job.user and hasattr(job.user, 'profile'):
-                if not job.user.profile.can_scrape_website():
-                    job.status = 'failed'
-                    job.error_message = "Monthly website scanning quota reached. Please upgrade your plan for more credits."
-                    job.save(update_fields=['status', 'error_message'])
-                    logger.error(f"User {job.user.username} reached monthly website quota mid-job #{job_id}")
-                    return
-
-                # Increment Usage BEFORE scrape to prevent 'free' overlaps
-                job.user.profile.increment_web_usage()
-                
-            try:
-                data = scraper.scrape(
-                    url=current_url,
-                    scrape_contact=job.scrape_contact,
-                    max_contact_pages=job.max_contact_pages,
-                )
-                
-                # Add delay between domains but AFTER check
-                import time, random
-                time.sleep(random.uniform(2, 4))
-
-                ScrapedWebsite.objects.update_or_create(
-                    job=job,
-                    website_url=data.get('website_url', current_url),
-                    defaults={
-                        'email':         data.get('email'),
-                        'phone':         data.get('phone'),
-                        'address':       data.get('address'),
-                        'facebook':      data.get('facebook'),
-                        'twitter':       data.get('twitter'),
-                        'instagram':     data.get('instagram'),
-                        'linkedin':      data.get('linkedin'),
-                        'pages_scraped': data.get('pages_scraped', []),
-                        'scraped_at':    timezone.now(),
-                    }
-                )
-
-                # Also save to data/ folder
-                _save_website_to_file(job, data)
-
-                # Update Lifetime Stats
+                # --- SaaS Quota Check (Per Domain) ---
                 if job.user and hasattr(job.user, 'profile'):
-                    job.user.profile.increment_records_found()
-            except Exception as e:
-                logger.error(f"Failed to scrape {current_url} in job #{job_id}: {e}")
+                    if not job.user.profile.can_scrape_website():
+                        job.status = 'failed'
+                        job.error_message = "Monthly website scanning quota reached. Please upgrade your plan for more credits."
+                        job.save(update_fields=['status', 'error_message'])
+                        logger.error(f"User {job.user.username} reached monthly website quota mid-job #{job_id}")
+                        return
 
-        job.status = 'completed'
-        job.error_message = ''
+                    # Increment Usage BEFORE scrape to prevent 'free' overlaps
+                    job.user.profile.increment_web_usage()
+                    
+                try:
+                    data = scraper.scrape(
+                        url=current_url,
+                        scrape_contact=job.scrape_contact,
+                        max_contact_pages=job.max_contact_pages,
+                    )
+                    
+                    # Add delay between domains but AFTER check
+                    import time, random
+                    time.sleep(random.uniform(2, 4))
 
-    except Exception as e:
-        logger.exception(f"ScrapeJob #{job_id} failed: {e}")
-        job.status = 'failed'
-        job.error_message = str(e)
+                    ScrapedWebsite.objects.update_or_create(
+                        job=job,
+                        website_url=data.get('website_url', current_url),
+                        defaults={
+                            'email':         data.get('email'),
+                            'phone':         data.get('phone'),
+                            'address':       data.get('address'),
+                            'facebook':      data.get('facebook'),
+                            'twitter':       data.get('twitter'),
+                            'instagram':     data.get('instagram'),
+                            'linkedin':      data.get('linkedin'),
+                            'pages_scraped': data.get('pages_scraped', []),
+                            'scraped_at':    timezone.now(),
+                        }
+                    )
 
-    finally:
-        job.completed_at = timezone.now()
-        job.save(update_fields=['status', 'error_message', 'completed_at'])
+                    # Also save to data/ folder
+                    _save_website_to_file(job, data)
+
+                    # Update Lifetime Stats
+                    if job.user and hasattr(job.user, 'profile'):
+                        job.user.profile.increment_records_found()
+                except Exception as e:
+                    logger.error(f"Failed to scrape {current_url} in job #{job_id}: {e}")
+
+            if job.status != 'failed':
+                job.status = 'completed'
+                job.error_message = ''
+
+        except Exception as e:
+            logger.exception(f"ScrapeJob #{job_id} failed: {e}")
+            job.status = 'failed'
+            job.error_message = str(e)
+
+        finally:
+            job.completed_at = timezone.now()
+            job.save(update_fields=['status', 'error_message', 'completed_at'])
 
 
 def run_scrape_job_async(job_id: int):
@@ -151,146 +160,148 @@ def run_linkedin_job(job_id: int):
     """
     from .scraper.linkedin_scraper import LinkedInScraper
 
-    try:
-        job = LinkedInScrapeJob.objects.get(pk=job_id)
-    except LinkedInScrapeJob.DoesNotExist:
-        logger.error(f"LinkedInScrapeJob #{job_id} not found")
-        return
+    # Wait for other jobs to finish
+    with SCRAPER_LOCK:
+        try:
+            job = LinkedInScrapeJob.objects.get(pk=job_id)
+        except LinkedInScrapeJob.DoesNotExist:
+            logger.error(f"LinkedInScrapeJob #{job_id} not found")
+            return
 
-    job.status = 'running'
-    job.started_at = timezone.now()
-    job.progress = 0
-    job.save(update_fields=['status', 'started_at', 'progress'])
+        # If job was cancelled while waiting in the queue
+        if job.status == 'cancelled':
+            logger.info(f"LinkedInScrapeJob #{job_id} was cancelled before it could start.")
+            return
 
-    # Job starts, we will increment usage PER PROFILE inside the callback below
-    pass
+        job.status = 'running'
+        job.started_at = timezone.now()
+        job.progress = 0
+        job.save(update_fields=['status', 'started_at', 'progress'])
 
-    scraper = None
+        # Job starts, we will increment usage PER PROFILE inside the callback below
+        scraper = None
 
-    try:
-        # ─── Step 1: Initialize Chrome ─────────────────────────────
-        logger.info(f"[LinkedInJob #{job_id}] Initializing Chrome ...")
-        # Config matches the original scrapers/linkedin_scraper.py format
-        config = {
-            'scraping': {
-                'headless': job.headless,
-                'delay_min': 3,
-                'delay_max': 6,
-                'timeout': 30,
-            },
-            'website_scraping': {
-                'enabled': job.scrape_websites,
-                'timeout': 15,
-            },
-        }
-        scraper = LinkedInScraper(config)
-        scraper.setup_driver()
+        try:
+            # ─── Step 1: Initialize Chrome ─────────────────────────────
+            logger.info(f"[LinkedInJob #{job_id}] Initializing Chrome ...")
+            # Config matches the original scrapers/linkedin_scraper.py format
+            config = {
+                'scraping': {
+                    'headless': job.headless,
+                    'delay_min': 3,
+                    'delay_max': 6,
+                    'timeout': 30,
+                },
+                'website_scraping': {
+                    'enabled': job.scrape_websites,
+                    'timeout': 15,
+                },
+            }
+            scraper = LinkedInScraper(config)
+            scraper.setup_driver()
 
-        # ─── Step 2: Login ─────────────────────────────────────────
-        # Use stored account credentials if selected, otherwise fallback to manual entry
-        if job.account:
-            email = job.account.email
-            password = job.account.password
-            logger.info(f"[LinkedInJob #{job_id}] Using stored account: {email}")
-        else:
-            email = job.linkedin_email
-            password = job.linkedin_password
-            logger.info(f"[LinkedInJob #{job_id}] Using manual credentials")
+            # ─── Step 2: Login ─────────────────────────────────────────
+            # Use stored account credentials if selected, otherwise fallback to manual entry
+            if job.account:
+                email = job.account.email
+                password = job.account.password
+                logger.info(f"[LinkedInJob #{job_id}] Using stored account: {email}")
+            else:
+                email = job.linkedin_email
+                password = job.linkedin_password
+                logger.info(f"[LinkedInJob #{job_id}] Using manual credentials")
 
-        if email and password:
-            logger.info(f"[LinkedInJob #{job_id}] Logging in ...")
-            if not scraper.login(email, password):
-                raise Exception("LinkedIn login failed — check credentials or solve security challenge")
-        else:
-            logger.info(f"[LinkedInJob #{job_id}] No credentials — proceeding without login (limited data)")
+            if email and password:
+                logger.info(f"[LinkedInJob #{job_id}] Logging in ...")
+                if not scraper.login(email, password):
+                    raise Exception("LinkedIn login failed — check credentials or solve security challenge")
+            else:
+                logger.info(f"[LinkedInJob #{job_id}] No credentials — proceeding without login (limited data)")
 
-        # ─── Step 3, 4 & 5: Search and scrape profiles ────────────────
-        logger.info(f"[LinkedInJob #{job_id}] Searching for: {job.niche}")
+            # ─── Step 3, 4 & 5: Search and scrape profiles ────────────────
+            logger.info(f"[LinkedInJob #{job_id}] Searching for: {job.niche}")
 
-        website_scraper = WebsiteScraper(timeout=15) if job.scrape_websites else None
-        saved_profiles = []
+            website_scraper = WebsiteScraper(timeout=15) if job.scrape_websites else None
+            saved_profiles = []
 
-        def on_profile_found(profile_data):
-            """Callback for each profile found during search_and_scrape."""
-            website_data = {}
-            website_url = profile_data.get('website')
+            def on_profile_found(profile_data):
+                """Callback for each profile found during search_and_scrape."""
+                website_data = {}
+                website_url = profile_data.get('website')
 
-            # --- SaaS Quota Check (Per Profile) ---
-            if job.user and hasattr(job.user, 'profile'):
-                if not job.user.profile.can_scrape_linkedin():
-                    logger.warning(f"User {job.user.username} reached monthly LinkedIn quota mid-job #{job_id}")
-                    # We return early to skip this profile. The main loop in search_and_scrape 
-                    # should ideally also stop, but since it's inside the scraper class,
-                    # simply skipping saves credits.
-                    return
+                # --- SaaS Quota Check (Per Profile) ---
+                if job.user and hasattr(job.user, 'profile'):
+                    if not job.user.profile.can_scrape_linkedin():
+                        logger.warning(f"User {job.user.username} reached monthly LinkedIn quota mid-job #{job_id}")
+                        return
 
-                # Increment Usage
-                job.user.profile.increment_linkedin_usage()
+                    # Increment Usage
+                    job.user.profile.increment_linkedin_usage()
 
-            if website_scraper and website_url:
-                try:
-                    logger.info(f"[LinkedInJob #{job_id}] Scraping website: {website_url}")
-                    wd = website_scraper.scrape(url=website_url, scrape_contact=True, max_contact_pages=3)
-                    website_data = wd or {}
-                except Exception as we:
-                    logger.warning(f"Website scrape failed for {website_url}: {we}")
+                if website_scraper and website_url:
+                    try:
+                        logger.info(f"[LinkedInJob #{job_id}] Scraping website: {website_url}")
+                        wd = website_scraper.scrape(url=website_url, scrape_contact=True, max_contact_pages=3)
+                        website_data = wd or {}
+                    except Exception as we:
+                        logger.warning(f"Website scrape failed for {website_url}: {we}")
 
-            # Save to DB immediately
-            sp = ScrapedLinkedInProfile.objects.create(
-                job=job,
-                profile_url=profile_data.get('profile_url', ''),
-                name=profile_data.get('name', 'N/A'),
-                headline=profile_data.get('headline', 'N/A'),
-                location=profile_data.get('location', 'N/A'),
-                about=profile_data.get('about', 'N/A'),
-                company_size=profile_data.get('company_size', 'N/A'),
-                company_type=profile_data.get('company_type', 'N/A'),
-                industry=profile_data.get('industry', 'N/A'),
-                founded=profile_data.get('founded', 'N/A'),
-                website=website_url,
-                website_email=website_data.get('email'),
-                website_phone=website_data.get('phone'),
-                website_address=website_data.get('address'),
-                website_facebook=website_data.get('facebook'),
-                website_twitter=website_data.get('twitter'),
-                website_instagram=website_data.get('instagram'),
-                website_linkedin=website_data.get('linkedin'),
+                # Save to DB immediately
+                sp = ScrapedLinkedInProfile.objects.create(
+                    job=job,
+                    profile_url=profile_data.get('profile_url', ''),
+                    name=profile_data.get('name', 'N/A'),
+                    headline=profile_data.get('headline', 'N/A'),
+                    location=profile_data.get('location', 'N/A'),
+                    about=profile_data.get('about', 'N/A'),
+                    company_size=profile_data.get('company_size', 'N/A'),
+                    company_type=profile_data.get('company_type', 'N/A'),
+                    industry=profile_data.get('industry', 'N/A'),
+                    founded=profile_data.get('founded', 'N/A'),
+                    website=website_url,
+                    website_email=website_data.get('email'),
+                    website_phone=website_data.get('phone'),
+                    website_address=website_data.get('address'),
+                    website_facebook=website_data.get('facebook'),
+                    website_twitter=website_data.get('twitter'),
+                    website_instagram=website_data.get('instagram'),
+                    website_linkedin=website_data.get('linkedin'),
+                )
+                saved_profiles.append(sp)
+                
+                # Update progress
+                LinkedInScrapeJob.objects.filter(pk=job_id).update(progress=len(saved_profiles))
+
+                # Update Lifetime Stats
+                if job.user and hasattr(job.user, 'profile'):
+                    job.user.profile.increment_records_found()
+
+            # Start search and scrape loop
+            scraper.search_and_scrape(
+                niche=job.niche,
+                max_results=job.max_profiles,
+                location=job.location,
+                company_size=job.company_size,
+                processor_callback=on_profile_found,
             )
-            saved_profiles.append(sp)
-            
-            # Update progress
-            LinkedInScrapeJob.objects.filter(pk=job_id).update(progress=len(saved_profiles))
 
-            # Update Lifetime Stats
-            if job.user and hasattr(job.user, 'profile'):
-                job.user.profile.increment_records_found()
+            # ─── Step 6: Save to data/ folder ──────────────────────────
+            _save_linkedin_to_files(job, saved_profiles)
 
-        # Start search and scrape loop
-        scraper.search_and_scrape(
-            niche=job.niche,
-            max_results=job.max_profiles,
-            location=job.location,
-            company_size=job.company_size,
-            processor_callback=on_profile_found,
-        )
+            job.status = 'completed'
+            job.error_message = ''
+            job.progress = len(saved_profiles)
 
-        # ─── Step 6: Save to data/ folder ──────────────────────────
-        _save_linkedin_to_files(job, saved_profiles)
+        except Exception as e:
+            logger.exception(f"LinkedInScrapeJob #{job_id} failed: {e}")
+            job.status = 'failed'
+            job.error_message = str(e)
 
-        job.status = 'completed'
-        job.error_message = ''
-        job.progress = len(saved_profiles)
-
-    except Exception as e:
-        logger.exception(f"LinkedInScrapeJob #{job_id} failed: {e}")
-        job.status = 'failed'
-        job.error_message = str(e)
-
-    finally:
-        if scraper:
-            scraper.close()
-        job.completed_at = timezone.now()
-        job.save(update_fields=['status', 'error_message', 'completed_at', 'progress'])
+        finally:
+            if scraper:
+                scraper.close()
+            job.completed_at = timezone.now()
+            job.save(update_fields=['status', 'error_message', 'completed_at', 'progress'])
 
 
 def run_linkedin_job_async(job_id: int):
@@ -310,99 +321,106 @@ def run_keyword_job(job_id: int):
     2. Scrape each domain for contact data
     3. Save results
     """
-    try:
-        job = KeywordScrapeJob.objects.get(pk=job_id)
-    except KeywordScrapeJob.DoesNotExist:
-        logger.error(f"KeywordScrapeJob #{job_id} not found")
-        return
-
-    job.status = 'running'
-    job.started_at = timezone.now()
-    job.progress = 0
-    job.save(update_fields=['status', 'started_at', 'progress'])
-
-    try:
-        # Step 1: Search for websites
-        logger.info(f"[KeywordJob #{job_id}] Searching for niche: {job.niche}")
-        search_scraper = WebSearchScraper()
-        domains = search_scraper.search(job.niche, max_results=job.max_results)
-        
-        if not domains:
-            job.status = 'failed'
-            job.error_message = f"No websites found for niche: '{job.niche}'. Try different keywords."
-            job.save(update_fields=['status', 'error_message'])
+    # Wait for other jobs to finish
+    with SCRAPER_LOCK:
+        try:
+            job = KeywordScrapeJob.objects.get(pk=job_id)
+        except KeywordScrapeJob.DoesNotExist:
+            logger.error(f"KeywordScrapeJob #{job_id} not found")
             return
 
-        # Step 2: Scrape each domain
-        website_scraper = WebsiteScraper(timeout=15)
-        count = 0
-        
-        for domain in domains:
-            # Check for Pause/Cancel
-            job.refresh_from_db()
-            while job.status == 'paused':
-                import time
-                time.sleep(5)
+        if job.status == 'cancelled':
+            logger.info(f"KeywordScrapeJob #{job_id} was cancelled before it could start.")
+            return
+
+        job.status = 'running'
+        job.started_at = timezone.now()
+        job.progress = 0
+        job.save(update_fields=['status', 'started_at', 'progress'])
+
+        try:
+            # Step 1: Search for websites (Uses Selenium)
+            logger.info(f"[KeywordJob #{job_id}] Searching for niche: {job.niche}")
+            search_scraper = WebSearchScraper()
+            domains = search_scraper.search(job.niche, max_results=job.max_results)
+            
+            if not domains:
+                job.status = 'failed'
+                job.error_message = f"No websites found for niche: '{job.niche}'. Try different keywords."
+                job.save(update_fields=['status', 'error_message'])
+                return
+
+            # Step 2: Scrape each domain
+            website_scraper = WebsiteScraper(timeout=15)
+            count = 0
+            
+            for domain in domains:
+                # Check for Pause/Cancel
                 job.refresh_from_db()
-            if job.status == 'cancelled':
-                break
+                while job.status == 'paused':
+                    import time
+                    time.sleep(5)
+                    job.refresh_from_db()
+                if job.status == 'cancelled':
+                    break
 
-            # SaaS Quota Check (Website credits)
-            if job.user and hasattr(job.user, 'profile'):
-                if not job.user.profile.can_scrape_website():
-                    job.status = 'failed'
-                    job.error_message = "Monthly website scanning quota reached mid-job."
-                    job.save(update_fields=['status', 'error_message'])
-                    return
-                job.user.profile.increment_web_usage()
-
-            try:
-                logger.info(f"[KeywordJob #{job_id}] Scraping domain {count+1}/{len(domains)}: {domain}")
-                data = website_scraper.scrape(
-                    url=domain,
-                    scrape_contact=job.scrape_contact,
-                    max_contact_pages=job.max_contact_pages,
-                )
-                
-                ScrapedKeywordWebsite.objects.create(
-                    job=job,
-                    website_url=data.get('website_url', domain),
-                    email=data.get('email'),
-                    phone=data.get('phone'),
-                    address=data.get('address'),
-                    facebook=data.get('facebook'),
-                    twitter=data.get('twitter'),
-                    instagram=data.get('instagram'),
-                    linkedin=data.get('linkedin'),
-                    pages_scraped=data.get('pages_scraped', []),
-                )
-                
-                count += 1
-                job.progress = count
-                job.save(update_fields=['progress'])
-                
-                # Lifetime Stats
+                # SaaS Quota Check (Website credits)
                 if job.user and hasattr(job.user, 'profile'):
-                    job.user.profile.increment_records_found()
+                    if not job.user.profile.can_scrape_website():
+                        job.status = 'failed'
+                        job.error_message = "Monthly website scanning quota reached mid-job."
+                        job.save(update_fields=['status', 'error_message'])
+                        return
+                    job.user.profile.increment_web_usage()
+
+                try:
+                    logger.info(f"[KeywordJob #{job_id}] Scraping domain {count+1}/{len(domains)}: {domain}")
+                    data = website_scraper.scrape(
+                        url=domain,
+                        scrape_contact=job.scrape_contact,
+                        max_contact_pages=job.max_contact_pages,
+                    )
                     
-                # Delay
-                import time, random
-                time.sleep(random.uniform(2, 4))
-                
-            except Exception as e:
-                logger.error(f"Failed to scrape {domain} in job #{job_id}: {e}")
+                    ScrapedKeywordWebsite.objects.create(
+                        job=job,
+                        website_url=data.get('website_url', domain),
+                        email=data.get('email'),
+                        phone=data.get('phone'),
+                        address=data.get('address'),
+                        facebook=data.get('facebook'),
+                        twitter=data.get('twitter'),
+                        instagram=data.get('instagram'),
+                        linkedin=data.get('linkedin'),
+                        pages_scraped=data.get('pages_scraped', []),
+                    )
+                    
+                    count += 1
+                    job.progress = count
+                    job.save(update_fields=['progress'])
+                    
+                    # Lifetime Stats
+                    if job.user and hasattr(job.user, 'profile'):
+                        job.user.profile.increment_records_found()
+                        
+                    # Delay
+                    import time, random
+                    time.sleep(random.uniform(2, 4))
+                    
+                except Exception as e:
+                    logger.error(f"Failed to scrape {domain} in job #{job_id}: {e}")
 
-        job.status = 'completed'
-        job.error_message = ''
+            if job.status != 'failed':
+                job.status = 'completed'
+                job.error_message = ''
 
-    except Exception as e:
-        logger.exception(f"KeywordScrapeJob #{job_id} failed: {e}")
-        job.status = 'failed'
-        job.error_message = str(e)
+        except Exception as e:
+            logger.exception(f"KeywordScrapeJob #{job_id} failed: {e}")
+            job.status = 'failed'
+            job.error_message = str(e)
 
-    finally:
-        job.completed_at = timezone.now()
-        job.save(update_fields=['status', 'error_message', 'completed_at'])
+        finally:
+            job.completed_at = timezone.now()
+            job.save(update_fields=['status', 'error_message', 'completed_at'])
 
 
 def run_keyword_job_async(job_id: int):
