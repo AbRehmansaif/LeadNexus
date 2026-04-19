@@ -12,7 +12,7 @@ from django.template import Template, Context
 from django.conf import settings
 from django.urls import reverse
 from django.db import transaction
-from django.db.models import Q, F
+from django.db.models import Q, F, Max
 from django.core.cache import cache
 from celery import shared_task, group
 
@@ -52,6 +52,7 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
         with transaction.atomic():
             recipient = Recipient.objects.select_for_update().get(id=recipient_id)
             campaign = recipient.campaign
+            creds = None
 
             # Guard: already processed or in a terminal state for this step
             if recipient.is_replied or recipient.is_unsubscribed or campaign.status == 'paused':
@@ -64,19 +65,21 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                 current_step_index__gte=step_number
             ).exclude(id=recipient.id).exists()
 
-            if recipient.current_step_index >= step_number or address_already_sent or recipient.status == 'sending':
+            # Guard: already at this step or beyond (already sent), or genuinely
+            # processing right now by another worker.
+            # NOTE: A recipient stuck in 'sending' with current_step_index < step_number
+            # means Phase 3 never ran (task crashed after send). We RESET it so it retries.
+            if recipient.current_step_index >= step_number or address_already_sent:
                 # If we skipped because of a different row, mark THIS row as completed/active too
                 # to stop it from appearing in future dispatcher loops.
                 if address_already_sent and recipient.status == 'pending':
-                    recipient.status = 'completed' if step_number >= (campaign.steps.count() or 1) else 'active'
+                    max_step = CampaignStep.objects.filter(campaign_id=campaign.id).aggregate(Max('step_number'))['step_number__max'] or 1
+                    recipient.status = 'completed' if step_number >= max_step else 'active'
                     recipient.current_step_index = step_number
                     recipient.save(update_fields=['status', 'current_step_index'])
                 
                 return f"Skipped: {recipient.email} (Already received or sending Step {step_number})"
 
-            # Pre-send Lockdown (Commit this before releasing lock)
-            recipient.status = 'sending'
-            recipient.save(update_fields=['status'])
 
             # Business Hours Check — use apply_async NOT self.retry so we
             # don't burn the precious max_retries=3 SMTP error budget.
@@ -107,6 +110,12 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                     )
                     return f"Deferred: {recipient.email} — outside send window"
 
+            # Pre-send Lockdown (Commit this before releasing lock)
+            # We do this AS LATE AS POSSIBLE in Phase 1 to avoid locking up
+            # the recipient status if a deferral or quota check happens above.
+            recipient.status = 'sending'
+            recipient.save(update_fields=['status'])
+
             # Step & A/B Logic
             step = CampaignStep.objects.filter(campaign=campaign, step_number=step_number).first()
             variant = 'A'
@@ -134,10 +143,10 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                 recipient.error_message = "Monthly email quota exceeded"
                 recipient.save(update_fields=['status', 'error_message'])
                 
-                EmailCampaign.objects.filter(id=campaign.id).update(failed_count=F('failed_count') + 1)
-                cache.delete(f"campaign_stats_{campaign.id}")
-                if not Recipient.objects.filter(campaign_id=campaign.id, status__in=['active', 'pending']).exclude(id=recipient.id).exists():
-                    EmailCampaign.objects.filter(id=campaign.id).update(status='completed')
+                # Sync totals so the 0/1 progress bar actually updates in the UI
+                # This also clears the status cache automatically.
+                campaign.sync_stats_from_db()
+                
                 return f"Failed: {recipient.email} (Monthly email quota exceeded)"
 
             # SMTP Selection
@@ -295,6 +304,8 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
         # Genuine SMTP failure — safe to retry (email was NOT sent)
         logger.error(f"SMTP error for {recipient_id}: {smtp_error}")
         try:
+            # RESET status so the retry (Phase 1) doesn't skip itself due to the 'sending' lockdown
+            Recipient.objects.filter(id=recipient_id).update(status='pending')
             raise self.retry(exc=smtp_error, countdown=60)
         except self.MaxRetriesExceededError:
             logger.error(f"SMTP max retries exhausted for recipient {recipient_id}.")
@@ -313,8 +324,10 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             r.current_step_index = step_number
             r.last_sent_at = timezone.now()
             
-            total_steps = CampaignStep.objects.filter(campaign_id=campaign_id).count() or 1
-            if step_number >= total_steps:
+            # Get the maximum step number defined in the campaign sequence
+            max_step = CampaignStep.objects.filter(campaign_id=campaign_id).aggregate(Max('step_number'))['step_number__max'] or 1
+            
+            if step_number >= max_step:
                 r.status = 'completed'
             else:
                 r.status = 'active'

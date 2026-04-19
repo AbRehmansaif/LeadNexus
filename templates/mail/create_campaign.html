@@ -187,7 +187,7 @@ document.getElementById('addFollowupBtn').addEventListener('click', async () => 
     
     // Create new elements manually to avoid innerHTML string replacement issues with editors
     const followupHtml = `
-        <div class="form-section followup-step" id="step_${stepIdx}" style="border-left: 3px solid var(--accent-purple); padding-left: 20px;">
+        <div class="form-section followup-step" id="step_${stepIdx}" data-step="${stepIdx}" style="border-left: 3px solid var(--accent-purple); padding-left: 20px;">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
                 <h3 class="form-section-title" style="margin-bottom:0;"><i data-lucide="repeat" style="width:18px; height:18px;"></i> Step ${stepIdx}: Follow-up</h3>
                 <button type="button" class="btn btn-secondary btn-sm" onclick="removeStep(${stepIdx})" style="color: var(--accent-red);">Remove Step</button>
@@ -315,10 +315,20 @@ function updateStrategyAdvice(input) {
 
 document.getElementById('campaignForm').addEventListener('submit', async (e) => {
     e.preventDefault();
-    
-    // Sync TinyMCE to textareas
-    if (window.tinymce) {
-        tinymce.triggerSave();
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = 'Deploying Sequence...';
+
+    try {
+    // ── Force-sync ALL CKEditor instances to their textareas before reading values
+    if (window.editors) {
+        Object.values(window.editors).forEach(ed => {
+            try {
+                const view = ed.editing && ed.editing.view;
+                const el = ed.sourceElement;
+                if (el) el.value = ed.getData();
+            } catch(_) {}
+        });
     }
     
     // 1. Reset Errors
@@ -345,18 +355,22 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
     
     if (!isValid) {
         showNotification('Mission blocked: Please complete all mandatory protocol fields.', 'error');
+        btn.disabled = false;
+        btn.innerHTML = 'Launch Campaign Sequence';
         return;
     }
-
-    const btn = document.getElementById('submitBtn');
-    btn.disabled = true;
-    btn.innerHTML = 'Deploying Sequence...';
 
     const formData = new FormData();
     formData.append('name', name.value.trim());
     formData.append('subject', subject.value.trim());
     formData.append('body', body.value); // CKEditor syncs to body textarea
     formData.append('gap_seconds', document.getElementById('gap_seconds').value);
+    
+    // A/B testing for Step 1
+    const subB = document.getElementById('subject_b');
+    const bodyB = document.getElementById('body_b');
+    if (subB && subB.value) formData.append('subject_b', subB.value.trim());
+    if (bodyB && bodyB.value) formData.append('body_b', bodyB.value);
 
     // Step 1 File
     const step1FileInput = document.getElementById('attachment_step_1');
@@ -367,9 +381,14 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
     const steps = [];
     document.querySelectorAll('.followup-step').forEach((el, index) => {
         const stepNum = index + 2;
-        const sub = el.querySelector('.step-subject').value.trim();
-        const subB = el.querySelector('.step-subject-b').value.trim();
-        
+        // Safe querySelector — elements may not exist in every step template
+        const subEl = el.querySelector('.step-subject');
+        const bodyEl = el.querySelector('.step-body');
+        const waitEl = el.querySelector('.step-wait');
+        const sub = subEl ? subEl.value.trim() : '';
+        const bodyVal = bodyEl ? bodyEl.value : '';
+        const waitVal = waitEl ? waitEl.value : '3';
+
         // Handle Step Attachment (Safe Check)
         const stepFileInput = document.getElementById(`attachment_step_${stepNum}`);
         if (stepFileInput && stepFileInput.files && stepFileInput.files[0]) {
@@ -378,11 +397,11 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
 
         steps.push({
             step_number: stepNum,
-            wait_days: el.querySelector('.step-wait').value,
-            subject: sub || subject.value, 
-            body: el.querySelector('.step-body').value,
-            subject_b: subB || sub || subject.value,
-            body_b: el.querySelector('.step-body-b').value || null
+            wait_days: waitVal,
+            subject: sub || subject.value,
+            body: bodyVal,
+            subject_b: null,
+            body_b: null
         });
     });
     formData.append('steps', JSON.stringify(steps));
@@ -413,8 +432,8 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
 
         if (response.ok) {
             const data = await response.json();
-            
-            // ONLY trigger immediately if it's NOT a scheduled campaign
+
+            // Trigger Step 1 immediately unless it's a scheduled campaign
             if (data.status !== 'scheduled') {
                 await fetch(`/mail/api/campaigns/${data.id}/trigger_step/`, {
                     method: 'POST',
@@ -422,15 +441,24 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
                     headers: { 'Content-Type': 'application/json', 'X-CSRFToken': '{{ csrf_token }}' }
                 });
             }
-            
+
             window.location.href = `/mail/campaign/${data.id}/`;
         } else {
-            const errorData = await response.json();
+            const errorData = await response.json().catch(() => ({}));
             showNotification(errorData.error || 'Sequence deployment failed.', 'error');
+            btn.disabled = false;
+            btn.innerHTML = 'Launch Campaign Sequence';
         }
     } catch (err) {
         showNotification('Network error: ' + err.message, 'error');
-    } finally {
+        btn.disabled = false;
+        btn.innerHTML = 'Launch Campaign Sequence';
+    }
+
+    } catch (outerErr) {
+        // Safety net: catches any JS crash before the fetch (e.g. DOM query errors)
+        console.error('Submit handler crashed:', outerErr);
+        showNotification('Client error: ' + outerErr.message, 'error');
         btn.disabled = false;
         btn.innerHTML = 'Launch Campaign Sequence';
     }

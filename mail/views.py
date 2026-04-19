@@ -1,6 +1,10 @@
 import csv
 import io
 import json
+import logging
+
+logger = logging.getLogger(__name__)
+
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -182,6 +186,7 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
         return Response({'status': 'Campaign paused'})
 
     @decorators.action(detail=False, methods=['post'])
+    @decorators.action(detail=False, methods=['post'])
     def create_with_recipients(self, request):
         data = request.data
         name = data.get('name', '')
@@ -189,143 +194,152 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
         body = data.get('body', '')
         gap_seconds = data.get('gap_seconds', 2)
         scheduled_at = data.get('scheduled_at')
-        status_val = data.get('status', 'running') # Default to running if not scheduled
+        status_val = data.get('status', 'running')
         if scheduled_at:
             status_val = 'scheduled'
 
-        # 1. Validation & Create Campaign
-        profile = request.user.profile
-        if not profile.default_work_days or not profile.default_send_window_start or not profile.default_send_window_end:
-            return Response(
-                {'error': 'Mission critical: You must configure your Outreach Schedule in Profile Settings before deploying a campaign.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-            
-        work_days_str = ','.join(map(str, profile.default_work_days))
+        try:
+            with transaction.atomic():
+                # ── 1. Validate profile settings ──────────────────────────────────
+                profile = request.user.profile
+                if not profile.default_work_days or not profile.default_send_window_start or not profile.default_send_window_end:
+                    return Response(
+                        {'error': 'Mission critical: You must configure your Outreach Schedule in Profile Settings before deploying a campaign.'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-        # Always create in 'pending' first — status is updated after recipients are confirmed
-        # to avoid a race where the Celery task fires before bulk_create completes.
-        campaign = EmailCampaign.objects.create(
-            user=request.user,
-            name=name or subject,
-            subject=subject,
-            body=body,
-            gap_seconds=gap_seconds,
-            scheduled_at=scheduled_at,
-            status='pending',  # will be updated below once recipients are validated
-            send_window_start=profile.default_send_window_start,
-            send_window_end=profile.default_send_window_end,
-            work_days=work_days_str
-        )
+                work_days_str = ','.join(map(str, profile.default_work_days))
 
-        # 2. Setup Steps if provided
-        steps_data = data.get('steps', [])
-        if isinstance(steps_data, str):
-            steps_data = json.loads(steps_data)
-        
-        if steps_data:
-            for s in steps_data:
-                step_num = s.get('step_number')
-                step_obj = CampaignStep.objects.create(
-                    campaign=campaign,
-                    step_number=step_num,
-                    wait_days=s.get('wait_days', 3),
-                    subject=s.get('subject'),
-                    body=s.get('body'),
-                    subject_b=s.get('subject_b'),
-                    body_b=s.get('body_b')
+                # ── 2. Create Campaign ─────────────────────────────────────────────
+                campaign = EmailCampaign.objects.create(
+                    user=request.user,
+                    name=name or subject,
+                    subject=subject,
+                    body=body,
+                    gap_seconds=gap_seconds,
+                    scheduled_at=scheduled_at,
+                    status='pending',
+                    send_window_start=profile.default_send_window_start,
+                    send_window_end=profile.default_send_window_end,
+                    work_days=work_days_str
                 )
-                
-                # Attachment handling for this step
-                file_key = f'attachment_step_{step_num}'
-                if file_key in request.FILES:
-                    step_obj.attachment = request.FILES[file_key]
-                    step_obj.save(update_fields=['attachment'])
-        else:
-            # Fallback: Create Step 1 from basic campaign info
-            step_obj = CampaignStep.objects.create(
-                campaign=campaign,
-                step_number=1,
-                wait_days=0,
-                subject=subject,
-                body=body
-            )
-            if 'attachment_step_1' in request.FILES:
-                step_obj.attachment = request.FILES['attachment_step_1']
-                step_obj.save(update_fields=['attachment'])
 
-        recipient_list = []
-        seen_emails = set()
+                # ── 3. Create Step 1 (Initial Outreach) ───────────────────────────
+                step1_obj = CampaignStep.objects.create(
+                    campaign=campaign,
+                    step_number=1,
+                    wait_days=0,
+                    subject=subject,
+                    body=body,
+                    subject_b=data.get('subject_b') or None,
+                    body_b=data.get('body_b') or None,
+                )
+                if 'attachment_step_1' in request.FILES:
+                    step1_obj.attachment = request.FILES['attachment_step_1']
+                    step1_obj.save(update_fields=['attachment'])
+                    campaign.attachment = request.FILES['attachment_step_1']
+                    campaign.save(update_fields=['attachment'])
 
-        # 2. Process Recipients from CSV file
-        if 'csv_file' in request.FILES:
-            csv_file = request.FILES['csv_file']
-            
-            # Simple extension check
-            if not csv_file.name.endswith('.csv'):
-                campaign.delete() # Cleanup
-                return Response({'error': 'Invalid file format. Please upload a .csv file.'}, status=status.HTTP_400_BAD_REQUEST)
+                # ── 4. Create Follow-up Steps ──────────────────────────────────────
+                steps_raw = data.get('steps', '[]')
+                if isinstance(steps_raw, str):
+                    try:
+                        steps_data = json.loads(steps_raw)
+                    except (json.JSONDecodeError, ValueError):
+                        steps_data = []
+                elif isinstance(steps_raw, list):
+                    steps_data = steps_raw
+                else:
+                    steps_data = []
 
-            try:
-                # Try UTF-8 first (standard)
-                decoded_file = csv_file.read().decode('utf-8')
-            except UnicodeDecodeError:
-                # Fallback to latin-1 if UTF-8 fails (common for Excel CSVs)
-                csv_file.seek(0)
-                decoded_file = csv_file.read().decode('latin-1')
-            
-            try:
-                io_string = io.StringIO(decoded_file)
-                reader = csv.DictReader(io_string)
-                for row in reader:
-                    email = row.get('email') or row.get('Email')
-                    if email and email not in seen_emails:
-                        seen_emails.add(email)
-                        recipient_list.append(Recipient(
-                            campaign=campaign,
-                            email=email,
-                            name=row.get('name') or row.get('Name') or '',
-                            custom_data={k.lower(): v for k, v in row.items() if k.lower() not in ['email', 'name']}
-                        ))
-            except Exception:
-                campaign.delete()
-                return Response({'error': 'Failed to parse CSV. The file may be corrupt or not a valid CSV.'}, status=status.HTTP_400_BAD_REQUEST)
+                for s in steps_data:
+                    try:
+                        step_num = int(s.get('step_number'))
+                    except (TypeError, ValueError):
+                        continue  # skip NaN / null entries from frontend
 
-        # 3. Process Recipients from manual input (can be list or JSON string)
-        manual_recipients = data.get('recipients', [])
-        if isinstance(manual_recipients, str):
-            try:
-                manual_recipients = json.loads(manual_recipients)
-            except json.JSONDecodeError:
-                manual_recipients = []
+                    if step_num <= 1:
+                        continue  # Step 1 already created above
 
-        if isinstance(manual_recipients, list):
-            for r in manual_recipients:
-                email = r.get('email')
-                if email and email not in seen_emails:
-                    seen_emails.add(email)
-                    recipient_list.append(Recipient(
+                    step_body_val = (s.get('body') or '').strip()
+                    if not step_body_val:
+                        continue  # skip empty follow-up bodies
+
+                    step_obj = CampaignStep.objects.create(
                         campaign=campaign,
-                        email=email,
-                        name=r.get('name', ''),
-                        custom_data=r.get('custom_data', {})
-                    ))
+                        step_number=step_num,
+                        wait_days=int(s.get('wait_days') or 3),
+                        subject=(s.get('subject') or subject),
+                        body=step_body_val,
+                        subject_b=s.get('subject_b') or None,
+                        body_b=s.get('body_b') or None,
+                    )
+                    file_key = f'attachment_step_{step_num}'
+                    if file_key in request.FILES:
+                        step_obj.attachment = request.FILES[file_key]
+                        step_obj.save(update_fields=['attachment'])
 
-        # Bulk create recipients
-        if not recipient_list:
-            campaign.delete()
-            return Response(
-                {'error': 'No valid recipients found. Ensure your CSV has an "email" column or enter leads manually.'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+                # ── 5. Process Recipients ──────────────────────────────────────────
+                recipient_list = []
+                seen_emails = set()
 
-        Recipient.objects.bulk_create(recipient_list)
-        campaign.total_recipients = len(recipient_list)
-        # Now that recipients are confirmed, set the final status
-        campaign.status = status_val
-        campaign.save(update_fields=['total_recipients', 'status'])
+                if 'csv_file' in request.FILES:
+                    csv_file = request.FILES['csv_file']
+                    if not csv_file.name.lower().endswith('.csv'):
+                        raise ValueError('Invalid file format. Please upload a .csv file.')
+                    try:
+                        decoded_file = csv_file.read().decode('utf-8')
+                    except UnicodeDecodeError:
+                        csv_file.seek(0)
+                        decoded_file = csv_file.read().decode('latin-1')
 
-        return Response(EmailCampaignSerializer(campaign).data, status=status.HTTP_201_CREATED)
+                    for row in csv.DictReader(io.StringIO(decoded_file)):
+                        email_addr = (row.get('email') or row.get('Email') or '').strip()
+                        if email_addr and email_addr not in seen_emails:
+                            seen_emails.add(email_addr)
+                            recipient_list.append(Recipient(
+                                campaign=campaign,
+                                email=email_addr,
+                                name=(row.get('name') or row.get('Name') or '').strip(),
+                                custom_data={k.lower(): v for k, v in row.items() if k.lower() not in ['email', 'name']}
+                            ))
+
+                manual_recipients = data.get('recipients', '[]')
+                if isinstance(manual_recipients, str):
+                    try:
+                        manual_recipients = json.loads(manual_recipients)
+                    except json.JSONDecodeError:
+                        manual_recipients = []
+
+                if isinstance(manual_recipients, list):
+                    for r in manual_recipients:
+                        email_addr = (r.get('email') or '').strip()
+                        if email_addr and email_addr not in seen_emails:
+                            seen_emails.add(email_addr)
+                            recipient_list.append(Recipient(
+                                campaign=campaign,
+                                email=email_addr,
+                                name=(r.get('name') or '').strip(),
+                                custom_data=r.get('custom_data') or {}
+                            ))
+
+                if not recipient_list:
+                    raise ValueError('No valid recipients found. Upload a CSV or enter leads manually.')
+
+                # ── 6. Bulk-create & finalize ──────────────────────────────────────
+                Recipient.objects.bulk_create(recipient_list)
+                campaign.total_recipients = len(recipient_list)
+                campaign.status = status_val
+                campaign.save(update_fields=['total_recipients', 'status'])
+
+            # Transaction committed successfully
+            return Response({'id': campaign.id, 'status': campaign.status, 'total': campaign.total_recipients})
+
+        except ValueError as ve:
+            return Response({'error': str(ve)}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            logger.error(f"create_with_recipients failed for user {request.user.id}: {e}", exc_info=True)
+            return Response({'error': f'Server error: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 class RecipientViewSet(viewsets.ReadOnlyModelViewSet):
     queryset = Recipient.objects.all()
