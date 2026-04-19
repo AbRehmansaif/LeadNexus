@@ -212,7 +212,8 @@ class WebsiteScraper:
         emails = set()
         
         # 1. From text (includes obfuscation handling)
-        text_emails = extract_emails_from_text(soup.get_text())
+        # Use separator=' ' so text from adjacent tags (like phone and email) aren't concatenated without spaces.
+        text_emails = extract_emails_from_text(soup.get_text(separator=' '))
         if text_emails:
             emails.update(text_emails)
             
@@ -273,7 +274,8 @@ class WebsiteScraper:
         return scored_emails[0][1]
 
     def _extract_phone(self, soup: BeautifulSoup) -> Optional[str]:
-        phone = extract_phone_from_text(soup.get_text())
+        # Use separator=' ' to prevent text fusion
+        phone = extract_phone_from_text(soup.get_text(separator=' '))
         if phone:
             return phone
         for link in soup.find_all('a', href=lambda x: x and 'tel:' in x):
@@ -309,7 +311,7 @@ class WebsiteScraper:
             r'\d+\s+[\w\s]+(?:Street|St|Avenue|Ave|Road|Rd|Boulevard|Blvd|Lane|Ln|Drive|Dr)'
             r'[,\s]+[\w\s]+[,\s]+[A-Z]{2}\s+\d{5}'
         )
-        match = re.search(pattern, soup.get_text())
+        match = re.search(pattern, soup.get_text(separator=' '))
         if match:
             return clean_text(match.group(0))
 

@@ -8,7 +8,7 @@ from typing import Optional, List
 def is_valid_email(email: str) -> bool:
     if not email:
         return False
-    pattern = r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$'
+    pattern = r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,24}$'
     return bool(re.match(pattern, email.strip()))
 
 
@@ -49,13 +49,32 @@ def extract_emails_from_text(text: str) -> List[str]:
     # 1. Obfuscation mapping
     text = text.replace("[at]", "@").replace("(at)", "@").replace("[dot]", ".").replace("(dot)", ".")
     
-    # 2. Standard regex
-    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b'
+    # 2. Standard regex (no literal pipe in char class, max length 63 for TLD)
+    email_pattern = r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,63}\b'
     matches = re.findall(email_pattern, text)
     
     unique_emails = []
+    
+    # 3. Aggressive cleanup of fused text (like user@lear.comCopyright)
+    # If it ends with a common TLD followed by random letters, truncate it.
+    tld_fusion_pattern = re.compile(
+        r'\.(com|net|org|edu|gov|mil|int|co|io|ai|us|uk|ca|au|eu|de|fr|in|biz|info)[A-Za-z]{2,}$', 
+        re.IGNORECASE
+    )
+    
     for match in matches:
         match = match.strip()
+        
+        # Strip leading numbers/hyphens if it looks like a phone number was fused to the front
+        # e.g., 248-794-3472gstallings@lear.com -> gstallings@lear.com
+        match = re.sub(r'^[\d\-]+([A-Za-z_])', r'\1', match)
+        
+        # Truncate trailing fused text from TLDs
+        match = tld_fusion_pattern.sub(r'.\1', match)
+        
+        # Trim off any hanging weird characters
+        match = match.rstrip('.,:;\'"-')
+        
         if is_valid_email(match) and match not in unique_emails:
             unique_emails.append(match)
             
