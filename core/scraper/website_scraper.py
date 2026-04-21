@@ -21,6 +21,7 @@ from .validators import (
     extract_phone_from_text,
     clean_text,
     decode_cloudflare_email,
+    is_high_quality_email,
 )
 
 logger = logging.getLogger(__name__)
@@ -241,11 +242,16 @@ class WebsiteScraper:
         if not emails:
             return None
             
-        # 3. Rank emails to find the best contact address
-        return self._rank_email(list(emails))
+        # 3. Rank and validate emails to gather all real mailbox contacts
+        return self._rank_emails(list(emails))
 
-    def _rank_email(self, emails: List[str]) -> Optional[str]:
+    def _rank_emails(self, emails: List[str]) -> Optional[str]:
         if not emails:
+            return None
+            
+        # Apply Forge Nexus validation: reject all junk, dummy, loopback, or spam-trap emails
+        valid_emails = [e for e in emails if is_high_quality_email(e)]
+        if not valid_emails:
             return None
             
         # Scoring system: higher is better
@@ -253,7 +259,7 @@ class WebsiteScraper:
         low_priority_prefixes = ['privacy', 'noreply', 'jobs', 'careers', 'billing', 'legal', 'compliance']
         
         scored_emails = []
-        for email in emails:
+        for email in valid_emails:
             prefix = email.split('@')[0].lower()
             score = 10  # Base score
             
@@ -271,7 +277,8 @@ class WebsiteScraper:
             
         # Sort by score descending
         scored_emails.sort(key=lambda x: x[0], reverse=True)
-        return scored_emails[0][1]
+        # Return a comma-separated string of ALL valid high-quality emails
+        return ", ".join([x[1] for x in scored_emails])
 
     def _extract_phone(self, soup: BeautifulSoup) -> Optional[str]:
         # Use separator=' ' to prevent text fusion

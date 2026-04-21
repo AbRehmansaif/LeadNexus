@@ -374,7 +374,7 @@ class ScrapedWebsite(models.Model):
     job = models.ForeignKey(ScrapeJob, on_delete=models.CASCADE, related_name='results')
 
     website_url = models.URLField(max_length=2000)
-    email       = models.EmailField(blank=True, null=True)
+    email       = models.TextField(blank=True, null=True, help_text="Comma-separated verified emails")
     phone       = models.CharField(max_length=50, blank=True, null=True)
     address     = models.TextField(blank=True, null=True)
 
@@ -485,7 +485,7 @@ class ScrapedLinkedInProfile(models.Model):
     website      = models.URLField(max_length=2000, blank=True, null=True)
 
     # Website-scraped contact data
-    website_email     = models.EmailField(blank=True, null=True)
+    website_email     = models.TextField(blank=True, null=True, help_text="Comma-separated verified emails")
     website_phone     = models.CharField(max_length=50, blank=True, null=True)
     website_address   = models.TextField(blank=True, null=True)
     website_facebook  = models.URLField(blank=True, null=True)
@@ -565,7 +565,7 @@ class ScrapedKeywordWebsite(models.Model):
     job = models.ForeignKey(KeywordScrapeJob, on_delete=models.CASCADE, related_name='results')
 
     website_url = models.URLField(max_length=2000)
-    email       = models.EmailField(blank=True, null=True)
+    email       = models.TextField(blank=True, null=True, help_text="Comma-separated verified emails")
     phone       = models.CharField(max_length=50, blank=True, null=True)
     address     = models.TextField(blank=True, null=True)
 
