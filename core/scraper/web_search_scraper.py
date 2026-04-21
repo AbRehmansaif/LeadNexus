@@ -16,7 +16,7 @@ from fake_useragent import UserAgent
 from .validators import is_valid_url
 
 logger = logging.getLogger(__name__)
-
+class WebSearchScraper:
     def __init__(self, driver_factory=None, port: int = 9222, user_data_dir: str = None):
         """
         Args:

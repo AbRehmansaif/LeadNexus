@@ -296,6 +296,7 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
         # The select_for_update lock is released here. All variables above
         # (email_obj, creds, step_subject, rendered_body, ...) are in memory.
 
+    except Exception as preflight_error:
         # Pre-flight DB error (e.g. recipient not found, DB connection lost).
         # Safe to retry — no email has been sent yet.
         logger.error(f"Pre-flight error for recipient {recipient_id}: {preflight_error}")

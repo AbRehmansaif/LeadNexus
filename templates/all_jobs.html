@@ -411,48 +411,172 @@ document.addEventListener('DOMContentLoaded', () => {
     const bulkExportBtn = document.getElementById('bulk-export-btn');
     const selectedCountSpan = document.getElementById('selected-count');
     
-    function updateBulkUI() {
+    // Initialize storage structure if empty
+    let selectionStore = JSON.parse(localStorage.getItem('outreach_selection') || '{"linkedinJobs":[], "websiteJobs":[], "keywordJobs":[]}');
+
+    function saveStore() {
+        localStorage.setItem('outreach_selection', JSON.stringify(selectionStore));
+    }
+
+    function getActiveType() {
         const activeTab = document.querySelector('.tab-content.active');
-        if (!activeTab) return;
+        return activeTab ? activeTab.id : null;
+    }
+
+    function getLockedCategory() {
+        for (const type in selectionStore) {
+            if (selectionStore[type].length > 0) return type;
+        }
+        return null;
+    }
+
+    function updateBulkUI() {
+        const type = getActiveType();
+        const lockedCategory = getLockedCategory();
         
-        const checked = activeTab.querySelectorAll('.job-checkbox:checked');
-        const count = checked.length;
-        
-        if (count > 0) {
+        // Disable/Enable interaction based on lock
+        document.querySelectorAll('.tab-content').forEach(content => {
+            const isLocked = lockedCategory && content.id !== lockedCategory;
+            content.style.opacity = isLocked ? '0.6' : '1.0';
+            content.querySelectorAll('.job-checkbox, .custom-checkbox input[type="checkbox"]').forEach(cb => {
+                cb.disabled = isLocked;
+                cb.parentElement.style.cursor = isLocked ? 'not-allowed' : 'pointer';
+            });
+        });
+
+        // Dim inactive tab buttons if a category is locked
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            const btnType = btn.getAttribute('data-tab');
+            if (lockedCategory && btnType !== lockedCategory) {
+                btn.style.opacity = '0.5';
+            } else {
+                btn.style.opacity = '1';
+            }
+        });
+
+        if (lockedCategory) {
+            const count = selectionStore[lockedCategory].length;
             bulkActionContainer.style.display = 'block';
             selectedCountSpan.innerText = count;
+            
+            // Highlight the active tab if it matches the lock
+            if (type === lockedCategory) {
+                bulkExportBtn.style.opacity = '1';
+                bulkExportBtn.disabled = false;
+            } else {
+                bulkExportBtn.style.opacity = '0.5';
+                bulkExportBtn.title = "Switch back to the selected tab to export.";
+            }
+
+            // Sync clear button
+            if (!document.getElementById('clear-selection-btn')) {
+                const clearBtn = document.createElement('button');
+                clearBtn.id = 'clear-selection-btn';
+                clearBtn.className = 'btn btn-secondary';
+                clearBtn.style.marginLeft = '8px';
+                clearBtn.style.fontSize = '0.8rem';
+                clearBtn.innerHTML = '<i data-lucide="x-circle" style="width:14px; height:14px;"></i> Clear All Selection';
+                bulkActionContainer.appendChild(clearBtn);
+                
+                clearBtn.addEventListener('click', () => {
+                    selectionStore = {"linkedinJobs":[], "websiteJobs":[], "keywordJobs":[]};
+                    saveStore();
+                    syncCheckboxes();
+                    updateBulkUI();
+                });
+                if (window.lucide) lucide.createIcons();
+            }
         } else {
             bulkActionContainer.style.display = 'none';
+            const clearBtn = document.getElementById('clear-selection-btn');
+            if (clearBtn) clearBtn.remove();
         }
     }
 
-    // Individual Checkbox Logic
-    document.querySelectorAll('.job-checkbox').forEach(cb => {
-        cb.addEventListener('change', (e) => {
+    function syncCheckboxes() {
+        const checkboxes = document.querySelectorAll(`.job-checkbox`);
+        checkboxes.forEach(cb => {
+            const type = cb.closest('.tab-content').id;
+            cb.checked = selectionStore[type].includes(cb.value);
+            const row = cb.closest('tr');
+            if (cb.checked) row.classList.add('selected-row');
+            else row.classList.remove('selected-row');
+        });
+
+        // Sync Master Checkboxes
+        ['li', 'web', 'kw'].forEach(typeKey => {
+            const typeIdMap = { 'li': 'linkedinJobs', 'web': 'websiteJobs', 'kw': 'keywordJobs' };
+            const type = typeIdMap[typeKey];
+            const master = document.getElementById(`select-all-${typeKey}`);
+            if (master) {
+                const cbs = document.querySelectorAll(`#${type} .job-checkbox`);
+                if (cbs.length > 0) {
+                    master.checked = Array.from(cbs).every(cb => cb.checked);
+                }
+            }
+        });
+    }
+
+    // Handle Individual Selection
+    document.addEventListener('change', (e) => {
+        if (e.target.classList.contains('job-checkbox')) {
+            const type = e.target.closest('.tab-content').id;
+            const lockedCategory = getLockedCategory();
+            
+            if (lockedCategory && lockedCategory !== type) {
+                e.target.checked = false;
+                alert("Please clear your current selection from the other tab before selecting from a different category.");
+                return;
+            }
+
+            const id = e.target.value;
             const row = e.target.closest('tr');
+
             if (e.target.checked) {
+                if (!selectionStore[type].includes(id)) selectionStore[type].push(id);
                 row.classList.add('selected-row');
             } else {
+                selectionStore[type] = selectionStore[type].filter(item => item !== id);
                 row.classList.remove('selected-row');
             }
+            saveStore();
             updateBulkUI();
-        });
+        }
     });
 
-    // Select All Logic
-    ['li', 'web', 'kw'].forEach(type => {
-        const master = document.getElementById(`select-all-${type}`);
+    // Handle Select All
+    ['li', 'web', 'kw'].forEach(typeKey => {
+        const master = document.getElementById(`select-all-${typeKey}`);
         if (!master) return;
         
         master.addEventListener('change', (e) => {
+            const typeIdMap = { 'li': 'linkedinJobs', 'web': 'websiteJobs', 'kw': 'keywordJobs' };
+            const type = typeIdMap[typeKey];
+            const lockedCategory = getLockedCategory();
+
+            if (lockedCategory && lockedCategory !== type) {
+                e.target.checked = false;
+                alert("Please clear your current selection from the other tab before selecting from a different category.");
+                return;
+            }
+
             const table = e.target.closest('table');
             const checkboxes = table.querySelectorAll('.job-checkbox');
+            
             checkboxes.forEach(cb => {
                 cb.checked = e.target.checked;
+                const id = cb.value;
                 const row = cb.closest('tr');
-                if (cb.checked) row.classList.add('selected-row');
-                else row.classList.remove('selected-row');
+                
+                if (cb.checked) {
+                    if (!selectionStore[type].includes(id)) selectionStore[type].push(id);
+                    row.classList.add('selected-row');
+                } else {
+                    selectionStore[type] = selectionStore[type].filter(item => item !== id);
+                    row.classList.remove('selected-row');
+                }
             });
+            saveStore();
             updateBulkUI();
         });
     });
@@ -460,29 +584,38 @@ document.addEventListener('DOMContentLoaded', () => {
     // Tab Change Logic
     document.querySelectorAll('.tab-btn').forEach(btn => {
         btn.addEventListener('click', () => {
-            setTimeout(updateBulkUI, 50);
+             // Basic tab visibility handled by your CSS, we just sync UI states
+            setTimeout(() => {
+                syncCheckboxes();
+                updateBulkUI();
+            }, 100);
         });
     });
 
+    // Initial load
+    syncCheckboxes();
+    updateBulkUI();
+
     // Bulk Export Process
     bulkExportBtn.addEventListener('click', () => {
-        const activeTab = document.querySelector('.tab-content.active');
-        const checked = activeTab.querySelectorAll('.job-checkbox:checked');
-        const ids = Array.from(checked).map(cb => cb.value).join(',');
-        
-        const type = activeTab.id; 
-        
+        const locked = getLockedCategory();
+        if (!locked) return;
+
+        const idsParam = selectionStore[locked].join(',');
         let url = '';
-        if (type === 'websiteJobs') {
-            url = `/api/export/csv/?ids=${ids}`;
-        } else if (type === 'keywordJobs') {
-            url = `/api/export/keyword/csv/?ids=${ids}`;
-        } else if (type === 'linkedinJobs') {
-            url = `/api/export/linkedin/csv/?ids=${ids}`;
-        }
+        if (locked === 'websiteJobs') url = `/api/export/csv/?ids=${idsParam}`;
+        else if (locked === 'keywordJobs') url = `/api/export/keyword/csv/?ids=${idsParam}`;
+        else if (locked === 'linkedinJobs') url = `/api/export/linkedin/csv/?ids=${idsParam}`;
         
         if (url) {
             window.location.href = url;
+            // Clear selection after download start is usually logical for these apps
+            selectionStore = {"linkedinJobs":[], "websiteJobs":[], "keywordJobs":[]};
+            saveStore();
+            setTimeout(() => {
+                syncCheckboxes();
+                updateBulkUI();
+            }, 1000);
         }
     });
 });
