@@ -21,7 +21,14 @@ class EmailCampaignAdmin(admin.ModelAdmin):
     search_fields = ('name', 'subject')
     inlines = [RecipientInline]
     readonly_fields = ('created_at', 'updated_at', 'total_recipients', 'sent_count', 'failed_count')
+    actions = ['force_sync_stats']
     
+    @admin.action(description="Force Sync Stats from Recipients")
+    def force_sync_stats(self, request, queryset):
+        for campaign in queryset:
+            campaign.sync_stats_from_db()
+        self.message_user(request, f"Successfully recalculated stats for {queryset.count()} campaigns.")
+
     @admin.display(description="Progress")
     def progress_bar(self, obj):
         percent = obj.progress_percentage

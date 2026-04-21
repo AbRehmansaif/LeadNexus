@@ -59,17 +59,30 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                 return f"Skipped: {recipient.email} (Replied, Unsubscribed, or Paused)"
                 
             # CRITICAL GUARD: Prevent duplicate transmissions at the ADDRESS level (not just row level)
+            # We check if ANY row with this email address has already reached this step OR is currently sending.
             address_already_sent = Recipient.objects.filter(
                 campaign_id=campaign.id, 
-                email__iexact=recipient.email, 
-                current_step_index__gte=step_number
+                email__iexact=recipient.email
+            ).filter(
+                Q(current_step_index__gte=step_number) | Q(status='sending')
             ).exclude(id=recipient.id).exists()
 
-            # Guard: already at this step or beyond (already sent), or genuinely
-            # processing right now by another worker.
-            # NOTE: A recipient stuck in 'sending' with current_step_index < step_number
-            # means Phase 3 never ran (task crashed after send). We RESET it so it retries.
-            if recipient.current_step_index >= step_number or address_already_sent:
+            # Transient Cache Lock (Phase 2 protection)
+            # Since Phase 2 (SMTP) happens outside the DB transaction, we use a 10-minute 
+            # atomic cache lock to prevent multiple workers from processing the same 
+            # recipient/step ID simultaneously.
+            lock_key = f"send_lock_{recipient.id}_{step_number}"
+            is_locked = not cache.add(lock_key, "locked", timeout=600)
+
+            # Skip if already processed, already sending (DB status), or locked (Cache status)
+            if recipient.current_step_index >= step_number or address_already_sent or is_locked:
+                # Special Case: If we skipped because it's ALREADY 'sending' from a DISPATCHER
+                # but THIS specific task doesn't have the cache lock yet, it might be the
+                # legitimate worker for this recipient. 
+                # If we have the lock, we proceed even if DB says 'sending'.
+                if is_locked:
+                    return f"Skipped: {recipient.email} (Task for Step {step_number} already in progress)"
+                
                 # If we skipped because of a different row, mark THIS row as completed/active too
                 # to stop it from appearing in future dispatcher loops.
                 if address_already_sent and recipient.status == 'pending':
@@ -78,8 +91,7 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                     recipient.current_step_index = step_number
                     recipient.save(update_fields=['status', 'current_step_index'])
                 
-                return f"Skipped: {recipient.email} (Already received or sending Step {step_number})"
-
+                return f"Skipped: {recipient.email} (Already reached Step {step_number} or address duplicated)"
 
             # Business Hours Check — use apply_async NOT self.retry so we
             # don't burn the precious max_retries=3 SMTP error budget.
@@ -87,6 +99,8 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             local_now = timezone.localtime(now)
 
             if campaign.work_days and str(local_now.isoweekday()) not in campaign.work_days.split(','):
+                # Release lock if we defer
+                cache.delete(lock_key)
                 send_single_email_task.apply_async(
                     args=[recipient_id, step_number, cred_id],
                     countdown=14400  # retry in 4 hours
@@ -104,6 +118,8 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                     in_window = current_time >= start_time or current_time <= end_time
                     
                 if not in_window:
+                    # Release lock if we defer
+                    cache.delete(lock_key)
                     send_single_email_task.apply_async(
                         args=[recipient_id, step_number, cred_id],
                         countdown=3600  # retry in 1 hour
@@ -111,8 +127,6 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                     return f"Deferred: {recipient.email} — outside send window"
 
             # Pre-send Lockdown (Commit this before releasing lock)
-            # We do this AS LATE AS POSSIBLE in Phase 1 to avoid locking up
-            # the recipient status if a deferral or quota check happens above.
             recipient.status = 'sending'
             recipient.save(update_fields=['status'])
 
@@ -170,6 +184,8 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                 midnight = timezone.make_aware(datetime.combine(tomorrow, dt_time.min))
                 wait_seconds = max(60, (midnight - now_time).total_seconds() + 300)
                 
+                # Release lock if we defer
+                cache.delete(lock_key)
                 send_single_email_task.apply_async(
                     args=[recipient_id, step_number, None],
                     countdown=wait_seconds
@@ -280,10 +296,16 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
         # The select_for_update lock is released here. All variables above
         # (email_obj, creds, step_subject, rendered_body, ...) are in memory.
 
-    except Exception as preflight_error:
         # Pre-flight DB error (e.g. recipient not found, DB connection lost).
         # Safe to retry — no email has been sent yet.
         logger.error(f"Pre-flight error for recipient {recipient_id}: {preflight_error}")
+        
+        # Ensure lock is released so retry can pick it up
+        try:
+            cache.delete(f"send_lock_{recipient_id}_{step_number}")
+        except:
+            pass
+
         try:
             raise self.retry(exc=preflight_error, countdown=30)
         except self.MaxRetriesExceededError:
@@ -303,6 +325,13 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
     except Exception as smtp_error:
         # Genuine SMTP failure — safe to retry (email was NOT sent)
         logger.error(f"SMTP error for {recipient_id}: {smtp_error}")
+        
+        # Release lock so retry can proceed
+        try:
+            cache.delete(f"send_lock_{recipient_id}_{step_number}")
+        except:
+            pass
+
         try:
             # RESET status so the retry (Phase 1) doesn't skip itself due to the 'sending' lockdown
             Recipient.objects.filter(id=recipient_id).update(status='pending')
@@ -334,6 +363,9 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                 
             r.smtp_email = creds.from_email  # record which account sent it
             r.save(update_fields=['current_step_index', 'last_sent_at', 'status', 'smtp_email'])
+            
+            # Phase 3 success: we can release the transient lock now
+            cache.delete(f"send_lock_{recipient_id}_{step_number}")
     except Exception as status_error:
         # Email was sent but we couldn't save the status update.
         # Log it but do NOT mark as failed — the email was delivered.
@@ -419,59 +451,80 @@ def send_campaign_emails(campaign_id, step_number=1):
     Dispatcher: Calculates the schedule and pre-assigns accounts.
     Packs everything into Redis as small, fast, independent tasks.
     """
-    campaign = EmailCampaign.objects.get(pk=campaign_id)
+    # Dispatcher Lock: Prevent multiple dispatchers from running for the same step/campaign
+    # This is the primary defense against "Double Start" or Celery Beat overlaps.
+    dispatcher_lock = f"dispatcher_lock_{campaign_id}_{step_number}"
+    if not cache.add(dispatcher_lock, "active", timeout=600):
+        return f"Dispatcher for campaign {campaign_id} step {step_number} is already running."
 
-    # 1. Get eligible recipients
-    if step_number == 1:
-        recipients = campaign.recipients.filter(status='pending', current_step_index=0)
-    else:
-        recipients = campaign.recipients.filter(
-            current_step_index=step_number - 1,
-            is_replied=False,
-            status='active'
-        )
+    try:
+        campaign = EmailCampaign.objects.get(pk=campaign_id)
 
-    if not recipients.exists():
-        if step_number == 1:
-            has_active_or_pending = Recipient.objects.filter(campaign_id=campaign_id, status__in=['active', 'pending']).exists()
-            if not has_active_or_pending:
-                campaign.status = 'completed'
+        # 1. Get eligible recipients and mark them as 'sending' ATOMICALLY
+        # This prevents a second dispatcher from seeing the same recipients as 'pending'.
+        with transaction.atomic():
+            if step_number == 1:
+                recipients = campaign.recipients.select_for_update().filter(status='pending', current_step_index=0)
             else:
-                campaign.status = 'running'
-            campaign.save(update_fields=['status'])
-        return "No recipients found"
+                recipients = campaign.recipients.select_for_update().filter(
+                    current_step_index=step_number - 1,
+                    is_replied=False,
+                    status='active'
+                )
+            
+            recipients_list = list(recipients)
+            if not recipients_list:
+                cache.delete(dispatcher_lock)
+                if step_number == 1:
+                    has_active_or_pending = Recipient.objects.filter(campaign_id=campaign_id, status__in=['active', 'pending']).exists()
+                    if not has_active_or_pending:
+                        campaign.status = 'completed'
+                    else:
+                        campaign.status = 'running'
+                    campaign.save(update_fields=['status'])
+                return "No recipients found"
 
-    campaign.status = 'running'
-    campaign.save(update_fields=['status'])
+            # Lockdown: Mark all as 'sending' before even queueing the tasks
+            campaign.recipients.filter(id__in=[r.id for r in recipients_list]).update(status='sending')
 
-    # 2. Setup Rotation Pool
-    all_smtp = list(SMTPCredential.objects.filter(user=campaign.user))
-    if not all_smtp:
-        recipients.update(status='failed', error_message='No SMTP accounts configured')
-        campaign.sync_stats_from_db()
-        campaign.refresh_from_db()
-        if not Recipient.objects.filter(campaign_id=campaign_id, status__in=['active', 'pending']).exists():
-            campaign.status = 'completed'
-            campaign.save(update_fields=['status'])
-        return "No SMTP accounts configured"
+        campaign.status = 'running'
+        campaign.save(update_fields=['status'])
 
-    for c in all_smtp:
-        c.check_and_reset_limit()
-        
-    active_smtp = [c for c in all_smtp if c.is_active]
+        # 2. Setup Rotation Pool
+        all_smtp = list(SMTPCredential.objects.filter(user=campaign.user))
+        if not all_smtp:
+            campaign.recipients.filter(id__in=[r.id for r in recipients_list]).update(status='failed', error_message='No SMTP accounts configured')
+            campaign.sync_stats_from_db()
+            campaign.refresh_from_db()
+            if not Recipient.objects.filter(campaign_id=campaign_id, status__in=['active', 'pending']).exists():
+                campaign.status = 'completed'
+                campaign.save(update_fields=['status'])
+            cache.delete(dispatcher_lock)
+            return "No SMTP accounts configured"
 
-    gap = max(1, campaign.gap_seconds)
+        for c in all_smtp:
+            c.check_and_reset_limit()
+            
+        active_smtp = [c for c in all_smtp if c.is_active]
 
-    # 3. Dispatch independent tasks with Countdown
-    recipients_list = list(recipients)
-    for i, recipient in enumerate(recipients_list):
-        target_creds_id = active_smtp[i % len(active_smtp)].id if active_smtp else None
-        send_single_email_task.apply_async(
-            args=[recipient.id, step_number, target_creds_id],
-            countdown=i * gap
-        )
+        gap = max(1, campaign.gap_seconds)
 
-    return f"Campaign {campaign.name} Dispatched: {len(recipients_list)} tasks queued with {gap}s gap."
+        # 3. Dispatch independent tasks with Countdown
+        for i, recipient in enumerate(recipients_list):
+            target_creds_id = active_smtp[i % len(active_smtp)].id if active_smtp else None
+            send_single_email_task.apply_async(
+                args=[recipient.id, step_number, target_creds_id],
+                countdown=i * gap
+            )
+
+        return f"Campaign {campaign.name} Dispatched: {len(recipients_list)} tasks queued with {gap}s gap."
+    
+    except Exception as e:
+        logger.error(f"Dispatcher failed for campaign {campaign_id}: {e}")
+        return f"Error: {str(e)}"
+    finally:
+        # Release the dispatcher lock
+        cache.delete(dispatcher_lock)
 
 
 def trigger_followup_task(campaign_id, step_number):
