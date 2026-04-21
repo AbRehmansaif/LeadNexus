@@ -17,13 +17,16 @@ from .validators import is_valid_url
 
 logger = logging.getLogger(__name__)
 
-class WebSearchScraper:
-    def __init__(self, driver_factory=None):
+    def __init__(self, driver_factory=None, port: int = 9222, user_data_dir: str = None):
         """
         Args:
             driver_factory: A callable that returns a configured Selenium driver.
+            port:           Chromium debugging port
+            user_data_dir:   Custom Chrome profile directory
         """
         self.driver_factory = driver_factory
+        self.port = port
+        self.user_data_dir = user_data_dir
         self.driver = None
 
     def search(self, keywords: str, max_results: int = 50) -> List[str]:
@@ -33,7 +36,11 @@ class WebSearchScraper:
         """
         if not self.driver_factory:
             from .linkedin_scraper import LinkedInScraper
-            temp_scraper = LinkedInScraper({'scraping': {'headless': True}})
+            temp_scraper = LinkedInScraper(
+                config={'scraping': {'headless': True}},
+                port=self.port,
+                user_data_dir=self.user_data_dir
+            )
             temp_scraper.setup_driver()
             self.driver = temp_scraper.driver
         else:

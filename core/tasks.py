@@ -30,9 +30,24 @@ logger = logging.getLogger(__name__)
 DATA_DIR = os.path.join(settings.BASE_DIR.parent, 'data')
 os.makedirs(DATA_DIR, exist_ok=True)
 
-# Global lock to ensure only one scraping job execution at a time.
-# This prevents Chromium port conflicts (9222) and SQLite "database is locked" errors.
-SCRAPER_LOCK = threading.Lock()
+# Global resource semaphore to prevent server exhaustion (Max 8 concurrent Chromiums)
+# Ideal for 4 vCPU / 8 GB RAM setup.
+MAX_BROWSER_INSTANCES = threading.Semaphore(10)
+
+# Per-User Lock to prevent a single user from running concurrent searches 
+# (avoids LinkedIn login conflicts and account-level rate limits)
+USER_LOCKS = {}
+
+def get_user_lock(user_id):
+    if user_id not in USER_LOCKS:
+        USER_LOCKS[user_id] = threading.Lock()
+    return USER_LOCKS[user_id]
+
+def find_free_port():
+    import socket
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        s.bind(('', 0))
+        return s.getsockname()[1]
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -40,12 +55,10 @@ SCRAPER_LOCK = threading.Lock()
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
 def run_scrape_job(job_id: int):
-    """Execute a ScrapeJob (website-only scrape)."""
-    # Wait for other jobs to finish
-    with SCRAPER_LOCK:
-        try:
-            job = ScrapeJob.objects.get(pk=job_id)
-        except ScrapeJob.DoesNotExist:
+    """Execute a ScrapeJob (website-only scrape). No longer locked — concurrent by default."""
+    try:
+        job = ScrapeJob.objects.get(pk=job_id)
+    except ScrapeJob.DoesNotExist:
             logger.error(f"ScrapeJob #{job_id} not found")
             return
 
@@ -158,47 +171,50 @@ def run_linkedin_job(job_id: int):
     5. Optionally visit associated websites and scrape contact data
     6. Save results to DB + data/ folder
     """
-    from .scraper.linkedin_scraper import LinkedInScraper
+    # Resource Protection Phase
+    import tempfile
+    
+    try:
+        job = LinkedInScrapeJob.objects.get(pk=job_id)
+    except LinkedInScrapeJob.DoesNotExist:
+        logger.error(f"LinkedInScrapeJob #{job_id} not found")
+        return
 
-    # Wait for other jobs to finish
-    with SCRAPER_LOCK:
-        try:
-            job = LinkedInScrapeJob.objects.get(pk=job_id)
-        except LinkedInScrapeJob.DoesNotExist:
-            logger.error(f"LinkedInScrapeJob #{job_id} not found")
-            return
+    # Wait for the USER-specific lock (One search per user at a time)
+    with get_user_lock(job.user_id):
+        # Wait for the GLOBAL browser slot (Max 5 total Chromiums)
+        with MAX_BROWSER_INSTANCES:
+            # If job was cancelled while waiting in the queue
+            if job.status == 'cancelled':
+                logger.info(f"LinkedInScrapeJob #{job_id} was cancelled before it could start.")
+                return
 
-        # If job was cancelled while waiting in the queue
-        if job.status == 'cancelled':
-            logger.info(f"LinkedInScrapeJob #{job_id} was cancelled before it could start.")
-            return
+            job.status = 'running'
+            job.started_at = timezone.now()
+            job.progress = 0
+            job.save(update_fields=['status', 'started_at', 'progress'])
 
-        job.status = 'running'
-        job.started_at = timezone.now()
-        job.progress = 0
-        job.save(update_fields=['status', 'started_at', 'progress'])
-
-        # Job starts, we will increment usage PER PROFILE inside the callback below
-        scraper = None
-
-        try:
-            # ─── Step 1: Initialize Chrome ─────────────────────────────
-            logger.info(f"[LinkedInJob #{job_id}] Initializing Chrome ...")
-            # Config matches the original scrapers/linkedin_scraper.py format
-            config = {
-                'scraping': {
-                    'headless': job.headless,
-                    'delay_min': 3,
-                    'delay_max': 6,
-                    'timeout': 30,
-                },
-                'website_scraping': {
-                    'enabled': job.scrape_websites,
-                    'timeout': 15,
-                },
-            }
-            scraper = LinkedInScraper(config)
-            scraper.setup_driver()
+            # Allocate isolated environment
+            port = find_free_port()
+            tmp_dir_obj = tempfile.TemporaryDirectory(prefix=f"chrome_p_{job_id}_")
+            
+            scraper = None
+            try:
+                logger.info(f"[LinkedInJob #{job_id}] Initializing isolated Chrome (Port {port}) ...")
+                config = {
+                    'scraping': {
+                        'headless': job.headless,
+                        'delay_min': 3,
+                        'delay_max': 6,
+                        'timeout': 30,
+                    },
+                    'website_scraping': {
+                        'enabled': job.scrape_websites,
+                        'timeout': 15,
+                    },
+                }
+                scraper = LinkedInScraper(config, port=port, user_data_dir=tmp_dir_obj.name)
+                scraper.setup_driver()
 
             # ─── Step 2: Login ─────────────────────────────────────────
             # Use stored account credentials if selected, otherwise fallback to manual entry
@@ -300,6 +316,13 @@ def run_linkedin_job(job_id: int):
         finally:
             if scraper:
                 scraper.close()
+            
+            # Clean up profile directory
+            try:
+                tmp_dir_obj.cleanup()
+            except:
+                pass
+
             job.completed_at = timezone.now()
             job.save(update_fields=['status', 'error_message', 'completed_at', 'progress'])
 
@@ -314,35 +337,37 @@ def run_linkedin_job_async(job_id: int):
 #  3.  Keyword Scrape Job  (niche → search engine → websites → contacts)
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-def run_keyword_job(job_id: int):
-    """
-    Execute a KeywordScrapeJob:
-    1. Search keywords → get list of domains
-    2. Scrape each domain for contact data
-    3. Save results
-    """
-    # Wait for other jobs to finish
-    with SCRAPER_LOCK:
-        try:
-            job = KeywordScrapeJob.objects.get(pk=job_id)
-        except KeywordScrapeJob.DoesNotExist:
-            logger.error(f"KeywordScrapeJob #{job_id} not found")
-            return
+    # Resource Protection Phase
+    import tempfile
 
-        if job.status == 'cancelled':
-            logger.info(f"KeywordScrapeJob #{job_id} was cancelled before it could start.")
-            return
+    try:
+        job = KeywordScrapeJob.objects.get(pk=job_id)
+    except KeywordScrapeJob.DoesNotExist:
+        logger.error(f"KeywordScrapeJob #{job_id} not found")
+        return
 
-        job.status = 'running'
-        job.started_at = timezone.now()
-        job.progress = 0
-        job.save(update_fields=['status', 'started_at', 'progress'])
+    # Wait for the USER-specific lock
+    with get_user_lock(job.user_id):
+        # Wait for the GLOBAL browser slot
+        with MAX_BROWSER_INSTANCES:
+            if job.status == 'cancelled':
+                logger.info(f"KeywordScrapeJob #{job_id} was cancelled before it could start.")
+                return
 
-        try:
-            # Step 1: Search for websites (Uses Selenium)
-            logger.info(f"[KeywordJob #{job_id}] Searching for niche: {job.niche}")
-            search_scraper = WebSearchScraper()
-            domains = search_scraper.search(job.niche, max_results=job.max_results)
+            job.status = 'running'
+            job.started_at = timezone.now()
+            job.progress = 0
+            job.save(update_fields=['status', 'started_at', 'progress'])
+
+            # Allocate isolated environment
+            port = find_free_port()
+            tmp_dir_obj = tempfile.TemporaryDirectory(prefix=f"chrome_kw_{job_id}_")
+
+            try:
+                # Step 1: Search for websites (Uses Selenium)
+                logger.info(f"[KeywordJob #{job_id}] Searching niche '{job.niche}' on Port {port}...")
+                search_scraper = WebSearchScraper(port=port, user_data_dir=tmp_dir_obj.name)
+                domains = search_scraper.search(job.niche, max_results=job.max_results)
             
             if not domains:
                 job.status = 'failed'
@@ -419,6 +444,12 @@ def run_keyword_job(job_id: int):
             job.error_message = str(e)
 
         finally:
+            # Clean up profile directory
+            try:
+                tmp_dir_obj.cleanup()
+            except:
+                pass
+                
             job.completed_at = timezone.now()
             job.save(update_fields=['status', 'error_message', 'completed_at'])
 

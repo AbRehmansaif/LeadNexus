@@ -43,14 +43,18 @@ class LinkedInScraper:
     standalone scraper. Config keys match the original format.
     """
 
-    def __init__(self, config: Dict):
+    def __init__(self, config: Dict, port: int = 9222, user_data_dir: str = None):
         """
         Initialize LinkedIn scraper.
 
         Args:
             config: Configuration dictionary (matches scrapers/linkedin_scraper.py format)
+            port:   Chromium remote debugging port
+            user_data_dir: Custom Chrome profile directory
         """
         self.config = config
+        self.port = port
+        self.user_data_dir = user_data_dir
         self.driver = None
         self.wait = None
         self.is_logged_in = False
@@ -72,7 +76,11 @@ class LinkedInScraper:
         chrome_options.add_argument('--no-sandbox')
         chrome_options.add_argument('--disable-dev-shm-usage')
         chrome_options.add_argument('--disable-gpu')
-        chrome_options.add_argument('--remote-debugging-port=9222')
+        chrome_options.add_argument(f'--remote-debugging-port={self.port}')
+        
+        if self.user_data_dir:
+            chrome_options.add_argument(f'--user-data-dir={self.user_data_dir}')
+
         chrome_options.add_argument('--disable-software-rasterizer')
         chrome_options.add_argument('--disable-blink-features=AutomationControlled')
         chrome_options.add_argument('--disable-infobars')
