@@ -21,6 +21,7 @@ from .models import (
     LinkedInScrapeJob, ScrapedLinkedInProfile,
     KeywordScrapeJob, ScrapedKeywordWebsite,
 )
+from .utils import B2BPurifier
 from .scraper.website_scraper import WebsiteScraper
 from .scraper.web_search_scraper import WebSearchScraper
 
@@ -253,6 +254,11 @@ def run_linkedin_job(job_id: int):
 
                         # Increment Usage
                         job.user.profile.increment_linkedin_usage()
+                        
+                    # Apply B2B Purifier to skip non-business sites
+                    if website_url and not B2BPurifier.is_safe_b2b(website_url):
+                        logger.info(f"[LinkedInJob #{job_id}] Skipping non-business site: {website_url}")
+                        website_url = None
 
                     if website_scraper and website_url:
                         try:

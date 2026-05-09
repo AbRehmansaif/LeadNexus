@@ -14,6 +14,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from fake_useragent import UserAgent
 
 from .validators import is_valid_url
+from ..utils import B2BPurifier
 
 logger = logging.getLogger(__name__)
 class WebSearchScraper:
@@ -202,30 +203,19 @@ class WebSearchScraper:
         return list(unique_domains)
 
     def _is_target_website(self, url: str) -> bool:
-        """Filter out search engines, social media platforms, and noise."""
-        blacklist = [
-            'google.', 'bing.', 'yahoo.', 'duckduckgo.',
-            'facebook.', 'twitter.', 'linkedin.', 'instagram.',
-            'youtube.', 'pinterest.', 'wikipedia.', 'amazon.',
-            'yelp.', 'yellowpages.', 'tripadvisor.', 'wix.com',
-            'wordpress.com', 'blogspot.', 'medium.com'
-        ]
-        
-        # Also clean common tracking params
-        if 'utm_' in url or 'gclid' in url:
+        """Filter out non-business websites using the B2B Purifier."""
+        if not url:
+            return False
+            
+        # Clean common tracking params before check
+        if '?' in url:
             url = url.split('?')[0]
             
         if not is_valid_url(url):
             return False
             
-        domain = self._extract_domain(url).lower()
-        if not domain:
-            return False
-            
-        for b in blacklist:
-            if b in domain:
-                return False
-        return True
+        # The B2BPurifier handles all social media, SaaS, news, and noise domains
+        return B2BPurifier.is_safe_b2b(url)
 
     def _extract_domain(self, url: str) -> str:
         """Extract clean 'https://domain.com' from a full URL."""

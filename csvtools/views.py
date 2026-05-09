@@ -834,6 +834,58 @@ def _apply_operation(op_type, op, rows, fieldnames, is_preview=False):
                     new_rows.append(r)
             rows = new_rows
 
+    elif op_type == 'b2b_smart_filter':
+        col = op.get('column', 'website')
+        blocklist = {
+            'hubspot.com', 'semrush.com', 'moz.com', 'ahrefs.com', 'mailchimp.com', 'hootsuite.com', 'buffer.com', 
+            'sproutsocial.com', 'constantcontact.com', 'activecampaign.com', 'sendinblue.com', 'getswitch.com',
+            'forbes.com', 'entrepreneur.com', 'inc.com', 'fastcompany.com', 'techcrunch.com', 'mashable.com', 
+            'wired.com', 'theguardian.com', 'nytimes.com', 'wsj.com', 'bbc.com', 'cnn.com', 'reuters.com', 
+            'bloomberg.com', 'huffpost.com', 'businessinsider.com', 'theverge.com', 'medium.com',
+            'neilpatel.com', 'backlinko.com', 'searchenginejournal.com', 'searchengineland.com', 'marketingland.com', 
+            'socialmediaexaminer.com', 'contentmarketinginstitute.com', 'copyblogger.com', 'wordstream.com', 
+            'convinceandconvert.com', 'ducttapemarketing.com', 'marketingprofs.com',
+            'yelp.com', 'trustpilot.com', 'g2.com', 'capterra.com', 'clutch.co', 'goodfirms.co', 'designrush.com', 
+            'tripadvisor.com', 'glassdoor.com', 'yellowpages.com', 'angieslist.com', 'bbb.org', 'crunchbase.com',
+            'reddit.com', 'quora.com', 'stackoverflow.com', 'linkedin.com', 'facebook.com', 'twitter.com', 'x.com', 
+            'instagram.com', 'pinterest.com', 'youtube.com', 'vimeo.com', 'github.com', 'behance.net', 'dribbble.com',
+            'salesforce.com', 'monday.com', 'asana.com', 'trello.com', 'slack.com', 'canva.com', 'figma.com', 
+            'adobe.com', 'shopify.com', 'wix.com', 'squarespace.com', 'zoom.us', 'intercom.com', 'zendesk.com',
+            'typeform.com', 'calendly.com', 'notion.so', 'airtable.com', 'clickup.com', 'basecamp.com', 'jira.com',
+            'confluence.com', 'dropbox.com', 'box.com', 'evernote.com', 'grammarly.com', 'loom.com', 'miro.com',
+            'zapier.com', 'ifttt.com', 'make.com', 'pipedrive.com', 'zoho.com', 'microsoft.com', 'google.com', 
+            'apple.com', 'stripe.com', 'paypal.com', 'square.com', 'quickbooks.com', 'xero.com',
+            'wordpress.com', 'blogspot.com', 'blogger.com', 'tumblr.com', 'weebly.com', 'webflow.com',
+            'bluehost.com', 'siteground.com', 'hostgator.com', 'godaddy.com', 'namecheap.com', 'digitalocean.com',
+            'wikipedia.org', 'wikihow.com', 'fandom.com', 'investopedia.com', 'dictionary.com',
+            'upwork.com', 'fiverr.com', 'freelancer.com', 'toptal.com', 'indeed.com', 'monster.com'
+        }
+        
+        bad_keywords = [
+            '/blog/', '/blog', '/news/', '/article/', '/post/', '/resources/', '/learn/', '/tutorial/',
+            '/tips/', '/magazine/', '/wiki/', '/forum/', '/review/', '/directory/', '/listing/', 
+            '/compare/', '/vs/', '/best-of/', 'blog.', 'news.', 'magazine.', 'portal.', 'forum.', 
+            'community.', 'help.', 'support.', 'learn.', 'resources.'
+        ]
+        
+        excluded_patterns = ['.blogspot.', '.wordpress.', '.medium.', '.substack.', '.ghost.', '.tumblr.', '.wixsite.', '.weebly.', '.webflow.', '.carrd.']
+
+        new_rows = []
+        for r in rows:
+            val = str(r.get(col, '') or '').lower()
+            domain = val.replace('https://', '').replace('http://', '').replace('www.', '').split('/')[0].split('?')[0]
+            
+            if domain in blocklist:
+                continue
+            if any(pattern in val for pattern in excluded_patterns):
+                continue
+            if any(k in val for k in bad_keywords):
+                if '/blog' in val or 'blog.' in val or '/news' in val or '/forum' in val:
+                    continue
+            
+            new_rows.append(r)
+        rows = new_rows
+
     else:
         raise ValueError(f'Unknown operation type: {op_type}')
 
