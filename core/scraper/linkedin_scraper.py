@@ -104,7 +104,17 @@ class LinkedInScraper:
         # Initialize driver with webdriver-manager
         try:
             from webdriver_manager.chrome import ChromeDriverManager
-            service = Service(ChromeDriverManager().install())
+            driver_path = ChromeDriverManager().install()
+            
+            # Fix for common bug where it returns a license file instead of the exe
+            if "LICENSE" in driver_path or "THIRD_PARTY" in driver_path:
+                base_dir = os.path.dirname(driver_path)
+                if os.name == 'nt': # Windows
+                    driver_path = os.path.join(base_dir, "chromedriver.exe")
+                else: # Linux
+                    driver_path = os.path.join(base_dir, "chromedriver")
+            
+            service = Service(executable_path=driver_path)
         except ImportError:
             service = Service()  # fallback: expects chromedriver on PATH
         except Exception as e:
