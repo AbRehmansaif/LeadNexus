@@ -114,6 +114,10 @@ class LinkedInScraper:
                 else: # Linux
                     driver_path = os.path.join(base_dir, "chromedriver")
             
+            # Ensure execution permissions for the downloaded binary on Linux
+            if os.name != 'nt' and os.path.exists(driver_path):
+                os.chmod(driver_path, 0o755)
+                
             service = Service(executable_path=driver_path)
         except ImportError:
             service = Service()  # fallback: expects chromedriver on PATH
