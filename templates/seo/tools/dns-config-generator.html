@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Free SPF, DKIM & DMARC Generator & Checker — LeadNexus{% endblock %}
-{% block meta_description %}Free professional DNS record generator for email deliverability. Create SPF, DKIM, and DMARC records for Gmail, Outlook, and custom SMTP in seconds to avoid spam filters.{% endblock %}
-{% block meta_keywords %}SPF generator, DMARC generator, DKIM setup, email deliverability tool, DNS records for email, fix spam folder, cold email setup{% endblock %}{% block canonical_url %}https://leadnexus.difusionseo.com/tools/spf-dkim-dmarc-config-generator/{% endblock %}
+{% block title %}SPF, DKIM & DMARC Record Generator | LeadNexus{% endblock %}
+{% block meta_description %}Free SPF, DKIM, and DMARC record generator to secure your email domain and improve deliverability. Generate professional DNS configurations in seconds.{% endblock %}
+{% block meta_keywords %}SPF generator, DMARC generator, DKIM setup, email deliverability tool, DNS records for email, fix spam folder, cold email setup{% endblock %}
+{% block canonical_url %}https://getleadnexus.com/tools/dns-config-generator/{% endblock %}
 
 {% block meta_robots %}index, follow{% endblock %}
 
@@ -202,7 +203,10 @@
     <!-- SEO Content Block -->
     <div class="seo-content-block">
       <h2>Understanding Email Authentication (SPF, DKIM, DMARC)</h2>
-      <p>Modern email deliverability is built on trust. When you send an email, server-side filters at Gmail and Outlook ask one question: <strong>"How do I know this sender is who they say they are?"</strong> Without SPF, DKIM, and DMARC, your domain has no identity, and your emails are treat as potential phishing attacks or spam.</p>
+      <p>Modern email deliverability is built on trust. When you send an email, server-side filters at Gmail and Outlook ask one question: <strong>"How do I know this sender is who they say they are?"</strong> Without SPF, DKIM, and DMARC, your domain has no identity, and your emails are treated as potential phishing attacks or spam.</p>
+
+      <h2>How the DNS Config Generator Works</h2>
+      <p>Our tool simplifies the complex process of creating authentication records. By selecting your email provider (like Google or Microsoft), we automatically format the strings according to their specific requirements. We also help you configure DMARC policies—the instructions that tell receiving servers what to do with unauthenticated mail.</p>
       
       <div class="features-grid">
         <div class="feature-item">
@@ -219,13 +223,25 @@
         </div>
       </div>
 
-      <h2>Why Cold Emailers Need a 100% Valid Score</h2>
-      <p>If you are doing B2B outreach, your volume is higher than a typical individual. This makes you a target for "Aggressive Spam Filtering." If even one of these three records is missing or misconfigured:</p>
+      <h2>Benefits of Proper DNS Configuration</h2>
       <ul>
-        <li><strong>Open rates will plummet:</strong> Your emails will be delivered directly to the 'Spam' or 'Promotions' folder.</li>
-        <li><strong>Domain Blacklisting:</strong> Persistent authentication failures will cause your domain to be flagged by Spamhaus or Google.</li>
-            <li><strong>Infrastructure Failure:</strong> Tools like Instantly, Lemlist, or LeadNexus rely on these records to maintain high-velocity inbox density.</li>
-        </ul>
+        <li><strong>Higher Deliverability:</strong> Verified domains are much less likely to be flagged as spam.</li>
+        <li><strong>Brand Protection:</strong> Prevent hackers from spoofing your domain for phishing.</li>
+        <li><strong>Improved Open Rates:</strong> Emails that land in the primary inbox get seen and opened.</li>
+        <li><strong>Compliance:</strong> Meet the 2024 requirements set by Google and Yahoo for bulk senders.</li>
+      </ul>
+
+      <h2>Step-by-Step: How to Generate Your Records</h2>
+      <ol>
+        <li><strong>Enter Your Domain:</strong> Type your main sending domain (e.g., example.com).</li>
+        <li><strong>Select Your Provider:</strong> Choose Gmail, Outlook, Zoho, or Custom.</li>
+        <li><strong>Set DMARC Policy:</strong> Start with "None" for monitoring, then move to "Quarantine" as you gain confidence.</li>
+        <li><strong>Copy Records:</strong> Click the copy button for each record type.</li>
+        <li><strong>Add to DNS:</strong> Log in to your DNS provider (like GoDaddy or Cloudflare) and add these as TXT records.</li>
+      </ol>
+
+      <h2>Why Cold Emailers Need a 100% Valid Score</h2>
+      <p>If you are doing B2B outreach, your volume is higher than a typical individual. This makes you a target for "Aggressive Spam Filtering." If even one of these three records is missing or misconfigured, your outreach will fail before it even starts.</p>
     </div>
 
     <!-- FAQ Section -->
@@ -334,19 +350,34 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "DNS Config Generator",
+  "operatingSystem": "All",
+  "applicationCategory": "BusinessApplication",
+  "description": "Free SPF, DKIM, and DMARC record generator to secure your email domain and improve deliverability. Generate professional DNS configurations in seconds.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
     {
       "@type": "ListItem",
       "position": 1,
       "name": "Tools",
-      "item": "https://leadnexus.difusionseo.com/tools/"
+      "item": "https://getleadnexus.com/tools/"
     },
     {
       "@type": "ListItem",
       "position": 2,
       "name": "DNS Config Generator",
-      "item": "https://leadnexus.difusionseo.com/tools/spf-dkim-dmarc-config-generator/"
+      "item": "https://getleadnexus.com/tools/dns-config-generator/"
     }
   ]
 }

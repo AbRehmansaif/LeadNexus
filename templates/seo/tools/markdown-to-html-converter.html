@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Free Markdown to HTML Converter Online — Convert MD, HTML & Plain Text | LeadNexus{% endblock %}
-{% block meta_description %}Free online Markdown to HTML converter — also converts HTML to Markdown and plain text to HTML or Markdown. No login, no file upload. 100% browser-based, instant, and private. Used by developers, writers & email marketers.{% endblock %}
+{% block title %}Markdown to HTML Converter | Convert MD, HTML & Text | LeadNexus{% endblock %}
+{% block meta_description %}Free online Markdown to HTML converter. Convert MD to HTML or HTML to Markdown instantly. 100% private and browser-based tool for developers and writers.{% endblock %}
 {% block meta_keywords %}markdown to html converter, html to markdown, markdown converter online, free markdown tool, md to html, html to md, plain text to html, text to markdown, convert markdown, online html converter, markdown editor online, markdown preview, github markdown, jekyll markdown, hugo markdown, markdown for developers, free html generator, email content converter, blog post converter{% endblock %}
 
-{% block canonical_url %}https://leadnexus.difusionseo.com/tools/markdown-to-html/{% endblock %}
+{% block canonical_url %}https://getleadnexus.com/tools/markdown-to-html/{% endblock %}
 
 {% block meta_robots %}index, follow{% endblock %}
 
@@ -149,67 +149,78 @@
       </div>
     </div>
 
-    <!-- JSON-LD: WebApplication + FAQPage Schema -->
-    <script type="application/ld+json">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
     {
-      "@context": "https://schema.org",
-      "@graph": [
+      "@type": "SoftwareApplication",
+      "name": "Markdown to HTML Converter",
+      "operatingSystem": "All",
+      "applicationCategory": "DeveloperApplication",
+      "description": "Free online Markdown to HTML converter. Convert MD to HTML or HTML to Markdown instantly. 100% private and browser-based tool.",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      }
+    },
+    {
+      "@type": "WebApplication",
+      "name": "Free Markdown to HTML Converter",
+      "url": "https://getleadnexus.com/tools/markdown-to-html/",
+      "description": "Free online tool to convert Markdown to HTML, HTML to Markdown, and plain text to HTML or Markdown. Runs entirely in your browser — no server upload, no login required.",
+      "applicationCategory": "DeveloperApplication",
+      "operatingSystem": "Any",
+      "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+      "featureList": [
+        "Markdown to HTML conversion",
+        "HTML to Markdown conversion",
+        "Plain text to HTML conversion",
+        "Plain text to Markdown conversion",
+        "Live HTML preview",
+        "Download as .html or .md file",
+        "No file upload — 100% private"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "mainEntity": [
         {
-          "@type": "WebApplication",
-          "name": "Free Markdown to HTML Converter",
-          "url": "https://leadnexus.difusionseo.com/tools/markdown-to-html/",
-          "description": "Free online tool to convert Markdown to HTML, HTML to Markdown, and plain text to HTML or Markdown. Runs entirely in your browser — no server upload, no login required.",
-          "applicationCategory": "DeveloperApplication",
-          "operatingSystem": "Any",
-          "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-          "featureList": [
-            "Markdown to HTML conversion",
-            "HTML to Markdown conversion",
-            "Plain text to HTML conversion",
-            "Plain text to Markdown conversion",
-            "Live HTML preview",
-            "Download as .html or .md file",
-            "No file upload — 100% private"
-          ]
+          "@type": "Question",
+          "name": "How do I convert Markdown to HTML?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Paste your Markdown content into the input panel, select the Markdown to HTML mode, and click Convert Now. The HTML output appears instantly on the right panel. You can then copy it to clipboard or download it as an .html file." }
         },
         {
-          "@type": "FAQPage",
-          "mainEntity": [
-            {
-              "@type": "Question",
-              "name": "How do I convert Markdown to HTML?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Paste your Markdown content into the input panel, select the Markdown to HTML mode, and click Convert Now. The HTML output appears instantly on the right panel. You can then copy it to clipboard or download it as an .html file." }
-            },
-            {
-              "@type": "Question",
-              "name": "How do I convert HTML to Markdown?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Select the HTML to Markdown mode from the mode toggle, paste your HTML into the input panel, and click Convert Now. The converter handles headings, bold, italic, lists, tables, links, images, and code blocks." }
-            },
-            {
-              "@type": "Question",
-              "name": "Can I convert plain text to HTML?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Yes. Select the Text to HTML mode. The converter auto-detects paragraphs (blank line = new paragraph), bullet lists, numbered lists, ALL-CAPS headings, URLs, and email addresses — wrapping each in the appropriate HTML tag." }
-            },
-            {
-              "@type": "Question",
-              "name": "Is this Markdown converter free?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Yes, 100% free. No account, no login, and no file upload required. All conversion runs directly in your browser using JavaScript." }
-            },
-            {
-              "@type": "Question",
-              "name": "What Markdown syntax is supported?",
-              "acceptedAnswer": { "@type": "Answer", "text": "This tool supports the full CommonMark and GitHub Flavored Markdown (GFM) specification: headings H1–H6, bold, italic, strikethrough, unordered and ordered lists, fenced code blocks, inline code, blockquotes, tables, links, images, and horizontal rules." }
-            },
-            {
-              "@type": "Question",
-              "name": "Is my data private when using this tool?",
-              "acceptedAnswer": { "@type": "Answer", "text": "Completely. This tool runs 100% in your browser — your content is never sent to any server. It is safe to use with confidential documents, internal company content, or sensitive data." }
-            }
-          ]
+          "@type": "Question",
+          "name": "How do I convert HTML to Markdown?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Select the HTML to Markdown mode from the mode toggle, paste your HTML into the input panel, and click Convert Now. The converter handles headings, bold, italic, lists, tables, links, images, and code blocks." }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I convert plain text to HTML?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. Select the Text to HTML mode. The converter auto-detects paragraphs (blank line = new paragraph), bullet lists, numbered lists, ALL-CAPS headings, URLs, and email addresses — wrapping each in the appropriate HTML tag." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is this Markdown converter free?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes, 100% free. No account, no login, and no file upload required. All conversion runs directly in your browser using JavaScript." }
+        },
+        {
+          "@type": "Question",
+          "name": "What Markdown syntax is supported?",
+          "acceptedAnswer": { "@type": "Answer", "text": "This tool supports the full CommonMark and GitHub Flavored Markdown (GFM) specification: headings H1–H6, bold, italic, strikethrough, unordered and ordered lists, fenced code blocks, inline code, blockquotes, tables, links, images, and horizontal rules." }
+        },
+        {
+          "@type": "Question",
+          "name": "Is my data private when using this tool?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Completely. This tool runs 100% in your browser — your content is never sent to any server. It is safe to use with confidential documents, internal company content, or sensitive data." }
         }
       ]
     }
-    </script>
+  ]
+}
+</script>
 
     <!-- SEO article content -->
     <article class="seo-content-block">
@@ -394,13 +405,13 @@
       "@type": "ListItem",
       "position": 1,
       "name": "Tools",
-      "item": "https://leadnexus.difusionseo.com/tools/"
+      "item": "https://getleadnexus.com/tools/"
     },
     {
       "@type": "ListItem",
       "position": 2,
       "name": "Markdown to HTML Converter",
-      "item": "https://leadnexus.difusionseo.com/tools/markdown-to-html/"
+      "item": "https://getleadnexus.com/tools/markdown-to-html/"
     }
   ]
 }

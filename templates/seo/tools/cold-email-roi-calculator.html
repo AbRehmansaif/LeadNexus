@@ -1,9 +1,9 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Free Cold Email ROI Calculator — LeadNexus{% endblock %}
-{% block meta_description %}Free online cold email ROI calculator. Determine the exact profitability of your campaigns by calculating your expected revenue, cost per lead, and ROI based on your sending volume and conversion rates.{% endblock %}
-{% block canonical_url %}https://leadnexus.difusionseo.com/tools/cold-email-roi-calculator/{% endblock %}
+{% block title %}Cold Email ROI Calculator | Sales Profitability Tool | LeadNexus{% endblock %}
+{% block meta_description %}Free cold email ROI calculator to determine the profitability of your outreach campaigns. Calculate revenue, cost per lead, and ROI based on funnel performance.{% endblock %}
+{% block canonical_url %}https://getleadnexus.com/tools/cold-email-roi-calculator/{% endblock %}
 
 {% block meta_robots %}index, follow{% endblock %}
 
@@ -259,18 +259,38 @@
     <div class="seo-content-block">
       <h2>Why Calculating ROI is Critical for Cold Email</h2>
       <p>Cold email isn't just about sending messages; it's an investment of time and capital. Without understanding your ROI funnel, you risk scaling "broken" systems that waste money. A high ROI campaign isn't just about high reply rates—it's about the **quality** of those replies and the **closing efficiency** of your sales team.</p>
+
+      <h2>How the Cold Email ROI Calculator Works</h2>
+      <p>Our ROI tool uses a reverse-funnel logic to predict your campaign's success. By inputting your sending volume and conversion rates (open, reply, booking, and closing), the tool calculates the total expected revenue against your monthly campaign costs. This gives you a clear picture of your Cost Per Lead (CPL) and overall return on investment.</p>
       
       <div style="display:grid; grid-template-columns:1fr 1fr; gap:30px; margin-top:30px;">
         <div style="background:rgba(255,255,255,0.02); padding:24px; border-radius:16px; border:1px solid rgba(255,255,255,0.05);">
             <h3 style="font-size:1.1rem; font-weight:800; display:flex; align-items:center; gap:10px;"><i data-lucide="target" style="color:#3b82f6;"></i> Funnel Optimization</h3>
             <p style="font-size:0.88rem; color:#94a3b8; margin-top:12px;">Identify the bottleneck in your sales process. Is your open rate low? Fix your subject lines. Is your reply-to-meeting rate low? Fix your call-to-action.</p>
         </div>
-            <div style="background:rgba(255,255,255,0.02); padding:24px; border-radius:16px; border:1px solid rgba(255,255,255,0.05);">
-                <h3 style="font-size:1.1rem; font-weight:800; display:flex; align-items:center; gap:10px;"><i data-lucide="coins" style="color:#3b82f6;"></i> Customer Acquisition Cost</h3>
-                <p style="font-size:0.88rem; color:#94a3b8; margin-top:12px;">By tracking your Cost Per Lead (CPL), you can benchmark cold email against other channels like Paid Ads or LinkedIn automation.</p>
-            </div>
-          </div>
+        <div style="background:rgba(255,255,255,0.02); padding:24px; border-radius:16px; border:1px solid rgba(255,255,255,0.05);">
+            <h3 style="font-size:1.1rem; font-weight:800; display:flex; align-items:center; gap:10px;"><i data-lucide="coins" style="color:#3b82f6;"></i> Customer Acquisition Cost</h3>
+            <p style="font-size:0.88rem; color:#94a3b8; margin-top:12px;">By tracking your Cost Per Lead (CPL), you can benchmark cold email against other channels like Paid Ads or LinkedIn automation.</p>
         </div>
+      </div>
+
+      <h2 style="margin-top: 40px;">Benefits of Using an ROI Calculator</h2>
+      <ul>
+        <li><strong>Predictive Analysis:</strong> Know your likely revenue before you start sending.</li>
+        <li><strong>Budget Planning:</strong> Determine exactly how much you can afford to spend on leads and tools.</li>
+        <li><strong>Goal Setting:</strong> Set realistic KPIs for your outreach team based on math, not guesswork.</li>
+        <li><strong>Scalability:</strong> Understand how much profit you'll make if you double your sending volume.</li>
+      </ul>
+
+      <h2>Step-by-Step: How to Calculate Your ROI</h2>
+      <ol>
+        <li><strong>Total Emails Sent:</strong> Enter the number of unique leads you plan to contact per month.</li>
+        <li><strong>Input Funnel Metrics:</strong> Enter your expected or historical Open, Reply, Booking, and Closing rates.</li>
+        <li><strong>Avg. Deal Size:</strong> What is the average value of a closed sale for your business?</li>
+        <li><strong>Monthly Cost:</strong> Include tool costs (like LeadNexus), lead data, and labor.</li>
+        <li><strong>Analyze Results:</strong> Review the total ROI percentage and Cost Per Lead to evaluate campaign health.</li>
+      </ol>
+    </div>
 
         <!-- FAQ Section -->
         <div class="seo-content-block">
@@ -378,19 +398,34 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Cold Email ROI Calculator",
+  "operatingSystem": "All",
+  "applicationCategory": "BusinessApplication",
+  "description": "Free cold email ROI calculator to determine the profitability of your outreach campaigns. Calculate revenue, cost per lead, and ROI based on funnel performance.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
     {
       "@type": "ListItem",
       "position": 1,
       "name": "Tools",
-      "item": "https://leadnexus.difusionseo.com/tools/"
+      "item": "https://getleadnexus.com/tools/"
     },
     {
       "@type": "ListItem",
       "position": 2,
       "name": "Cold Email ROI Calculator",
-      "item": "https://leadnexus.difusionseo.com/tools/cold-email-roi-calculator/"
+      "item": "https://getleadnexus.com/tools/cold-email-roi-calculator/"
     }
   ]
 }

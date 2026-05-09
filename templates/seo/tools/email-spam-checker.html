@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Free Email Spam Word Checker Online — Cold Email Deliverability Tool | LeadNexus{% endblock %}
-{% block meta_description %}Free online email spam word checker — analyzes your cold email copy for spam trigger words to improve your deliverability and open rates. Runs entirely in your browser.{% endblock %}
-{% block meta_keywords %}email spam word checker, cold email spam checker, check email for spam words, cold email deliverability tool, spam trigger words, email copy analyzer, free email checker, improve email open rates, bypass spam filters{% endblock %}{% block canonical_url %}https://leadnexus.difusionseo.com/tools/email-spam-word-checker/{% endblock %}
+{% block title %}Email Spam Word Checker | Improve Email Deliverability | LeadNexus{% endblock %}
+{% block meta_description %}Free email spam word checker to analyze your cold email copy. Avoid spam filters and increase open rates by removing high-risk trigger words from your outreach.{% endblock %}
+{% block meta_keywords %}email spam word checker, cold email spam checker, check email for spam words, cold email deliverability tool, spam trigger words, email copy analyzer, free email checker, improve email open rates, bypass spam filters{% endblock %}
+{% block canonical_url %}https://getleadnexus.com/tools/email-spam-checker/{% endblock %}
 
 {% block meta_robots %}index, follow{% endblock %}
 
@@ -188,6 +189,26 @@
       
       <p>Using a <strong>Spam Word Checker</strong> helps you identify these problematic words before you hit send. By removing or replacing "spam trigger words", you significantly increase your chances of landing in the primary inbox, which directly correlates to higher open rates and more replies.</p>
 
+      <h2>How the Email Spam Checker Works</h2>
+      <p>Our tool scans your subject line and email body against a comprehensive database of over 500+ known spam trigger words. It doesn't just look for matches; it evaluates the <strong>density</strong> and <strong>context</strong> of these words to give you a real-time deliverability score. The analysis happens locally in your browser, ensuring your private copy never touches our servers.</p>
+
+      <h2>Benefits of Checking Your Email Copy</h2>
+      <ul>
+        <li><strong>Higher Open Rates:</strong> Emails that avoid spam filters get seen by real people.</li>
+        <li><strong>Protected Reputation:</strong> Avoid being flagged as a "spammer" by major ISPs.</li>
+        <li><strong>Better Engagement:</strong> Clean copy looks more professional and trustworthy to recipients.</li>
+        <li><strong>Instant Feedback:</strong> Get actionable advice on how to fix your copy in seconds.</li>
+      </ul>
+
+      <h2>Step-by-Step: How to Analyze Your Email</h2>
+      <ol>
+        <li><strong>Paste Your Copy:</strong> Enter your subject line and email body into the editor.</li>
+        <li><strong>Select Target ESP:</strong> (Optional) Choose Gmail or Outlook for more specific filtering rules.</li>
+        <li><strong>Click Analyze:</strong> Hit the "Analyze Email" button to run the scan.</li>
+        <li><strong>Review Highlights:</strong> Look at the highlighted words in your copy and the "Spam Triggers" list.</li>
+        <li><strong>Optimize:</strong> Replace the flagged words with safer alternatives until your score improves.</li>
+      </ol>
+
       <h2>Top Spam Trigger Word Categories to Avoid</h2>
       <ul>
         <li><strong>Urgency & Pressure:</strong> Words like <code>Act now</code>, <code>Urgent</code>, <code>Do it today</code>, and <code>Limited time</code> trigger filters because they mimic scam tactics.</li>
@@ -199,10 +220,10 @@
       <h2>Cold Email Deliverability Best Practices</h2>
       <p>Beyond checking your copy for spam words, ensuring high deliverability requires a holistic approach:</p>
       <ul>
-        <li><strong>Authentication:</strong> Ensure your domain has properly configured <strong>SPF, DKIM, and DMARC</strong> records. This cryptographic proof tells receiving servers that you are who you claim to be.</li>
-        <li><strong>Domain Warmup:</strong> Never send 500 cold emails on day one. Gradually increase your sending volume over 2-3 weeks to build a positive sender reputation.</li>
-        <li><strong>Keep it Short:</strong> The best cold emails are concise. Aim for under 125 words, ideally between 50-75 words. Long emails look like marketing blasts.</li>
-        <li><strong>Minimize Links & Images:</strong> New sender domains should avoid including multiple links or HTML heavy images. Stick to plain text formatting with a single call-to-action link.</li>
+        <li><strong>Authentication:</strong> Ensure your domain has properly configured <strong>SPF, DKIM, and DMARC</strong> records (use our <a href="{% url 'seo:seo-tool-dns-config-generator' %}">DNS Generator</a>).</li>
+        <li><strong>Domain Warmup:</strong> Never send 500 cold emails on day one. Gradually increase your sending volume over 2-3 weeks.</li>
+        <li><strong>Keep it Short:</strong> The best cold emails are concise. Aim for under 125 words.</li>
+        <li><strong>Minimize Links & Images:</strong> New sender domains should avoid including multiple links or HTML heavy images.</li>
       </ul>
 
       <h2>Frequently Asked Questions</h2>
@@ -310,19 +331,34 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Email Spam Word Checker",
+  "operatingSystem": "All",
+  "applicationCategory": "BusinessApplication",
+  "description": "Free email spam word checker to analyze your cold email copy. Avoid spam filters and increase open rates by removing high-risk trigger words from your outreach.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
     {
       "@type": "ListItem",
       "position": 1,
       "name": "Tools",
-      "item": "https://leadnexus.difusionseo.com/tools/"
+      "item": "https://getleadnexus.com/tools/"
     },
     {
       "@type": "ListItem",
       "position": 2,
       "name": "Email Spam Word Checker",
-      "item": "https://leadnexus.difusionseo.com/tools/email-spam-word-checker/"
+      "item": "https://getleadnexus.com/tools/email-spam-checker/"
     }
   ]
 }

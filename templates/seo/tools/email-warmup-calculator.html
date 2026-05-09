@@ -1,9 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Free Email Warm-Up Schedule Calculator — LeadNexus{% endblock %}
-{% block meta_description %}Free online email warm-up schedule calculator. Determine the exact day-by-day sending volume to properly warm up your B2B cold email domain and avoid spam folders.{% endblock %}
-{% block meta_keywords %}email warmup schedule, cold email warmup calculator, domain warmup, b2b email deliverability, scale cold email volume, outreach sending schedule, prevent spam folder{% endblock %}{% block canonical_url %}https://leadnexus.difusionseo.com/tools/email-warmup-schedule-calculator/{% endblock %}
+{% block title %}Email Warmup Schedule Calculator | LeadNexus{% endblock %}
+{% block meta_description %}Free email warmup schedule calculator to improve email deliverability and avoid spam folders. Calculate your optimal day-by-day sending ramp-up plan.{% endblock %}
+{% block meta_keywords %}email warmup schedule, cold email warmup calculator, domain warmup, b2b email deliverability, scale cold email volume, outreach sending schedule, prevent spam folder{% endblock %}
+{% block canonical_url %}https://getleadnexus.com/tools/email-warmup-calculator/{% endblock %}
 
 {% block meta_robots %}index, follow{% endblock %}
 
@@ -233,12 +234,41 @@
       
       <p>An <strong>email warm-up schedule</strong> is a mathematical, day-by-day process of systematically increasing your sending volume. You start by sending only a few emails to highly engaged accounts (warm-up tools automatically reply and mark your emails as important), and slowly increment that number over 2 to 4 weeks. This proves to Google and Microsoft that you are a legitimate human sender, permanently protecting your domain's deliverability.</p>
 
+      <h2>How the Email Warmup Calculator Works</h2>
+      <p>Our tool uses advanced algorithms based on current ISP thresholds to calculate the safest ramp-up trajectory for your specific situation. By analyzing your target volume, email provider (Gmail vs Outlook), and current domain reputation, it generates a custom 14-30 day plan that maximizes deliverability while minimizing the risk of blacklisting.</p>
+
+      <h2>Benefits of Proper Email Warmup</h2>
+      <ul>
+        <li><strong>Reach the Primary Inbox:</strong> Avoid the dreaded "Promotions" or "Spam" tabs.</li>
+        <li><strong>Protect Domain Reputation:</strong> Ensure your domain remains "healthy" for long-term outreach.</li>
+        <li><strong>Higher Open Rates:</strong> Emails that land in the inbox get opened 10x more than those in spam.</li>
+        <li><strong>Cost Efficiency:</strong> Don't waste money on leads that never see your emails.</li>
+      </ul>
+
+      <h2>Step-by-Step: How to Use the Warmup Calculator</h2>
+      <ol>
+        <li><strong>Enter Target Volume:</strong> Define how many emails you eventually want to send per day (e.g., 50).</li>
+        <li><strong>Select Provider:</strong> Choose between Google Workspace, Microsoft 365, or Custom SMTP.</li>
+        <li><strong>Assess Reputation:</strong> Select whether your domain is brand new, aged, or recovering.</li>
+        <li><strong>Choose Strategy:</strong> Select "Recommended" for most users, or "Conservative" if you've had past issues.</li>
+        <li><strong>Generate & Export:</strong> Click the button to see your schedule, then download it as a PDF or CSV for your team.</li>
+      </ol>
+
       <h2>How Fast Should You Scale Cold Email Volume?</h2>
       <p>The speed at which you reach your target volume depends entirely on your domain and IP health:</p>
       <ul>
         <li><strong>Brand New Domains:</strong> Start extremely low (1-2 emails per day). An aggressive ramp-up on a domain less than 30 days old will instantly burn the domain. It takes approximately 14-21 days to safely reach 50 emails/day.</li>
         <li><strong>Aged Domains:</strong> If a domain is over six months old and has been collecting passive traffic or forwarding emails, you can start at a conservatively higher baseline (3-5 emails) and scale slightly faster.</li>
         <li><strong>Recovering Domains:</strong> If your emails are currently landing in spam, immediately halt all cold outreach. Revert to a <strong>Conservative</strong> warm-up schedule, starting at 1-2 emails per day minimum, and rely entirely on automated warm-up replies to repair the reputation over 3-4 weeks.</li>
+      </ul>
+
+      <h2>Best Practices for Email Deliverability</h2>
+      <p>Beyond warming up, follow these rules to maintain a 99%+ deliverability rate:</p>
+      <ul>
+        <li><strong>Authentication:</strong> Always set up SPF, DKIM, and DMARC records (use our <a href="{% url 'seo:seo-tool-dns-config-generator' %}">DNS Generator</a>).</li>
+        <li><strong>Clean Lists:</strong> Never send to unverified email addresses.</li>
+        <li><strong>Personalization:</strong> Avoid generic templates that look like mass spam to AI filters.</li>
+        <li><strong>Volume Control:</strong> Stick to the "Golden Rule" of 30-50 emails per inbox per day.</li>
       </ul>
 
       <h2>The "Golden Rule" of Cold Email Capacity</h2>
@@ -354,19 +384,34 @@
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Email Warmup Schedule Calculator",
+  "operatingSystem": "All",
+  "applicationCategory": "BusinessApplication",
+  "description": "Free email warmup schedule calculator to improve email deliverability and avoid spam folders. Calculate your optimal day-by-day sending ramp-up plan.",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
   "@type": "BreadcrumbList",
   "itemListElement": [
     {
       "@type": "ListItem",
       "position": 1,
       "name": "Tools",
-      "item": "https://leadnexus.difusionseo.com/tools/"
+      "item": "https://getleadnexus.com/tools/"
     },
     {
       "@type": "ListItem",
       "position": 2,
-      "name": "Email Warm-Up Calculator",
-      "item": "https://leadnexus.difusionseo.com/tools/email-warmup-schedule-calculator/"
+      "name": "Email Warmup Schedule Calculator",
+      "item": "https://getleadnexus.com/tools/email-warmup-calculator/"
     }
   ]
 }
