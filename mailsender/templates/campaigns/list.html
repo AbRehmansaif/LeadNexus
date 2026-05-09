@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1>Campaigns</h1>
+    <a href="{% url 'create_campaign' %}" class="btn-premium">Create New Campaign</a>
+</div>
+
+<div class="glass-card" style="padding: 0;">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                <th style="text-align: left; padding: 1rem;">Campaign Name</th>
+                <th style="text-align: left; padding: 1rem;">Subject</th>
+                <th style="text-align: left; padding: 1rem;">Leads</th>
+                <th style="text-align: left; padding: 1rem;">Status</th>
+                <th style="text-align: left; padding: 1rem;">Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for campaign in campaigns %}
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                <td style="padding: 1rem;">{{ campaign.name }}</td>
+                <td style="padding: 1rem; color: var(--text-muted)">{{ campaign.subject }}</td>
+                <td style="padding: 1rem;">{{ campaign.leads.count }}</td>
+                <td style="padding: 1rem;">
+                    <span class="badge badge-success">{{ campaign.status_sent_count }} Sent</span>
+                    <span class="badge badge-pending">{{ campaign.status_pending_count }} Pending</span>
+                </td>
+                <td style="padding: 1rem;">
+                    <a href="{% url 'campaign_detail' campaign.id %}" class="btn-premium" style="padding: 0.5rem 1rem; font-size: 0.875rem; background: var(--bg-card); border: 1px solid var(--primary); margin-right: 5px;">
+                        View
+                    </a>
+                    <a href="{% url 'start_campaign' campaign.id %}" class="btn-premium" style="padding: 0.5rem 1rem; font-size: 0.875rem;">
+                        Run Campaign
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                    No campaigns created yet.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

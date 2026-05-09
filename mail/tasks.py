@@ -4,7 +4,7 @@ import imaplib
 import email
 from email.header import decode_header
 from datetime import timedelta
-from django.core.mail import get_connection, EmailMessage
+from django.core.mail import get_connection, EmailMessage, EmailMultiAlternatives
 from django.utils import timezone
 from .models import EmailCampaign, Recipient, SMTPCredential, CampaignStep, SentEmailLog
 from core.models import UserProfile
@@ -232,14 +232,19 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                 # 3. Remove trailing slash for reverse suffixing
                 tracking_base = tracking_base.rstrip('/')
             
+            # Check if using a free email provider (Domain mismatch risk)
+            free_providers = ['@gmail.com', '@yahoo.com', '@hotmail.com', '@outlook.com', '@icloud.com', '@aol.com']
+            is_free_provider = any(creds.from_email.lower().endswith(provider) for provider in free_providers)
+
             # Unsubscribe Link
             unsub_url = f"{tracking_base.rstrip('/')}{reverse('unsubscribe', args=[recipient.id])}"
+            # Only add HTTP unsubscribe link to body if not a free provider, or if we must, keep it simple
             unsub_footer = f'<br><br><div style="font-size: 11px; color: #666; border-top: 1px dashed #eee; padding-top: 10px;">' \
                            f'Too many emails? <a href="{unsub_url}" style="color: #8b5cf6; text-decoration: underline;">Unsubscribe from this campaign</a>' \
                            f'</div>'
             rendered_body += f"\n{unsub_footer}"
 
-            # Tracking Pixel
+            # Tracking Pixel - The user requested open tracking even for free providers
             tracking_url = f"{tracking_base}{reverse('track-open', args=[recipient.id])}"
             pixel_tag = f'<img src="{tracking_url}" width="1" height="1" style="display:none !important;" />'
             rendered_body += f"\n{pixel_tag}"
@@ -253,6 +258,16 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             domain = creds.from_email.split('@')[-1]
             custom_msg_id = f"<{uuid.uuid4()}@{domain}>"
             headers = {'Message-ID': custom_msg_id}
+            
+            # List-Unsubscribe header for bulk mail requirements (RFC 8058)
+            unsub_mailto = f"mailto:unsubscribe@{domain}?subject=Unsubscribe%20{recipient.email}"
+            if is_free_provider:
+                # Omit HTTP link for free providers to avoid severe domain mismatch penalty
+                headers['List-Unsubscribe'] = f"<{unsub_mailto}>"
+            else:
+                headers['List-Unsubscribe'] = f"<{unsub_url}>, <{unsub_mailto}>"
+                headers['List-Unsubscribe-Post'] = "List-Unsubscribe=One-Click"
+
             previous_log = recipient.delivery_logs.order_by('-sent_at').first()
             if previous_log:
                 headers.update({
@@ -261,13 +276,23 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
                 })
             from_email = f"{creds.from_name} <{creds.from_email}>" if creds.from_name else creds.from_email
 
-            # Build the email object (not sent yet)
-            email_obj = EmailMessage(
-                subject=step_subject, body=rendered_body,
+            import re
+            # Preserve newlines by replacing common block/break tags with \n before stripping
+            text_prep = re.sub(r'<(br|/p|/div|/tr|/h\d)[^>]*>', '\n', rendered_body, flags=re.IGNORECASE)
+            from django.utils.html import strip_tags
+            plain_text_body = strip_tags(text_prep).strip()
+
+            # Ensure the HTML body is structurally valid (prevents HTML_MISSING_HEAD spam penalties)
+            html_body = f"<!DOCTYPE html>\n<html>\n<head><meta charset=\"utf-8\"></head>\n<body style=\"font-family: Arial, sans-serif; line-height: 1.5; color: #333;\">\n{rendered_body}\n</body>\n</html>"
+
+            # Build the email object (not sent yet) using MultiAlternatives
+            # This sends both text/plain and text/html parts, critical for avoiding spam filters
+            email_obj = EmailMultiAlternatives(
+                subject=step_subject, body=plain_text_body,
                 from_email=from_email, to=[recipient.email],
                 connection=connection, headers=headers
             )
-            email_obj.content_subtype = "html"
+            email_obj.attach_alternative(html_body, "text/html")
             
             # ATTACHMENT PREREQUISITE: Ensure we have the right attachment from Step or Campaign
             attachment_obj = None

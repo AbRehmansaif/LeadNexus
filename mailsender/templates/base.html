@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LeadNexus | Professional Email Outreach</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body>
+    {% if user.is_authenticated %}
+    <nav class="nav-sidebar">
+        <h2 style="color: var(--primary); margin-bottom: 2rem; padding: 0 1rem;">LeadNexus</h2>
+        <a href="{% url 'dashboard' %}" class="nav-link"><i data-lucide="layout-dashboard" style="margin-right: 10px"></i> Dashboard</a>
+        <a href="{% url 'campaign_list' %}" class="nav-link"><i data-lucide="send" style="margin-right: 10px"></i> Campaigns</a>
+        <a href="{% url 'create_campaign' %}" class="nav-link"><i data-lucide="plus-circle" style="margin-right: 10px"></i> New Campaign</a>
+        <div style="position: absolute; bottom: 2rem; width: calc(100% - 2rem);">
+            <form action="{% url 'logout' %}" method="post">
+                {% csrf_token %}
+                <button type="submit" class="nav-link" style="width: 100%; background: none; border: none; cursor: pointer; text-align: left">
+                    <i data-lucide="log-out" style="margin-right: 10px"></i> Logout
+                </button>
+            </form>
+        </div>
+    </nav>
+    <main class="main-content">
+        {% if messages %}
+            {% for message in messages %}
+                <div style="padding: 1rem; border-radius: 0.5rem; margin-bottom: 1rem; background: rgba(99, 102, 241, 0.2); border: 1px solid var(--primary);">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        {% block content %}{% endblock %}
+    </main>
+    {% else %}
+        {% block auth_content %}{% endblock %}
+    {% endif %}
+
+    <script>
+      lucide.createIcons();
+    </script>
+</body>
+</html>

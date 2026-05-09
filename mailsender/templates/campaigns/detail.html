@@ -1,0 +1,58 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+        <div>
+            <h1 style="margin-bottom: 0.5rem;">{{ campaign.name }}</h1>
+            <p style="color: var(--text-muted)">Subject: {{ campaign.subject }}</p>
+        </div>
+        <a href="{% url 'start_campaign' campaign.id %}" class="btn-premium">Run Again</a>
+    </div>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-item">
+        <div class="stat-value">{{ campaign.leads.count }}</div>
+        <div class="stat-label">Total Leads</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value" style="color: var(--accent)">{{ campaign.status_sent_count }}</div>
+        <div class="stat-label">Sent</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value" style="color: #f59e0b">{{ campaign.status_pending_count }}</div>
+        <div class="stat-label">Pending</div>
+    </div>
+</div>
+
+<h2 style="margin-bottom: 1.5rem;">Lead Details</h2>
+<div class="glass-card" style="padding: 0;">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                <th style="text-align: left; padding: 1rem;">Email</th>
+                <th style="text-align: left; padding: 1rem;">Name</th>
+                <th style="text-align: left; padding: 1rem;">Status</th>
+                <th style="text-align: left; padding: 1rem;">Error</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for lead in campaign.leads.all %}
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                <td style="padding: 1rem;">{{ lead.email }}</td>
+                <td style="padding: 1rem;">{{ lead.first_name }}</td>
+                <td style="padding: 1rem;">
+                    <span class="badge {% if lead.status == 'sent' %}badge-success{% elif lead.status == 'failed' %}badge-danger{% else %}badge-pending{% endif %}">
+                        {{ lead.status|title }}
+                    </span>
+                </td>
+                <td style="padding: 1rem; color: var(--danger); font-size: 0.875rem;">
+                    {{ lead.error_message|default:"" }}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

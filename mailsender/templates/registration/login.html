@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block auth_content %}
+<div style="height: 100vh; display: flex; align-items: center; justify-content: center; background: radial-gradient(circle at top right, #1e1b4b, #0f172a);">
+    <div class="glass-card" style="width: 100%; max-width: 400px; text-align: center;">
+        <h1 style="color: var(--primary); margin-bottom: 0.5rem;">LeadNexus</h1>
+        <p style="color: var(--text-muted); margin-bottom: 2rem;">Sign in to manage your outreach</p>
+        
+        <form method="post">
+            {% csrf_token %}
+            <div style="text-align: left;">
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Username</label>
+                <input type="text" name="username" required>
+                
+                <label style="display: block; margin-bottom: 0.5rem; font-size: 0.875rem;">Password</label>
+                <input type="password" name="password" required>
+            </div>
+            
+            <button type="submit" class="btn-premium" style="width: 100%; margin-top: 1rem;">Sign In</button>
+        </form>
+        
+        <p style="margin-top: 1.5rem; font-size: 0.875rem; color: var(--text-muted);">
+            Don't have an account? Contact admin.
+        </p>
+    </div>
+</div>
+{% endblock %}

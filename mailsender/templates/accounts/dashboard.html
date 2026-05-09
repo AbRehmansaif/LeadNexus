@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+    <h1>Dashboard</h1>
+    <a href="{% url 'google_login' %}" class="btn-premium">Connect Gmail Account</a>
+</div>
+
+<div class="stats-grid">
+    <div class="stat-item">
+        <div class="stat-value">{{ accounts.count }}</div>
+        <div class="stat-label">Connected Accounts</div>
+    </div>
+    <!-- Add more stats as needed -->
+</div>
+
+<h2 style="margin-bottom: 1.5rem;">Your Connected Gmail Accounts</h2>
+<div class="glass-card" style="padding: 0;">
+    <table style="width: 100%; border-collapse: collapse;">
+        <thead>
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.1);">
+                <th style="text-align: left; padding: 1rem;">Email Address</th>
+                <th style="text-align: left; padding: 1rem;">Status</th>
+                <th style="text-align: left; padding: 1rem;">Connected Since</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for account in accounts %}
+            <tr style="border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                <td style="padding: 1rem;">{{ account.email }}</td>
+                <td style="padding: 1rem;"><span class="badge badge-success">Active</span></td>
+                <td style="padding: 1rem;">{{ account.created_at|date:"M d, Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="3" style="padding: 2rem; text-align: center; color: var(--text-muted);">
+                    No accounts connected yet.
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

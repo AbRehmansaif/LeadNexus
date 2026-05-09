@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div style="margin-bottom: 2rem;">
+    <h1>Create Campaign</h1>
+    <p style="color: var(--text-muted)">Configure your email outreach and upload leads.</p>
+</div>
+
+<div class="glass-card">
+    <form method="post">
+        {% csrf_token %}
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem;">
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Campaign Name</label>
+                <input type="text" name="name" placeholder="e.g. Q4 Sales Outreach" required>
+            </div>
+            <div>
+                <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email Subject</label>
+                <input type="text" name="subject" placeholder="e.g. Reaching out from {{ company }}" required>
+            </div>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Email Body</label>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">Use <code>{{first_name}}</code> as a placeholder.</p>
+            <textarea name="body" rows="8" placeholder="Hello {{first_name}}, ..." required></textarea>
+        </div>
+
+        <div style="margin-top: 1.5rem;">
+            <label style="display: block; margin-bottom: 0.5rem; font-weight: 600;">Leads (CSV format: email, first_name)</label>
+            <p style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 0.5rem;">One lead per line.</p>
+            <textarea name="leads" rows="6" placeholder="john@example.com, John&#10;jane@doe.com, Jane" required></textarea>
+        </div>
+
+        <div style="margin-top: 2rem; display: flex; gap: 1rem;">
+            <button type="submit" class="btn-premium">Create Campaign</button>
+            <a href="{% url 'campaign_list' %}" style="padding: 0.75rem 1.5rem; color: var(--text-muted); text-decoration: none;">Cancel</a>
+        </div>
+    </form>
+</div>
+{% endblock %}
