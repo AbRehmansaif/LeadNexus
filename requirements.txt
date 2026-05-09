@@ -51,3 +51,7 @@ celery==5.3.6
 flower==2.0.1
 django-celery-beat==2.5.0
 django-celery-results==2.5.1
+google-api-python-client
+google-auth
+google-auth-oauthlib
+google-auth-httplib2

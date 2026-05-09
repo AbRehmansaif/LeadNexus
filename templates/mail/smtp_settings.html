@@ -29,9 +29,27 @@
         <div class="card" style="max-width: 600px; margin: 0 auto; width: 100%;">
             <div class="card-header" style="flex-direction: column; align-items: flex-start; gap: 4px;">
                 <h2 class="card-title">Add Delivery Account</h2>
-                <p class="switch-subtitle">Connect your email service provider securely. We recommend using App Passwords for enhanced security.</p>
+                <p class="switch-subtitle">Connect your email service provider securely. We recommend using the <strong>Gmail API</strong> for the best delivery rates and security.</p>
             </div>
-            <form id="smtpForm" class="scraper-form" novalidate style="margin-top: 20px;">
+            
+            <!-- Google API Option -->
+            <div style="margin: 24px 0; padding: 20px; border-radius: 12px; background: rgba(139, 92, 246, 0.05); border: 1px solid rgba(139, 92, 246, 0.2); text-align: center;">
+                <div style="margin-bottom: 16px; color: var(--text-muted); font-size: 0.9rem;">
+                    <strong>Recommended:</strong> Instant connection via Google API. No App Passwords required.
+                </div>
+                <a href="{% url 'google_login' %}" class="btn btn-primary" style="background: #fff; color: #1f2937; display: flex; align-items: center; justify-content: center; gap: 10px; font-weight: 600; border: 1px solid #e5e7eb;">
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg" alt="Google" style="width: 18px; height: 18px;">
+                    Connect with Google
+                </a>
+            </div>
+
+            <div style="display: flex; align-items: center; gap: 12px; margin: 24px 0;">
+                <div style="flex: 1; height: 1px; background: var(--border);"></div>
+                <span style="font-size: 0.8rem; color: var(--text-muted); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Or connect via SMTP</span>
+                <div style="flex: 1; height: 1px; background: var(--border);"></div>
+            </div>
+
+            <form id="smtpForm" class="scraper-form" novalidate style="margin-top: 0;">
                 <div class="form-group">
                     <label class="form-label">Account Provider</label>
                     <select id="provider" class="form-control" required>
@@ -142,6 +160,9 @@
                     <tr id="account-{{ account.id }}">
                         <td>
                             <span class="provider-icon">{{ account.get_provider_display }}</span>
+                            {% if account.auth_type == 'oauth' %}
+                            <span class="badge badge-primary" style="font-size: 0.65rem; padding: 2px 6px; margin-left: 4px; background: rgba(139, 92, 246, 0.2); color: #a78bfa; border: 1px solid rgba(139, 92, 246, 0.3);">API (OAuth2)</span>
+                            {% endif %}
                         </td>
                         <td><strong>{{ account.name }}</strong></td>
                         <td>{{ account.username|truncatechars:25 }}</td>

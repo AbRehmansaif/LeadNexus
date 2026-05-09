@@ -1,6 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
-from .views import SMTPCredentialViewSet, EmailCampaignViewSet, RecipientViewSet, track_open, download_campaign_csv, unsubscribe, email_dedup_tool_page, email_dedup_tool_process, email_dedup_download
+from .views import SMTPCredentialViewSet, EmailCampaignViewSet, RecipientViewSet, track_open, download_campaign_csv, unsubscribe, email_dedup_tool_page, email_dedup_tool_process, email_dedup_download, google_login, google_callback
 from . import template_views
 
 router = DefaultRouter()
@@ -18,8 +18,10 @@ urlpatterns = [
     # API views
     path('mail/api/', include(router.urls)),
     
-    path('mail/n/<int:recipient_id>/logo.gif', track_open, name='track-open'),
-    path('mail/unsub/<int:recipient_id>/', unsubscribe, name='unsubscribe'),
+    path('track-open/<int:recipient_id>/', track_open, name='track-open'),
+    path('unsubscribe/<int:recipient_id>/', unsubscribe, name='unsubscribe'),
+    path('google/login/', google_login, name='google_login'),
+    path('google/callback/', google_callback, name='google_callback'),
     path('mail/campaign/<int:pk>/export-csv/', download_campaign_csv, name='mail-campaign-export-csv'),
 
     # Email Deduplication Tool

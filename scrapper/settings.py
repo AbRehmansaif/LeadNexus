@@ -328,4 +328,11 @@ CELERY_BEAT_SCHEDULE = {
 # ==========================================================
 # CUSTOM ERROR VIEWS
 # ==========================================================
+# ==========================================================
+# GOOGLE OAUTH SETTINGS
+# ==========================================================
+GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID")
+GOOGLE_CLIENT_SECRET = os.getenv("GOOGLE_CLIENT_SECRET")
+GOOGLE_REDIRECT_URI = os.getenv("GOOGLE_REDIRECT_URI", f"{SITE_URL}/google/callback/")
+
 CSRF_FAILURE_VIEW = 'core.views.csrf_failure'

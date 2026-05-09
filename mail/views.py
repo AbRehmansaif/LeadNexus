@@ -1,13 +1,18 @@
 import csv
 import io
 import json
+import os
 import logging
+
+# Allow insecure transport for local development (http instead of https)
+os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 logger = logging.getLogger(__name__)
 
 from django.db import transaction
 from django.http import HttpResponse, JsonResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, render, redirect
+from django.urls import reverse
 from django.contrib.auth.decorators import login_required
 from django.utils import timezone
 from django.core.cache import cache
@@ -16,14 +21,24 @@ from rest_framework import viewsets, status, decorators, permissions, serializer
 from rest_framework.response import Response
 from .models import SMTPCredential, EmailCampaign, Recipient, CampaignStep, SentEmailLog
 from .tasks import trigger_followup_task, check_for_replies, _mark_failed
+import email.utils
 from django.core.mail import get_connection
 from django.views.decorators.clickjacking import xframe_options_exempt
 from core.encryption import decrypt_password
+import google.oauth2.id_token
+from google.auth.transport import requests as google_requests
+from .utils import get_gmail_flow
 
 class SMTPCredentialSerializer(serializers.ModelSerializer):
     class Meta:
         model = SMTPCredential
         fields = '__all__'
+        extra_kwargs = {
+            'password': {'write_only': True},
+            'access_token': {'write_only': True},
+            'refresh_token': {'write_only': True},
+            'client_secret': {'write_only': True},
+        }
 
 class CampaignStepSerializer(serializers.ModelSerializer):
     class Meta:
@@ -64,15 +79,15 @@ class SMTPCredentialViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         
-        # Test connection before saving
+        # Test connection before saving (only for SMTP accounts)
         data = serializer.validated_data
-        success, error_msg = self.test_smtp_connection(data)
-        
-        if not success:
-            return Response(
-                {'detail': error_msg},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        if data.get('auth_type', 'smtp') == 'smtp':
+            success, error_msg = self.test_smtp_connection(data)
+            if not success:
+                return Response(
+                    {'detail': error_msg},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
         serializer.save(user=request.user)
         headers = self.get_success_headers(serializer.data)
@@ -84,25 +99,26 @@ class SMTPCredentialViewSet(viewsets.ModelViewSet):
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         
-        # Test connection before saving
+        # Test connection before saving (only for SMTP accounts)
         data = serializer.validated_data
-        # For partial updates, we need to merge with existing data for the test
-        test_data = {
-            'host': data.get('host', instance.host),
-            'port': data.get('port', instance.port),
-            'username': data.get('username', instance.username),
-            'password': data.get('password', instance.password),
-            'use_tls': data.get('use_tls', instance.use_tls),
-            'use_ssl': data.get('use_ssl', instance.use_ssl),
-        }
-        
-        success, error_msg = self.test_smtp_connection(test_data)
-        
-        if not success:
-            return Response(
-                {'detail': error_msg},
-                status=status.HTTP_400_BAD_REQUEST
-            )
+        if instance.auth_type == 'smtp':
+            # For partial updates, we need to merge with existing data for the test
+            test_data = {
+                'host': data.get('host', instance.host),
+                'port': data.get('port', instance.port),
+                'username': data.get('username', instance.username),
+                'password': data.get('password', instance.password),
+                'use_tls': data.get('use_tls', instance.use_tls),
+                'use_ssl': data.get('use_ssl', instance.use_ssl),
+            }
+            
+            success, error_msg = self.test_smtp_connection(test_data)
+            
+            if not success:
+                return Response(
+                    {'detail': error_msg},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             
         self.perform_update(serializer)
         return Response(serializer.data)
@@ -811,3 +827,90 @@ def email_dedup_download(request):
     response = HttpResponse(output.getvalue(), content_type='text/csv')
     response['Content-Disposition'] = 'attachment; filename="clean_leads.csv"'
     return response
+
+
+@login_required
+def google_login(request):
+    """Initiates the Google OAuth2 flow."""
+    # Build a redirect URI that works for both local and production
+    # We can use request.build_absolute_uri to be dynamic
+    redirect_uri = request.build_absolute_uri(reverse('google_callback'))
+    
+    flow = get_gmail_flow(redirect_uri=redirect_uri)
+    authorization_url, state = flow.authorization_url(
+        access_type='offline',
+        include_granted_scopes='true',
+        prompt='consent'
+    )
+    request.session['google_oauth_state'] = state
+    request.session['google_oauth_verifier'] = flow.code_verifier
+    return redirect(authorization_url)
+
+def google_callback(request):
+    """Handles the callback from Google OAuth2."""
+    if not request.user.is_authenticated:
+        return redirect('login')
+
+    state = request.session.get('google_oauth_state')
+    verifier = request.session.get('google_oauth_verifier')
+    
+    # Reconstruct the redirect URI
+    redirect_uri = request.build_absolute_uri(reverse('google_callback'))
+    flow = get_gmail_flow(redirect_uri=redirect_uri)
+    flow.code_verifier = verifier
+    
+    try:
+        flow.fetch_token(authorization_response=request.build_absolute_uri())
+    except Exception as e:
+        return HttpResponse(f"Failed to get token: {str(e)}", status=400)
+
+    credentials = flow.credentials
+    
+    # Try to get email from id_token
+    email = None
+    if hasattr(credentials, 'id_token') and credentials.id_token:
+        try:
+            id_info = google.oauth2.id_token.verify_oauth2_token(
+                credentials.id_token, 
+                google_requests.Request(), 
+                credentials.client_id,
+                clock_skew_in_seconds=10
+            )
+            email = id_info.get('email')
+        except Exception:
+            pass
+    
+    # Fallback to UserInfo API
+    if not email:
+        try:
+            from googleapiclient.discovery import build
+            service = build('oauth2', 'v2', credentials=credentials)
+            user_info = service.userinfo().get().execute()
+            email = user_info.get('email')
+        except Exception as e:
+            return HttpResponse(f"Failed to get user email: {str(e)}", status=400)
+
+    if not email:
+        return HttpResponse("Could not retrieve email from Google.", status=400)
+
+    # Save or update the SMTPCredential as an OAuth account
+    account, created = SMTPCredential.objects.update_or_create(
+        user=request.user,
+        from_email=email,
+        defaults={
+            'name': f"Gmail API ({email})",
+            'auth_type': 'oauth',
+            'provider': 'gmail',
+            'access_token': credentials.token, # Will be encrypted in save()
+            'refresh_token': credentials.refresh_token, # Will be encrypted in save()
+            'token_uri': credentials.token_uri,
+            'client_id': credentials.client_id,
+            'client_secret': credentials.client_secret,
+            'scopes': json.dumps(credentials.scopes),
+            'expiry': credentials.expiry,
+            'is_active': True,
+        }
+    )
+    
+    # Redirect back to the dashboard or settings page
+    return redirect(reverse('mail-smtp-settings'))

@@ -11,16 +11,31 @@ class SMTPCredential(models.Model):
         ('custom', 'Custom SMTP'),
     ]
     
+    AUTH_TYPE_CHOICES = [
+        ('smtp', 'SMTP / App Password'),
+        ('oauth', 'Gmail API (OAuth2)'),
+    ]
+    
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='smtp_credentials', null=True, blank=True)
 
     name = models.CharField(max_length=100)
+    auth_type = models.CharField(max_length=20, choices=AUTH_TYPE_CHOICES, default='smtp')
     provider = models.CharField(max_length=50, choices=PROVIDER_CHOICES, default='custom')
-    host = models.CharField(max_length=255)
-    port = models.IntegerField(default=587)
-    username = models.CharField(max_length=255)
-    password = models.CharField(max_length=255)
+    host = models.CharField(max_length=255, null=True, blank=True)
+    port = models.IntegerField(default=587, null=True, blank=True)
+    username = models.CharField(max_length=255, null=True, blank=True)
+    password = models.CharField(max_length=255, null=True, blank=True)
     use_tls = models.BooleanField(default=True)
     use_ssl = models.BooleanField(default=False)
+    
+    # Gmail API / OAuth Fields
+    access_token = models.TextField(null=True, blank=True)
+    refresh_token = models.TextField(null=True, blank=True)
+    token_uri = models.CharField(max_length=255, null=True, blank=True)
+    client_id = models.CharField(max_length=255, null=True, blank=True)
+    client_secret = models.CharField(max_length=255, null=True, blank=True)
+    scopes = models.TextField(null=True, blank=True)
+    expiry = models.DateTimeField(null=True, blank=True)
     from_email = models.EmailField()
     from_name = models.CharField(max_length=255, blank=True, null=True, help_text="e.g. Cristina from LeadNexus")
     is_active = models.BooleanField(default=True)
@@ -54,11 +69,16 @@ class SMTPCredential(models.Model):
             self.is_active = False
         self.save()
 
-    def save(self, *args, **kwargs):
-        """Automatically encrypt the password before saving to DB."""
         from core.encryption import encrypt_password
         if self.password and not self.password.startswith('gAAAA'):
             self.password = encrypt_password(self.password)
+        
+        # Encrypt OAuth tokens if present
+        if self.access_token and not self.access_token.startswith('gAAAA'):
+            self.access_token = encrypt_password(self.access_token)
+        if self.refresh_token and not self.refresh_token.startswith('gAAAA'):
+            self.refresh_token = encrypt_password(self.refresh_token)
+            
         super().save(*args, **kwargs)
 
     @property
@@ -66,6 +86,16 @@ class SMTPCredential(models.Model):
         """Securely retrieves the decrypted password for SMTP connection."""
         from core.encryption import decrypt_password
         return decrypt_password(self.password)
+
+    @property
+    def decrypted_access_token(self):
+        from core.encryption import decrypt_password
+        return decrypt_password(self.access_token)
+
+    @property
+    def decrypted_refresh_token(self):
+        from core.encryption import decrypt_password
+        return decrypt_password(self.refresh_token)
 
     def __str__(self):
         return f"{self.name} ({self.from_email})"

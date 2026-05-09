@@ -7,6 +7,7 @@ from datetime import timedelta
 from django.core.mail import get_connection, EmailMessage, EmailMultiAlternatives
 from django.utils import timezone
 from .models import EmailCampaign, Recipient, SMTPCredential, CampaignStep, SentEmailLog
+from .utils import send_gmail_api_email, render_spintax
 from core.models import UserProfile
 from django.template import Template, Context
 from django.conf import settings
@@ -209,9 +210,12 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             # CRITICAL: If the user has provided a professional HTML layout (tables, divs),
             # we skip linebreaks() to avoid mangling the structure with <br> tags.
             if '<table>' in interim_body.lower() or '<div' in interim_body.lower():
-                rendered_body = interim_body
+                rendered_body = render_spintax(interim_body)
             else:
-                rendered_body = linebreaks(interim_body)
+                rendered_body = linebreaks(render_spintax(interim_body))
+                
+            # Randomize Subject as well if it contains spintax
+            step_subject = render_spintax(step_subject)
 
             # Tracking Pixel
             # Logic: Use user's tracking_domain if set, otherwise fallback to SITE_URL.
@@ -347,7 +351,12 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
     # a false 'failed' status due to a subsequent DB error.
     # ─────────────────────────────────────────────────────────────────────────
     try:
-        email_obj.send()
+        if creds.auth_type == 'oauth':
+            message_id = send_gmail_api_email(creds, email_obj)
+            if message_id:
+                custom_msg_id = message_id # Use Gmail's message ID
+        else:
+            email_obj.send()
     except Exception as smtp_error:
         # Genuine SMTP failure — safe to retry (email was NOT sent)
         logger.error(f"SMTP error for {recipient_id}: {smtp_error}")
@@ -557,96 +566,106 @@ def trigger_followup_task(campaign_id, step_number):
     send_campaign_emails.delay(campaign_id, step_number)
 
 
+def _process_reply(log, from_addr, body_lower):
+    """Common logic to process a detected reply."""
+    if not log or log.recipient.is_replied or log.recipient.is_unsubscribed:
+        return False
+
+    lead_email = log.recipient.email.lower()
+    if from_addr.lower() != lead_email:
+        return False
+
+    # Specific keywords that indicate an manual unsubscription request.
+    unsub_keywords = ['remove me', 'opt out', 'take me off your list', 'stop emails', 'don\'t email', 'unsubscribe me']
+    is_unsub_request = any(kw in body_lower.lower() for kw in unsub_keywords)
+
+    with transaction.atomic():
+        r = Recipient.objects.select_for_update().get(id=log.recipient.id)
+
+        if is_unsub_request:
+            r.is_unsubscribed = True
+            r.unsubscribed_at = timezone.now()
+            r.status = 'unsubscribed'
+            logger.info(f"Unsubscribe detected: {r.email}")
+        else:
+            r.is_replied = True
+            r.replied_at = timezone.now()
+            r.status = 'replied'
+            EmailCampaign.objects.filter(id=r.campaign.id).update(reply_count=F('reply_count') + 1)
+            logger.info(f"Reply detected: {r.email}")
+
+        r.save()
+        cache.delete(f"campaign_stats_{r.campaign.id}")
+    return True
+
 @shared_task
 def check_single_account_replies(cred_id):
-    """Distributed worker to check IMAP for a single account."""
+    """Distributed worker to check for replies for a single account (IMAP or Gmail API)."""
     try:
         cred = SMTPCredential.objects.get(id=cred_id)
-        imap_host = cred.host.replace('smtp', 'imap')
-        mail = imaplib.IMAP4_SSL(imap_host)
-        mail.login(cred.username, cred.decrypted_password)
-        mail.select("inbox")
-
-        date_since = (timezone.now() - timedelta(days=7)).strftime("%d-%b-%Y")
-        _, messages = mail.search(None, f'(SINCE "{date_since}")')
-
-        for msg_num in messages[0].split():
-            # Use BODY.PEEK instead of (RFC822) to prevent IMAP from marking 
-            # the email as 'Seen/Read' in the user's actual inbox.
-            _, data = mail.fetch(msg_num, '(BODY.PEEK[])')
-            if not data or not data[0]:
-                continue
-
-            raw_email = data[0][1]
-            msg = email.message_from_bytes(raw_email)
-            from_header = msg.get('From', '').lower()
-            in_reply_to = msg.get('In-Reply-To')
-            references = msg.get('References', '')
-
-            log = SentEmailLog.objects.filter(
-                Q(message_id=in_reply_to) | Q(message_id__in=references.split())
-            ).select_related('recipient').first()
-
-            # CRITICAL SECURITY FIX: Ensure the reply is actually FROM the lead.
-            # If the IMAP inbox contains sent emails (Steps 2, 3 etc.), they will match the message_id
-            # of previous steps, but the 'From' address will be our own account.
-            if not log or log.recipient.is_replied or log.recipient.is_unsubscribed:
-                continue
-
-            lead_email = log.recipient.email.lower()
-            from_addr = email.utils.parseaddr(from_header)[1].lower()
-            
-            if from_addr != lead_email:
-                # If the 'From' address doesn't exactly match the lead's email,
-                # it's either our own follow-up (Sent mail in Inbox) or a notification.
-                continue
-
-            # Process the body
-            body_lower = ""
-            if msg.is_multipart():
-                for part in msg.walk():
-                    if part.get_content_type() == "text/plain":
-                        try:
-                            body_lower = part.get_payload(decode=True).decode().lower()
-                        except:
-                            body_lower = ""
-                        break
-            else:
-                try:
-                    body_lower = msg.get_payload(decode=True).decode().lower()
-                except:
-                    body_lower = ""
-
-            # Specific keywords that indicate an manual unsubscription request.
-            # We EXCLUDE 'unsubscribe' itself because it appears in our own footer
-            # which is often included in the quoted history of a real reply.
-            unsub_keywords = ['remove me', 'opt out', 'take me off your list', 'stop emails', 'don\'t email', 'unsubscribe me']
-            is_unsub_request = any(kw in body_lower for kw in unsub_keywords)
-
-            with transaction.atomic():
-                r = Recipient.objects.select_for_update().get(id=log.recipient.id)
-
-                if is_unsub_request:
-                    r.is_unsubscribed = True
-                    r.unsubscribed_at = timezone.now()
-                    r.status = 'unsubscribed'
-                    logger.info(f"Unsubscribe detected: {r.email}")
+        
+        if cred.auth_type == 'oauth':
+            from .utils import check_gmail_replies
+            replies = check_gmail_replies(cred)
+            for reply in replies:
+                log = SentEmailLog.objects.filter(
+                    Q(message_id=reply['in_reply_to']) | Q(message_id__in=reply['references'].split())
+                ).select_related('recipient').first()
+                
+                from_addr = email.utils.parseaddr(reply['from'])[1].lower()
+                _process_reply(log, from_addr, reply['body'])
+            return f"Checked Gmail API: {cred.from_email}"
+        else:
+            # IMAP Logic
+            imap_host = cred.host.replace('smtp', 'imap')
+            mail = imaplib.IMAP4_SSL(imap_host)
+            mail.login(cred.username, cred.decrypted_password)
+            mail.select("inbox")
+    
+            date_since = (timezone.now() - timedelta(days=7)).strftime("%d-%b-%Y")
+            _, messages = mail.search(None, f'(SINCE "{date_since}")')
+    
+            for msg_num in messages[0].split():
+                _, data = mail.fetch(msg_num, '(BODY.PEEK[])')
+                if not data or not data[0]:
+                    continue
+    
+                raw_email = data[0][1]
+                msg = email.message_from_bytes(raw_email)
+                from_header = msg.get('From', '').lower()
+                in_reply_to = msg.get('In-Reply-To')
+                references = msg.get('References', '')
+    
+                log = SentEmailLog.objects.filter(
+                    Q(message_id=in_reply_to) | Q(message_id__in=references.split())
+                ).select_related('recipient').first()
+    
+                from_addr = email.utils.parseaddr(from_header)[1].lower()
+                
+                # Process the body
+                body_lower = ""
+                if msg.is_multipart():
+                    for part in msg.walk():
+                        if part.get_content_type() == "text/plain":
+                            try:
+                                body_lower = part.get_payload(decode=True).decode().lower()
+                            except:
+                                body_lower = ""
+                            break
                 else:
-                    r.is_replied = True
-                    r.replied_at = timezone.now()
-                    r.status = 'replied'
-                    EmailCampaign.objects.filter(id=r.campaign.id).update(reply_count=F('reply_count') + 1)
-                    logger.info(f"Reply detected: {r.email}")
-
-                r.save()
-                cache.delete(f"campaign_stats_{r.campaign.id}")
-
-        mail.close()
-        mail.logout()
-        return f"Checked: {cred.from_email}"
+                    try:
+                        body_lower = msg.get_payload(decode=True).decode().lower()
+                    except:
+                        body_lower = ""
+                
+                _process_reply(log, from_addr, body_lower)
+    
+            mail.close()
+            mail.logout()
+            return f"Checked IMAP: {cred.from_email}"
 
     except Exception as e:
-        logger.error(f"IMAP check failed for cred {cred_id}: {e}")
+        logger.error(f"Reply check failed for cred {cred_id}: {e}")
         return f"Error: {str(e)}"
 
 
