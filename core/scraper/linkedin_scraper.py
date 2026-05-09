@@ -91,13 +91,22 @@ class LinkedInScraper:
         chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         chrome_options.add_experimental_option('useAutomationExtension', False)
 
-        # Explicitly set binary location if in Linux/Docker (usually /usr/bin/google-chrome)
-        if os.path.exists('/usr/bin/google-chrome'):
-            chrome_options.binary_location = '/usr/bin/google-chrome'
-        elif os.path.exists('/usr/bin/google-chrome-stable'):
-            chrome_options.binary_location = '/usr/bin/google-chrome-stable'
+        # Explicitly set binary location for Linux/VPS environments
+        chrome_bin_paths = [
+            '/usr/bin/google-chrome',
+            '/usr/bin/google-chrome-stable',
+            '/usr/bin/chromium-browser',
+            '/usr/bin/chromium',
+            os.environ.get('CHROME_BIN', '')
+        ]
+        
+        for path in chrome_bin_paths:
+            if path and os.path.exists(path):
+                chrome_options.binary_location = path
+                logger.info(f"Found Chrome binary at: {path}")
+                break
 
-        # Random user agent (same as original)
+        # Random user agent
         ua = UserAgent()
         chrome_options.add_argument(f'user-agent={ua.random}')
 
