@@ -237,7 +237,9 @@ class EmailCampaignViewSet(viewsets.ModelViewSet):
                     status='pending',
                     send_window_start=profile.default_send_window_start,
                     send_window_end=profile.default_send_window_end,
-                    work_days=work_days_str
+                    work_days=work_days_str,
+                    track_opens=data.get('track_opens') != 'false', # Handle JS form data
+                    add_unsubscribe_link=data.get('add_unsubscribe_link') != 'false'
                 )
 
                 # ── 3. Create Step 1 (Initial Outreach) ───────────────────────────

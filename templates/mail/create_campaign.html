@@ -365,6 +365,8 @@ document.getElementById('campaignForm').addEventListener('submit', async (e) => 
     formData.append('subject', subject.value.trim());
     formData.append('body', body.value); // CKEditor syncs to body textarea
     formData.append('gap_seconds', document.getElementById('gap_seconds').value);
+    formData.append('track_opens', document.getElementById('track_opens').checked);
+    formData.append('add_unsubscribe_link', document.getElementById('add_unsubscribe_link').checked);
     
     // A/B testing for Step 1
     const subB = document.getElementById('subject_b');

@@ -241,17 +241,21 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             is_free_provider = any(creds.from_email.lower().endswith(provider) for provider in free_providers)
 
             # Unsubscribe Link
-            unsub_url = f"{tracking_base.rstrip('/')}{reverse('unsubscribe', args=[recipient.id])}"
-            # Only add HTTP unsubscribe link to body if not a free provider, or if we must, keep it simple
-            unsub_footer = f'<br><br><div style="font-size: 11px; color: #666; border-top: 1px dashed #eee; padding-top: 10px;">' \
-                           f'Too many emails? <a href="{unsub_url}" style="color: #8b5cf6; text-decoration: underline;">Unsubscribe from this campaign</a>' \
-                           f'</div>'
-            rendered_body += f"\n{unsub_footer}"
+            if campaign.add_unsubscribe_link:
+                unsub_url = f"{tracking_base.rstrip('/')}{reverse('unsubscribe', args=[recipient.id])}"
+                # Only add HTTP unsubscribe link to body if not a free provider, or if we must, keep it simple
+                unsub_footer = f'<br><br><div style="font-size: 11px; color: #666; border-top: 1px dashed #eee; padding-top: 10px;">' \
+                               f'Too many emails? <a href="{unsub_url}" style="color: #8b5cf6; text-decoration: underline;">Unsubscribe from this campaign</a>' \
+                               f'</div>'
+                rendered_body += f"\n{unsub_footer}"
+            else:
+                unsub_url = None
 
             # Tracking Pixel - The user requested open tracking even for free providers
-            tracking_url = f"{tracking_base}{reverse('track-open', args=[recipient.id])}"
-            pixel_tag = f'<img src="{tracking_url}" width="1" height="1" style="display:none !important;" />'
-            rendered_body += f"\n{pixel_tag}"
+            if campaign.track_opens:
+                tracking_url = f"{tracking_base}{reverse('track-open', args=[recipient.id])}"
+                pixel_tag = f'<img src="{tracking_url}" width="1" height="1" style="display:none !important;" />'
+                rendered_body += f"\n{pixel_tag}"
 
             # Build connection & headers (no side effects yet)
             connection = get_connection(
@@ -268,9 +272,11 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             if is_free_provider:
                 # Omit HTTP link for free providers to avoid severe domain mismatch penalty
                 headers['List-Unsubscribe'] = f"<{unsub_mailto}>"
-            else:
+            elif unsub_url:
                 headers['List-Unsubscribe'] = f"<{unsub_url}>, <{unsub_mailto}>"
                 headers['List-Unsubscribe-Post'] = "List-Unsubscribe=One-Click"
+            else:
+                headers['List-Unsubscribe'] = f"<{unsub_mailto}>"
 
             previous_log = recipient.delivery_logs.order_by('-sent_at').first()
             if previous_log:

@@ -126,6 +126,10 @@ class EmailCampaign(models.Model):
     attachment = models.FileField(upload_to='campaign_attachments/', null=True, blank=True)
     attachment_name = models.CharField(max_length=255, null=True, blank=True)
 
+    # Deliverability Controls
+    track_opens = models.BooleanField(default=True, help_text="Embed an invisible tracking pixel to track email opens.")
+    add_unsubscribe_link = models.BooleanField(default=True, help_text="Add a one-click unsubscribe link to the footer.")
+
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     

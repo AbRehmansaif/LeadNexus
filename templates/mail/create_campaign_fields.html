@@ -112,6 +112,21 @@ function updateFileLabel(input, labelId) {
                     <input type="datetime-local" id="scheduled_at" name="scheduled_at" class="form-control">
                     <p class="form-help">If set, the campaign will automatically switch to "Scheduled" status and start at this time.</p>
                 </div>
+
+                <div class="form-group" style="margin-top: 24px;">
+                    <label class="form-label">Deliverability Controls</label>
+                    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 10px;">
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="track_opens" name="track_opens" checked style="width: 18px; height: 18px; accent-color: var(--accent-purple);">
+                            <span style="font-size: 0.9rem;">Track email opens (Invisible Pixel)</span>
+                        </label>
+                        <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                            <input type="checkbox" id="add_unsubscribe_link" name="add_unsubscribe_link" checked style="width: 18px; height: 18px; accent-color: var(--accent-purple);">
+                            <span style="font-size: 0.9rem;">Add unsubscribe link to footer</span>
+                        </label>
+                    </div>
+                    <p class="form-help" style="margin-top: 12px;"><strong>Tip:</strong> Disabling these can improve deliverability for free Gmail accounts, but you won't see "Open" stats.</p>
+                </div>
             </div>
 
             <div class="section-divider"></div>
