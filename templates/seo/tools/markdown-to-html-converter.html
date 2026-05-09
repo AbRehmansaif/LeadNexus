@@ -317,6 +317,56 @@
       <h2>Why Use This Converter Instead of a Desktop App?</h2>
       <p>Unlike desktop Markdown editors, this tool requires <strong>no installation</strong>, works on any device (Windows, Mac, Linux, iPhone, Android), and runs <strong>entirely in your browser</strong> — meaning nothing is ever uploaded to a server. Your content stays completely private, even if you're converting confidential business documents or internal emails.</p>
 
+      <h2>Markdown Cheat Sheet — Quick Reference</h2>
+      <p>Keep this <strong>Markdown cheat sheet</strong> handy for the most common formatting syntax you'll use daily:</p>
+      <div class="table-container" style="margin-bottom:30px; overflow-x:auto;">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>What You Want</th>
+              <th>Markdown Syntax</th>
+              <th>HTML Output</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Heading 1</td><td><code># Title</code></td><td><code>&lt;h1&gt;Title&lt;/h1&gt;</code></td></tr>
+            <tr><td>Heading 2</td><td><code>## Subtitle</code></td><td><code>&lt;h2&gt;Subtitle&lt;/h2&gt;</code></td></tr>
+            <tr><td>Bold text</td><td><code>**bold**</code></td><td><code>&lt;strong&gt;bold&lt;/strong&gt;</code></td></tr>
+            <tr><td>Italic text</td><td><code>*italic*</code></td><td><code>&lt;em&gt;italic&lt;/em&gt;</code></td></tr>
+            <tr><td>Hyperlink</td><td><code>[text](url)</code></td><td><code>&lt;a href="url"&gt;text&lt;/a&gt;</code></td></tr>
+            <tr><td>Image</td><td><code>![alt](url)</code></td><td><code>&lt;img src="url" alt="alt"&gt;</code></td></tr>
+            <tr><td>Unordered list</td><td><code>- item</code></td><td><code>&lt;ul&gt;&lt;li&gt;item&lt;/li&gt;&lt;/ul&gt;</code></td></tr>
+            <tr><td>Ordered list</td><td><code>1. item</code></td><td><code>&lt;ol&gt;&lt;li&gt;item&lt;/li&gt;&lt;/ol&gt;</code></td></tr>
+            <tr><td>Code block</td><td><code>```js ... ```</code></td><td><code>&lt;pre&gt;&lt;code&gt;...&lt;/code&gt;&lt;/pre&gt;</code></td></tr>
+            <tr><td>Blockquote</td><td><code>&gt; text</code></td><td><code>&lt;blockquote&gt;text&lt;/blockquote&gt;</code></td></tr>
+            <tr><td>Horizontal rule</td><td><code>---</code></td><td><code>&lt;hr&gt;</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Markdown vs HTML: When to Use Which</h2>
+      <p><strong>Markdown</strong> is ideal for writing content quickly — blog posts, documentation, README files, and notes. It's human-readable even without rendering, making it perfect for version-controlled content in Git repositories. <strong>HTML</strong> is necessary when you need pixel-perfect control over layout, styling, and interactive elements. Most modern workflows involve writing in Markdown and converting to HTML for publishing.</p>
+
+      <h2>Popular Use Cases for Markdown to HTML Conversion</h2>
+      <ul>
+        <li><strong>GitHub README to HTML:</strong> Convert your project's <code>README.md</code> into a standalone HTML documentation page for hosting on GitHub Pages, Netlify, or Vercel.</li>
+        <li><strong>Blog post publishing:</strong> Write in Markdown for speed, then convert to HTML for pasting into <strong>WordPress, Ghost, Webflow, or Squarespace</strong>.</li>
+        <li><strong>Email template creation:</strong> Draft cold email copy in plain text or Markdown, then convert to clean HTML for email clients. Combine with <a href="{% url 'register' %}">LeadNexus</a> to launch outreach campaigns from your converted templates.</li>
+        <li><strong>Documentation migration:</strong> Migrate docs between platforms — Notion to Jekyll, Confluence to Hugo, or WordPress to Docusaurus — by converting between HTML and Markdown.</li>
+        <li><strong>API documentation:</strong> Many API documentation generators (Swagger, Redoc) accept Markdown. Convert existing HTML docs to Markdown for compatibility.</li>
+        <li><strong>Static site generators:</strong> Hugo, Jekyll, Gatsby, Next.js, and Astro all use Markdown as their primary content format. Convert legacy HTML content for migration.</li>
+      </ul>
+
+      <h2>Converting Markdown Tables to HTML</h2>
+      <p><strong>Markdown tables</strong> use a pipe-and-dash syntax that can be tricky to write from scratch. This converter handles the full <strong>GitHub Flavored Markdown (GFM) table specification</strong>, including column alignment. Here's an example:</p>
+      <p>Markdown input:</p>
+      <pre style="background:rgba(0,0,0,0.3); padding:16px; border-radius:8px; color:#94a3b8; font-size:0.85rem; overflow-x:auto;">| Feature | Free | Pro |
+|---------|------|-----|
+| Emails/day | 50 | 500 |
+| Warmup | ✅ | ✅ |
+| Analytics | Basic | Advanced |</pre>
+      <p>This Markdown is instantly converted to a clean, valid HTML <code>&lt;table&gt;</code> element with proper <code>&lt;thead&gt;</code> and <code>&lt;tbody&gt;</code> tags, ready for any website or email template.</p>
+
       <h2>Frequently Asked Questions</h2>
       <div class="faq-list">
 

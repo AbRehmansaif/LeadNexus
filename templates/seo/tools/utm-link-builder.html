@@ -331,6 +331,58 @@
                     <li><strong>Give it a Name:</strong> A unique name for your promotion (e.g., Spring_Sale_2024).</li>
                     <li><strong>Copy & Use:</strong> Copy the generated link and use it in your marketing materials.</li>
                 </ol>
+
+                <h2>The 5 UTM Parameters Explained</h2>
+                <p>Every <strong>UTM tracking link</strong> can contain up to five parameters. Understanding each one ensures your <strong>Google Analytics</strong> data is clean and actionable:</p>
+                <div class="table-container" style="margin-bottom:30px; overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; background:rgba(255,255,255,0.02); border-radius:12px; overflow:hidden;">
+                        <thead>
+                            <tr style="background:rgba(255,255,255,0.05); text-align:left;">
+                                <th style="padding:15px; font-size:0.8rem; color:#fff;">Parameter</th>
+                                <th style="padding:15px; font-size:0.8rem; color:#fff;">Purpose</th>
+                                <th style="padding:15px; font-size:0.8rem; color:#fff;">Example</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:15px; color:#94a3b8;"><code>utm_source</code></td><td style="padding:15px; color:#94a3b8;">Where the traffic originates</td><td style="padding:15px; color:#3b82f6;"><code>leadnexus</code>, <code>google</code>, <code>linkedin</code></td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:15px; color:#94a3b8;"><code>utm_medium</code></td><td style="padding:15px; color:#94a3b8;">Type of marketing channel</td><td style="padding:15px; color:#3b82f6;"><code>email</code>, <code>cpc</code>, <code>social</code></td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:15px; color:#94a3b8;"><code>utm_campaign</code></td><td style="padding:15px; color:#94a3b8;">Specific campaign or promotion</td><td style="padding:15px; color:#3b82f6;"><code>q1_outreach</code>, <code>black_friday</code></td></tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:15px; color:#94a3b8;"><code>utm_term</code></td><td style="padding:15px; color:#94a3b8;">Paid search keywords (optional)</td><td style="padding:15px; color:#3b82f6;"><code>cold+email+tool</code></td></tr>
+                            <tr><td style="padding:15px; color:#94a3b8;"><code>utm_content</code></td><td style="padding:15px; color:#94a3b8;">Differentiate A/B test variations</td><td style="padding:15px; color:#3b82f6;"><code>hero_cta</code>, <code>sidebar_link</code></td></tr>
+                        </tbody>
+                    </table>
+                </div>
+
+                <h2>UTM Naming Conventions & Best Practices</h2>
+                <p>Consistency in <strong>UTM naming conventions</strong> prevents fragmented data in Google Analytics. Follow these rules across your entire team:</p>
+                <ul>
+                    <li><strong>Always use lowercase:</strong> <code>email</code> and <code>Email</code> are treated as different sources in GA4. Stick to lowercase.</li>
+                    <li><strong>Use underscores or dashes, never spaces:</strong> Spaces are encoded as <code>%20</code> in URLs, making them unreadable in reports.</li>
+                    <li><strong>Be specific but concise:</strong> <code>q1_saas_outreach</code> is better than <code>campaign_1</code> or <code>my_first_cold_email_outreach_campaign_for_saas_companies</code>.</li>
+                    <li><strong>Include dates in campaign names:</strong> <code>may_2025_webinar</code> is much easier to filter in analytics than <code>webinar</code>.</li>
+                    <li><strong>Document your conventions:</strong> Create a shared spreadsheet so every team member uses the same naming patterns.</li>
+                </ul>
+
+                <h2>How to View UTM Data in Google Analytics 4 (GA4)</h2>
+                <p>After deploying your UTM-tagged links, here's exactly where to find the data in <strong>Google Analytics 4</strong>:</p>
+                <ol>
+                    <li>Log in to your GA4 property at <code>analytics.google.com</code></li>
+                    <li>Navigate to <strong>Reports → Acquisition → Traffic Acquisition</strong></li>
+                    <li>Use the <strong>Session source / medium</strong> dimension to see your UTM sources</li>
+                    <li>Click on a specific source to drill into campaign-level data</li>
+                    <li>Add a secondary dimension of <strong>Session campaign</strong> to see individual campaign performance</li>
+                </ol>
+                <p><strong>Pro tip:</strong> Create a custom GA4 exploration report filtered by <code>utm_source = leadnexus</code> to build a dedicated <strong>cold email performance dashboard</strong> that tracks sessions, conversions, and revenue from your outreach campaigns.</p>
+
+                <h2>UTM Tracking for Cold Email Outreach</h2>
+                <p>Cold email is one of the most powerful use cases for UTM tracking. Without UTMs, every click from your cold emails shows up as "Direct" traffic in Google Analytics — making it impossible to measure ROI. Here's the recommended setup for <strong>tracking cold email campaigns</strong>:</p>
+                <ul>
+                    <li><strong>Source:</strong> Use your outreach tool name (e.g., <code>leadnexus</code>) so you can see all cold email traffic in one place</li>
+                    <li><strong>Medium:</strong> Always use <code>email</code> to match GA4's default channel grouping for email traffic</li>
+                    <li><strong>Campaign:</strong> Use a descriptive name that includes the audience, offer, and date (e.g., <code>saas_ceos_free_audit_may2025</code>)</li>
+                    <li><strong>Content:</strong> Use this to differentiate email template A/B tests (e.g., <code>template_a</code> vs <code>template_b</code>)</li>
+                </ul>
+                <p>Once your UTMs are set up, you can calculate the exact ROI of each campaign using our <a href="{% url 'seo:seo-tool-cold-email-roi-calculator' %}">Cold Email ROI Calculator</a>.</p>
             </div>
         </div>
 

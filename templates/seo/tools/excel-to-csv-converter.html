@@ -356,6 +356,49 @@
         <li><strong>Researchers &amp; academics</strong> — Converting survey data from Excel into CSV for statistical analysis.</li>
       </ul>
 
+      <h2>How to Handle Special Characters in CSV Conversion</h2>
+      <p>One of the biggest challenges when <strong>converting Excel to CSV</strong> is handling special characters correctly. Here's what to watch for:</p>
+      <ul>
+        <li><strong>Commas in data:</strong> If your data contains commas (e.g., "New York, NY"), the converter wraps those fields in double quotes to prevent splitting.</li>
+        <li><strong>Unicode characters:</strong> Names, addresses, and product descriptions often contain accented characters (é, ñ, ü). This tool outputs UTF-8 encoded CSV by default.</li>
+        <li><strong>Line breaks in cells:</strong> Excel allows multi-line text in a single cell. These are properly escaped in the CSV output with quoted strings.</li>
+        <li><strong>Empty cells:</strong> Blank cells are converted to empty fields (<code>,,</code>) in CSV. The "Skip Empty Rows" option removes entirely blank rows.</li>
+        <li><strong>Formulas:</strong> Excel formulas are resolved to their calculated values. The CSV will contain the result, not the formula.</li>
+      </ul>
+
+      <h2>CSV Delimiter Options Explained</h2>
+      <p>Different systems expect different <strong>CSV delimiters</strong>. Here's when to use each option:</p>
+      <div class="table-container" style="margin-bottom:30px; overflow-x:auto;">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Delimiter</th>
+              <th>Character</th>
+              <th>When to Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Comma (Standard)</td><td><code>,</code></td><td>Universal default — Google Sheets, most databases, Python pandas</td></tr>
+            <tr><td>Semicolon</td><td><code>;</code></td><td>European Excel versions (France, Germany, Spain) use this by default</td></tr>
+            <tr><td>Tab (TSV)</td><td><code>\t</code></td><td>Database exports, MySQL/PostgreSQL COPY commands</td></tr>
+            <tr><td>Pipe</td><td><code>|</code></td><td>Data that contains both commas and semicolons in field values</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Bulk Excel to CSV Conversion</h2>
+      <p>Need to convert multiple Excel files at once? This tool supports <strong>batch conversion</strong> — drop up to 25 files simultaneously. Each file is processed independently using your browser's local processing power. For enterprise teams processing hundreds of spreadsheets weekly, this eliminates the need for expensive ETL tools or Python scripts.</p>
+
+      <h2>Converting Excel Lead Lists for Cold Email Import</h2>
+      <p>One of the most common use cases is converting <strong>Excel lead lists</strong> to CSV for import into outreach platforms. Here's the recommended workflow:</p>
+      <ol>
+        <li><strong>Export leads from your CRM</strong> (HubSpot, Salesforce, Pipedrive) — usually available as .xlsx or .csv</li>
+        <li><strong>Clean the data in Excel</strong> — Remove duplicates, fix formatting, verify email addresses</li>
+        <li><strong>Convert to CSV using this tool</strong> — Ensures proper UTF-8 encoding and clean delimiters</li>
+        <li><strong>Import into LeadNexus</strong> — Upload your CSV to launch automated cold email sequences with <a href="{% url 'register' %}">LeadNexus</a></li>
+      </ol>
+      <p>Using CSV as the intermediate format ensures compatibility with virtually every outreach tool, CRM, and database system.</p>
+
       <h2>Frequently Asked Questions</h2>
       <div class="faq-list">
 

@@ -327,6 +327,65 @@
         </div>
     </div>
 
+    <!-- Extended SEO Content -->
+    <div class="seo-content-block">
+      <h2>How to Add DNS Records to Popular Providers</h2>
+      <p>Once you've generated your <strong>SPF, DKIM, and DMARC records</strong> using this tool, you need to add them to your domain's DNS settings. Here's how to do it on the most popular hosting platforms:</p>
+
+      <h3>Cloudflare DNS Setup</h3>
+      <p>Log in to your <strong>Cloudflare dashboard</strong> → Select your domain → Go to <strong>DNS → Records → Add Record</strong>. Choose type <code>TXT</code>, set the name field (@ for SPF/DMARC, or the DKIM selector for DKIM), paste the value, and click Save. Cloudflare DNS propagation is usually instant.</p>
+
+      <h3>GoDaddy DNS Setup</h3>
+      <p>Go to <strong>My Products</strong> → Click <strong>DNS</strong> next to your domain → Scroll to <strong>Records</strong> → Click <strong>Add</strong>. Select type <code>TXT</code>, enter the host and value fields, and save. GoDaddy propagation takes 15–60 minutes.</p>
+
+      <h3>Namecheap DNS Setup</h3>
+      <p>Go to <strong>Domain List</strong> → Click <strong>Manage</strong> → Go to <strong>Advanced DNS</strong> → Click <strong>Add New Record</strong>. Choose <code>TXT Record</code>, enter the host (@ or _dmarc), paste the generated value, and save. Propagation typically takes 30 minutes.</p>
+
+      <h2>SPF Record Syntax Explained</h2>
+      <p>An <strong>SPF record</strong> follows a specific syntax. Here's a breakdown of each component:</p>
+      <ul>
+        <li><code>v=spf1</code> — Version identifier (always spf1)</li>
+        <li><code>include:_spf.google.com</code> — Authorizes Google's mail servers to send on your behalf</li>
+        <li><code>include:sendgrid.net</code> — Adds SendGrid as an authorized sender (if using)</li>
+        <li><code>ip4:203.0.113.0/24</code> — Authorizes a specific IP range</li>
+        <li><code>~all</code> — Soft-fail: emails from unauthorized sources are flagged but not rejected</li>
+        <li><code>-all</code> — Hard-fail: emails from unauthorized sources are rejected outright</li>
+      </ul>
+      <p><strong>Pro tip:</strong> Start with <code>~all</code> (soft-fail) until you've confirmed all your legitimate sending sources, then switch to <code>-all</code> (hard-fail) for maximum protection.</p>
+
+      <h2>DMARC Policy Levels: none vs quarantine vs reject</h2>
+      <p>Understanding <strong>DMARC policies</strong> is critical for protecting your domain while maintaining deliverability:</p>
+      <div class="table-container" style="margin-bottom:30px; overflow-x:auto;">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Policy</th>
+              <th>What It Does</th>
+              <th>When to Use</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code>p=none</code></td><td>Monitor only — collects reports but takes no action</td><td>Initial setup / testing phase</td></tr>
+            <tr><td><code>p=quarantine</code></td><td>Sends failing emails to spam/junk</td><td>After verifying all legitimate senders</td></tr>
+            <tr><td><code>p=reject</code></td><td>Completely blocks failing emails</td><td>Full protection — use when confident</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h2>Google & Yahoo 2024 Bulk Sender Requirements</h2>
+      <p>Starting February 2024, <strong>Google and Yahoo require all bulk senders</strong> (those sending 5,000+ emails per day) to have properly configured SPF, DKIM, and DMARC records. Failure to comply means your emails will be rejected outright — not even sent to spam, but bounced entirely. This applies to both marketing emails and cold outreach.</p>
+      <p>Even if you're sending fewer than 5,000 emails per day, having all three authentication records dramatically improves your inbox placement rate and sender score.</p>
+
+      <h2>Common DNS Configuration Mistakes</h2>
+      <ul>
+        <li><strong>Multiple SPF records:</strong> Having two TXT records starting with <code>v=spf1</code> causes both to fail. Always merge into a single record.</li>
+        <li><strong>Missing DKIM selector:</strong> The DKIM record must use the exact selector your email provider specifies (e.g., <code>google._domainkey</code> for Google Workspace).</li>
+        <li><strong>Wrong TTL values:</strong> Set TTL to 3600 (1 hour) or lower during initial setup for faster propagation. You can increase it later.</li>
+        <li><strong>Forgetting subdomains:</strong> If you send email from <code>mail.yourdomain.com</code>, you need separate SPF/DKIM records for that subdomain.</li>
+        <li><strong>Not monitoring DMARC reports:</strong> Set up the <code>rua</code> tag to receive aggregate reports. Services like Postmark or DMARCian can help you visualize these reports.</li>
+      </ul>
+    </div>
+
     <!-- Internal Linking / Explore Tools -->
     <div style="margin-top: 80px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
         <h3 style="font-size: 1.1rem; font-weight: 800; color: #fff; margin-bottom: 24px; display: flex; align-items: center; gap: 10px;">
