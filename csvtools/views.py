@@ -816,6 +816,24 @@ def _apply_operation(op_type, op, rows, fieldnames, is_preview=False):
                         time.sleep(delay)
                 rows = new_rows
 
+    elif op_type == 'split_to_rows':
+        col = op.get('column', '')
+        delimiter = op.get('delimiter', ',')
+        if col in fieldnames:
+            new_rows = []
+            for r in rows:
+                val = str(r.get(col, '') or '')
+                if delimiter in val:
+                    parts = [p.strip() for p in val.split(delimiter) if p.strip()]
+                    if parts:
+                        for p in parts:
+                            new_rows.append({**r, col: p})
+                    else:
+                        new_rows.append(r)
+                else:
+                    new_rows.append(r)
+            rows = new_rows
+
     else:
         raise ValueError(f'Unknown operation type: {op_type}')
 

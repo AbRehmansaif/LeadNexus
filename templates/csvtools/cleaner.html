@@ -666,8 +666,9 @@
                         <button class="op-add-btn" onclick="addOp('extract_domain')"><span class="op-icon" style="background:#2e1065;color:#8b5cf6;"><i data-lucide="globe"></i></span> Get Domain</button>
                         <button class="op-add-btn" onclick="addOp('find_replace')"><span class="op-icon" style="background:#172554;color:#3b82f6;"><i data-lucide="replace"></i></span> Find/Replace</button>
                         <button class="op-add-btn" onclick="addOp('titlecase')"><span class="op-icon" style="background:#083344;color:#06b6d4;"><i data-lucide="type"></i></span> Title Case</button>
-                        <button class="op-add-btn" onclick="addOp('phone_normalize')"><span class="op-icon" style="background:#2e1065;color:#8b5cf6;"><i data-lucide="phone"></i></span> Fix Phones</button>
                         <button class="op-add-btn" onclick="addOp('selective_extract')"><span class="op-icon" style="background:#083344;color:#06b6d4;"><i data-lucide="scissors"></i></span> Selective Extract</button>
+                        <button class="op-add-btn" onclick="addOp('split_to_rows')"><span class="op-icon" style="background:#1e1b4b;color:#818cf8;"><i data-lucide="layers"></i></span> Split to Rows</button>
+                        <button class="op-add-btn" onclick="addOp('phone_normalize')"><span class="op-icon" style="background:#2e1065;color:#8b5cf6;"><i data-lucide="phone"></i></span> Fix Phones</button>
                     </div>
                 </div>
 
@@ -845,6 +846,7 @@ const OP_DEFS = {
     first_name_extractor:  { label: 'Extract First Name',       color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.1)', icon: 'user-plus' },
     linkedin_cleaner:      { label: 'LinkedIn Scrubber',        color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.1)', icon: 'linkedin' },
     whatsapp_check:        { label: 'WhatsApp Presence Check',  color: '#22c55e', iconBg: 'rgba(34,197,94,0.1)',  icon: 'message-square' },
+    split_to_rows:         { label: 'Split to Rows',            color: '#818cf8', iconBg: 'rgba(129,140,248,0.1)', icon: 'layers' },
 };
 
 // ─── File Handling ────────────────────────────────────────────────────────────
@@ -1119,6 +1121,7 @@ function getDefaultConfig(type) {
         first_name_extractor:  { column: detectedCols.find(c => /name|person/i.test(c)) || '', target: 'first_name' },
         linkedin_cleaner:      { column: detectedCols.find(c => /linkedin|profile/i.test(c)) || '' },
         whatsapp_check:        { column: detectedCols.find(c => /phone|mobile|contact|whatsapp/i.test(c)) || detectedCols[0] || '', target: 'has_whatsapp', country_code: '', delay: 0.5 },
+        split_to_rows:         { column: detectedCols.find(c => /email|contact|list/i.test(c)) || detectedCols[0] || '', delimiter: ',' },
     };
     return defaults[type] || {};
 }
@@ -1367,6 +1370,13 @@ function buildConfigUI(op) {
                     <p style="font-size:0.75rem; color:#ef4444; margin:0; font-weight:600;">⚠️ Performance Warning</p>
                     <p style="font-size:0.7rem; color:var(--text-muted); margin:4px 0 0;">This tool makes real network requests to WhatsApp servers. It will significantly slow down the processing for large files (e.g., 1000 rows with 0.5s delay = 8+ minutes).</p>
                 </div>`;
+        case 'split_to_rows':
+            return `
+                <label>Column to split</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>
+                <label>Separator / Delimiter</label>
+                <input type="text" placeholder="e.g. , or ; or |" value="${escAttr(op.config.delimiter||',')}" oninput="updateConfig(${op.id},'delimiter',this.value)">
+                <p style="font-size:0.75rem; color:var(--text-muted); margin-top:8px;">Each item found in this column (separated by the delimiter) will be moved to its own new row, and all other row data will be duplicated.</p>
+                <button class="apply-config-btn" style="margin-top:10px;" onclick="debouncePreview()">Split and Explode Rows</button>`;
         default:
             return '<p style="font-size:0.8rem;color:var(--text-muted);margin:0;">No configuration needed.</p>';
     }
