@@ -311,6 +311,63 @@
       <h2>The "Golden Rule" of Cold Email Capacity</h2>
       <p>Never send more than <strong>30 to 50 cold emails per day, per inbox.</strong> Modern spam filters are highly sensitive to velocity. If your goal is to send 500 cold emails per day, you should not force them all through one email address. Instead, you need horizontally scaled infrastructure: 10 separate inboxes, each sending 50 emails per day.</p>
       <p>Using our Email Warm-Up Schedule Calculator allows you to project exactly how long it will take to prepare these inboxes for full-scale production outreach.</p>
+
+      <h2>Email Sending Limits by Provider (2024–2025)</h2>
+      <p>Understanding the <strong>daily sending limits</strong> of your email provider is critical before building a warm-up plan. Exceeding these limits — even with a warmed-up domain — will trigger throttling or suspension:</p>
+      <div class="table-container" style="margin-bottom:30px;">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Provider</th>
+              <th>Max Daily Sends</th>
+              <th>Recommended Cold Limit</th>
+              <th>Warm-Up Time</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Google Workspace</td><td>2,000/day</td><td>30–50/inbox</td><td>14–21 days</td></tr>
+            <tr><td>Microsoft 365 / Outlook</td><td>10,000/day</td><td>30–40/inbox</td><td>14–21 days</td></tr>
+            <tr><td>Zoho Mail</td><td>500/day</td><td>20–30/inbox</td><td>21–28 days</td></tr>
+            <tr><td>Amazon SES</td><td>50,000/day (sandbox: 200)</td><td>Varies</td><td>7–14 days</td></tr>
+            <tr><td>Custom SMTP (Postfix, Mailgun)</td><td>Unlimited (ISP dependent)</td><td>50–100/inbox</td><td>14–30 days</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p>These limits are <strong>total sends</strong>, not cold-only. If you're also sending warm-up emails, newsletters, and transactional messages, all of those count toward the daily cap.</p>
+
+      <h2>Email Warmup for Google Workspace vs Outlook</h2>
+      <p><strong>Google Workspace</strong> is the most popular email provider for cold outreach teams. Google's spam detection uses machine learning models that analyze sender behavior, reply patterns, and link engagement. A proper warm-up for Google Workspace should start at 2–3 emails per day and increase by 2–3 emails every 48 hours. The entire process takes approximately 14–21 days to reach the recommended 50 emails/day per inbox limit.</p>
+      <p><strong>Microsoft 365 (Outlook)</strong> uses a different spam scoring system that weighs sender reputation, IP history, and content heuristics. Outlook tends to be slightly more forgiving for new senders, but is more aggressive with content-based filtering. Warm-up for Outlook follows a similar 14–21 day trajectory, but you should keep your cold volume slightly lower — around 30–40 emails per inbox per day — because Outlook's "Focused Inbox" algorithm can demote you to "Other" without warning.</p>
+
+      <h2>How to Set Up Cold Email Infrastructure from Scratch</h2>
+      <p>Building a proper <strong>cold email infrastructure</strong> requires more than just buying a domain and an inbox. Here is the complete checklist that top B2B sales teams follow:</p>
+      <ol>
+        <li><strong>Purchase a dedicated sending domain:</strong> Never use your primary business domain for cold outreach. Buy a secondary domain (e.g., <code>getacme.io</code> for <code>acme.com</code>) to protect your main brand's reputation.</li>
+        <li><strong>Set up DNS authentication:</strong> Configure <a href="{% url 'seo:seo-tool-dns-config-generator' %}">SPF, DKIM, and DMARC records</a> before sending a single email. This is non-negotiable.</li>
+        <li><strong>Create multiple inboxes:</strong> Set up 3–10 inboxes on the sending domain (e.g., <code>john@getacme.io</code>, <code>sarah@getacme.io</code>) to distribute volume.</li>
+        <li><strong>Run warm-up on every inbox:</strong> Use this calculator to determine your per-inbox warm-up schedule. Start warm-up tools on Day 1.</li>
+        <li><strong>Build and verify your lead list:</strong> Only send to verified email addresses. A bounce rate above 3% is a domain reputation killer.</li>
+        <li><strong>Launch outreach gradually:</strong> Even after warm-up is complete, ramp up your cold volume slowly over the first week of live sending.</li>
+      </ol>
+
+      <h2>Common Email Warmup Mistakes That Destroy Deliverability</h2>
+      <ul>
+        <li><strong>Sending too many emails too fast:</strong> The #1 mistake. Jumping from 0 to 50 emails on Day 1 will instantly flag your domain.</li>
+        <li><strong>Stopping warm-up after launching outreach:</strong> Warm-up should run <em>continuously</em>, even when you're sending cold emails. Keep it at 20–30% of total volume permanently.</li>
+        <li><strong>Using the same domain for marketing and cold email:</strong> Transactional and marketing emails have different reputations. Mixing them contaminates both.</li>
+        <li><strong>Ignoring bounce rates:</strong> Sending to invalid addresses is a direct signal of spammy behavior. Always verify emails before sending.</li>
+        <li><strong>Not monitoring open rates:</strong> If your open rates drop below 40%, something is wrong. Pause outreach, increase warm-up ratio, and investigate content issues using our <a href="{% url 'seo:seo-tool-email-spam-word-checker' %}">Spam Word Checker</a>.</li>
+      </ul>
+
+      <h2>What Happens If You Skip Email Warmup?</h2>
+      <p>Skipping email warmup is the fastest way to <strong>burn a domain permanently</strong>. Here is the typical sequence of events:</p>
+      <ol>
+        <li><strong>Day 1–3:</strong> You send 50+ cold emails from a brand new domain. Open rates appear normal (40–60%).</li>
+        <li><strong>Day 4–7:</strong> Gmail and Outlook begin throttling your emails. Open rates drop to 15–25%.</li>
+        <li><strong>Day 8–14:</strong> Your domain is flagged as a bulk sender. Emails are routed directly to spam. Open rates fall below 5%.</li>
+        <li><strong>Day 15+:</strong> Your domain is blacklisted by major ISPs. Recovery takes 4–8 weeks of dedicated warm-up, and some domains never fully recover.</li>
+      </ol>
+      <p>The cost of a burned domain isn't just the $12/year domain registration — it's the <strong>lost pipeline, wasted lead data, and weeks of recovery time</strong>. Our <a href="{% url 'seo:seo-tool-cold-email-roi-calculator' %}">Cold Email ROI Calculator</a> can show you exactly how much revenue you lose when deliverability drops.</p>
     </div>
 
     <!-- FAQ Section -->
@@ -355,6 +412,66 @@
                 </div>
                 <div class="faq-answer">
                     Absolutely. If your domain has recently experienced poor deliverability or been flagged, a "re-warm-up" phase can help recover your sender reputation and restore your primary inbox placement.
+                </div>
+            </div>
+
+            <div class="faq-item" id="faq-5">
+                <div class="faq-question" onclick="toggleFaq('faq-5')">
+                    How many emails should I send per day from a new domain?
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    Start with 1–3 emails per day during the first few days. Increase by 2–3 emails every 48 hours until you reach your target volume (typically 30–50 per inbox). Never exceed 50 cold emails per day per inbox, regardless of provider limits.
+                </div>
+            </div>
+
+            <div class="faq-item" id="faq-6">
+                <div class="faq-question" onclick="toggleFaq('faq-6')">
+                    Does Google Workspace require email warmup?
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    Yes, absolutely. Google Workspace uses machine learning to evaluate sender behavior over time. A new inbox on Google Workspace has zero sending reputation, meaning Google will treat your messages as potentially suspicious until you prove consistent, legitimate sending patterns through warmup.
+                </div>
+            </div>
+
+            <div class="faq-item" id="faq-7">
+                <div class="faq-question" onclick="toggleFaq('faq-7')">
+                    What is the difference between IP warmup and domain warmup?
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    IP warmup applies when you have a dedicated sending IP (common with high-volume SMTP services like Amazon SES or SendGrid). Domain warmup applies to the domain itself and is necessary regardless of which IP you send from. Most cold emailers using Google Workspace or Outlook need domain warmup, not IP warmup.
+                </div>
+            </div>
+
+            <div class="faq-item" id="faq-8">
+                <div class="faq-question" onclick="toggleFaq('faq-8')">
+                    Can I warm up multiple inboxes at the same time?
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    Yes, and it's recommended. If your goal is to send 200 cold emails per day, you should warm up 4–5 inboxes simultaneously. Each inbox follows its own independent warm-up schedule. This calculator shows you exactly how many inboxes you need based on your target volume.
+                </div>
+            </div>
+
+            <div class="faq-item" id="faq-9">
+                <div class="faq-question" onclick="toggleFaq('faq-9')">
+                    Should I use a subdomain for cold emailing?
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    No. Using a subdomain (like <code>mail.yourcompany.com</code>) for cold outreach can actually damage the parent domain's reputation. Instead, purchase a completely separate lookalike domain (like <code>getyourcompany.com</code>) and warm it up independently.
+                </div>
+            </div>
+
+            <div class="faq-item" id="faq-10">
+                <div class="faq-question" onclick="toggleFaq('faq-10')">
+                    How do I know if my warm-up is working?
+                    <span class="faq-icon">+</span>
+                </div>
+                <div class="faq-answer">
+                    Monitor three key metrics: <strong>Open rate</strong> (should be above 50% during warm-up), <strong>spam complaint rate</strong> (should be 0%), and <strong>inbox placement rate</strong> (check using tools like GlockApps or Mail-Tester). If all three are healthy after 14 days, your warm-up is working.
                 </div>
             </div>
 
