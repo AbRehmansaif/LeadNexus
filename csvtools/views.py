@@ -10,6 +10,7 @@ from django.http import JsonResponse, HttpResponse
 from django.contrib.auth.decorators import login_required
 from django.core.cache import cache
 from django.views.decorators.http import require_POST
+from .utils import WhatsAppAPIChecker, format_phone_number
 
 
 # ─── Security Constants ───────────────────────────────────────────────────────
@@ -141,7 +142,7 @@ def cleaner_preview(request):
     current_fieldnames = list(fieldnames)
     for op in pipeline:
         try:
-            rows, current_fieldnames = _apply_operation(op.get('type'), op, rows, current_fieldnames)
+            rows, current_fieldnames = _apply_operation(op.get('type'), op, rows, current_fieldnames, is_preview=True)
         except:
             continue
 
@@ -209,7 +210,7 @@ def cleaner_process(request):
     for op in pipeline:
         op_type = op.get('type')
         try:
-            rows, fieldnames = _apply_operation(op_type, op, rows, fieldnames)
+            rows, fieldnames = _apply_operation(op_type, op, rows, fieldnames, is_preview=False)
         except Exception as e:
             return JsonResponse({'error': f'Operation "{op_type}" failed: {str(e)}'}, status=400)
 
@@ -293,7 +294,7 @@ def _merge_files(files):
 
 # ─── Operation Router ─────────────────────────────────────────────────────────
 
-def _apply_operation(op_type, op, rows, fieldnames):
+def _apply_operation(op_type, op, rows, fieldnames, is_preview=False):
     """Dispatches an operation and returns (new_rows, new_fieldnames)."""
 
     if op_type == 'remove_blank_rows':
@@ -780,6 +781,40 @@ def _apply_operation(op_type, op, rows, fieldnames):
                 val = val.split('?')[0].rstrip('/')
                 new_rows.append({**r, col: val})
             rows = new_rows
+
+    elif op_type == 'whatsapp_check':
+        col = op.get('column', '')
+        target_col = op.get('target', 'has_whatsapp')
+        country_code = op.get('country_code', '')
+        delay = float(op.get('delay', 0.5))
+        
+        if col in fieldnames:
+            if target_col not in fieldnames:
+                fieldnames = fieldnames + [target_col]
+            
+            if is_preview:
+                # In preview, only check the first 5 rows to show it works, then mock the rest
+                checker = WhatsAppAPIChecker()
+                new_rows = []
+                for i, r in enumerate(rows):
+                    if i < 5:
+                        phone = format_phone_number(r.get(col, ''), country_code)
+                        has_wa = checker.check_number(phone)
+                        new_rows.append({**r, target_col: 'YES' if has_wa else 'NO'})
+                    else:
+                        new_rows.append({**r, target_col: 'PENDING'})
+                rows = new_rows
+            else:
+                # Full process
+                checker = WhatsAppAPIChecker()
+                new_rows = []
+                for i, r in enumerate(rows):
+                    phone = format_phone_number(r.get(col, ''), country_code)
+                    has_wa = checker.check_number(phone)
+                    new_rows.append({**r, target_col: 'YES' if has_wa else 'NO'})
+                    if i < len(rows) - 1 and delay > 0:
+                        time.sleep(delay)
+                rows = new_rows
 
     else:
         raise ValueError(f'Unknown operation type: {op_type}')

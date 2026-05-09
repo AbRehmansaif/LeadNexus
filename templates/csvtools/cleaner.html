@@ -689,6 +689,7 @@
                         <button class="op-add-btn" onclick="addOp('title_sanitizer')"><span class="op-icon" style="background:#083344;color:#06b6d4;"><i data-lucide="award"></i></span> Title Sanitizer</button>
                         <button class="op-add-btn" onclick="addOp('company_highlighter')"><span class="op-icon" style="background:#172554;color:#3b82f6;"><i data-lucide="building-2"></i></span> Company Name</button>
                         <button class="op-add-btn" onclick="addOp('linkedin_cleaner')"><span class="op-icon" style="background:#2e1065;color:#8b5cf6;"><i data-lucide="linkedin"></i></span> LinkedIn Cleaner</button>
+                        <button class="op-add-btn" onclick="addOp('whatsapp_check')" style="background:rgba(34,197,94,0.05); border: 1px solid rgba(34,197,94,0.1);"><span class="op-icon" style="background:#064e3b;color:#22c55e;"><i data-lucide="message-square"></i></span> WhatsApp Check</button>
                     </div>
                 </div>
 
@@ -843,6 +844,7 @@ const OP_DEFS = {
     title_sanitizer:       { label: 'Clean Job Titles',         color: '#06b6d4', iconBg: 'rgba(6,182,212,0.1)',  icon: 'award' },
     first_name_extractor:  { label: 'Extract First Name',       color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.1)', icon: 'user-plus' },
     linkedin_cleaner:      { label: 'LinkedIn Scrubber',        color: '#8b5cf6', iconBg: 'rgba(139,92,246,0.1)', icon: 'linkedin' },
+    whatsapp_check:        { label: 'WhatsApp Presence Check',  color: '#22c55e', iconBg: 'rgba(34,197,94,0.1)',  icon: 'message-square' },
 };
 
 // ─── File Handling ────────────────────────────────────────────────────────────
@@ -1116,6 +1118,7 @@ function getDefaultConfig(type) {
         title_sanitizer:       { column: detectedCols.find(c => /title|position|role/i.test(c)) || '' },
         first_name_extractor:  { column: detectedCols.find(c => /name|person/i.test(c)) || '', target: 'first_name' },
         linkedin_cleaner:      { column: detectedCols.find(c => /linkedin|profile/i.test(c)) || '' },
+        whatsapp_check:        { column: detectedCols.find(c => /phone|mobile|contact|whatsapp/i.test(c)) || detectedCols[0] || '', target: 'has_whatsapp', country_code: '', delay: 0.5 },
     };
     return defaults[type] || {};
 }
@@ -1347,6 +1350,23 @@ function buildConfigUI(op) {
             return `<label>Keep only the first N rows</label><input type="text" placeholder="1000" value="${escHtml(String(op.config.count||'1000'))}" oninput="updateConfig(${op.id},'count',parseInt(this.value)||1000)">`;
         case 'remove_empty_columns':
             return '<p style="font-size:0.8rem;color:var(--text-muted);margin:0;">Removes any column where every row is blank.</p>';
+        case 'whatsapp_check':
+            return `
+                <label>Phone number column</label><select onchange="updateConfig(${op.id},'column',this.value)">${opts(op.config.column)}</select>
+                <label>Country Code (Optional Fallback)</label><input type="text" placeholder="+1" value="${escAttr(op.config.country_code||'')}" oninput="updateConfig(${op.id},'country_code',this.value)">
+                <label>Output column name</label><input type="text" placeholder="has_whatsapp" value="${escAttr(op.config.target||'has_whatsapp')}" oninput="updateConfig(${op.id},'target',this.value)">
+                <label>Delay between checks (seconds)</label>
+                <select onchange="updateConfig(${op.id},'delay',parseFloat(this.value))">
+                    <option value="0" ${op.config.delay===0?'selected':''}>No Delay (Fastest, risk of block)</option>
+                    <option value="0.2" ${op.config.delay===0.2?'selected':''}>0.2s (Rapid)</option>
+                    <option value="0.5" ${op.config.delay===0.5?'selected':''}>0.5s (Safe)</option>
+                    <option value="1.0" ${op.config.delay===1.0?'selected':''}>1.0s (Very Safe)</option>
+                    <option value="2.0" ${op.config.delay===2.0?'selected':''}>2.0s (Human-like)</option>
+                </select>
+                <div style="margin-top:12px; padding:10px; background:rgba(239,68,68,0.1); border-radius:10px; border:1px solid rgba(239,68,68,0.2);">
+                    <p style="font-size:0.75rem; color:#ef4444; margin:0; font-weight:600;">⚠️ Performance Warning</p>
+                    <p style="font-size:0.7rem; color:var(--text-muted); margin:4px 0 0;">This tool makes real network requests to WhatsApp servers. It will significantly slow down the processing for large files (e.g., 1000 rows with 0.5s delay = 8+ minutes).</p>
+                </div>`;
         default:
             return '<p style="font-size:0.8rem;color:var(--text-muted);margin:0;">No configuration needed.</p>';
     }
