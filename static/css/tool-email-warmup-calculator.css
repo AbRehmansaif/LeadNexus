@@ -583,6 +583,61 @@
   font-family: 'Courier New', monospace;
 }
 
+/* ── Tables ─────────────────────────────────────────── */
+.table-container {
+  margin: 32px 0;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(15, 23, 42, 0.3);
+  backdrop-filter: blur(10px);
+}
+
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  color: #94a3b8;
+}
+
+.schedule-table thead {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.schedule-table th {
+  text-align: left;
+  padding: 16px 24px;
+  font-weight: 700;
+  color: #f8fafc;
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.schedule-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  line-height: 1.5;
+}
+
+.schedule-table tr:last-child td {
+  border-bottom: none;
+}
+
+.schedule-table tr:hover {
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.schedule-table code {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+}
+
 /* ── Final CTA ────────────────────────────────────────────── */
 .tool-cta {
   background: var(--bg-secondary);

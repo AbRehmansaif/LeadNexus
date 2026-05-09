@@ -345,6 +345,58 @@
                 <li><strong>Automated Reporting:</strong> Save hours every week by eliminating manual spreadsheet tracking.</li>
             </ul>
 
+            <h2>Understanding Marketing Attribution Models</h2>
+            <p><strong>Marketing attribution</strong> is the process of determining which campaigns and touchpoints drove a conversion. Different models give credit differently:</p>
+            <div class="table-container" style="margin-bottom:30px; overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; background:rgba(255,255,255,0.02); border-radius:12px; overflow:hidden;">
+                    <thead>
+                        <tr style="background:rgba(255,255,255,0.05); text-align:left;">
+                            <th style="padding:15px; font-size:0.8rem; color:#fff;">Model</th>
+                            <th style="padding:15px; font-size:0.8rem; color:#fff;">How It Works</th>
+                            <th style="padding:15px; font-size:0.8rem; color:#fff;">Best For</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:15px; color:#94a3b8;">First-Touch</td><td style="padding:15px; color:#94a3b8;">100% credit to the first interaction</td><td style="padding:15px; color:#94a3b8;">Understanding top-of-funnel performance</td></tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:15px; color:#94a3b8;">Last-Touch</td><td style="padding:15px; color:#94a3b8;">100% credit to the final interaction before conversion</td><td style="padding:15px; color:#94a3b8;">Short sales cycles, single-channel outreach</td></tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:15px; color:#94a3b8;">Linear</td><td style="padding:15px; color:#94a3b8;">Equal credit to all touchpoints</td><td style="padding:15px; color:#94a3b8;">Multi-channel campaigns with even contribution</td></tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);"><td style="padding:15px; color:#94a3b8;">Time-Decay</td><td style="padding:15px; color:#94a3b8;">More credit to recent interactions</td><td style="padding:15px; color:#94a3b8;">Long B2B sales cycles (30+ days)</td></tr>
+                        <tr><td style="padding:15px; color:#94a3b8;"><strong>LeadNexus Neural</strong></td><td style="padding:15px; color:#94a3b8;">AI-weighted based on engagement signals</td><td style="padding:15px; color:#94a3b8;">Complex multi-touch B2B outreach</td></tr>
+                    </tbody>
+                </table>
+            </div>
+            <p>The LeadNexus dashboard uses a <strong>neural attribution model</strong> that weighs each touchpoint based on actual engagement signals — not just position in the sequence. This means a reply to email #3 gets more weight than an open on email #1, providing more accurate revenue attribution.</p>
+
+            <h2>Key Metrics Every Outreach Team Should Track</h2>
+            <p>A <strong>campaign performance dashboard</strong> is only as useful as the metrics it tracks. Here are the KPIs that top-performing B2B teams monitor weekly:</p>
+            <ul>
+                <li><strong>Revenue Per Campaign:</strong> Total attributed revenue divided by the number of active campaigns. Target: $2,000+ per campaign per month.</li>
+                <li><strong>Cost Per Acquisition (CPA):</strong> Total spend divided by closed deals. For cold email, this should be under $200 for B2B SaaS.</li>
+                <li><strong>Pipeline Velocity:</strong> How fast leads move from first touch to closed deal. Faster velocity = higher ROI.</li>
+                <li><strong>Template Conversion Rate:</strong> Which email templates convert clicks to meetings. Our leaderboard shows this at a glance.</li>
+                <li><strong>Channel ROI Comparison:</strong> Side-by-side comparison of cold email vs LinkedIn vs paid ads. Use our <a href="{% url 'seo:seo-tool-cold-email-roi-calculator' %}">Cold Email ROI Calculator</a> for detailed projections.</li>
+                <li><strong>Reply-to-Meeting Rate:</strong> Of all positive replies, what percentage convert to booked meetings? Industry average: 15–25%.</li>
+            </ul>
+
+            <h2>How to Set Up Campaign Tracking for Maximum ROI Visibility</h2>
+            <p>Getting accurate data in your <strong>marketing analytics dashboard</strong> requires proper setup across your entire outreach stack:</p>
+            <ol>
+                <li><strong>Tag every link with UTM parameters:</strong> Use our <a href="{% url 'seo:seo-tool-utm-link-builder' %}">UTM Link Builder</a> to create consistent, trackable URLs for every campaign.</li>
+                <li><strong>Install the LeadNexus tracking pixel:</strong> Add a lightweight JavaScript snippet to your website's thank-you and pricing pages to capture conversion events.</li>
+                <li><strong>Connect your CRM:</strong> Sync HubSpot, Pipedrive, or Salesforce to pull actual deal values into your ROI calculations.</li>
+                <li><strong>Set up conversion goals:</strong> Define what counts as a "conversion" — form submission, demo booking, or trial signup — so the dashboard can attribute revenue accurately.</li>
+                <li><strong>Review weekly:</strong> Schedule a 15-minute weekly review to identify top performers and pause underperformers. This single habit can improve your ROI by 30–50%.</li>
+            </ol>
+
+            <h2>Campaign ROI Dashboard vs Google Analytics</h2>
+            <p><strong>Google Analytics</strong> is powerful for website traffic analysis, but it wasn't built for outbound sales attribution. Here's why dedicated outreach teams need a specialized dashboard:</p>
+            <ul>
+                <li><strong>GA tracks sessions, not deals:</strong> Google Analytics tells you how many people visited your site. It doesn't tell you which cold email template generated a $10,000 deal.</li>
+                <li><strong>GA can't attribute email replies:</strong> The most valuable signal in cold outreach — a reply — happens inside the inbox, not on your website. LeadNexus tracks both.</li>
+                <li><strong>GA's attribution is website-centric:</strong> Multi-touch attribution in GA4 only counts website interactions. Cold email sequences have 3–5 touches that happen entirely off-site.</li>
+                <li><strong>Template-level granularity:</strong> GA groups all email traffic together. LeadNexus shows ROI per individual email template, allowing A/B testing at the revenue level.</li>
+            </ul>
+
             <h2>Frequently Asked Questions</h2>
             <div class="faq-list">
                 <div class="faq-item" id="faq-1">
@@ -363,6 +415,60 @@
                     </div>
                     <div class="faq-answer">
                         Yes! LeadNexus offers native integrations with popular CRMs like HubSpot, Pipedrive, and Salesforce. This allows you to pull actual deal values directly into your ROI reports.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq-3">
+                    <div class="faq-question" onclick="toggleFaq('faq-3')">
+                        What is marketing attribution and why does it matter?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        Marketing attribution is the science of determining which marketing activities led to a conversion or sale. Without it, you're guessing which campaigns work. With proper attribution, you can allocate budget to channels that actually generate revenue and stop wasting money on underperformers.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq-4">
+                    <div class="faq-question" onclick="toggleFaq('faq-4')">
+                        How is this different from Google Analytics?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        Google Analytics tracks website traffic and on-site behavior. The LeadNexus ROI Dashboard tracks the entire outbound sales pipeline — from the email send, through replies, to booked meetings, and finally to closed revenue. It provides template-level attribution that GA4 simply cannot offer for outbound campaigns.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq-5">
+                    <div class="faq-question" onclick="toggleFaq('faq-5')">
+                        Can I see ROI per individual email template?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        Yes — the Template Leaderboard ranks every email template by conversion rate and attributed revenue. This allows you to identify your top-performing copy and replicate its patterns across future campaigns.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq-6">
+                    <div class="faq-question" onclick="toggleFaq('faq-6')">
+                        How often does the dashboard update?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        The LeadNexus dashboard updates in real-time. As soon as a conversion event is detected — whether it's a reply, a meeting booking, or a deal close in your CRM — the revenue and ROI figures update automatically.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq-7">
+                    <div class="faq-question" onclick="toggleFaq('faq-7')">
+                        What attribution model does LeadNexus use?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        LeadNexus uses a proprietary neural attribution model that weighs each touchpoint based on engagement signals (opens, clicks, replies, meeting bookings) rather than just sequence position. This provides more accurate revenue attribution than traditional first-touch or last-touch models.
+                    </div>
+                </div>
+                <div class="faq-item" id="faq-8">
+                    <div class="faq-question" onclick="toggleFaq('faq-8')">
+                        Is the demo data on this page real?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        The data shown on this page is sample data designed to demonstrate the dashboard's capabilities. When you sign up for LeadNexus, the dashboard populates with your actual campaign performance data, giving you real revenue attribution from day one.
                     </div>
                 </div>
             </div>

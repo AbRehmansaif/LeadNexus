@@ -515,6 +515,62 @@
   font-size: .83rem;
   font-family: 'Courier New', monospace;
 }
+
+/* ── Tables ─────────────────────────────────────────── */
+.table-container {
+  margin: 32px 0;
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(15, 23, 42, 0.4);
+  backdrop-filter: blur(10px);
+}
+
+.schedule-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+  color: #cbd5e1;
+}
+
+.schedule-table thead {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.schedule-table th {
+  text-align: left;
+  padding: 18px 24px;
+  font-weight: 800;
+  color: #fff;
+  text-transform: uppercase;
+  font-size: 0.72rem;
+  letter-spacing: 0.08em;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.schedule-table td {
+  padding: 16px 24px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  line-height: 1.6;
+}
+
+.schedule-table tr:last-child td {
+  border-bottom: none;
+}
+
+.schedule-table tr:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.schedule-table code {
+  background: rgba(16, 185, 129, 0.12);
+  color: #34d399;
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 0.85rem;
+}
+
 .faq-answer kbd {
   background: rgba(255,255,255,.07);
   border: 1px solid rgba(255,255,255,.15);
@@ -523,6 +579,30 @@
   padding: 1px 7px;
   font-size: .8rem;
   font-family: inherit;
+}
+
+/* ── CTA Button Fix ─────────────────────────────────── */
+.btn-convert {
+    padding: 14px 36px;
+    border-radius: 12px;
+    font-weight: 800;
+    font-size: 0.95rem;
+    color: #fff !important;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    background: var(--gradient-primary);
+    box-shadow: 0 10px 30px rgba(59, 130, 246, 0.3);
+}
+
+.btn-convert:hover {
+    transform: translateY(-3px) scale(1.02);
+    box-shadow: 0 15px 35px rgba(59, 130, 246, 0.4);
+    filter: brightness(1.1);
 }
 
 /* ── CTA Block ─────────────────────────────────────────────── */
