@@ -165,6 +165,22 @@
             </div>
         </div>
 
+        <!-- Trust Signals -->
+        <div style="display:flex; justify-content:center; align-items:center; gap:40px; margin: -10px 0 50px; opacity:0.7;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i data-lucide="users" style="width:16px;height:16px;color:#a78bfa;"></i>
+            <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Trusted by 5,000+ Marketers</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i data-lucide="shield-check" style="width:16px;height:16px;color:#10b981;"></i>
+            <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">100% Data Privacy</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i data-lucide="award" style="font-size:16px; color:#fbbf24;"></i>
+            <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Top Rated Analytics Suite</span>
+          </div>
+        </div>
+
         <!-- Top Stat Ribbon -->
         <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; margin-bottom: 40px;">
             <div class="roi-stat-card">
@@ -287,6 +303,37 @@
                 </div>
             </div>
 
+            <h2>Example Campaign Performance (Attribution)</h2>
+            <p>See how LeadNexus attributes revenue across different outreach channels and templates:</p>
+            <div class="table-container" style="margin-bottom:30px; overflow-x:auto;">
+                <table style="width:100%; border-collapse:collapse; background:rgba(255,255,255,0.02); border-radius:12px; overflow:hidden;">
+                    <thead>
+                        <tr style="background:rgba(255,255,255,0.05); text-align:left;">
+                            <th style="padding:15px; font-size:0.8rem; color:#fff;">Channel</th>
+                            <th style="padding:15px; font-size:0.8rem; color:#fff;">Attributed Revenue</th>
+                            <th style="padding:15px; font-size:0.8rem; color:#fff;">Net ROI</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:15px; font-size:0.85rem; color:#94a3b8;">Cold Email (Direct)</td>
+                            <td style="padding:15px; font-size:0.85rem; color:#10b981;">$8,450</td>
+                            <td style="padding:15px; font-size:0.85rem; color:#10b981;">1,240%</td>
+                        </tr>
+                        <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                            <td style="padding:15px; font-size:0.85rem; color:#94a3b8;">LinkedIn Outreach</td>
+                            <td style="padding:15px; font-size:0.85rem; color:#10b981;">$3,200</td>
+                            <td style="padding:15px; font-size:0.85rem; color:#10b981;">680%</td>
+                        </tr>
+                        <tr>
+                            <td style="padding:15px; font-size:0.85rem; color:#94a3b8;">Warm Follow-up</td>
+                            <td style="padding:15px; font-size:0.85rem; color:#10b981;">$1,150</td>
+                            <td style="padding:15px; font-size:0.85rem; color:#10b981;">920%</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
             <h2 style="margin-top: 40px;">How the ROI Dashboard Works</h2>
             <p>The LeadNexus Intelligence engine continuously monitors your outreach channels (Email and LinkedIn) and cross-references link clicks with conversion events on your website. By analyzing this data stream, it generates a real-time visualization of your sales funnel, allowing you to see the exact value of every click and the performance of every outreach template.</p>
 
@@ -371,6 +418,54 @@
       "position": 2,
       "name": "Campaign ROI Dashboard",
       "item": "https://getleadnexus.com/tools/campaign-roi-dashboard/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Campaign ROI Dashboard",
+  "url": "https://getleadnexus.com/tools/campaign-roi-dashboard/",
+  "description": "Experience real-time campaign ROI tracking and revenue attribution. Preview the LeadNexus premium growth dashboard for cold email and LinkedIn outreach.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "Real-time revenue attribution",
+    "UTM-based conversion tracking",
+    "Template performance leaderboard",
+    "Weekly conversion performance charts",
+    "Multi-channel ROI comparison",
+    "Automated reporting"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "How does the dashboard track revenue?",
+      "acceptedAnswer": { "@type": "Answer", "text": "We use a combination of UTM tracking parameters and a lightweight conversion pixel on your thank-you or success pages. When a lead from your outreach converts, our system matches the session data to your original campaign records." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I integrate this with my CRM?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes! LeadNexus offers native integrations with popular CRMs like HubSpot, Pipedrive, and Salesforce. This allows you to pull actual deal values directly into your ROI reports." }
+    },
+    {
+      "@type": "Question",
+      "name": "How often is the data refreshed?",
+      "acceptedAnswer": { "@type": "Answer", "text": "The Neural ROI Dashboard refreshes every 15 minutes to provide near-real-time updates on your campaign performance. This allows you to spot trends and make adjustments on the fly rather than waiting for weekly or monthly reports." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I export these reports?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, all dashboard data can be exported to CSV, PDF, or synced directly with Google Sheets for further analysis and custom reporting." }
     }
   ]
 }

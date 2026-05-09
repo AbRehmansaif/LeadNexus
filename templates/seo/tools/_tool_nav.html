@@ -1,3 +1,26 @@
+<!-- Visual Breadcrumb Navigation (SEO) -->
+<nav class="tool-breadcrumb" aria-label="Breadcrumb">
+    <div class="container">
+        <ol class="breadcrumb-list">
+            <li class="breadcrumb-item"><a href="/">Home</a></li>
+            <li class="breadcrumb-separator"><i data-lucide="chevron-right" style="width:12px;height:12px;"></i></li>
+            <li class="breadcrumb-item"><a href="{% url 'seo:seo-tool-email-warmup-calculator' %}">Tools</a></li>
+            <li class="breadcrumb-separator"><i data-lucide="chevron-right" style="width:12px;height:12px;"></i></li>
+            <li class="breadcrumb-item active" aria-current="page">
+                {% if '/email-warmup-schedule-calculator/' in request.path %}Email Warmup Calculator
+                {% elif '/utm-link-builder/' in request.path %}UTM Link Builder
+                {% elif '/spf-dkim-dmarc-config-generator/' in request.path %}DNS Config Generator
+                {% elif '/cold-email-roi-calculator/' in request.path %}Cold Email ROI Calculator
+                {% elif '/email-spam-word-checker/' in request.path %}Email Spam Checker
+                {% elif '/campaign-analytics-dashboard/' in request.path %}Campaign ROI Dashboard
+                {% elif '/markdown-to-html/' in request.path %}Markdown to HTML Converter
+                {% elif '/excel-to-csv/' in request.path %}Excel to CSV Converter
+                {% else %}Tool{% endif %}
+            </li>
+        </ol>
+    </div>
+</nav>
+
 <div class="tool-navigation-bar glass">
     <div class="container container-tool-nav">
         <div class="tool-list">
@@ -78,5 +101,41 @@
 
 @media (max-width: 768px) {
     .tool-list { padding: 8px 16px; width: 100%; }
+    .tool-breadcrumb .container { padding: 0 16px; }
+}
+
+/* Breadcrumb Navigation */
+.tool-breadcrumb {
+    background: rgba(15, 23, 42, 0.4);
+    border-bottom: 1px solid rgba(255,255,255,0.04);
+    padding: 10px 0;
+}
+.breadcrumb-list {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+.breadcrumb-item a {
+    color: #64748b;
+    text-decoration: none;
+    font-size: 0.78rem;
+    font-weight: 600;
+    transition: color 0.2s;
+}
+.breadcrumb-item a:hover {
+    color: #a78bfa;
+}
+.breadcrumb-item.active {
+    color: #94a3b8;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+.breadcrumb-separator {
+    display: flex;
+    align-items: center;
+    color: #475569;
 }
 </style>

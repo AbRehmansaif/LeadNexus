@@ -46,6 +46,22 @@
       </a>
     </div>
 
+    <!-- Trust Signals -->
+    <div style="display:flex; justify-content:center; align-items:center; gap:40px; margin: 30px 0 50px; opacity:0.7;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="users" style="width:16px;height:16px;color:#a78bfa;"></i>
+        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Trusted by 5,000+ Marketers</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="shield-check" style="width:16px;height:16px;color:#10b981;"></i>
+        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">100% Data Privacy</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="award" style="font-size:16px; color:#fbbf24;"></i>
+        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Top Rated Outreach Tool</span>
+      </div>
+    </div>
+
     <!-- Interface -->
     <div class="dns-grid">
       
@@ -240,6 +256,25 @@
         <li><strong>Add to DNS:</strong> Log in to your DNS provider (like GoDaddy or Cloudflare) and add these as TXT records.</li>
       </ol>
 
+      <h2>Example DNS Records for Google Workspace</h2>
+      <p>If you are using Google Workspace, your records should look approximately like this in your DNS provider:</p>
+      <div class="table-container" style="margin-bottom:30px; overflow-x:auto;">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Host / Name</th>
+              <th>Value</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>TXT</td><td>@</td><td><code>v=spf1 include:_spf.google.com ~all</code></td></tr>
+            <tr><td>TXT</td><td>google._domainkey</td><td><code>v=DKIM1; k=rsa; p=MIIBIjANBgkq...</code></td></tr>
+            <tr><td>TXT</td><td>_dmarc</td><td><code>v=DMARC1; p=none; rua=mailto:admin@yourdomain.com</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <h2>Why Cold Emailers Need a 100% Valid Score</h2>
       <p>If you are doing B2B outreach, your volume is higher than a typical individual. This makes you a target for "Aggressive Spam Filtering." If even one of these three records is missing or misconfigured, your outreach will fail before it even starts.</p>
     </div>
@@ -378,6 +413,64 @@
       "position": 2,
       "name": "DNS Config Generator",
       "item": "https://getleadnexus.com/tools/dns-config-generator/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "SPF DKIM DMARC Generator",
+  "url": "https://getleadnexus.com/tools/dns-config-generator/",
+  "description": "Free SPF, DKIM, and DMARC record generator to secure your email domain and improve deliverability.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "SPF record generation",
+    "DKIM configuration guidance",
+    "DMARC policy builder",
+    "Multi-provider support (Google, Microsoft, Zoho)",
+    "One-click copy to clipboard",
+    "Live DNS verification"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is the difference between SPF, DKIM, and DMARC?",
+      "acceptedAnswer": { "@type": "Answer", "text": "SPF lists the IP addresses and domains authorized to send mail on your behalf. DKIM provides a digital signature that proves the email wasn't tampered with. DMARC tells the receiving server what to do if SPF or DKIM fails." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do I really need all three records?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, especially starting in 2024, major providers like Google and Yahoo have made these authentication protocols mandatory for bulk senders. Missing even one can cause emails to be rejected or sent to spam." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does DMARC p=none protect my domain?",
+      "acceptedAnswer": { "@type": "Answer", "text": "A DMARC policy of p=none is used for monitoring and reporting. It doesn't stop unauthorized emails from being delivered. To fully protect your reputation, move to p=quarantine or p=reject once you've verified all legitimate sending sources." }
+    },
+    {
+      "@type": "Question",
+      "name": "Will this fix my emails going to spam?",
+      "acceptedAnswer": { "@type": "Answer", "text": "DNS records are the first and most critical step, but they aren't the only factor. Your email content, sending volume, and sender reputation also play huge roles. However, without these DNS records, even the best email content will fail." }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the rua tag in DMARC?",
+      "acceptedAnswer": { "@type": "Answer", "text": "The rua tag stands for Reporting URI for Aggregate reports. It specifies the email address where you want ISPs like Google and Microsoft to send daily reports about which emails passed or failed authentication on your domain." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I have multiple SPF records?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No. You should never have more than one SPF record for a single domain. Having multiple SPF records will cause authentication to fail entirely. Instead, combine them into a single record using the include mechanism." }
     }
   ]
 }

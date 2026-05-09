@@ -66,6 +66,22 @@
       </a>
     </div>
 
+    <!-- Trust Signals -->
+    <div style="display:flex; justify-content:center; align-items:center; gap:40px; margin: 30px 0 50px; opacity:0.7;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="users" style="width:16px;height:16px;color:#a78bfa;"></i>
+        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Trusted by 5,000+ Marketers</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="shield-check" style="width:16px;height:16px;color:#10b981;"></i>
+        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">100% Data Privacy</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="award" style="font-size:16px; color:#fbbf24;"></i>
+        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Top Rated ROI Tool</span>
+      </div>
+    </div>
+
     <!-- Interface -->
     <div class="roi-container">
       
@@ -260,6 +276,26 @@
       <h2>Why Calculating ROI is Critical for Cold Email</h2>
       <p>Cold email isn't just about sending messages; it's an investment of time and capital. Without understanding your ROI funnel, you risk scaling "broken" systems that waste money. A high ROI campaign isn't just about high reply rates—it's about the **quality** of those replies and the **closing efficiency** of your sales team.</p>
 
+      <h2>Cold Email Funnel Benchmarks (Examples)</h2>
+      <p>Compare your metrics against industry standards for B2B SaaS and Agency outreach:</p>
+      <div class="table-container" style="margin-bottom:30px; overflow-x:auto;">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Average Performance</th>
+              <th>Top 1% Performers</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>Open Rate</td><td>40 - 55%</td><td>75% +</td></tr>
+            <tr><td>Reply Rate</td><td>1 - 3%</td><td>8% +</td></tr>
+            <tr><td>Booking Rate</td><td>10 - 15%</td><td>25% +</td></tr>
+            <tr><td>Closing Rate</td><td>15 - 20%</td><td>35% +</td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <h2>How the Cold Email ROI Calculator Works</h2>
       <p>Our ROI tool uses a reverse-funnel logic to predict your campaign's success. By inputting your sending volume and conversion rates (open, reply, booking, and closing), the tool calculates the total expected revenue against your monthly campaign costs. This gives you a clear picture of your Cost Per Lead (CPL) and overall return on investment.</p>
       
@@ -337,8 +373,25 @@
                     </div>
                 </div>
 
-            </div>
-        </div>
+                <div class="faq-item" id="faq-5">
+                    <div class="faq-question" onclick="toggleFaq('faq-5')">
+                        How many emails should I send to get 1 meeting?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        Based on standard 5% reply rates and 20% booking rates, you need approximately 100 sent emails to generate 1 qualified meeting. However, this varies wildly based on your niche, lead quality, and the strength of your offer.
+                    </div>
+                </div>
+
+                <div class="faq-item" id="faq-6">
+                    <div class="faq-question" onclick="toggleFaq('faq-6')">
+                        Does domain warmup affect my ROI?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        Indirectly, yes. If you don't warm up your domain, your open rates will plummet as emails land in spam. A low open rate destroys your ROI because you're paying for leads that never even see your message. Warmup is a necessary "insurance policy" for your outreach investment.
+                    </div>
+                </div>
 
     <!-- Internal Linking / Explore Tools -->
     <div style="margin-top: 80px; padding-top: 40px; border-top: 1px solid rgba(255,255,255,0.05); margin-bottom: 20px;">
@@ -426,6 +479,64 @@
       "position": 2,
       "name": "Cold Email ROI Calculator",
       "item": "https://getleadnexus.com/tools/cold-email-roi-calculator/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "Cold Email ROI Calculator",
+  "url": "https://getleadnexus.com/tools/cold-email-roi-calculator/",
+  "description": "Free cold email ROI calculator to determine the profitability of your outreach campaigns. Calculate revenue, cost per lead, and ROI based on funnel performance.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "Reverse-funnel ROI calculation",
+    "Cost per lead analysis",
+    "Visual sales funnel breakdown",
+    "Interactive Chart.js visualization",
+    "Strategy efficiency scoring",
+    "Real-time parameter adjustment"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What is a good ROI for cold email outreach?",
+      "acceptedAnswer": { "@type": "Answer", "text": "A good ROI depends on your product's lifetime value, but many B2B companies aim for at least 10:1 (generating $10 in revenue for every $1 spent). Higher ticket items often see much higher ratios due to lower relative overhead." }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I improve my cold email booking rate?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Improving your booking rate usually requires optimizing your call-to-action. Instead of asking for a 30-minute demo, try a low friction offer like a 2-minute audit or a quick recorded video. Better audience targeting is also key." }
+    },
+    {
+      "@type": "Question",
+      "name": "What costs should I include in my ROI calculation?",
+      "acceptedAnswer": { "@type": "Answer", "text": "You should include the cost of your email sending platform, lead data acquisition, domain and mailbox rentals, and any labor costs for managing responses." }
+    },
+    {
+      "@type": "Question",
+      "name": "How can I scale my cold email ROI?",
+      "acceptedAnswer": { "@type": "Answer", "text": "To scale ROI without increasing manual labor, you must use automation. LeadNexus allows you to automate lead discovery, sequence sending, and response tracking, ensuring your acquisition costs remain low while your volume increases." }
+    },
+    {
+      "@type": "Question",
+      "name": "How many emails should I send to get 1 meeting?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Based on standard 5% reply rates and 20% booking rates, you need approximately 100 sent emails to generate 1 qualified meeting. However, this varies based on your niche, lead quality, and the strength of your offer." }
+    },
+    {
+      "@type": "Question",
+      "name": "Does domain warmup affect my ROI?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Indirectly, yes. If you don't warm up your domain, your open rates will plummet as emails land in spam. A low open rate destroys your ROI because you're paying for leads that never even see your message." }
     }
   ]
 }

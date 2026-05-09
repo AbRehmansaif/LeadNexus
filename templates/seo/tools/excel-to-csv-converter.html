@@ -48,6 +48,22 @@
       </a>
     </div>
 
+    <!-- Trust Signals -->
+    <div style="display:flex; justify-content:center; align-items:center; gap:40px; margin: 30px 0 50px; opacity:0.7;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="users" style="width:16px;height:16px;color:#a78bfa;"></i>
+        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Trusted by 5,000+ Teams</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="shield-check" style="width:16px;height:16px;color:#10b981;"></i>
+        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">100% Browser-Side Privacy</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="award" style="font-size:16px; color:#fbbf24;"></i>
+        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Fastest Batch Converter</span>
+      </div>
+    </div>
+
     <!-- Format chips -->
     <div class="format-bar">
       <div class="format-chip"><span class="chip-dot" style="background:#34d399;"></span>XLSX</div>
@@ -306,6 +322,23 @@
         <li><strong>TXT</strong> — Plain text files with any delimiter. Useful for legacy system exports.</li>
       </ul>
 
+      <h2>Spreadsheet Data Conversion Example</h2>
+      <p>See how your Excel data is transformed into a clean, portable CSV format:</p>
+      <div class="table-container" style="margin-bottom:30px; overflow-x:auto;">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>XLSX Data (Cell-based)</th>
+              <th>CSV Output (Text-based)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td>"John Doe", "john@example.com"</td><td><code>John Doe,john@example.com</code></td></tr>
+            <tr><td>"Jane Smith", "jane@test.org"</td><td><code>Jane Smith,jane@test.org</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <h2>XLS vs XLSX vs CSV vs JSON — What Format Should You Use?</h2>
       <p><strong>XLS</strong> is the older binary Excel format (Office 97–2003) — avoid it for new projects. <strong>XLSX</strong> is the modern XML-based format with full feature support. <strong>CSV</strong> is a plain text format with no formatting or formulas — the most portable and universally compatible format for data. <strong>JSON</strong> is the format of choice when the data needs to be consumed by a web application, API, or JavaScript code.</p>
 
@@ -406,8 +439,25 @@
                    <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Generate SPF, DKIM, and DMARC records for your domain.</span>
                 </div>
             </a>
+        <div class="faq-item" id="faq-7">
+          <div class="faq-question" onclick="toggleFaq('faq-7')">
+            Can I use this for my email outreach list?
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <p>Yes! This is the primary use case for many of our users. You can export your leads from Apollo, LinkedIn, or Excel, convert them to a clean CSV here, and then import them directly into LeadNexus for automated outreach. It ensures your columns are correctly formatted for high deliverability.</p>
+          </div>
         </div>
-    </div>
+
+        <div class="faq-item" id="faq-8">
+          <div class="faq-question" onclick="toggleFaq('faq-8')">
+            Does it handle special characters or foreign languages?
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <p>Yes. The tool uses UTF-8 encoding by default, which supports all international characters, emojis, and special symbols. Your data will remain exactly as it was in the original spreadsheet.</p>
+          </div>
+        </div>
 
     <style>
         .internal-tool-link:hover {

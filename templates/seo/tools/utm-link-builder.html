@@ -66,6 +66,22 @@
             </a>
         </div>
 
+        <!-- Trust Signals -->
+        <div style="display:flex; justify-content:center; align-items:center; gap:40px; margin: 30px 0 50px; opacity:0.7;">
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i data-lucide="users" style="width:16px;height:16px;color:#a78bfa;"></i>
+            <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Trusted by 5,000+ Marketers</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i data-lucide="shield-check" style="width:16px;height:16px;color:#10b981;"></i>
+            <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">100% Data Privacy</span>
+          </div>
+          <div style="display:flex; align-items:center; gap:8px;">
+            <i data-lucide="award" style="font-size:16px; color:#fbbf24;"></i>
+            <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Top Rated UTM Tool</span>
+          </div>
+        </div>
+
         <div class="utm-container">
             <!-- Left: Inputs -->
             <div class="panel">
@@ -271,6 +287,33 @@
             </div>
 
             <div class="seo-content-block" style="margin-top: 60px;">
+                <h2>Example UTM Tracking Links</h2>
+                <p>See how different marketing channels use UTM parameters to differentiate traffic in Google Analytics:</p>
+                <div class="table-container" style="margin-bottom:30px; overflow-x:auto;">
+                    <table style="width:100%; border-collapse:collapse; background:rgba(255,255,255,0.02); border-radius:12px; overflow:hidden;">
+                        <thead>
+                            <tr style="background:rgba(255,255,255,0.05); text-align:left;">
+                                <th style="padding:15px; font-size:0.8rem; color:#fff;">Channel</th>
+                                <th style="padding:15px; font-size:0.8rem; color:#fff;">Example URL</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <td style="padding:15px; font-size:0.85rem; color:#94a3b8;">Cold Email</td>
+                                <td style="padding:15px; font-size:0.8rem; color:#3b82f6;"><code>?utm_source=leadnexus&utm_medium=email&utm_campaign=q1_outreach</code></td>
+                            </tr>
+                            <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+                                <td style="padding:15px; font-size:0.85rem; color:#94a3b8;">LinkedIn Ad</td>
+                                <td style="padding:15px; font-size:0.8rem; color:#3b82f6;"><code>?utm_source=linkedin&utm_medium=cpc&utm_campaign=retargeting_v1</code></td>
+                            </tr>
+                            <tr>
+                                <td style="padding:15px; font-size:0.85rem; color:#94a3b8;">Newsletter</td>
+                                <td style="padding:15px; font-size:0.8rem; color:#3b82f6;"><code>?utm_source=internal_list&utm_medium=email&utm_campaign=weekly_roundup</code></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
                 <h2>Benefits of Using a UTM Link Builder</h2>
                 <p>Using a UTM generator ensures consistency and accuracy across your marketing campaigns. Here is why it's essential:</p>
                 <ul>
@@ -438,8 +481,25 @@
                     </div>
                 </div>
 
-            </div>
-        </div>
+                <div class="faq-item" id="faq-5">
+                    <div class="faq-question" onclick="toggleFaq('faq-5')">
+                        Can I use UTMs for internal links on my website?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        No, it is highly recommended <strong>not</strong> to use UTM parameters for internal links (links from one page of your site to another). Doing so will reset the user's session in Google Analytics and overwrite the original traffic source data. Use internal events or standard analytics tracking instead.
+                    </div>
+                </div>
+
+                <div class="faq-item" id="faq-6">
+                    <div class="faq-question" onclick="toggleFaq('faq-6')">
+                        What is the best way to name UTM campaigns?
+                        <span class="faq-icon">+</span>
+                    </div>
+                    <div class="faq-answer">
+                        Consistency is key. Use lowercase letters, replace spaces with underscores or dashes, and be descriptive but concise. For example, instead of "Spring Sale 2024", use <code>spring_sale_2024</code>.
+                    </div>
+                </div>
 
         <!-- Success Modal (Hidden by default) -->
         <div id="conversionModal" style="display: none; position: fixed; inset: 0; z-index: 1000; align-items: center; justify-content: center; background: rgba(0,0,0,0.85); backdrop-filter: blur(10px); padding: 20px;">
@@ -555,6 +615,64 @@
       "position": 2,
       "name": "UTM Link Builder",
       "item": "https://getleadnexus.com/tools/utm-link-builder/"
+    }
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "UTM Link Builder",
+  "url": "https://getleadnexus.com/tools/utm-link-builder/",
+  "description": "Free UTM link builder to generate trackable campaign URLs. Improve your marketing analytics by tracking sources, mediums, and campaigns accurately.",
+  "applicationCategory": "BusinessApplication",
+  "operatingSystem": "Any",
+  "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
+  "featureList": [
+    "UTM parameter generation",
+    "Campaign history tracking",
+    "Real-time URL preview",
+    "One-click copy to clipboard",
+    "Local storage campaign log",
+    "Google Analytics compatible"
+  ]
+}
+</script>
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What are UTM parameters?",
+      "acceptedAnswer": { "@type": "Answer", "text": "UTM (Urchin Tracking Module) parameters are five variants of URL parameters used by marketers to track the effectiveness of online marketing campaigns across traffic sources and publishing media. They allow Google Analytics to tell you exactly where your visitors are coming from." }
+    },
+    {
+      "@type": "Question",
+      "name": "Are UTM parameters case-sensitive?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Yes, UTM parameters are case-sensitive. If you use 'email' for some links and 'Email' for others, they will show up as two separate sources in your analytics reports. It's best practice to always use lowercase for all parameters." }
+    },
+    {
+      "@type": "Question",
+      "name": "Do UTM codes affect SEO?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No, UTM codes do not directly impact your search engine rankings. Search engines like Google are smart enough to ignore these parameters when indexing pages, especially if you have a proper canonical tag set up on your target URL." }
+    },
+    {
+      "@type": "Question",
+      "name": "Which UTM parameters are mandatory?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Technically, only utm_source is strictly required for tracking to work in Google Analytics, but it is highly recommended to also use utm_medium and utm_campaign to ensure your data is categorized correctly and useful for analysis." }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I use UTMs for internal links on my website?",
+      "acceptedAnswer": { "@type": "Answer", "text": "No, it is highly recommended not to use UTM parameters for internal links. Doing so will reset the user's session in Google Analytics and overwrite the original traffic source data. Use internal events or standard analytics tracking instead." }
+    },
+    {
+      "@type": "Question",
+      "name": "What is the best way to name UTM campaigns?",
+      "acceptedAnswer": { "@type": "Answer", "text": "Consistency is key. Use lowercase letters, replace spaces with underscores or dashes, and be descriptive but concise. For example, instead of 'Spring Sale 2024', use spring_sale_2024." }
     }
   ]
 }

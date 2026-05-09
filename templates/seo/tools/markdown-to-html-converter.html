@@ -48,6 +48,22 @@
       </a>
     </div>
 
+    <!-- Trust Signals -->
+    <div style="display:flex; justify-content:center; align-items:center; gap:40px; margin: 30px 0 50px; opacity:0.7;">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="users" style="width:16px;height:16px;color:#a78bfa;"></i>
+        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Trusted by 5,000+ Developers</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="shield-check" style="width:16px;height:16px;color:#10b981;"></i>
+        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">100% Data Privacy</span>
+      </div>
+      <div style="display:flex; align-items:center; gap:8px;">
+        <i data-lucide="award" style="font-size:16px; color:#fbbf24;"></i>
+        <span style="font-size:0.75rem; font-weight:700; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Top Rated Converter</span>
+      </div>
+    </div>
+
     <!-- Mode toggle -->
     <div class="mode-toggle">
       <div class="mode-toggle-inner">
@@ -251,6 +267,25 @@
         <li><strong>Step 5:</strong> Click <strong>Preview HTML</strong> to see a live rendered preview of your converted HTML.</li>
       </ul>
 
+      <h2>Markdown to HTML Example</h2>
+      <p>Here is a quick reference for how standard Markdown syntax is converted to HTML tags:</p>
+      <div class="table-container" style="margin-bottom:30px; overflow-x:auto;">
+        <table class="schedule-table">
+          <thead>
+            <tr>
+              <th>Markdown Syntax</th>
+              <th>Resulting HTML</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td><code># Heading</code></td><td><code>&lt;h1&gt;Heading&lt;/h1&gt;</code></td></tr>
+            <tr><td><code>**Bold**</code></td><td><code>&lt;strong&gt;Bold&lt;/strong&gt;</code></td></tr>
+            <tr><td><code>[Link](url)</code></td><td><code>&lt;a href="url"&gt;Link&lt;/a&gt;</code></td></tr>
+            <tr><td><code>- Item</code></td><td><code>&lt;li&gt;Item&lt;/li&gt;</code></td></tr>
+          </tbody>
+        </table>
+      </div>
+
       <h2>Supported Markdown Syntax</h2>
       <p>This tool parses the full <strong>CommonMark + GitHub Flavored Markdown</strong> specification — including headings H1–H6, bold, italic, strikethrough, lists, fenced code blocks, inline code, blockquotes, tables, links, images, and horizontal rules.</p>
       <ul>
@@ -365,8 +400,25 @@
                    <span style="display: block; color: #94a3b8; font-size: 0.8rem; line-height: 1.4;">Generate trackable campaign URLs for analytics.</span>
                 </div>
             </a>
+        <div class="faq-item" id="faq-7">
+          <div class="faq-question" onclick="toggleFaq('faq-7')">
+            Can I use this for my email newsletters?
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <p>Yes! Writing in Markdown is much faster than manual HTML coding. Simply write your newsletter in Markdown, convert it to HTML using this tool, and paste the code into your email service provider. It ensures clean, standard-compliant code that renders well across all devices.</p>
+          </div>
         </div>
-    </div>
+
+        <div class="faq-item" id="faq-8">
+          <div class="faq-question" onclick="toggleFaq('faq-8')">
+            Does it support code syntax highlighting?
+            <span class="faq-icon">+</span>
+          </div>
+          <div class="faq-answer">
+            <p>While the tool generates the correct <code>&lt;pre&gt;&lt;code class="language-xyz"&gt;</code> tags for your fenced code blocks, the actual visual highlighting (colors) depends on the CSS library (like Prism.js or Highlight.js) used on the website where you publish the HTML.</p>
+          </div>
+        </div>
 
     <style>
         .internal-tool-link:hover {
