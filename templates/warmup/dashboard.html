@@ -99,9 +99,77 @@
 .ramp-day.future  { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05); }
 
 @media(max-width:640px){
-  .form-row,.form-row.three { grid-template-columns:1fr; }
-  .wu-grid { grid-template-columns:1fr; }
   .ramp-grid { grid-template-columns:repeat(5,1fr); }
+}
+
+/* ── Custom Multi-Email Selector ───────────────────────── */
+.email-selector-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 10px;
+  max-height: 250px;
+  overflow-y: auto;
+  padding: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 8px;
+}
+.email-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+  user-select: none;
+}
+.email-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: var(--accent-purple);
+}
+.email-item input {
+  position: absolute;
+  opacity: 0;
+  cursor: pointer;
+}
+.email-item .checkmark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  color: transparent;
+}
+.email-item input:checked + .checkmark {
+  background: var(--accent-purple);
+  border-color: var(--accent-purple);
+  color: white;
+}
+.email-item.selected {
+  background: rgba(139, 92, 246, 0.08);
+  border-color: var(--accent-purple);
+  box-shadow: 0 0 0 1px var(--accent-purple);
+}
+.email-info {
+  display: flex;
+  flex-direction: column;
+}
+.email-info .addr {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+.email-info .name {
+  font-size: 0.72rem;
+  color: var(--text-muted);
 }
 </style>
 {% endblock %}
@@ -238,6 +306,27 @@
     {% endfor %}
   </div>
 
+  <!-- Pagination -->
+  {% if accounts.has_other_pages %}
+  <div style="display:flex; justify-content:center; gap:8px; margin-bottom:32px;">
+    {% if accounts.has_previous %}
+      <a href="?page={{ accounts.previous_page_number }}" class="btn-xs">
+        <i data-lucide="chevron-left" style="width:14px;height:14px"></i> Previous
+      </a>
+    {% endif %}
+    
+    <span style="font-size:0.85rem; color:var(--text-muted); display:flex; align-items:center;">
+      Page {{ accounts.number }} of {{ accounts.paginator.num_pages }}
+    </span>
+
+    {% if accounts.has_next %}
+      <a href="?page={{ accounts.next_page_number }}" class="btn-xs">
+        Next <i data-lucide="chevron-right" style="width:14px;height:14px"></i>
+      </a>
+    {% endif %}
+  </div>
+  {% endif %}
+
   {% else %}
   <div class="wu-empty">
     <i data-lucide="flame"></i>
@@ -272,28 +361,44 @@
     <form method="post" action="{% url 'warmup:start' %}">
       {% csrf_token %}
       <div class="form-row">
-        <div class="form-group">
-          <label>Select Email Account</label>
-          <select name="cred_id" required>
+        <div class="form-group" style="grid-column: span 2;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <label style="margin-bottom:0">Select Email Accounts</label>
+            <button type="button" class="btn-xs" id="selectAllBtn">
+              <i data-lucide="check-square" style="width:12px;height:12px"></i> Select All
+            </button>
+          </div>
+          
+          <div class="email-selector-grid" id="emailGrid">
             {% for cred in available_creds %}
-            <option value="{{ cred.pk }}">{{ cred.from_email }} ({{ cred.name }})</option>
+            <label class="email-item">
+              <input type="checkbox" name="cred_id" value="{{ cred.pk }}" class="cred-checkbox">
+              <div class="checkmark">
+                <i data-lucide="check" style="width:12px;height:12px"></i>
+              </div>
+              <div class="email-info">
+                <span class="addr">{{ cred.from_email }}</span>
+                <span class="name">{{ cred.name }}</span>
+              </div>
+            </label>
             {% endfor %}
-          </select>
+          </div>
         </div>
+      <div class="form-row" style="align-items: end;">
         <div class="form-group">
           <label>Target Days</label>
           <input type="number" name="target_days" value="30" min="14" max="60">
         </div>
-      </div>
-      <div class="form-row">
         <div class="form-group">
           <label>Max Daily Volume (at full warmup)</label>
           <input type="number" name="max_daily_volume" value="50" min="10" max="200">
         </div>
+        <div class="form-group" style="grid-column: span 2; margin-top: 8px;">
+          <button type="submit" class="btn btn-primary" style="width: 100%; justify-content: center; padding: 14px;">
+            <i data-lucide="flame" style="width:18px;height:18px"></i> Start Warmup
+          </button>
+        </div>
       </div>
-      <button type="submit" class="btn btn-primary">
-        <i data-lucide="flame" style="width:16px;height:16px"></i> Start Warmup
-      </button>
     </form>
     {% else %}
     <p style="color:var(--text-muted);font-size:0.9rem">
@@ -408,5 +513,44 @@ function confirmDelete(pk, email) {
     onConfirm: () => document.getElementById('del-form-' + pk).submit()
   });
 }
+
+// Custom Email Selector Logic
+document.querySelectorAll('.cred-checkbox').forEach(cb => {
+  cb.addEventListener('change', function() {
+    const item = this.closest('.email-item');
+    if (this.checked) {
+      item.classList.add('selected');
+    } else {
+      item.classList.remove('selected');
+    }
+  });
+});
+
+// Select All functionality
+document.getElementById('selectAllBtn')?.addEventListener('click', function() {
+  const checkboxes = document.querySelectorAll('.cred-checkbox');
+  const items = document.querySelectorAll('.email-item');
+  let allSelected = true;
+  
+  checkboxes.forEach(cb => {
+    if (!cb.checked) allSelected = false;
+  });
+  
+  checkboxes.forEach((cb, idx) => {
+    cb.checked = !allSelected;
+    if (cb.checked) {
+      items[idx].classList.add('selected');
+    } else {
+      items[idx].classList.remove('selected');
+    }
+  });
+  
+  // Update button text
+  this.innerHTML = !allSelected 
+    ? '<i data-lucide="x-square" style="width:12px;height:12px"></i> Deselect All' 
+    : '<i data-lucide="check-square" style="width:12px;height:12px"></i> Select All';
+  
+  if(window.lucide) lucide.createIcons();
+});
 </script>
 {% endblock %}

@@ -15,13 +15,21 @@ from core.encryption import encrypt_password
 logger = logging.getLogger(__name__)
 
 
+from django.core.paginator import Paginator
+
 # ── Dashboard ─────────────────────────────────────────────────────────────────
 
 @login_required
 def dashboard(request):
-    accounts = WarmupAccount.objects.filter(user=request.user).select_related('smtp_credential')
+    accounts_qs = WarmupAccount.objects.filter(user=request.user).select_related('smtp_credential').order_by('-started_at')
+    
+    # Pagination
+    paginator = Paginator(accounts_qs, 10)
+    page_number = request.GET.get('page')
+    accounts = paginator.get_page(page_number)
+
     # Accounts without a warmup profile yet
-    warmed_cred_ids = accounts.values_list('smtp_credential_id', flat=True)
+    warmed_cred_ids = accounts_qs.values_list('smtp_credential_id', flat=True)
     available_creds = SMTPCredential.objects.filter(user=request.user).exclude(id__in=warmed_cred_ids)
     pool = WarmupPool.objects.filter(user=request.user)
 
@@ -77,33 +85,48 @@ def account_detail(request, pk):
 @login_required
 @require_POST
 def start_warmup(request):
-    """Enroll an existing SMTP credential into the warmup programme."""
-    cred_id = request.POST.get('cred_id')
+    """Enroll one or more existing SMTP credentials into the warmup programme."""
+    cred_ids = request.POST.getlist('cred_id')
     max_daily = int(request.POST.get('max_daily_volume', 50))
     target_days = int(request.POST.get('target_days', 30))
 
-    cred = get_object_or_404(SMTPCredential, pk=cred_id, user=request.user)
+    if not cred_ids:
+        messages.error(request, "No email accounts selected.")
+        return redirect('warmup:dashboard')
 
-    account, created = WarmupAccount.objects.get_or_create(
-        user=request.user,
-        smtp_credential=cred,
-        defaults={
-            'status': 'warming',
-            'max_daily_volume': max_daily,
-            'target_days': target_days,
-            'started_at': timezone.now(),
-        },
-    )
-    if not created:
-        account.status = 'warming'
-        account.max_daily_volume = max_daily
-        account.target_days = target_days
-        if not account.started_at:
-            account.started_at = timezone.now()
-        account.save()
-        messages.success(request, f"Warmup resumed for {cred.from_email}.")
-    else:
-        messages.success(request, f"Warmup started for {cred.from_email}. First cycle runs at 9 AM.")
+    count_started = 0
+    count_resumed = 0
+
+    for cid in cred_ids:
+        cred = get_object_or_404(SMTPCredential, pk=cid, user=request.user)
+
+        account, created = WarmupAccount.objects.get_or_create(
+            user=request.user,
+            smtp_credential=cred,
+            defaults={
+                'status': 'warming',
+                'max_daily_volume': max_daily,
+                'target_days': target_days,
+                'started_at': timezone.now(),
+            },
+        )
+        if not created:
+            account.status = 'warming'
+            account.max_daily_volume = max_daily
+            account.target_days = target_days
+            if not account.started_at:
+                account.started_at = timezone.now()
+            account.save()
+            count_resumed += 1
+        else:
+            count_started += 1
+
+    if count_started > 0 and count_resumed > 0:
+        messages.success(request, f"Started warmup for {count_started} accounts and resumed for {count_resumed} accounts.")
+    elif count_started > 0:
+        messages.success(request, f"Started warmup for {count_started} account(s). First cycle runs at 9 AM.")
+    elif count_resumed > 0:
+        messages.success(request, f"Warmup resumed for {count_resumed} account(s).")
 
     return redirect('warmup:dashboard')
 
