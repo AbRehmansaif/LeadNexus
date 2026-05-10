@@ -185,6 +185,12 @@
                                 </a>
                             </li>
                             <li>
+                                <a href="{% url 'warmup:dashboard' %}" class="nav-link {% if active_nav == 'warmup' %}active{% endif %}">
+                                    <span class="nav-icon-wrapper"><i data-lucide="flame" style="width:16px; height:16px;"></i></span>
+                                    <span>Email Warmup</span>
+                                </a>
+                            </li>
+                            <li>
                                 <a href="{% url 'csvtools:cleaner' %}" class="nav-link {% if active_page == 'tools' %}active{% endif %}">
                                     <span class="nav-icon-wrapper"><i data-lucide="wand-2" style="width:16px; height:16px;"></i></span>
                                     <span>Forge Nexus</span>

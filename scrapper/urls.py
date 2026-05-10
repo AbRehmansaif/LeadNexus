@@ -72,6 +72,8 @@ urlpatterns = [
     path('profile/linkedin-accounts/', template_views.linkedin_accounts_page, name='linkedin-accounts'),
     path('subscription/',          template_views.subscription_page,    name='subscription'),
     path('',                       include('mail.urls')), 
+    path('warmup/',                include('warmup.urls', namespace='warmup')),
+
     path('webintelligence/',       template_views.website_scraper_page, name='webintelligence'),
     path('profinder/',             template_views.linkedin_scraper_page, name='profinder'),
     path('jobs/',                  template_views.all_jobs_page,        name='all-jobs'),

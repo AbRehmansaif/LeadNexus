@@ -1,0 +1,412 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Email Warmup — LeadNexus{% endblock %}
+
+{% block extra_css %}
+<style>
+/* ── Layout ──────────────────────────────────────────────── */
+.wu-page { padding: 32px 0 60px; }
+.wu-header { display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:32px; }
+.wu-header h1 { font-size:1.8rem; font-weight:800; margin:0; background:var(--gradient-primary); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+.wu-header p  { color:var(--text-muted); margin:4px 0 0; font-size:0.9rem; }
+
+/* ── Score Card ──────────────────────────────────────────── */
+.wu-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(320px,1fr)); gap:20px; margin-bottom:32px; }
+.wu-card { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:24px; position:relative; overflow:hidden; transition:transform .2s,box-shadow .2s; }
+.wu-card:hover { transform:translateY(-3px); box-shadow:0 8px 32px rgba(139,92,246,.15); }
+.wu-card::before { content:''; position:absolute; top:0; left:0; right:0; height:3px; background:var(--gradient-primary); }
+.wu-card.paused::before { background:linear-gradient(90deg,#f59e0b,#d97706); }
+.wu-card.warmed::before { background:linear-gradient(90deg,#10b981,#059669); }
+
+.card-top { display:flex; align-items:flex-start; justify-content:space-between; margin-bottom:16px; }
+.card-email { font-weight:700; font-size:0.95rem; color:var(--text-primary); word-break:break-all; }
+.card-day   { font-size:0.75rem; color:var(--text-muted); margin-top:2px; }
+
+/* Score gauge ring */
+.score-ring-wrap { display:flex; align-items:center; gap:20px; margin-bottom:20px; }
+.score-ring { position:relative; width:80px; height:80px; flex-shrink:0; }
+.score-ring svg { transform:rotate(-90deg); }
+.score-ring .ring-bg  { fill:none; stroke:rgba(255,255,255,.05); stroke-width:7; }
+.score-ring .ring-val { fill:none; stroke-width:7; stroke-linecap:round; transition:stroke-dashoffset .8s ease; }
+.score-center { position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+.score-num { font-size:1.35rem; font-weight:900; color:var(--text-primary); line-height:1; }
+.score-lbl { font-size:0.6rem; color:var(--text-muted); margin-top:2px; }
+
+.score-meta { flex:1; }
+.score-meta .meta-row { display:flex; justify-content:space-between; align-items:center; padding:4px 0; border-bottom:1px solid var(--border); font-size:0.82rem; }
+.score-meta .meta-row:last-child { border:none; }
+.meta-key { color:var(--text-muted); }
+.meta-val { font-weight:600; }
+.meta-val.green { color:#10b981; }
+.meta-val.red   { color:#ef4444; }
+.meta-val.amber { color:#f59e0b; }
+
+/* Progress bar */
+.wu-progress { margin-bottom:16px; }
+.wu-progress-top { display:flex; justify-content:space-between; font-size:0.78rem; color:var(--text-muted); margin-bottom:6px; }
+.wu-progress-bar { height:6px; background:rgba(255,255,255,.05); border-radius:99px; overflow:hidden; }
+.wu-progress-fill { height:100%; background:var(--gradient-primary); border-radius:99px; transition:width .6s ease; }
+.wu-progress-fill.paused { background:linear-gradient(90deg,#f59e0b,#d97706); }
+.wu-progress-fill.warmed { background:linear-gradient(90deg,#10b981,#059669); }
+
+/* Action buttons */
+.card-actions { display:flex; gap:8px; flex-wrap:wrap; margin-top:16px; }
+.btn-xs { padding:5px 12px; font-size:0.78rem; border-radius:8px; border:1px solid var(--border); background:rgba(255,255,255,.04); color:var(--text-primary); cursor:pointer; display:inline-flex; align-items:center; gap:5px; transition:all .2s; text-decoration:none; }
+.btn-xs:hover { border-color:var(--accent-purple); background:rgba(139,92,246,.12); }
+.btn-xs.danger:hover { border-color:#ef4444; background:rgba(239,68,68,.12); color:#ef4444; }
+.btn-xs.success:hover { border-color:#10b981; background:rgba(16,185,129,.12); color:#10b981; }
+.btn-xs.amber:hover  { border-color:#f59e0b; background:rgba(245,158,11,.12); color:#f59e0b; }
+.status-pill { display:inline-flex; align-items:center; gap:6px; padding:3px 10px; border-radius:99px; font-size:0.72rem; font-weight:600; }
+.pill-warming { background:rgba(139,92,246,.15); color:#a78bfa; border:1px solid rgba(139,92,246,.3); }
+.pill-warmed  { background:rgba(16,185,129,.12); color:#34d399; border:1px solid rgba(16,185,129,.25); }
+.pill-paused  { background:rgba(245,158,11,.12);  color:#fbbf24; border:1px solid rgba(245,158,11,.25); }
+.pill-inactive{ background:rgba(255,255,255,.04); color:var(--text-muted); border:1px solid var(--border); }
+
+/* ── Empty State ─────────────────────────────────────────── */
+.wu-empty { text-align:center; padding:60px 20px; border:1px dashed var(--border); border-radius:16px; }
+.wu-empty i { width:48px; height:48px; color:var(--text-muted); margin:0 auto 16px; display:block; }
+.wu-empty h3 { color:var(--text-primary); margin:0 0 8px; }
+.wu-empty p  { color:var(--text-muted); margin:0 0 20px; font-size:0.9rem; }
+
+/* ── Panel (add account / pool) ─────────────────────────── */
+.wu-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:24px; }
+.wu-panel h2 { font-size:1.05rem; font-weight:700; margin:0 0 20px; display:flex; align-items:center; gap:8px; }
+.wu-panel h2 i { width:18px; height:18px; color:var(--accent-purple); }
+.form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:12px; }
+.form-row.one { grid-template-columns:1fr; }
+.form-row.three { grid-template-columns:1fr 1fr 1fr; }
+.form-group label { display:block; font-size:0.78rem; color:var(--text-muted); margin-bottom:5px; font-weight:500; }
+.form-group input, .form-group select { width:100%; background:rgba(255,255,255,.04); border:1px solid var(--border); border-radius:8px; padding:10px 12px; color:var(--text-primary); font-size:0.88rem; transition:all .2s; box-sizing:border-box; appearance: none; -webkit-appearance: none; }
+.form-group select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 40px; }
+.form-group select option { background: #0f172a; color: #f1f5f9; padding: 12px; }
+.form-group input:focus, .form-group select:focus { outline:none; border-color:var(--accent-purple); background:rgba(255,255,255,.08); box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1); }
+.form-check { display:flex; align-items:center; gap:8px; font-size:0.85rem; color:var(--text-muted); }
+
+/* ── Pool table ─────────────────────────────────────────── */
+.pool-table { width:100%; border-collapse:collapse; font-size:0.85rem; }
+.pool-table th { text-align:left; padding:8px 12px; color:var(--text-muted); font-weight:500; border-bottom:1px solid var(--border); font-size:0.75rem; text-transform:uppercase; letter-spacing:.04em; }
+.pool-table td { padding:10px 12px; border-bottom:1px solid rgba(255,255,255,.03); color:var(--text-primary); }
+.pool-table tr:last-child td { border:none; }
+
+/* ── Ramp schedule ───────────────────────────────────────── */
+.ramp-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:4px; }
+.ramp-day { text-align:center; padding:6px 4px; border-radius:6px; font-size:0.72rem; }
+.ramp-day .d-num  { font-weight:700; color:var(--text-primary); }
+.ramp-day .d-vol  { color:var(--text-muted); font-size:0.65rem; margin-top:2px; }
+.ramp-day.done    { background:rgba(139,92,246,.15); border:1px solid rgba(139,92,246,.25); }
+.ramp-day.today   { background:rgba(139,92,246,.3);  border:1px solid rgba(139,92,246,.5); }
+.ramp-day.future  { background:rgba(255,255,255,.03); border:1px solid rgba(255,255,255,.05); }
+
+@media(max-width:640px){
+  .form-row,.form-row.three { grid-template-columns:1fr; }
+  .wu-grid { grid-template-columns:1fr; }
+  .ramp-grid { grid-template-columns:repeat(5,1fr); }
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="wu-page">
+
+  <!-- Header -->
+  <div class="wu-header">
+    <div>
+      <h1>🔥 Email Warmup Engine</h1>
+      <p>Build sender reputation automatically. Track inbox placement scores in real-time.</p>
+    </div>
+    <button class="btn btn-primary" onclick="document.getElementById('addPanel').scrollIntoView({behavior:'smooth'})">
+      <i data-lucide="plus" style="width:16px;height:16px"></i> Add Account
+    </button>
+  </div>
+
+  <!-- ── Active warmup accounts ─────────────────────────── -->
+  {% if accounts %}
+  <div class="wu-grid">
+    {% for acc in accounts %}
+    {% with label=acc.score_label %}
+    <div class="wu-card {{ acc.status }}">
+
+      <!-- Status pill + email -->
+      <div class="card-top">
+        <div>
+          <div class="card-email">{{ acc.smtp_credential.from_email }}</div>
+          <div class="card-day">Day {{ acc.day_number }} of {{ acc.target_days }} &nbsp;·&nbsp; Started {{ acc.started_at|date:"M d, Y"|default:"—" }}</div>
+        </div>
+        <span class="status-pill pill-{{ acc.status }}">
+          {% if acc.status == 'warming' %}🔥 Warming
+          {% elif acc.status == 'warmed' %}✅ Warmed
+          {% elif acc.status == 'paused' %}⏸ Paused
+          {% else %}⚪ Inactive{% endif %}
+        </span>
+      </div>
+
+      <!-- Score ring + metrics -->
+      <div class="score-ring-wrap">
+        {% with pct=acc.warmup_score circ=219 %}
+        {% with offset=acc.warmup_score %}
+        <div class="score-ring">
+          <svg width="80" height="80" viewBox="0 0 80 80">
+            <circle class="ring-bg" cx="40" cy="40" r="35"/>
+            <circle class="ring-val" cx="40" cy="40" r="35"
+              stroke="{% if acc.warmup_score >= 75 %}#10b981{% elif acc.warmup_score >= 50 %}#8b5cf6{% elif acc.warmup_score >= 30 %}#f59e0b{% else %}#ef4444{% endif %}"
+              stroke-dasharray="219.9"
+              stroke-dashoffset="{{ acc.warmup_score|add:0 }}"
+              style="stroke-dashoffset:calc(219.9 - (219.9 * {{ acc.warmup_score }} / 100))"/>
+          </svg>
+          <div class="score-center">
+            <span class="score-num">{{ acc.warmup_score }}</span>
+            <span class="score-lbl">/ 100</span>
+          </div>
+        </div>
+        {% endwith %}{% endwith %}
+
+        <div class="score-meta">
+          <div class="meta-row">
+            <span class="meta-key">📥 Inbox Rate</span>
+            <span class="meta-val {% if acc.inbox_rate >= 80 %}green{% elif acc.inbox_rate >= 50 %}amber{% else %}red{% endif %}">{{ acc.inbox_rate }}%</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">🚫 Spam Rate</span>
+            <span class="meta-val {% if acc.spam_rate <= 5 %}green{% elif acc.spam_rate <= 15 %}amber{% else %}red{% endif %}">{{ acc.spam_rate }}%</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">↩️ Reply Rate</span>
+            <span class="meta-val {% if acc.reply_rate >= 10 %}green{% elif acc.reply_rate >= 3 %}amber{% else %}red{% endif %}">{{ acc.reply_rate }}%</span>
+          </div>
+          <div class="meta-row">
+            <span class="meta-key">📤 Total Sent</span>
+            <span class="meta-val">{{ acc.total_sent }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Progress bar -->
+      <div class="wu-progress">
+        <div class="wu-progress-top">
+          <span>Warmup Progress</span>
+          <span>{{ acc.progress_percentage }}% complete</span>
+        </div>
+        <div class="wu-progress-bar">
+          <div class="wu-progress-fill {{ acc.status }}" style="width:{{ acc.progress_percentage }}%"></div>
+        </div>
+      </div>
+
+      <!-- Volume indicator -->
+      <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-muted);margin-bottom:16px;">
+        <span>Today's volume: <strong style="color:var(--text-primary)">{{ acc.current_daily_volume }} emails/day</strong></span>
+        <span>Max: {{ acc.max_daily_volume }}/day</span>
+      </div>
+
+      <!-- Score label banner -->
+      <div style="padding:8px 12px;border-radius:8px;margin-bottom:16px;text-align:center;font-size:0.8rem;font-weight:600;
+        {% if acc.warmup_score >= 75 %}background:rgba(16,185,129,.1);color:#34d399;border:1px solid rgba(16,185,129,.2);
+        {% elif acc.warmup_score >= 50 %}background:rgba(139,92,246,.1);color:#a78bfa;border:1px solid rgba(139,92,246,.2);
+        {% elif acc.warmup_score >= 30 %}background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2);
+        {% else %}background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);{% endif %}">
+        Reputation: {{ label.0 }}
+        {% if acc.warmup_score < 40 %} — Emails may still land in spam{% endif %}
+        {% if acc.warmup_score >= 75 %} — Ready for cold outreach{% endif %}
+      </div>
+
+      <!-- Action buttons -->
+      <div class="card-actions">
+        <a href="{% url 'warmup:detail' acc.pk %}" class="btn-xs">
+          <i data-lucide="bar-chart-2" style="width:13px;height:13px"></i> Details
+        </a>
+        {% if acc.status == 'warming' %}
+        <form method="post" action="{% url 'warmup:run_now' acc.pk %}" style="display:inline">{% csrf_token %}
+          <button class="btn-xs success" type="submit"><i data-lucide="zap" style="width:13px;height:13px"></i> Run Now</button>
+        </form>
+        <form method="post" action="{% url 'warmup:pause' acc.pk %}" style="display:inline">{% csrf_token %}
+          <button class="btn-xs amber" type="submit"><i data-lucide="pause" style="width:13px;height:13px"></i> Pause</button>
+        </form>
+        {% elif acc.status == 'paused' %}
+        <form method="post" action="{% url 'warmup:resume' acc.pk %}" style="display:inline">{% csrf_token %}
+          <button class="btn-xs success" type="submit"><i data-lucide="play" style="width:13px;height:13px"></i> Resume</button>
+        </form>
+        {% endif %}
+        <button class="btn-xs danger" onclick="confirmDelete({{ acc.pk }}, '{{ acc.smtp_credential.from_email }}')">
+          <i data-lucide="trash-2" style="width:13px;height:13px"></i> Remove
+        </button>
+      </div>
+
+      <!-- Hidden delete form -->
+      <form id="del-form-{{ acc.pk }}" method="post" action="{% url 'warmup:delete' acc.pk %}" style="display:none">{% csrf_token %}</form>
+    </div>
+    {% endwith %}
+    {% endfor %}
+  </div>
+
+  {% else %}
+  <div class="wu-empty">
+    <i data-lucide="flame"></i>
+    <h3>No Warmup Accounts Yet</h3>
+    <p>Start warming up your email accounts to build sender reputation and land in the primary inbox.</p>
+    <button class="btn btn-primary" onclick="document.getElementById('addPanel').scrollIntoView({behavior:'smooth'})">
+      <i data-lucide="plus" style="width:16px;height:16px"></i> Start Warmup
+    </button>
+  </div>
+  {% endif %}
+
+  <!-- ── Warmup Ramp Schedule ───────────────────────────── -->
+  <div class="wu-panel" style="margin-top:32px">
+    <h2><i data-lucide="trending-up"></i> Automatic Ramp-Up Schedule</h2>
+    <p style="color:var(--text-muted);font-size:0.85rem;margin-bottom:16px">
+      Volume increases gradually over 30 days. Sending too many emails too early triggers spam detection.
+    </p>
+    <div class="ramp-grid">
+      {% for day_info in ramp_schedule %}
+      <div class="ramp-day {{ day_info.cls }}">
+        <div class="d-num">D{{ day_info.day }}</div>
+        <div class="d-vol">{{ day_info.vol }}/d</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+
+  <!-- ── Add Account Panel ──────────────────────────────── -->
+  <div class="wu-panel" id="addPanel">
+    <h2><i data-lucide="plus-circle"></i> Start Warming Up an Account</h2>
+    {% if available_creds %}
+    <form method="post" action="{% url 'warmup:start' %}">
+      {% csrf_token %}
+      <div class="form-row">
+        <div class="form-group">
+          <label>Select Email Account</label>
+          <select name="cred_id" required>
+            {% for cred in available_creds %}
+            <option value="{{ cred.pk }}">{{ cred.from_email }} ({{ cred.name }})</option>
+            {% endfor %}
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Target Days</label>
+          <input type="number" name="target_days" value="30" min="14" max="60">
+        </div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Max Daily Volume (at full warmup)</label>
+          <input type="number" name="max_daily_volume" value="50" min="10" max="200">
+        </div>
+      </div>
+      <button type="submit" class="btn btn-primary">
+        <i data-lucide="flame" style="width:16px;height:16px"></i> Start Warmup
+      </button>
+    </form>
+    {% else %}
+    <p style="color:var(--text-muted);font-size:0.9rem">
+      All your SMTP accounts are already enrolled in warmup.
+      <a href="{% url 'mail-smtp-settings' %}" style="color:var(--accent-purple)">Add a new SMTP account</a> first.
+    </p>
+    {% endif %}
+  </div>
+
+  <!-- ── Warmup Pool ────────────────────────────────────── -->
+  <div class="wu-panel">
+    <h2><i data-lucide="users"></i> Warmup Pool <span style="font-size:0.75rem;font-weight:400;color:var(--text-muted);margin-left:8px">Extra email addresses for larger warmup exchange</span></h2>
+
+    {% if pool %}
+    <table class="pool-table">
+      <thead>
+        <tr>
+          <th>Email</th><th>SMTP Host</th><th>Status</th><th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in pool %}
+        <tr>
+          <td>{{ p.email }}</td>
+          <td style="color:var(--text-muted)">{{ p.smtp_host }}:{{ p.smtp_port }}</td>
+          <td>
+            {% if p.is_active %}
+              <span style="color:#10b981;font-size:0.78rem">● Active</span>
+            {% else %}
+              <span style="color:var(--text-muted);font-size:0.78rem">● Inactive</span>
+            {% endif %}
+          </td>
+          <td>
+            <form method="post" action="{% url 'warmup:delete_pool' p.pk %}" style="display:inline">
+              {% csrf_token %}
+              <button class="btn-xs danger" type="submit"><i data-lucide="trash-2" style="width:12px;height:12px"></i></button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    <hr style="border-color:var(--border);margin:20px 0">
+    {% endif %}
+
+    <details>
+      <summary style="cursor:pointer;color:var(--accent-purple);font-size:0.88rem;font-weight:600;margin-bottom:16px">
+        + Add Pool Email Address
+      </summary>
+      <form method="post" action="{% url 'warmup:add_pool' %}" style="margin-top:16px">
+        {% csrf_token %}
+        <div class="form-row">
+          <div class="form-group">
+            <label>Email Address</label>
+            <input type="email" name="email" required placeholder="you@example.com">
+          </div>
+          <div class="form-group">
+            <label>Username (login)</label>
+            <input type="text" name="username" required placeholder="Same as email usually">
+          </div>
+        </div>
+        <div class="form-row three">
+          <div class="form-group">
+            <label>SMTP Host</label>
+            <input type="text" name="smtp_host" required placeholder="smtp.gmail.com">
+          </div>
+          <div class="form-group">
+            <label>SMTP Port</label>
+            <input type="number" name="smtp_port" value="587">
+          </div>
+          <div class="form-group">
+            <label>IMAP Host (optional)</label>
+            <input type="text" name="imap_host" placeholder="imap.gmail.com">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Password / App Password</label>
+            <input type="password" name="password" required>
+          </div>
+          <div class="form-group" style="display:flex;align-items:flex-end;padding-bottom:4px">
+            <label class="form-check">
+              <input type="checkbox" name="use_tls" checked> Use TLS
+            </label>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary" style="margin-top:8px">
+          <i data-lucide="plus" style="width:16px;height:16px"></i> Add to Pool
+        </button>
+      </form>
+    </details>
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Build ramp schedule data for the visual calendar
+// (Data is generated server-side via context, but we add animation here)
+document.querySelectorAll('.ring-val').forEach(el => {
+  el.style.transition = 'stroke-dashoffset 1s ease';
+});
+
+function confirmDelete(pk, email) {
+  openModal({
+    title: 'Remove Warmup Account',
+    desc: `Stop warming up ${email} and delete all its history?`,
+    icon: '🗑️',
+    confirmText: 'Yes, Remove',
+    confirmClass: 'btn-danger',
+    onConfirm: () => document.getElementById('del-form-' + pk).submit()
+  });
+}
+</script>
+{% endblock %}

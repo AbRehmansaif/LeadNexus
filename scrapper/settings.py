@@ -53,6 +53,7 @@ INSTALLED_APPS = [
     # Local
     'core',
     'mail',
+    'warmup',
     'subscriptions',
     'seo',
     'contactus',
@@ -322,6 +323,11 @@ CELERY_BEAT_SCHEDULE = {
     'followup-reminder-notifications': {
         'task': 'mail.tasks.send_followup_reminder_notifications',
         'schedule': crontab(hour=9, minute=0),
+    },
+    # Email Warmup: Run daily warmup cycles at 9:05 AM UTC
+    'run-warmup-cycle': {
+        'task': 'warmup.tasks.run_warmup_cycle',
+        'schedule': crontab(hour=9, minute=5),
     },
 }
 

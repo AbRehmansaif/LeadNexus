@@ -1,0 +1,237 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}{{ account.smtp_credential.from_email }} — Warmup Detail — LeadNexus{% endblock %}
+
+{% block extra_css %}
+<style>
+.detail-page { padding:32px 0 60px; }
+.back-link { display:inline-flex; align-items:center; gap:6px; color:var(--text-muted); text-decoration:none; font-size:0.88rem; margin-bottom:24px; transition:color .2s; }
+.back-link:hover { color:var(--accent-purple); }
+.detail-header { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px; margin-bottom:32px; }
+.detail-header h1 { font-size:1.5rem; font-weight:800; margin:0 0 4px; color:var(--text-primary); }
+.detail-header p  { color:var(--text-muted); margin:0; font-size:0.88rem; }
+
+/* ── Stat cards row ─────────────────────────────────────── */
+.stat-row { display:grid; grid-template-columns:repeat(auto-fill,minmax(160px,1fr)); gap:16px; margin-bottom:28px; }
+.stat-card { background:var(--bg-card); border:1px solid var(--border); border-radius:12px; padding:16px 20px; }
+.stat-card .s-val { font-size:1.6rem; font-weight:900; color:var(--text-primary); line-height:1; }
+.stat-card .s-key { font-size:0.75rem; color:var(--text-muted); margin-top:4px; }
+.stat-card .s-sub { font-size:0.72rem; color:var(--text-muted); margin-top:6px; padding-top:6px; border-top:1px solid var(--border); }
+
+/* ── Chart panel ────────────────────────────────────────── */
+.chart-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:24px; margin-bottom:24px; }
+.chart-panel h2 { font-size:1rem; font-weight:700; margin:0 0 20px; }
+canvas { max-height:260px; }
+
+/* ── Log table ──────────────────────────────────────────── */
+.log-panel { background:var(--bg-card); border:1px solid var(--border); border-radius:16px; padding:24px; }
+.log-panel h2 { font-size:1rem; font-weight:700; margin:0 0 16px; }
+.log-table { width:100%; border-collapse:collapse; font-size:0.83rem; }
+.log-table th { text-align:left; padding:8px 10px; color:var(--text-muted); font-weight:500; border-bottom:1px solid var(--border); font-size:0.72rem; text-transform:uppercase; letter-spacing:.04em; }
+.log-table td { padding:10px; border-bottom:1px solid rgba(255,255,255,.03); }
+.log-table tr:last-child td { border:none; }
+.placement-inbox { color:#10b981; font-weight:600; }
+.placement-spam  { color:#ef4444; font-weight:600; }
+.placement-unknown{ color:var(--text-muted); }
+.replied-yes { color:#10b981; }
+.replied-no  { color:var(--text-muted); }
+
+/* ── Actions panel ──────────────────────────────────────── */
+.actions-row { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:24px; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="detail-page">
+
+  <a href="{% url 'warmup:dashboard' %}" class="back-link">
+    <i data-lucide="arrow-left" style="width:15px;height:15px"></i> Back to Warmup Dashboard
+  </a>
+
+  <!-- Header -->
+  <div class="detail-header">
+    <div>
+      <h1>{{ account.smtp_credential.from_email }}</h1>
+      <p>Day {{ account.day_number }} of {{ account.target_days }} &nbsp;·&nbsp; Started {{ account.started_at|date:"M d, Y"|default:"Not started" }}
+        {% if account.last_run_at %} &nbsp;·&nbsp; Last run {{ account.last_run_at|timesince }} ago{% endif %}
+      </p>
+    </div>
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <!-- Score badge -->
+      <div style="text-align:center;padding:12px 20px;border-radius:12px;min-width:90px;
+        {% if account.warmup_score >= 75 %}background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.25);
+        {% elif account.warmup_score >= 50 %}background:rgba(139,92,246,.12);border:1px solid rgba(139,92,246,.25);
+        {% elif account.warmup_score >= 30 %}background:rgba(245,158,11,.12);border:1px solid rgba(245,158,11,.25);
+        {% else %}background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);{% endif %}">
+        <div style="font-size:2rem;font-weight:900;color:var(--text-primary);line-height:1">{{ account.warmup_score }}</div>
+        <div style="font-size:0.7rem;color:var(--text-muted);margin-top:2px">/ 100 Score</div>
+        <div style="font-size:0.72rem;font-weight:600;margin-top:4px;
+          {% if account.warmup_score >= 75 %}color:#34d399{% elif account.warmup_score >= 50 %}color:#a78bfa{% elif account.warmup_score >= 30 %}color:#fbbf24{% else %}color:#f87171{% endif %}">
+          {{ account.score_label.0 }}
+        </div>
+      </div>
+
+      <!-- Control buttons -->
+      {% if account.status == 'warming' %}
+      <form method="post" action="{% url 'warmup:run_now' account.pk %}">{% csrf_token %}
+        <button class="btn btn-primary" type="submit"><i data-lucide="zap" style="width:15px;height:15px"></i> Run Cycle Now</button>
+      </form>
+      <form method="post" action="{% url 'warmup:pause' account.pk %}">{% csrf_token %}
+        <button class="btn btn-secondary" type="submit"><i data-lucide="pause" style="width:15px;height:15px"></i> Pause</button>
+      </form>
+      {% elif account.status == 'paused' %}
+      <form method="post" action="{% url 'warmup:resume' account.pk %}">{% csrf_token %}
+        <button class="btn btn-primary" type="submit"><i data-lucide="play" style="width:15px;height:15px"></i> Resume</button>
+      </form>
+      {% elif account.status == 'warmed' %}
+      <span style="color:#10b981;font-weight:700;font-size:0.9rem">✅ Fully warmed — Ready for campaigns!</span>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- Stats row -->
+  <div class="stat-row">
+    <div class="stat-card">
+      <div class="s-val" style="color:{% if account.inbox_rate >= 80 %}#10b981{% elif account.inbox_rate >= 50 %}#f59e0b{% else %}#ef4444{% endif %}">{{ account.inbox_rate }}%</div>
+      <div class="s-key">📥 Inbox Rate</div>
+      <div class="s-sub">{{ account.inbox_count }} / {{ account.checked_total }} checked</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-val" style="color:{% if account.spam_rate <= 5 %}#10b981{% elif account.spam_rate <= 15 %}#f59e0b{% else %}#ef4444{% endif %}">{{ account.spam_rate }}%</div>
+      <div class="s-key">🚫 Spam Rate</div>
+      <div class="s-sub">{{ account.spam_count }} went to spam</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-val" style="color:{% if account.reply_rate >= 10 %}#10b981{% elif account.reply_rate >= 3 %}#f59e0b{% else %}#a78bfa{% endif %}">{{ account.reply_rate }}%</div>
+      <div class="s-key">↩️ Reply Rate</div>
+      <div class="s-sub">{{ account.reply_count }} auto-replies sent</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-val">{{ account.total_sent }}</div>
+      <div class="s-key">📤 Total Sent</div>
+      <div class="s-sub">{{ account.current_daily_volume }}/day currently</div>
+    </div>
+    <div class="stat-card">
+      <div class="s-val">{{ account.day_number }}/{{ account.target_days }}</div>
+      <div class="s-key">📅 Days</div>
+      <div class="s-sub">{{ account.progress_percentage }}% complete</div>
+    </div>
+  </div>
+
+  <!-- Score history chart -->
+  {% if chart_labels != '[]' %}
+  <div class="chart-panel">
+    <h2>📈 Score & Inbox Rate History</h2>
+    <canvas id="scoreChart"></canvas>
+  </div>
+  {% endif %}
+
+  <!-- Email log -->
+  <div class="log-panel">
+    <h2>📋 Recent Warmup Emails <span style="font-weight:400;color:var(--text-muted);font-size:0.82rem">(last 50)</span></h2>
+    {% if logs %}
+    <table class="log-table">
+      <thead>
+        <tr>
+          <th>To</th><th>Subject</th><th>Placement</th><th>Replied</th><th>Sent</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for log in logs %}
+        <tr>
+          <td>{{ log.to_email }}</td>
+          <td style="color:var(--text-muted)">{{ log.subject }}</td>
+          <td>
+            {% if log.placement == 'inbox' %}<span class="placement-inbox">✅ Inbox</span>
+            {% elif log.placement == 'spam' %}<span class="placement-spam">⚠️ Spam</span>
+            {% else %}<span class="placement-unknown">— Pending</span>{% endif %}
+          </td>
+          <td>
+            {% if log.is_replied %}<span class="replied-yes">✅ Yes</span>
+            {% else %}<span class="replied-no">No</span>{% endif %}
+          </td>
+          <td style="color:var(--text-muted)">{{ log.sent_at|date:"M d, H:i" }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <p style="color:var(--text-muted);text-align:center;padding:40px 0;font-size:0.9rem">
+      No warmup emails sent yet. Run the first cycle above.
+    </p>
+    {% endif %}
+  </div>
+
+</div>
+{% endblock %}
+
+{% block extra_js %}
+{% if chart_labels != '[]' %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const labels   = {{ chart_labels|safe }};
+const scores   = {{ chart_scores|safe }};
+const inboxRates = {{ chart_inbox|safe }};
+const spamRates  = {{ chart_spam|safe }};
+
+const ctx = document.getElementById('scoreChart').getContext('2d');
+new Chart(ctx, {
+  type: 'line',
+  data: {
+    labels,
+    datasets: [
+      {
+        label: 'Warmup Score',
+        data: scores,
+        borderColor: '#8b5cf6',
+        backgroundColor: 'rgba(139,92,246,.08)',
+        borderWidth: 2.5,
+        pointRadius: 4,
+        pointBackgroundColor: '#8b5cf6',
+        fill: true,
+        tension: 0.4,
+        yAxisID: 'y',
+      },
+      {
+        label: 'Inbox Rate %',
+        data: inboxRates,
+        borderColor: '#10b981',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: '#10b981',
+        borderDash: [4,3],
+        tension: 0.4,
+        yAxisID: 'y',
+      },
+      {
+        label: 'Spam Rate %',
+        data: spamRates,
+        borderColor: '#ef4444',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: '#ef4444',
+        borderDash: [2,3],
+        tension: 0.4,
+        yAxisID: 'y',
+      },
+    ]
+  },
+  options: {
+    responsive: true,
+    interaction: { mode: 'index', intersect: false },
+    plugins: {
+      legend: { labels: { color: '#94a3b8', boxWidth: 14, font: { size: 12 } } },
+      tooltip: { backgroundColor: '#1e293b', titleColor: '#f1f5f9', bodyColor: '#94a3b8', borderColor: '#334155', borderWidth: 1 }
+    },
+    scales: {
+      x: { ticks: { color: '#64748b', maxTicksLimit: 10 }, grid: { color: 'rgba(255,255,255,.04)' } },
+      y: { min: 0, max: 100, ticks: { color: '#64748b', callback: v => v + (v <= 1 ? '' : '') }, grid: { color: 'rgba(255,255,255,.04)' } }
+    }
+  }
+});
+</script>
+{% endif %}
+{% endblock %}
