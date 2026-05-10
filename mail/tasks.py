@@ -195,47 +195,54 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
 
             # Render body template and convert to professional HTML
             from django.utils.html import linebreaks
-            
-            tmpl = Template(step_body)
+
             context_data = {
                 'name': recipient.name or recipient.email.split('@')[0],
                 'email': recipient.email,
             }
             context_data.update(recipient.custom_data)
-            
-            # Step 1: Substitution
-            interim_body = tmpl.render(Context(context_data))
-            
-            # Step 2: SaaS-level Text to HTML (Spacing, Paragraphs, Gaps)
-            # CRITICAL: If the user has provided a professional HTML layout (tables, divs),
-            # we skip linebreaks() to avoid mangling the structure with <br> tags.
-            if '<table>' in interim_body.lower() or '<div' in interim_body.lower():
-                rendered_body = render_spintax(interim_body)
-            else:
-                rendered_body = linebreaks(render_spintax(interim_body))
-                
-            # Randomize Subject as well if it contains spintax
+
+            # ── CRITICAL ORDER: Spintax BEFORE Django template rendering ──────────
+            # Reason: Django's Template engine can misinterpret spintax curly braces
+            # like {Hi|Hello} as invalid template tags and silently corrupt or drop
+            # them. By resolving spintax first on the raw string, we produce clean
+            # Django template syntax that is then safely rendered.
+            #
+            # Step 1: Resolve spintax on raw body and subject strings
+            spun_body    = render_spintax(step_body)
             step_subject = render_spintax(step_subject)
+
+            # Step 2: Render Django template variables ({{ name }}, {{ company }}, etc.)
+            tmpl         = Template(spun_body)
+            interim_body = tmpl.render(Context(context_data))
+
+            # Step 3: Convert plain-text → HTML if needed.
+            # CRITICAL: If the template already has HTML layout (tables, divs),
+            # skip linebreaks() to avoid mangling the structure with <br> tags.
+            if '<table>' in interim_body.lower() or '<div' in interim_body.lower():
+                rendered_body = interim_body
+            else:
+                rendered_body = linebreaks(interim_body)
 
             # Tracking Pixel
             # Logic: Use user's tracking_domain if set, otherwise fallback to SITE_URL.
             # Ensure the domain ends up with a valid protocol (https preferred) and no trailing slash.
             profile = campaign.user.profile
             tracking_base = profile.tracking_domain or settings.SITE_URL
-            
+
             if tracking_base:
                 tracking_base = tracking_base.strip()
                 # 1. Ensure protocol exists
                 if not tracking_base.startswith(('http://', 'https://')):
                     tracking_base = f"https://{tracking_base}"
-                
+
                 # 2. If it's http and SSL is required, upgrade to https
                 elif tracking_base.startswith('http://') and getattr(settings, 'SECURE_SSL_REDIRECT', False):
                     tracking_base = 'https://' + tracking_base[7:]
-                
+
                 # 3. Remove trailing slash for reverse suffixing
                 tracking_base = tracking_base.rstrip('/')
-            
+
             # Check if using a free email provider (Domain mismatch risk)
             free_providers = ['@gmail.com', '@yahoo.com', '@hotmail.com', '@outlook.com', '@icloud.com', '@aol.com']
             is_free_provider = any(creds.from_email.lower().endswith(provider) for provider in free_providers)
@@ -243,16 +250,27 @@ def send_single_email_task(self, recipient_id, step_number, cred_id=None):
             # Unsubscribe Link
             if campaign.add_unsubscribe_link:
                 unsub_url = f"{tracking_base.rstrip('/')}{reverse('unsubscribe', args=[recipient.id])}"
-                # Only add HTTP unsubscribe link to body if not a free provider, or if we must, keep it simple
-                unsub_footer = f'<br><br><div style="font-size: 11px; color: #666; border-top: 1px dashed #eee; padding-top: 10px;">' \
-                               f'Too many emails? <a href="{unsub_url}" style="color: #8b5cf6; text-decoration: underline;">Unsubscribe from this campaign</a>' \
-                               f'</div>'
+                unsub_footer = (
+                    f'<br><br><div style="font-size: 11px; color: #666; border-top: 1px dashed #eee; padding-top: 10px;">'
+                    f'Too many emails? <a href="{unsub_url}" style="color: #8b5cf6; text-decoration: underline;">Unsubscribe from this campaign</a>'
+                    f'</div>'
+                )
                 rendered_body += f"\n{unsub_footer}"
             else:
                 unsub_url = None
 
-            # Tracking Pixel - The user requested open tracking even for free providers
-            if campaign.track_opens:
+            # Tracking Pixel — DELIVERABILITY GUARD:
+            # Only inject pixel if sender domain MATCHES tracking domain.
+            # A cross-domain pixel (e.g. send from gmail.com, track via getleadnexus.com)
+            # is treated as a phishing signal by Gmail/Yahoo and hard-routes to spam.
+            sender_domain = creds.from_email.split('@')[-1].lower() if creds else ''
+            tracking_domain_host = tracking_base.replace('https://', '').replace('http://', '').split('/')[0].lower() if tracking_base else ''
+            tracking_domain_matches = (
+                sender_domain and tracking_domain_host and
+                (sender_domain in tracking_domain_host or tracking_domain_host in sender_domain)
+            )
+
+            if campaign.track_opens and (tracking_domain_matches or not is_free_provider):
                 tracking_url = f"{tracking_base}{reverse('track-open', args=[recipient.id])}"
                 pixel_tag = f'<img src="{tracking_url}" width="1" height="1" style="display:none !important;" />'
                 rendered_body += f"\n{pixel_tag}"

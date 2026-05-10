@@ -114,7 +114,7 @@ class EmailCampaign(models.Model):
     name = models.CharField(max_length=255, default="Untitled Campaign", help_text="A friendly name for your campaign")
     subject = models.CharField(max_length=255)
     body = models.TextField(help_text="Use {{ name }} for placeholders")
-    gap_seconds = models.IntegerField(default=2, help_text="Wait time between each email (seconds)")
+    gap_seconds = models.IntegerField(default=120, help_text="Wait time between each email (seconds). Minimum 90s recommended for cold outreach.")
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     scheduled_at = models.DateTimeField(null=True, blank=True, help_text="Set a time to start this campaign automatically", db_index=True)
     # SaaS Control: Business Hours & Days
@@ -127,8 +127,8 @@ class EmailCampaign(models.Model):
     attachment_name = models.CharField(max_length=255, null=True, blank=True)
 
     # Deliverability Controls
-    track_opens = models.BooleanField(default=True, help_text="Embed an invisible tracking pixel to track email opens.")
-    add_unsubscribe_link = models.BooleanField(default=True, help_text="Add a one-click unsubscribe link to the footer.")
+    track_opens = models.BooleanField(default=False, help_text="Embed an invisible tracking pixel to track email opens. WARNING: Only enable if your tracking domain matches your sending domain to avoid spam penalties.")
+    add_unsubscribe_link = models.BooleanField(default=False, help_text="Add a one-click unsubscribe link to the footer.")
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
