@@ -59,9 +59,24 @@ class ProfessionalRegisterForm(UserCreationForm):
 
     def clean_password1(self):
         password = self.cleaned_data.get('password1')
+        if not password:
+            return password
+
+        # ── 1. Length Check ──
         if len(password) < 8:
             raise ValidationError("Security Key must be at least 8 characters long.")
-        # Additional complexity can be added here
+
+        # ── 2. Structural Complexity Checks ──
+        import re
+        if not re.search(r'[A-Z]', password):
+            raise ValidationError("Security Key must contain at least one uppercase letter (A-Z).")
+        if not re.search(r'[a-z]', password):
+            raise ValidationError("Security Key must contain at least one lowercase letter (a-z).")
+        if not re.search(r'[0-9]', password):
+            raise ValidationError("Security Key must contain at least one numeric digit (0-9).")
+        if not re.search(r'[^A-Za-z0-9]', password):
+            raise ValidationError("Security Key must contain at least one special character (e.g., !, @, #, $, %, etc.).")
+
         return password
 from django.contrib.auth.forms import AuthenticationForm
 class EmailAuthenticationForm(AuthenticationForm):
