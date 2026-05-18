@@ -308,20 +308,36 @@
 
   <!-- Pagination -->
   {% if accounts.has_other_pages %}
-  <div style="display:flex; justify-content:center; gap:8px; margin-bottom:32px;">
+  <div style="display:flex; justify-content:center; gap:8px; margin-bottom:32px; flex-wrap: wrap;">
+    <!-- First Page -->
+    {% if accounts.number > 1 %}
+      <a href="?page=1" class="btn-xs" title="First Page">
+        <i data-lucide="chevrons-left" style="width:14px;height:14px"></i> First
+      </a>
+    {% endif %}
+
+    <!-- Previous Page -->
     {% if accounts.has_previous %}
       <a href="?page={{ accounts.previous_page_number }}" class="btn-xs">
         <i data-lucide="chevron-left" style="width:14px;height:14px"></i> Previous
       </a>
     {% endif %}
     
-    <span style="font-size:0.85rem; color:var(--text-muted); display:flex; align-items:center;">
-      Page {{ accounts.number }} of {{ accounts.paginator.num_pages }}
+    <span style="font-size:0.85rem; color:var(--text-muted); display:flex; align-items:center; padding: 0 12px;">
+      Page <strong style="color:var(--text-primary); margin: 0 4px;">{{ accounts.number }}</strong> of <strong style="color:var(--text-primary); margin-left: 4px;">{{ accounts.paginator.num_pages }}</strong>
     </span>
 
+    <!-- Next Page -->
     {% if accounts.has_next %}
       <a href="?page={{ accounts.next_page_number }}" class="btn-xs">
         Next <i data-lucide="chevron-right" style="width:14px;height:14px"></i>
+      </a>
+    {% endif %}
+
+    <!-- Last Page -->
+    {% if accounts.number < accounts.paginator.num_pages %}
+      <a href="?page={{ accounts.paginator.num_pages }}" class="btn-xs" title="Last Page">
+        Last <i data-lucide="chevrons-right" style="width:14px;height:14px"></i>
       </a>
     {% endif %}
   </div>

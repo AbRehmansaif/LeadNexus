@@ -331,6 +331,11 @@
                     {% csrf_token %}
                     <input type="hidden" name="next" value="{{ request.GET.next }}">
                     
+                    <div style="display: none; position: absolute; left: -9999px;" aria-hidden="true">
+                        <label for="middle_name">Middle Name (Leave Blank)</label>
+                        <input type="text" name="middle_name" id="middle_name" autocomplete="off" tabindex="-1">
+                    </div>
+                    
                     {% for field in form %}
                     <div class="input-group">
                         <label>{{ field.label }}</label>

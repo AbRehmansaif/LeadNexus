@@ -39,6 +39,36 @@ class RegisterView(CreateView):
     template_name = 'registration/register.html'
     success_url = reverse_lazy('login')
 
+    def post(self, request, *args, **kwargs):
+        from django.core.cache import cache
+
+        # ── 1. Honeypot Detection (Bot Prevention) ──
+        if request.POST.get('middle_name'):
+            # Act exactly as if registration was successful to trick the bot
+            # but do NOT create the user, hash passwords, or send any emails!
+            request.session['verify_email'] = "security-sentinel@leadnexus.com"
+            messages.info(request, "Deployment Initialized: A 6-digit verification code has been dispatched to your email.")
+            return redirect('verify-email')
+
+        # ── 2. Registration Rate Limiting (IP-based) ──
+        x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+        if x_forwarded_for:
+            ip = x_forwarded_for.split(',')[0].strip()
+        else:
+            ip = request.META.get('REMOTE_ADDR', 'unknown')
+
+        cache_key = f"reg_attempts_ip_{ip}"
+        attempts = cache.get(cache_key, 0)
+
+        if attempts >= 3:
+            messages.error(request, "Too many registration attempts from this network. Enrollment protocol suspended for 1 hour.")
+            return redirect('register')
+
+        # Increment attempts on POST to prevent brute-force probing of username/email availability
+        cache.set(cache_key, attempts + 1, timeout=3600) # 1 hour suspension
+
+        return super().post(request, *args, **kwargs)
+
     def form_valid(self, form):
         user = form.save(commit=False)
         user.is_active = False # Deactivate until email is verified
