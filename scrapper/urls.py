@@ -100,6 +100,16 @@ urlpatterns = [
     
     # ── Sitemaps ──────────────────────────────────────────────
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
+
+    # ── Google Search Console Verification ────────────────────
+    path(
+        'googlebc81c2a12a2d31f1.html',
+        TemplateView.as_view(
+            template_name='googlebc81c2a12a2d31f1.html',
+            content_type='text/html'
+        ),
+        name='google-site-verification'
+    ),
     
     # ── Robots.txt ──────────────────────────────────────────
     path('robots.txt', robots_txt_view, name='robots-txt'),
