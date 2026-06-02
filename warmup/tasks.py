@@ -440,6 +440,8 @@ def _verify_and_update_sender(mail_conn, imap_mid, is_spam=False):
     import re
     try:
         _, raw = mail_conn.fetch(imap_mid, '(BODY.PEEK[])')
+        if not raw or not isinstance(raw, list) or not raw[0] or len(raw[0]) < 2:
+            return
         parsed = email_lib.message_from_bytes(raw[0][1])
         
         body_text = ""
@@ -480,6 +482,8 @@ def _send_auto_replies_imap(account, creds):
         msg_ids = data[0].split() if data[0] else []
         for mid in msg_ids[:5]:
             _, raw = mail.fetch(mid, '(BODY.PEEK[])')
+            if not raw or not isinstance(raw, list) or not raw[0] or len(raw[0]) < 2:
+                continue
             parsed = email_lib.message_from_bytes(raw[0][1])
             from_addr = email_lib.utils.parseaddr(parsed.get('From', ''))[1]
             orig_msg_id = parsed.get('Message-ID', '')
@@ -765,6 +769,8 @@ def _send_auto_replies_pool(pool_entry):
         msg_ids = data[0].split() if data[0] else []
         for mid in msg_ids[:5]:
             _, raw = mail.fetch(mid, '(BODY.PEEK[])')
+            if not raw or not isinstance(raw, list) or not raw[0] or len(raw[0]) < 2:
+                continue
             parsed = email_lib.message_from_bytes(raw[0][1])
             from_addr = email_lib.utils.parseaddr(parsed.get('From', ''))[1]
             orig_msg_id = parsed.get('Message-ID', '')
