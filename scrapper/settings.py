@@ -305,6 +305,11 @@ CELERY_ACCEPT_CONTENT = ['json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = TIME_ZONE
+CELERY_TASK_DEFAULT_QUEUE = 'celery'
+
+CELERY_TASK_ROUTES = {
+    'warmup.tasks.*': {'queue': 'warmup'},
+}
 
 # Periodic task schedule (requires celery beat worker: celery -A scrapper beat -l info)
 from celery.schedules import crontab

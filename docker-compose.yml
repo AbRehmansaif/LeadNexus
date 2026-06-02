@@ -33,7 +33,22 @@ services:
   celery_worker:
     build: .
     entrypoint: []
-    command: celery -A scrapper worker -l info --concurrency=4
+    command: celery -A scrapper worker -l info --concurrency=8 -Q celery
+    restart: always
+    env_file:
+      - .env
+    volumes:
+      - ./media:/app/media
+    depends_on:
+      - db
+      - redis
+      - web
+
+  # Worker 2: dedicated warmup only (new)
+  celery_warmup_worker:
+    build: .
+    entrypoint: []
+    command: celery -A scrapper worker -l info --concurrency=16 -Q warmup
     restart: always
     env_file:
       - .env
