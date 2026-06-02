@@ -5,7 +5,11 @@ import random
 import uuid
 import logging
 import time
+import socket
 from datetime import date, timedelta
+
+# Set a global timeout to prevent celery workers from hanging indefinitely on network calls (e.g., IMAP/SMTP)
+socket.setdefaulttimeout(30)
 
 from django.utils import timezone
 from django.core.mail import get_connection, EmailMultiAlternatives
