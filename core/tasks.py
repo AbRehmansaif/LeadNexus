@@ -38,6 +38,8 @@ MAX_BROWSER_INSTANCES = threading.Semaphore(10)
 # Per-User Lock to prevent a single user from running concurrent searches 
 # (avoids LinkedIn login conflicts and account-level rate limits)
 USER_LOCKS = {}
+PORT_LOCK = threading.Lock()
+USED_PORTS = set()
 
 def get_user_lock(user_id):
     if user_id not in USER_LOCKS:
@@ -46,9 +48,19 @@ def get_user_lock(user_id):
 
 def find_free_port():
     import socket
-    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-        s.bind(('', 0))
-        return s.getsockname()[1]
+    with PORT_LOCK:
+        for _ in range(50):
+            with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+                s.bind(('', 0))
+                port = s.getsockname()[1]
+                if port not in USED_PORTS:
+                    USED_PORTS.add(port)
+                    return port
+        return random.randint(10000, 60000)
+
+def release_port(port):
+    with PORT_LOCK:
+        USED_PORTS.discard(port)
 
 
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -329,6 +341,8 @@ def run_linkedin_job(job_id: int):
                 except:
                     pass
 
+                release_port(port)
+
                 job.completed_at = timezone.now()
                 job.save(update_fields=['status', 'error_message', 'completed_at', 'progress'])
 
@@ -359,112 +373,111 @@ def run_keyword_job(job_id: int):
         logger.error(f"KeywordScrapeJob #{job_id} not found")
         return
 
-    # Wait for the USER-specific lock
-    with get_user_lock(job.user_id):
-        # Wait for the GLOBAL browser slot
-        with MAX_BROWSER_INSTANCES:
-            if job.status == 'cancelled':
-                logger.info(f"KeywordScrapeJob #{job_id} was cancelled before it could start.")
+    # Wait for the GLOBAL browser slot
+    with MAX_BROWSER_INSTANCES:
+        if job.status == 'cancelled':
+            logger.info(f"KeywordScrapeJob #{job_id} was cancelled before it could start.")
+            return
+
+        job.status = 'running'
+        job.started_at = timezone.now()
+        job.progress = 0
+        job.save(update_fields=['status', 'started_at', 'progress'])
+
+        # Allocate isolated environment
+        port = find_free_port()
+        tmp_dir_obj = tempfile.TemporaryDirectory(prefix=f"chrome_kw_{job_id}_")
+
+        try:
+            # Step 1: Search for websites (Uses Selenium)
+            logger.info(f"[KeywordJob #{job_id}] Searching niche '{job.niche}' on Port {port}...")
+            search_scraper = WebSearchScraper(port=port, user_data_dir=tmp_dir_obj.name)
+            domains = search_scraper.search(job.niche, max_results=job.max_results)
+            
+            if not domains:
+                job.status = 'failed'
+                job.error_message = f"No websites found for niche: '{job.niche}'. Try different keywords."
+                job.save(update_fields=['status', 'error_message'])
                 return
 
-            job.status = 'running'
-            job.started_at = timezone.now()
-            job.progress = 0
-            job.save(update_fields=['status', 'started_at', 'progress'])
-
-            # Allocate isolated environment
-            port = find_free_port()
-            tmp_dir_obj = tempfile.TemporaryDirectory(prefix=f"chrome_kw_{job_id}_")
-
-            try:
-                # Step 1: Search for websites (Uses Selenium)
-                logger.info(f"[KeywordJob #{job_id}] Searching niche '{job.niche}' on Port {port}...")
-                search_scraper = WebSearchScraper(port=port, user_data_dir=tmp_dir_obj.name)
-                domains = search_scraper.search(job.niche, max_results=job.max_results)
-                
-                if not domains:
-                    job.status = 'failed'
-                    job.error_message = f"No websites found for niche: '{job.niche}'. Try different keywords."
-                    job.save(update_fields=['status', 'error_message'])
-                    return
-
-                # Step 2: Scrape each domain
-                website_scraper = WebsiteScraper(timeout=15)
-                count = 0
-                
-                for domain in domains:
-                    # Check for Pause/Cancel
+            # Step 2: Scrape each domain
+            website_scraper = WebsiteScraper(timeout=15)
+            count = 0
+            
+            for domain in domains:
+                # Check for Pause/Cancel
+                job.refresh_from_db()
+                while job.status == 'paused':
+                    import time
+                    time.sleep(5)
                     job.refresh_from_db()
-                    while job.status == 'paused':
-                        import time
-                        time.sleep(5)
-                        job.refresh_from_db()
-                    if job.status == 'cancelled':
-                        break
+                if job.status == 'cancelled':
+                    break
 
-                    # SaaS Quota Check (Website credits)
-                    if job.user and hasattr(job.user, 'profile'):
-                        if not job.user.profile.can_scrape_website():
-                            job.status = 'failed'
-                            job.error_message = "Monthly website scanning quota reached mid-job."
-                            job.save(update_fields=['status', 'error_message'])
-                            return
-                        job.user.profile.increment_web_usage()
+                # SaaS Quota Check (Website credits)
+                if job.user and hasattr(job.user, 'profile'):
+                    if not job.user.profile.can_scrape_website():
+                        job.status = 'failed'
+                        job.error_message = "Monthly website scanning quota reached mid-job."
+                        job.save(update_fields=['status', 'error_message'])
+                        return
+                    job.user.profile.increment_web_usage()
 
-                    try:
-                        logger.info(f"[KeywordJob #{job_id}] Scraping domain {count+1}/{len(domains)}: {domain}")
-                        data = website_scraper.scrape(
-                            url=domain,
-                            scrape_contact=job.scrape_contact,
-                            max_contact_pages=job.max_contact_pages,
-                        )
-                        
-                        ScrapedKeywordWebsite.objects.create(
-                            job=job,
-                            website_url=data.get('website_url', domain),
-                            email=data.get('email'),
-                            phone=data.get('phone'),
-                            address=data.get('address'),
-                            facebook=data.get('facebook'),
-                            twitter=data.get('twitter'),
-                            instagram=data.get('instagram'),
-                            linkedin=data.get('linkedin'),
-                            pages_scraped=data.get('pages_scraped', []),
-                        )
-                        
-                        count += 1
-                        job.progress = count
-                        job.save(update_fields=['progress'])
-                        
-                        # Lifetime Stats
-                        if job.user and hasattr(job.user, 'profile'):
-                            job.user.profile.increment_records_found()
-                            
-                        # Delay
-                        import time, random
-                        time.sleep(random.uniform(2, 4))
-                        
-                    except Exception as e:
-                        logger.error(f"Failed to scrape {domain} in job #{job_id}: {e}")
-
-                if job.status != 'failed':
-                    job.status = 'completed'
-                    job.error_message = ''
-
-            except Exception as e:
-                logger.exception(f"KeywordScrapeJob #{job_id} failed: {e}")
-                job.status = 'failed'
-                job.error_message = str(e)
-
-            finally:
-                # Clean up profile directory
                 try:
-                    tmp_dir_obj.cleanup()
-                except:
-                    pass
+                    logger.info(f"[KeywordJob #{job_id}] Scraping domain {count+1}/{len(domains)}: {domain}")
+                    data = website_scraper.scrape(
+                        url=domain,
+                        scrape_contact=job.scrape_contact,
+                        max_contact_pages=job.max_contact_pages,
+                    )
                     
-                job.completed_at = timezone.now()
-                job.save(update_fields=['status', 'error_message', 'completed_at'])
+                    ScrapedKeywordWebsite.objects.create(
+                        job=job,
+                        website_url=data.get('website_url', domain),
+                        email=data.get('email'),
+                        phone=data.get('phone'),
+                        address=data.get('address'),
+                        facebook=data.get('facebook'),
+                        twitter=data.get('twitter'),
+                        instagram=data.get('instagram'),
+                        linkedin=data.get('linkedin'),
+                        pages_scraped=data.get('pages_scraped', []),
+                    )
+                    
+                    count += 1
+                    job.progress = count
+                    job.save(update_fields=['progress'])
+                    
+                    # Lifetime Stats
+                    if job.user and hasattr(job.user, 'profile'):
+                        job.user.profile.increment_records_found()
+                        
+                    # Delay
+                    import time, random
+                    time.sleep(random.uniform(2, 4))
+                    
+                except Exception as e:
+                    logger.error(f"Failed to scrape {domain} in job #{job_id}: {e}")
+
+            if job.status != 'failed':
+                job.status = 'completed'
+                job.error_message = ''
+
+        except Exception as e:
+            logger.exception(f"KeywordScrapeJob #{job_id} failed: {e}")
+            job.status = 'failed'
+            job.error_message = str(e)
+
+        finally:
+            # Clean up profile directory
+            try:
+                tmp_dir_obj.cleanup()
+            except:
+                pass
+                
+            release_port(port)
+            job.completed_at = timezone.now()
+            job.save(update_fields=['status', 'error_message', 'completed_at'])
 
 
 
