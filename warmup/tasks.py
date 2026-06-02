@@ -204,7 +204,7 @@ def get_imap_conn(creds):
 
 
 def _detect_spam_folder(mail):
-    """Return the spam/junk folder name or None."""
+    """Return the exact spam/junk folder name from the IMAP server or None."""
     candidates = [
         '[Gmail]/Spam', 'Spam', 'Junk', 'Junk E-mail',
         'INBOX.Spam', 'INBOX.Junk', '[Gmail]/Junk',
@@ -216,6 +216,14 @@ def _detect_spam_folder(mail):
         for candidate in candidates:
             for name in names:
                 if candidate.lower() in name.lower():
+                    # Extract exact folder name (typically the last quoted or unquoted string)
+                    import re
+                    match = re.search(r'"([^"]+)"\s*$', name)
+                    if match:
+                        return match.group(1)
+                    parts = name.split(' ')
+                    if parts:
+                        return parts[-1].strip('"')
                     return candidate
     except Exception:
         pass
@@ -232,7 +240,9 @@ def run_warmup_cycle():
     for acc in accounts:
         run_single_account_warmup.delay(acc.id)
         queued += 1
-    return f"Queued warmup for {queued} accounts"
+    # Also queue the warmup pool cycle so pool emails are actively checked and replied to
+    run_pool_warmup_cycle.delay()
+    return f"Queued warmup for {queued} accounts and started pool cycle"
 
 
 @shared_task
@@ -303,7 +313,7 @@ def run_single_account_warmup(account_id: int):
 
     # Step 6: Daily snapshot
     WarmupDailyScore.objects.update_or_create(
-        account=account, date=date.today(),
+        account=account, date=timezone.localdate(),
         defaults={
             'day_number': day, 'score': account.warmup_score,
             'inbox_rate': account.inbox_rate, 'spam_rate': account.spam_rate,
@@ -391,7 +401,7 @@ def _check_placements_imap(account, creds):
             _verify_and_update_sender(mail, mid, is_spam=False)
 
         # Fallback search for the header
-        _, hdata = mail.search(None, '(HEADER X-Mailer LeadNexus-Warmup/1.0)')
+        _, hdata = mail.search(None, '(HEADER X-Mailer "LeadNexus-Warmup/1.0")')
         for mid in (hdata[0].split() if hdata[0] else []):
             _verify_and_update_sender(mail, mid, is_spam=False)
 
@@ -399,13 +409,27 @@ def _check_placements_imap(account, creds):
         spam_folder = _detect_spam_folder(mail)
         if spam_folder:
             mail.select(spam_folder)
-            _, sdata = mail.search(None, '(OR BODY "LN-WU-ID:[" HEADER X-Mailer LeadNexus-Warmup/1.0)')
-            for mid in (sdata[0].split() if sdata[0] else []):
+            mids = set()
+            _, body_data = mail.search(None, '(BODY "LN-WU-ID:[")')
+            if body_data and body_data[0]:
+                mids.update(body_data[0].split())
+            _, header_data = mail.search(None, '(HEADER X-Mailer "LeadNexus-Warmup/1.0")')
+            if header_data and header_data[0]:
+                mids.update(header_data[0].split())
+
+            for mid in mids:
                 _verify_and_update_sender(mail, mid, is_spam=True)
                 # Move to inbox
-                mail.copy(mid, 'INBOX')
-                mail.store(mid, '+FLAGS', '\\Deleted')
-            if sdata[0]: mail.expunge()
+                try:
+                    mail.copy(mid, 'INBOX')
+                    mail.store(mid, '+FLAGS', '\\Deleted')
+                except Exception as copy_err:
+                    logger.error(f"Failed to move email from Spam to Inbox: {copy_err}")
+            if mids:
+                try:
+                    mail.expunge()
+                except Exception as expunge_err:
+                    logger.error(f"Failed to expunge deleted emails from Spam: {expunge_err}")
     except Exception as e: logger.error(f"IMAP check error for {creds.from_email}: {e}")
     finally:
         try: mail.logout()
@@ -461,11 +485,41 @@ def _send_auto_replies_imap(account, creds):
             orig_msg_id = parsed.get('Message-ID', '')
             if not from_addr or from_addr.lower() == creds.from_email.lower(): continue
             
+            # Find the fingerprint in the body to identify the sender's WarmupEmail
+            import re
+            body_text = ""
+            for part in parsed.walk():
+                if part.get_content_type() in ["text/plain", "text/html"]:
+                    payload = part.get_payload(decode=True)
+                    if payload:
+                        body_text += payload.decode(errors='ignore')
+            
+            w_email = None
+            match = re.search(r'LN-WU-ID:\[(.*?)\]', body_text)
+            if match:
+                fingerprint_id = match.group(1).strip('<>')
+                w_email = WarmupEmail.objects.filter(
+                    models.Q(message_id__icontains=fingerprint_id) | 
+                    models.Q(message_id__icontains=fingerprint_id.split('@')[0])
+                ).first()
+
             _send_email_generalized(account, creds, from_addr, f"Re: {parsed.get('Subject','')}", 
                                     random.choice(WARMUP_REPLIES), 
                                     headers={'In-Reply-To': orig_msg_id, 'References': orig_msg_id, 'X-Mailer': 'LeadNexus-Warmup/1.0'})
             mail.store(mid, '+FLAGS', '\\Seen')
-            WarmupAccount.objects.filter(pk=account.pk).update(reply_count=account.reply_count + 1)
+            
+            if w_email:
+                if not w_email.is_replied:
+                    w_email.is_replied = True
+                    w_email.replied_at = timezone.now()
+                    w_email.save()
+                    # Increment reply count and recalculate score for the SENDER's account
+                    sender_acc = WarmupAccount.objects.select_for_update().get(pk=w_email.account_id)
+                    sender_acc.reply_count += 1
+                    sender_acc.warmup_score = sender_acc.calculate_score()
+                    sender_acc.save(update_fields=['reply_count', 'warmup_score'])
+            else:
+                WarmupAccount.objects.filter(pk=account.pk).update(reply_count=models.F('reply_count') + 1)
     except Exception as e: logger.error(f"IMAP reply error for {creds.from_email}: {e}")
     finally:
         try: mail.logout()
@@ -542,7 +596,7 @@ def _send_auto_replies_gmail_api(account, creds):
         msgs = results.get('messages', [])[:5]
 
         for m in msgs:
-            msg = service.users().messages().get(userId='me', id=m['id']).execute()
+            msg = service.users().messages().get(userId='me', id=m['id'], format='full').execute()
             headers = msg.get('payload', {}).get('headers', [])
             from_addr = next((h['value'] for h in headers if h['name'].lower() == 'from'), '')
             orig_id = next((h['value'] for h in headers if h['name'].lower() == 'message-id'), '')
@@ -550,11 +604,220 @@ def _send_auto_replies_gmail_api(account, creds):
             
             if creds.from_email.lower() in from_addr.lower(): continue
 
+            # Deep search in parts for fingerprint
+            import re
+            full_text = msg.get('snippet', '')
+            
+            def get_parts_text(parts):
+                text = ""
+                for p in parts:
+                    if p.get('mimeType') in ['text/plain', 'text/html']:
+                        data = p.get('body', {}).get('data', '')
+                        if data:
+                            import base64
+                            text += base64.urlsafe_b64decode(data).decode(errors='ignore')
+                    if 'parts' in p:
+                        text += get_parts_text(p['parts'])
+                return text
+
+            full_text += get_parts_text(msg.get('payload', {}).get('parts', []))
+
+            w_email = None
+            match = re.search(r'LN-WU-ID:\[(.*?)\]', full_text)
+            if match:
+                fingerprint_id = match.group(1).strip('<>')
+                w_email = WarmupEmail.objects.filter(
+                    models.Q(message_id__icontains=fingerprint_id) |
+                    models.Q(message_id__icontains=fingerprint_id.split('@')[0])
+                ).first()
+
             _send_email_generalized(account, creds, from_addr, f"Re: {subj}", 
                                     random.choice(WARMUP_REPLIES),
                                     headers={'In-Reply-To': orig_id, 'References': orig_id, 'X-Mailer': 'LeadNexus-Warmup/1.0'})
             
             # Mark as read
             service.users().messages().modify(userId='me', id=m['id'], body={'removeLabelIds': ['UNREAD']}).execute()
-            WarmupAccount.objects.filter(pk=account.pk).update(reply_count=account.reply_count + 1)
+            
+            if w_email:
+                if not w_email.is_replied:
+                    w_email.is_replied = True
+                    w_email.replied_at = timezone.now()
+                    w_email.save()
+                    # Recalculate score & increment reply_count on the sender's account
+                    sender_acc = WarmupAccount.objects.select_for_update().get(pk=w_email.account_id)
+                    sender_acc.reply_count += 1
+                    sender_acc.warmup_score = sender_acc.calculate_score()
+                    sender_acc.save(update_fields=['reply_count', 'warmup_score'])
+            else:
+                WarmupAccount.objects.filter(pk=account.pk).update(reply_count=models.F('reply_count') + 1)
     except Exception as e: logger.error(f"Gmail API reply error for {creds.from_email}: {e}")
+
+
+# ── WarmupPool Integration (Additional Helpers & Celery Tasks) ───────────────
+
+def get_pool_imap_conn(pool_entry):
+    """Open an authenticated IMAP4_SSL connection for a WarmupPool entry."""
+    host = pool_entry.imap_host
+    if not host:
+        if pool_entry.smtp_host:
+            host = pool_entry.smtp_host.replace('smtp.', 'imap.').replace('smtp-', 'imap.')
+        if not host:
+            email_domain = pool_entry.email.split('@')[-1].lower()
+            if 'gmail' in email_domain:
+                host = 'imap.gmail.com'
+            elif 'outlook' in email_domain or 'hotmail' in email_domain or 'live' in email_domain:
+                host = 'outlook.office365.com'
+            elif 'yahoo' in email_domain:
+                host = 'imap.mail.yahoo.com'
+    if not host:
+        logger.warning(f"Cannot derive IMAP host for pool email {pool_entry.email}")
+        return None
+    try:
+        mail = imaplib.IMAP4_SSL(host, 993)
+        mail.login(pool_entry.username or pool_entry.email, pool_entry.decrypted_password)
+        return mail
+    except Exception as exc:
+        logger.error(f"IMAP login failed for pool email {pool_entry.email}: {exc}")
+        return None
+
+def _check_placements_pool(pool_entry):
+    """Checks inbox/spam placements of warmup emails received by a pool address."""
+    mail = get_pool_imap_conn(pool_entry)
+    if not mail: return
+    try:
+        # Check Inbox
+        mail.select('INBOX')
+        _, data = mail.search(None, '(BODY "LN-WU-ID:[")')
+        for mid in (data[0].split() if data[0] else []):
+            _verify_and_update_sender(mail, mid, is_spam=False)
+
+        _, hdata = mail.search(None, '(HEADER X-Mailer "LeadNexus-Warmup/1.0")')
+        for mid in (hdata[0].split() if hdata[0] else []):
+            _verify_and_update_sender(mail, mid, is_spam=False)
+
+        # Check Spam
+        spam_folder = _detect_spam_folder(mail)
+        if spam_folder:
+            mail.select(spam_folder)
+            mids = set()
+            _, body_data = mail.search(None, '(BODY "LN-WU-ID:[")')
+            if body_data and body_data[0]:
+                mids.update(body_data[0].split())
+            _, header_data = mail.search(None, '(HEADER X-Mailer "LeadNexus-Warmup/1.0")')
+            if header_data and header_data[0]:
+                mids.update(header_data[0].split())
+
+            for mid in mids:
+                _verify_and_update_sender(mail, mid, is_spam=True)
+                try:
+                    mail.copy(mid, 'INBOX')
+                    mail.store(mid, '+FLAGS', '\\Deleted')
+                except Exception as copy_err:
+                    logger.error(f"Pool {pool_entry.email} failed to move spam to inbox: {copy_err}")
+            if mids:
+                try:
+                    mail.expunge()
+                except Exception as expunge_err:
+                    logger.error(f"Pool {pool_entry.email} failed to expunge: {expunge_err}")
+    except Exception as e:
+        logger.error(f"IMAP check error for pool email {pool_entry.email}: {e}")
+    finally:
+        try: mail.logout()
+        except: pass
+
+def _send_email_pool(pool_entry, to_email, subject, body_text, headers=None):
+    """Sends an email using standard SMTP credentials from a WarmupPool entry."""
+    import uuid
+    domain = pool_entry.email.split('@')[-1]
+    msg_id = headers.get('Message-ID') if headers else f"<wm-{uuid.uuid4()}@{domain}>"
+
+    fingerprint = f"\n\n--\nLN-WU-ID:[{msg_id}]"
+    body_with_id = body_text + fingerprint
+
+    html_body = f"<p style='font-family:Arial,sans-serif;line-height:1.6'>{body_text.replace(chr(10), '<br>')}</p>"
+    html_body += f"<div style='display:none;color:transparent;opacity:0'>Fingerprint: {msg_id}</div>"
+
+    msg = EmailMultiAlternatives(
+        subject=subject,
+        body=body_with_id,
+        from_email=pool_entry.email,
+        to=[to_email],
+        headers=headers or {'Message-ID': msg_id, 'X-Mailer': 'LeadNexus-Warmup/1.0'},
+    )
+    msg.attach_alternative(html_body, 'text/html')
+
+    connection = get_connection(
+        host=pool_entry.smtp_host, port=pool_entry.smtp_port,
+        username=pool_entry.username, password=pool_entry.decrypted_password,
+        use_tls=pool_entry.use_tls, use_ssl=False,
+    )
+    msg.connection = connection
+    msg.send()
+    return msg_id
+
+def _send_auto_replies_pool(pool_entry):
+    """Sends auto-replies back to senders of warmup emails received by a pool address."""
+    mail = get_pool_imap_conn(pool_entry)
+    if not mail: return
+    try:
+        mail.select('INBOX')
+        _, data = mail.search(None, '(UNSEEN BODY "LN-WU-ID:[")')
+        msg_ids = data[0].split() if data[0] else []
+        for mid in msg_ids[:5]:
+            _, raw = mail.fetch(mid, '(BODY.PEEK[])')
+            parsed = email_lib.message_from_bytes(raw[0][1])
+            from_addr = email_lib.utils.parseaddr(parsed.get('From', ''))[1]
+            orig_msg_id = parsed.get('Message-ID', '')
+            if not from_addr or from_addr.lower() == pool_entry.email.lower(): continue
+            
+            import re
+            body_text = ""
+            for part in parsed.walk():
+                if part.get_content_type() in ["text/plain", "text/html"]:
+                    payload = part.get_payload(decode=True)
+                    if payload:
+                        body_text += payload.decode(errors='ignore')
+            
+            w_email = None
+            match = re.search(r'LN-WU-ID:\[(.*?)\]', body_text)
+            if match:
+                fingerprint_id = match.group(1).strip('<>')
+                w_email = WarmupEmail.objects.filter(
+                    models.Q(message_id__icontains=fingerprint_id) | 
+                    models.Q(message_id__icontains=fingerprint_id.split('@')[0])
+                ).first()
+
+            _send_email_pool(pool_entry, from_addr, f"Re: {parsed.get('Subject','')}", 
+                             random.choice(WARMUP_REPLIES), 
+                             headers={'In-Reply-To': orig_msg_id, 'References': orig_msg_id, 'X-Mailer': 'LeadNexus-Warmup/1.0'})
+            mail.store(mid, '+FLAGS', '\\Seen')
+            
+            if w_email:
+                if not w_email.is_replied:
+                    w_email.is_replied = True
+                    w_email.replied_at = timezone.now()
+                    w_email.save()
+                    
+                    sender_acc = WarmupAccount.objects.select_for_update().get(pk=w_email.account_id)
+                    sender_acc.reply_count += 1
+                    sender_acc.warmup_score = sender_acc.calculate_score()
+                    sender_acc.save(update_fields=['reply_count', 'warmup_score'])
+    except Exception as e:
+        logger.error(f"IMAP reply error for pool email {pool_entry.email}: {e}")
+    finally:
+        try: mail.logout()
+        except: pass
+
+@shared_task
+def run_pool_warmup_cycle():
+    """Process all active WarmupPool emails: check placements and send auto-replies."""
+    pool_entries = WarmupPool.objects.filter(is_active=True)
+    processed = 0
+    for entry in pool_entries:
+        try:
+            _check_placements_pool(entry)
+            _send_auto_replies_pool(entry)
+            processed += 1
+        except Exception as exc:
+            logger.error(f"Failed to process pool email {entry.email}: {exc}")
+    return f"Processed {processed} pool emails"
